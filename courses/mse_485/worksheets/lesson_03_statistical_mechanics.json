@@ -43,19 +43,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The time average of an observable along a single trajectory equals its phase-space ensemble average as observation time approaches infinity."
+            "text": "The time average of an observable along a single trajectory equals its phase-space ensemble average as observation time approaches infinity.",
+            "text_markdown": "The time average of an observable along a single trajectory equals its phase-space ensemble average as observation time approaches infinity."
           },
           {
             "id": "b",
-            "text": "The kinetic energy of every particle is strictly constant and equal to 3/2 k_B T at every instant."
+            "text": "The kinetic energy of every particle is strictly constant and equal to $\\frac{3}{2} k_B T$ at every instant.",
+            "text_markdown": "The kinetic energy of every particle is strictly constant and equal to $\\frac{3}{2} k_B T$ at every instant."
           },
           {
             "id": "c",
-            "text": "Every microstate in phase space is visited at least once during any finite molecular dynamics run."
+            "text": "Every microstate in phase space is visited at least once during any finite molecular dynamics run.",
+            "text_markdown": "Every microstate in phase space is visited at least once during any finite molecular dynamics run."
           },
           {
             "id": "d",
-            "text": "Phase-space volume contracts exponentially under dissipative friction forces."
+            "text": "Phase-space volume contracts exponentially under dissipative friction forces.",
+            "text_markdown": "Phase-space volume contracts exponentially under dissipative friction forces."
           }
         ],
         "correct": "a",
@@ -72,19 +76,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Energy remained trapped in the lowest few normal modes and exhibited quasi-periodic recurrence (FPU recurrence), failing to reach equipartition and violating naive ergodicity."
+            "text": "Energy remained trapped in the lowest few normal modes and exhibited quasi-periodic recurrence (FPU recurrence), failing to reach equipartition and violating naive ergodicity.",
+            "text_markdown": "Energy remained trapped in the lowest few normal modes and exhibited quasi-periodic recurrence (FPU recurrence), failing to reach equipartition and violating naive ergodicity."
           },
           {
             "id": "b",
-            "text": "The chain disintegrated instantly because the equations of motion were unstable."
+            "text": "The chain disintegrated instantly because the equations of motion were unstable.",
+            "text_markdown": "The chain disintegrated instantly because the equations of motion were unstable."
           },
           {
             "id": "c",
-            "text": "All 32 modes reached equal energy within 5 vibrational periods."
+            "text": "All 32 modes reached equal energy within 5 vibrational periods.",
+            "text_markdown": "All 32 modes reached equal energy within 5 vibrational periods."
           },
           {
             "id": "d",
-            "text": "The total energy grew exponentially due to round-off error."
+            "text": "The total energy grew exponentially due to round-off error.",
+            "text_markdown": "The total energy grew exponentially due to round-off error."
           }
         ],
         "correct": "a",
@@ -101,19 +109,23 @@
         "options": [
           {
             "id": "a",
-            "text": "A purely harmonic crystal, where normal modes are completely decoupled and never exchange energy."
+            "text": "A purely harmonic crystal, where normal modes are completely decoupled and never exchange energy.",
+            "text_markdown": "A purely harmonic crystal, where normal modes are completely decoupled and never exchange energy."
           },
           {
             "id": "b",
-            "text": "A supercooled liquid trapped in a deep metastable free-energy basin below the glass transition temperature."
+            "text": "A supercooled liquid trapped in a deep metastable free-energy basin below the glass transition temperature.",
+            "text_markdown": "A supercooled liquid trapped in a deep metastable free-energy basin below the glass transition temperature."
           },
           {
             "id": "c",
-            "text": "A dense Lennard-Jones liquid at high temperature simulated for 10^7 steps."
+            "text": "A dense Lennard-Jones liquid at high temperature simulated for 10^7 steps.",
+            "text_markdown": "A dense Lennard-Jones liquid at high temperature simulated for 10^7 steps."
           },
           {
             "id": "d",
-            "text": "A solid-state vacancy diffusion simulation where the hop barrier is 2.5 eV and the temperature is 300 K."
+            "text": "A solid-state vacancy diffusion simulation where the hop barrier is 2.5 eV and the temperature is 300 K.",
+            "text_markdown": "A solid-state vacancy diffusion simulation where the hop barrier is 2.5 eV and the temperature is 300 K."
           }
         ],
         "correct": [
@@ -177,19 +189,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Equality of mixed second partial derivatives: d^2 H / (dq_k dp_k) = d^2 H / (dp_k dq_k)."
+            "text": "Equality of mixed second partial derivatives: $\\frac{\\partial^2 H}{\\partial q_k \\partial p_k} = \\frac{\\partial^2 H}{\\partial p_k \\partial q_k}$.",
+            "text_markdown": "Equality of mixed second partial derivatives: $\\frac{\\partial^2 H}{\\partial q_k \\partial p_k} = \\frac{\\partial^2 H}{\\partial p_k \\partial q_k}$."
           },
           {
             "id": "b",
-            "text": "The kinetic energy is quadratic in momenta."
+            "text": "The kinetic energy is quadratic in momenta.",
+            "text_markdown": "The kinetic energy is quadratic in momenta."
           },
           {
             "id": "c",
-            "text": "The total energy is strictly negative."
+            "text": "The total energy is strictly negative.",
+            "text_markdown": "The total energy is strictly negative."
           },
           {
             "id": "d",
-            "text": "All particles have identical masses."
+            "text": "All particles have identical masses.",
+            "text_markdown": "All particles have identical masses."
           }
         ],
         "correct": "a",
@@ -206,19 +222,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Nonlinear filamentation stretches the fine-grained distribution into thin filaments, causing any coarse-grained (finite-resolution) entropy to increase to its equilibrium maximum."
+            "text": "Nonlinear filamentation stretches the fine-grained distribution into thin filaments, causing any coarse-grained (finite-resolution) entropy to increase to its equilibrium maximum.",
+            "text_markdown": "Nonlinear filamentation stretches the fine-grained distribution into thin filaments, causing any coarse-grained (finite-resolution) entropy to increase to its equilibrium maximum."
           },
           {
             "id": "b",
-            "text": "Liouville's theorem is violated whenever $N > 10$."
+            "text": "Liouville's theorem is violated whenever $N > 10$.",
+            "text_markdown": "Liouville's theorem is violated whenever $N > 10$."
           },
           {
             "id": "c",
-            "text": "The fine-grained Gibbs entropy is not defined for systems with potential energy."
+            "text": "The fine-grained Gibbs entropy is not defined for systems with potential energy.",
+            "text_markdown": "The fine-grained Gibbs entropy is not defined for systems with potential energy."
           },
           {
             "id": "d",
-            "text": "Hamilton's equations only hold at $T = 0\\text{ K}$."
+            "text": "Hamilton's equations only hold at $T = 0\\text{ K}$.",
+            "text_markdown": "Hamilton's equations only hold at $T = 0\\text{ K}$."
           }
         ],
         "correct": "a",
@@ -235,19 +255,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Energy spreads irreversibly across all normal modes toward the equipartition value 1/N."
+            "text": "Energy spreads irreversibly across all normal modes toward the equipartition value 1/N.",
+            "text_markdown": "Energy spreads irreversibly across all normal modes toward the equipartition value 1/N."
           },
           {
             "id": "b",
-            "text": "All energy condenses entirely into the highest-frequency mode."
+            "text": "All energy condenses entirely into the highest-frequency mode.",
+            "text_markdown": "All energy condenses entirely into the highest-frequency mode."
           },
           {
             "id": "c",
-            "text": "The recurrence period between mode 1 and mode 2 approaches zero."
+            "text": "The recurrence period between mode 1 and mode 2 approaches zero.",
+            "text_markdown": "The recurrence period between mode 1 and mode 2 approaches zero."
           },
           {
             "id": "d",
-            "text": "The kinetic energy decays to zero while potential energy diverges."
+            "text": "The kinetic energy decays to zero while potential energy diverges.",
+            "text_markdown": "The kinetic energy decays to zero while potential energy diverges."
           }
         ],
         "correct": "a",
@@ -319,19 +343,23 @@
         "options": [
           {
             "id": "a",
-            "text": "For N ~ 10^23 particles, the recurrence time is doubly exponential in N (~ 10^(10^23) years), far exceeding the age of the universe."
+            "text": "For N ~ 10^23 particles, the recurrence time is doubly exponential in N (~ 10^(10^23) years), far exceeding the age of the universe.",
+            "text_markdown": "For N ~ 10^23 particles, the recurrence time is doubly exponential in N (~ 10^(10^23) years), far exceeding the age of the universe."
           },
           {
             "id": "b",
-            "text": "Poincar\u00e9's theorem only applies to 1-particle systems."
+            "text": "Poincar\u00e9's theorem only applies to 1-particle systems.",
+            "text_markdown": "Poincar\u00e9's theorem only applies to 1-particle systems."
           },
           {
             "id": "c",
-            "text": "Thermal noise always destroys phase space."
+            "text": "Thermal noise always destroys phase space.",
+            "text_markdown": "Thermal noise always destroys phase space."
           },
           {
             "id": "d",
-            "text": "Recurrence only occurs at negative absolute temperatures."
+            "text": "Recurrence only occurs at negative absolute temperatures.",
+            "text_markdown": "Recurrence only occurs at negative absolute temperatures."
           }
         ],
         "correct": "a",
@@ -348,19 +376,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The Shadowing Lemma: for hyperbolic/chaotic dynamical systems, there exists a true, exact trajectory starting from a slightly different initial state that stays uniformly close ('shadows') the numerical trajectory for long times."
+            "text": "The Shadowing Lemma: for hyperbolic/chaotic dynamical systems, there exists a true, exact trajectory starting from a slightly different initial state that stays uniformly close ('shadows') the numerical trajectory for long times.",
+            "text_markdown": "The Shadowing Lemma: for hyperbolic/chaotic dynamical systems, there exists a true, exact trajectory starting from a slightly different initial state that stays uniformly close ('shadows') the numerical trajectory for long times."
           },
           {
             "id": "b",
-            "text": "The Central Limit Theorem guarantees that numerical errors cancel to zero at every integration step."
+            "text": "The Central Limit Theorem guarantees that numerical errors cancel to zero at every integration step.",
+            "text_markdown": "The Central Limit Theorem guarantees that numerical errors cancel to zero at every integration step."
           },
           {
             "id": "c",
-            "text": "Liouville's theorem states that coordinates do not matter for statistical averages."
+            "text": "Liouville's theorem states that coordinates do not matter for statistical averages.",
+            "text_markdown": "Liouville's theorem states that coordinates do not matter for statistical averages."
           },
           {
             "id": "d",
-            "text": "Equipartition theorem eliminates floating-point errors."
+            "text": "Equipartition theorem eliminates floating-point errors.",
+            "text_markdown": "Equipartition theorem eliminates floating-point errors."
           }
         ],
         "correct": "a",
@@ -383,19 +415,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The thermal de Broglie wavelength must be much smaller than the average interatomic spacing (Lambda << a)."
+            "text": "The thermal de Broglie wavelength must be much smaller than the average interatomic spacing ($\\Lambda \\ll a$).",
+            "text_markdown": "The thermal de Broglie wavelength must be much smaller than the average interatomic spacing ($\\Lambda \\ll a$)."
           },
           {
             "id": "b",
-            "text": "The temperature must be below 10 K."
+            "text": "The temperature must be below 10 K.",
+            "text_markdown": "The temperature must be below 10 K."
           },
           {
             "id": "c",
-            "text": "The kinetic energy must equal the potential energy."
+            "text": "The kinetic energy must equal the potential energy.",
+            "text_markdown": "The kinetic energy must equal the potential energy."
           },
           {
             "id": "d",
-            "text": "The number of particles must be odd."
+            "text": "The number of particles must be odd.",
+            "text_markdown": "The number of particles must be odd."
           }
         ],
         "correct": "a",
@@ -412,19 +448,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Lambda_He is sqrt(10) ~ 3.16 times larger than Lambda_Ar."
+            "text": "$\\Lambda_{\\text{He}}$ is $\\sqrt{10} \\approx 3.16$ times larger than $\\Lambda_{\\text{Ar}}$.",
+            "text_markdown": "$\\Lambda_{\\text{He}}$ is $\\sqrt{10} \\approx 3.16$ times larger than $\\Lambda_{\\text{Ar}}$."
           },
           {
             "id": "b",
-            "text": "Lambda_He is 10 times smaller than Lambda_Ar."
+            "text": "$\\Lambda_{\\text{He}}$ is $10$ times smaller than $\\Lambda_{\\text{Ar}}$.",
+            "text_markdown": "$\\Lambda_{\\text{He}}$ is $10$ times smaller than $\\Lambda_{\\text{Ar}}$."
           },
           {
             "id": "c",
-            "text": "Lambda_He equals Lambda_Ar because both are noble gases."
+            "text": "$\\Lambda_{\\text{He}}$ equals $\\Lambda_{\\text{Ar}}$ because both are noble gases.",
+            "text_markdown": "$\\Lambda_{\\text{He}}$ equals $\\Lambda_{\\text{Ar}}$ because both are noble gases."
           },
           {
             "id": "d",
-            "text": "Lambda_He is 100 times larger."
+            "text": "$\\Lambda_{\\text{He}}$ is $100$ times larger.",
+            "text_markdown": "$\\Lambda_{\\text{He}}$ is $100$ times larger."
           }
         ],
         "correct": "a",
@@ -441,19 +481,23 @@
         "options": [
           {
             "id": "a",
-            "text": "To account for the indistinguishability of identical particles, preventing the Gibbs paradox of non-extensive entropy."
+            "text": "To account for the indistinguishability of identical particles, preventing the Gibbs paradox of non-extensive entropy.",
+            "text_markdown": "To account for the indistinguishability of identical particles, preventing the Gibbs paradox of non-extensive entropy."
           },
           {
             "id": "b",
-            "text": "To convert energy from Joules to electron-volts."
+            "text": "To convert energy from Joules to electron-volts.",
+            "text_markdown": "To convert energy from Joules to electron-volts."
           },
           {
             "id": "c",
-            "text": "To guarantee that kinetic energy is always positive."
+            "text": "To guarantee that kinetic energy is always positive.",
+            "text_markdown": "To guarantee that kinetic energy is always positive."
           },
           {
             "id": "d",
-            "text": "Because MD uses an N-step numerical integrator."
+            "text": "Because MD uses an N-step numerical integrator.",
+            "text_markdown": "Because MD uses an N-step numerical integrator."
           }
         ],
         "correct": "a",
@@ -470,19 +514,23 @@
         "options": [
           {
             "id": "a",
-            "text": "sigma_E / <E> proportional to 1 / sqrt(N), vanishing in the thermodynamic limit N -> infinity where NVT and NVE become equivalent."
+            "text": "$\\sigma_E / \\langle E \\rangle \\propto 1 / \\sqrt{N}$, vanishing in the thermodynamic limit $N \\to \\infty$ where NVT and NVE become equivalent.",
+            "text_markdown": "$\\sigma_E / \\langle E \\rangle \\propto 1 / \\sqrt{N}$, vanishing in the thermodynamic limit $N \\to \\infty$ where NVT and NVE become equivalent."
           },
           {
             "id": "b",
-            "text": "sigma_E / <E> is constant and independent of N."
+            "text": "$\\sigma_E / \\langle E \\rangle$ is constant and independent of $N$.",
+            "text_markdown": "$\\sigma_E / \\langle E \\rangle$ is constant and independent of $N$."
           },
           {
             "id": "c",
-            "text": "sigma_E / <E> grows as sqrt(N)."
+            "text": "$\\sigma_E / \\langle E \\rangle$ grows as $\\sqrt{N}$.",
+            "text_markdown": "$\\sigma_E / \\langle E \\rangle$ grows as $\\sqrt{N}$."
           },
           {
             "id": "d",
-            "text": "sigma_E / <E> decays as 1/N^2."
+            "text": "$\\sigma_E / \\langle E \\rangle$ decays as $1/N^2$.",
+            "text_markdown": "$\\sigma_E / \\langle E \\rangle$ decays as $1/N^2$."
           }
         ],
         "correct": "a",
@@ -554,19 +602,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The virial term is negative, meaning that attractive intermolecular forces dominate over core repulsions, pulling atoms inward."
+            "text": "The virial term is negative, meaning that attractive intermolecular forces dominate over core repulsions, pulling atoms inward.",
+            "text_markdown": "The virial term is negative, meaning that attractive intermolecular forces dominate over core repulsions, pulling atoms inward."
           },
           {
             "id": "b",
-            "text": "The virial term is zero, meaning particles behave as an ideal gas."
+            "text": "The virial term is zero, meaning particles behave as an ideal gas.",
+            "text_markdown": "The virial term is zero, meaning particles behave as an ideal gas."
           },
           {
             "id": "c",
-            "text": "The virial term is positive, meaning particles are colliding violently."
+            "text": "The virial term is positive, meaning particles are colliding violently.",
+            "text_markdown": "The virial term is positive, meaning particles are colliding violently."
           },
           {
             "id": "d",
-            "text": "The kinetic energy was measured incorrectly."
+            "text": "The kinetic energy was measured incorrectly.",
+            "text_markdown": "The kinetic energy was measured incorrectly."
           }
         ],
         "correct": "a",
@@ -583,19 +635,23 @@
         "options": [
           {
             "id": "a",
-            "text": "-r_ij * (dV / dr_ij)"
+            "text": "$-r_{ij} \\frac{dV}{dr_{ij}}$",
+            "text_markdown": "$-r_{ij} \\frac{dV}{dr_{ij}}$"
           },
           {
             "id": "b",
-            "text": "+r_ij^2 * (dV / dr_ij)"
+            "text": "$+r_{ij}^2 \\frac{dV}{dr_{ij}}$",
+            "text_markdown": "$+r_{ij}^2 \\frac{dV}{dr_{ij}}$"
           },
           {
             "id": "c",
-            "text": "-(dV / dr_ij) / r_ij"
+            "text": "$-\\frac{1}{r_{ij}} \\frac{dV}{dr_{ij}}$",
+            "text_markdown": "$-\\frac{1}{r_{ij}} \\frac{dV}{dr_{ij}}$"
           },
           {
             "id": "d",
-            "text": "0, because force is always perpendicular to separation"
+            "text": "0, because force is always perpendicular to separation",
+            "text_markdown": "0, because force is always perpendicular to separation"
           }
         ],
         "correct": "a",
@@ -639,19 +695,23 @@
         "options": [
           {
             "id": "a",
-            "text": "From the kinetic energy fluctuations: <Delta K^2>_NVE / <K>^2 = (2 / (3N)) * (1 - (3N k_B) / (2 C_V))."
+            "text": "From the kinetic energy fluctuations: $\\langle \\Delta K^2 \\rangle_{\\text{NVE}} / \\langle K \\rangle^2 = \\frac{2}{3N} \\left(1 - \\frac{3N k_B}{2 C_V}\\right)$.",
+            "text_markdown": "From the kinetic energy fluctuations: $\\langle \\Delta K^2 \\rangle_{\\text{NVE}} / \\langle K \\rangle^2 = \\frac{2}{3N} \\left(1 - \\frac{3N k_B}{2 C_V}\\right)$."
           },
           {
             "id": "b",
-            "text": "It cannot be calculated from NVE under any circumstances."
+            "text": "It cannot be calculated from NVE under any circumstances.",
+            "text_markdown": "It cannot be calculated from NVE under any circumstances."
           },
           {
             "id": "c",
-            "text": "By measuring the volume fluctuations."
+            "text": "By measuring the volume fluctuations.",
+            "text_markdown": "By measuring the volume fluctuations."
           },
           {
             "id": "d",
-            "text": "By differentiating total energy with respect to simulation time."
+            "text": "By differentiating total energy with respect to simulation time.",
+            "text_markdown": "By differentiating total energy with respect to simulation time."
           }
         ],
         "correct": "a",
@@ -668,19 +728,23 @@
         "options": [
           {
             "id": "a",
-            "text": "P = rho * k_B * T (the ideal gas law P V = N k_B T)."
+            "text": "$P = \\rho k_B T$ (the ideal gas law $P V = N k_B T$).",
+            "text_markdown": "$P = \\rho k_B T$ (the ideal gas law $P V = N k_B T$)."
           },
           {
             "id": "b",
-            "text": "P = 0, because pressure requires forces."
+            "text": "$P = 0$, because pressure requires forces.",
+            "text_markdown": "$P = 0$, because pressure requires forces."
           },
           {
             "id": "c",
-            "text": "P = infinity."
+            "text": "$P = \\infty$.",
+            "text_markdown": "$P = \\infty$."
           },
           {
             "id": "d",
-            "text": "P = 3 / (2 k_B T)."
+            "text": "$P = \\frac{3}{2 k_B T}$.",
+            "text_markdown": "$P = \\frac{3}{2 k_B T}$."
           }
         ],
         "correct": "a",
@@ -697,19 +761,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because the classical Hamiltonian separates into a sum of purely momentum-dependent kinetic energy and purely coordinate-dependent potential energy: H(r, p) = K(p) + V(r)."
+            "text": "Because the classical Hamiltonian separates into a sum of purely momentum-dependent kinetic energy and purely coordinate-dependent potential energy: H(r, p) = K(p) + V(r).",
+            "text_markdown": "Because the classical Hamiltonian separates into a sum of purely momentum-dependent kinetic energy and purely coordinate-dependent potential energy: H(r, p) = K(p) + V(r)."
           },
           {
             "id": "b",
-            "text": "Because momentum is conserved by Newton's third law."
+            "text": "Because momentum is conserved by Newton's third law.",
+            "text_markdown": "Because momentum is conserved by Newton's third law."
           },
           {
             "id": "c",
-            "text": "Because particles do not interact in momentum space."
+            "text": "Because particles do not interact in momentum space.",
+            "text_markdown": "Because particles do not interact in momentum space."
           },
           {
             "id": "d",
-            "text": "Because temperature is independent of velocity."
+            "text": "Because temperature is independent of velocity.",
+            "text_markdown": "Because temperature is independent of velocity."
           }
         ],
         "correct": "a",
@@ -726,19 +794,23 @@
         "options": [
           {
             "id": "a",
-            "text": "S = -k_B * integral rho(Gamma) * ln rho(Gamma) dGamma"
+            "text": "$S = -k_B \\int \\rho(\\Gamma) \\ln \\rho(\\Gamma)\\,d\\Gamma$",
+            "text_markdown": "$S = -k_B \\int \\rho(\\Gamma) \\ln \\rho(\\Gamma)\\,d\\Gamma$"
           },
           {
             "id": "b",
-            "text": "S = +k_B * integral rho(Gamma)^2 dGamma"
+            "text": "$S = +k_B \\int \\rho(\\Gamma)^2\\,d\\Gamma$",
+            "text_markdown": "$S = +k_B \\int \\rho(\\Gamma)^2\\,d\\Gamma$"
           },
           {
             "id": "c",
-            "text": "S = k_B * T * ln Z"
+            "text": "$S = k_B T \\ln Z$",
+            "text_markdown": "$S = k_B T \\ln Z$"
           },
           {
             "id": "d",
-            "text": "S = integral H(Gamma) * rho(Gamma) dGamma"
+            "text": "$S = \\int H(\\Gamma) \\rho(\\Gamma)\\,d\\Gamma$",
+            "text_markdown": "$S = \\int H(\\Gamma) \\rho(\\Gamma)\\,d\\Gamma$"
           }
         ],
         "correct": "a",
@@ -755,19 +827,23 @@
         "options": [
           {
             "id": "a",
-            "text": "As particles move, collisions convert kinetic energy into potential energy and vice versa; only their sum is constant."
+            "text": "As particles move, collisions convert kinetic energy into potential energy and vice versa; only their sum is constant.",
+            "text_markdown": "As particles move, collisions convert kinetic energy into potential energy and vice versa; only their sum is constant."
           },
           {
             "id": "b",
-            "text": "The integrator has a bug that fails to conserve kinetic energy."
+            "text": "The integrator has a bug that fails to conserve kinetic energy.",
+            "text_markdown": "The integrator has a bug that fails to conserve kinetic energy."
           },
           {
             "id": "c",
-            "text": "The periodic boundary conditions create artificial velocity shocks."
+            "text": "The periodic boundary conditions create artificial velocity shocks.",
+            "text_markdown": "The periodic boundary conditions create artificial velocity shocks."
           },
           {
             "id": "d",
-            "text": "Equipartition only holds at t = 0."
+            "text": "Equipartition only holds at t = 0.",
+            "text_markdown": "Equipartition only holds at t = 0."
           }
         ],
         "correct": "a",
@@ -784,19 +860,23 @@
         "options": [
           {
             "id": "a",
-            "text": "F = -k_B * T * ln Z"
+            "text": "$F = -k_B T \\ln Z$",
+            "text_markdown": "$F = -k_B T \\ln Z$"
           },
           {
             "id": "b",
-            "text": "F = +k_B * T * Z"
+            "text": "$F = +k_B T Z$",
+            "text_markdown": "$F = +k_B T Z$"
           },
           {
             "id": "c",
-            "text": "F = -1 / (k_B * T) * ln Z"
+            "text": "$F = -\\frac{1}{k_B T} \\ln Z$",
+            "text_markdown": "$F = -\\frac{1}{k_B T} \\ln Z$"
           },
           {
             "id": "d",
-            "text": "F = dZ / dT"
+            "text": "$F = \\frac{dZ}{dT}$",
+            "text_markdown": "$F = \\frac{dZ}{dT}$"
           }
         ],
         "correct": "a",
@@ -813,19 +893,23 @@
         "options": [
           {
             "id": "a",
-            "text": "P_tail = - (2 * pi * rho^2 / 3) * integral from r_c to infinity of r^3 * (dV/dr) dr"
+            "text": "$P_{\\text{tail}} = -\\frac{2\\pi\\rho^2}{3}\\int_{r_c}^\\infty r^3 \\frac{dV}{dr}\\,dr$",
+            "text_markdown": "$P_{\\text{tail}} = -\\frac{2\\pi\\rho^2}{3}\\int_{r_c}^\\infty r^3 \\frac{dV}{dr}\\,dr$"
           },
           {
             "id": "b",
-            "text": "P_tail = + (4 * pi * rho) * integral from r_c to infinity of V(r) dr"
+            "text": "$P_{\\text{tail}} = +4\\pi\\rho \\int_{r_c}^\\infty V(r)\\,dr$",
+            "text_markdown": "$P_{\\text{tail}} = +4\\pi\\rho \\int_{r_c}^\\infty V(r)\\,dr$"
           },
           {
             "id": "c",
-            "text": "P_tail = 0, because forces beyond r_c are exactly zero."
+            "text": "$P_{\\text{tail}} = 0$, because forces beyond $r_c$ are exactly zero.",
+            "text_markdown": "$P_{\\text{tail}} = 0$, because forces beyond $r_c$ are exactly zero."
           },
           {
             "id": "d",
-            "text": "P_tail = rho * k_B * T * exp(-r_c)"
+            "text": "$P_{\\text{tail}} = \\rho k_B T e^{-r_c}$",
+            "text_markdown": "$P_{\\text{tail}} = \\rho k_B T e^{-r_c}$"
           }
         ],
         "correct": "a",
@@ -870,19 +954,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Entropy would fail to be extensive, increasing by more than a factor of 2 (specifically, an extra 2 N k_B ln 2)."
+            "text": "Entropy would fail to be extensive, increasing by more than a factor of 2 (specifically, an extra $2 N k_B \\ln 2$).",
+            "text_markdown": "Entropy would fail to be extensive, increasing by more than a factor of 2 (specifically, an extra $2 N k_B \\ln 2$)."
           },
           {
             "id": "b",
-            "text": "Entropy would double exactly."
+            "text": "Entropy would double exactly.",
+            "text_markdown": "Entropy would double exactly."
           },
           {
             "id": "c",
-            "text": "Entropy would be halved."
+            "text": "Entropy would be halved.",
+            "text_markdown": "Entropy would be halved."
           },
           {
             "id": "d",
-            "text": "Entropy would become negative."
+            "text": "Entropy would become negative.",
+            "text_markdown": "Entropy would become negative."
           }
         ],
         "correct": "a",
@@ -899,19 +987,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It computes the bulk macroscopic pressure directly from internal pair coordinates and forces without needing physical walls."
+            "text": "It computes the bulk macroscopic pressure directly from internal pair coordinates and forces without needing physical walls.",
+            "text_markdown": "It computes the bulk macroscopic pressure directly from internal pair coordinates and forces without needing physical walls."
           },
           {
             "id": "b",
-            "text": "It can be applied to periodic boundary conditions using minimum-image pair vectors r_ij."
+            "text": "It can be applied to periodic boundary conditions using minimum-image pair vectors $\\mathbf{r}_{ij}$.",
+            "text_markdown": "It can be applied to periodic boundary conditions using minimum-image pair vectors $\\mathbf{r}_{ij}$."
           },
           {
             "id": "c",
-            "text": "It is valid only for ideal gases and fails when interatomic forces exist."
+            "text": "It is valid only for ideal gases and fails when interatomic forces exist.",
+            "text_markdown": "It is valid only for ideal gases and fails when interatomic forces exist."
           },
           {
             "id": "d",
-            "text": "At low densities and moderate temperatures, attractive van der Waals forces make the virial term negative."
+            "text": "At low densities and moderate temperatures, attractive van der Waals forces make the virial term negative.",
+            "text_markdown": "At low densities and moderate temperatures, attractive van der Waals forces make the virial term negative."
           }
         ],
         "correct": [
@@ -946,19 +1038,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Inverse time (1/s or 1/ps)"
+            "text": "Inverse time (1/s or 1/ps)",
+            "text_markdown": "Inverse time (1/s or 1/ps)"
           },
           {
             "id": "b",
-            "text": "Length (nm or Angstrom)"
+            "text": "Length (nm or Angstrom)",
+            "text_markdown": "Length (nm or Angstrom)"
           },
           {
             "id": "c",
-            "text": "Energy (J or eV)"
+            "text": "Energy (J or eV)",
+            "text_markdown": "Energy (J or eV)"
           },
           {
             "id": "d",
-            "text": "Dimensionless"
+            "text": "Dimensionless",
+            "text_markdown": "Dimensionless"
           }
         ],
         "correct": "a",
@@ -975,19 +1071,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Z = V^N / (N! * Lambda^(3N))"
+            "text": "$Z = \\frac{V^N}{N! \\Lambda^{3N}}$",
+            "text_markdown": "$Z = \\frac{V^N}{N! \\Lambda^{3N}}$"
           },
           {
             "id": "b",
-            "text": "Z = V / (Lambda * N!)"
+            "text": "$Z = \\frac{V}{\\Lambda N!}$",
+            "text_markdown": "$Z = \\frac{V}{\\Lambda N!}$"
           },
           {
             "id": "c",
-            "text": "Z = exp(-beta * N * k_B * T)"
+            "text": "$Z = \\exp(-\\beta N k_B T)$",
+            "text_markdown": "$Z = \\exp(-\\beta N k_B T)$"
           },
           {
             "id": "d",
-            "text": "Z = (3N)! * (k_B * T)^N"
+            "text": "$Z = (3N)! (k_B T)^N$",
+            "text_markdown": "$Z = (3N)! (k_B T)^N$"
           }
         ],
         "correct": "a",
@@ -1004,19 +1104,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In an anharmonic potential, the oscillation frequency depends on energy (higher energy orbits faster or slower), causing shear between inner and outer orbits."
+            "text": "In an anharmonic potential, the oscillation frequency depends on energy (higher energy orbits faster or slower), causing shear between inner and outer orbits.",
+            "text_markdown": "In an anharmonic potential, the oscillation frequency depends on energy (higher energy orbits faster or slower), causing shear between inner and outer orbits."
           },
           {
             "id": "b",
-            "text": "Anharmonic potentials violate Newton's third law."
+            "text": "Anharmonic potentials violate Newton's third law.",
+            "text_markdown": "Anharmonic potentials violate Newton's third law."
           },
           {
             "id": "c",
-            "text": "The harmonic oscillator violates Liouville's theorem."
+            "text": "The harmonic oscillator violates Liouville's theorem.",
+            "text_markdown": "The harmonic oscillator violates Liouville's theorem."
           },
           {
             "id": "d",
-            "text": "Friction forces are present in anharmonic potentials."
+            "text": "Friction forces are present in anharmonic potentials.",
+            "text_markdown": "Friction forces are present in anharmonic potentials."
           }
         ],
         "correct": "a",
@@ -1033,19 +1137,23 @@
         "options": [
           {
             "id": "a",
-            "text": "A chi-squared distribution with N_dof degrees of freedom (approaching a narrow Gaussian for large N by the Central Limit Theorem)."
+            "text": "A $\\chi^2$ distribution with $N_{\\text{dof}}$ degrees of freedom (approaching a narrow Gaussian for large $N$ by the Central Limit Theorem).",
+            "text_markdown": "A $\\chi^2$ distribution with $N_{\\text{dof}}$ degrees of freedom (approaching a narrow Gaussian for large $N$ by the Central Limit Theorem)."
           },
           {
             "id": "b",
-            "text": "A uniform distribution between 0 and 2 T."
+            "text": "A uniform distribution between 0 and 2 T.",
+            "text_markdown": "A uniform distribution between 0 and 2 T."
           },
           {
             "id": "c",
-            "text": "A Cauchy-Lorentzian distribution with infinite variance."
+            "text": "A Cauchy-Lorentzian distribution with infinite variance.",
+            "text_markdown": "A Cauchy-Lorentzian distribution with infinite variance."
           },
           {
             "id": "d",
-            "text": "A Poisson distribution."
+            "text": "A Poisson distribution.",
+            "text_markdown": "A Poisson distribution."
           }
         ],
         "correct": "a",
@@ -1076,19 +1184,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Laplace transform: Z(beta) = integral from 0 to infinity of Omega(E) * exp(-beta * E) dE"
+            "text": "Laplace transform: $Z(\\beta) = \\int_0^\\infty \\Omega(E) e^{-\\beta E}\\,dE$",
+            "text_markdown": "Laplace transform: $Z(\\beta) = \\int_0^\\infty \\Omega(E) e^{-\\beta E}\\,dE$"
           },
           {
             "id": "b",
-            "text": "Fourier cosine transform"
+            "text": "Fourier cosine transform",
+            "text_markdown": "Fourier cosine transform"
           },
           {
             "id": "c",
-            "text": "Legendre transform of coordinates"
+            "text": "Legendre transform of coordinates",
+            "text_markdown": "Legendre transform of coordinates"
           },
           {
             "id": "d",
-            "text": "Z(beta) equals Omega(E)^2"
+            "text": "$Z(\\beta) = \\Omega(E)^2$",
+            "text_markdown": "$Z(\\beta) = \\Omega(E)^2$"
           }
         ],
         "correct": "a",
@@ -1105,19 +1217,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In the thermodynamic limit (N -> infinity, V -> infinity with N/V = const) away from first-order phase transitions."
+            "text": "In the thermodynamic limit ($N \\to \\infty, V \\to \\infty$ with $N/V = \\text{const}$) away from first-order phase transitions.",
+            "text_markdown": "In the thermodynamic limit ($N \\to \\infty, V \\to \\infty$ with $N/V = \\text{const}$) away from first-order phase transitions."
           },
           {
             "id": "b",
-            "text": "Only at the critical point."
+            "text": "Only at the critical point.",
+            "text_markdown": "Only at the critical point."
           },
           {
             "id": "c",
-            "text": "Only when N < 100."
+            "text": "Only when $N < 100$.",
+            "text_markdown": "Only when $N < 100$."
           },
           {
             "id": "d",
-            "text": "They never yield identical properties."
+            "text": "They never yield identical properties.",
+            "text_markdown": "They never yield identical properties."
           }
         ],
         "correct": "a",
@@ -1134,19 +1250,23 @@
         "options": [
           {
             "id": "a",
-            "text": "1 / (D * V)"
+            "text": "1 / (D * V)",
+            "text_markdown": "1 / (D * V)"
           },
           {
             "id": "b",
-            "text": "1 / (2 * V)"
+            "text": "1 / (2 * V)",
+            "text_markdown": "1 / (2 * V)"
           },
           {
             "id": "c",
-            "text": "D / V"
+            "text": "D / V",
+            "text_markdown": "D / V"
           },
           {
             "id": "d",
-            "text": "3 / V regardless of D"
+            "text": "3 / V regardless of D",
+            "text_markdown": "3 / V regardless of D"
           }
         ],
         "correct": "a",
@@ -1177,19 +1297,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Gamma(t) = exp(i * L * t) * Gamma(0)"
+            "text": "$\\Gamma(t) = \\exp(i \\mathcal{L} t) \\Gamma(0)$",
+            "text_markdown": "$\\Gamma(t) = \\exp(i \\mathcal{L} t) \\Gamma(0)$"
           },
           {
             "id": "b",
-            "text": "Gamma(t) = Gamma(0) + i * L * t"
+            "text": "Gamma(t) = Gamma(0) + i * L * t",
+            "text_markdown": "Gamma(t) = Gamma(0) + i * L * t"
           },
           {
             "id": "c",
-            "text": "Gamma(t) = ln(i * L * t) * Gamma(0)"
+            "text": "$\\Gamma(t) = \\ln(i \\mathcal{L} t) \\Gamma(0)$",
+            "text_markdown": "$\\Gamma(t) = \\ln(i \\mathcal{L} t) \\Gamma(0)$"
           },
           {
             "id": "d",
-            "text": "Gamma(t) = exp(-H / k_B T) * Gamma(0)"
+            "text": "$\\Gamma(t) = \\exp(-H / (k_B T)) \\Gamma(0)$",
+            "text_markdown": "$\\Gamma(t) = \\exp(-H / (k_B T)) \\Gamma(0)$"
           }
         ],
         "correct": "a",
@@ -1206,19 +1330,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated roundoff errors."
+            "text": "Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated roundoff errors.",
+            "text_markdown": "Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated roundoff errors."
           },
           {
             "id": "b",
-            "text": "The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic coordinates after tens of picoseconds."
+            "text": "The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic coordinates after tens of picoseconds.",
+            "text_markdown": "The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic coordinates after tens of picoseconds."
           },
           {
             "id": "c",
-            "text": "Macroscopic properties like pressure, RDF, and diffusion coefficients are completely invalid and cannot be trusted."
+            "text": "Macroscopic properties like pressure, RDF, and diffusion coefficients are completely invalid and cannot be trusted.",
+            "text_markdown": "Macroscopic properties like pressure, RDF, and diffusion coefficients are completely invalid and cannot be trusted."
           },
           {
             "id": "d",
-            "text": "Macroscopic averages converge to the correct ensemble values despite individual trajectory divergence."
+            "text": "Macroscopic averages converge to the correct ensemble values despite individual trajectory divergence.",
+            "text_markdown": "Macroscopic averages converge to the correct ensemble values despite individual trajectory divergence."
           }
         ],
         "correct": [

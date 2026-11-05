@@ -29,19 +29,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Eliminating unimportant variables (such as explicit solvent coordinates) and averaging out fast degrees of freedom into effective potentials, friction, and stochastic noise."
+          "text": "Eliminating unimportant variables (such as explicit solvent coordinates) and averaging out fast degrees of freedom into effective potentials, friction, and stochastic noise.",
+          "text_markdown": "Eliminating unimportant variables (such as explicit solvent coordinates) and averaging out fast degrees of freedom into effective potentials, friction, and stochastic noise."
         },
         {
           "id": "b",
-          "text": "Replacing canonical Boltzmann statistics with microcanonical deterministic trajectories at larger integration timesteps without changing the degrees of freedom."
+          "text": "Replacing canonical Boltzmann statistics with microcanonical deterministic trajectories at larger integration timesteps without changing the degrees of freedom.",
+          "text_markdown": "Replacing canonical Boltzmann statistics with microcanonical deterministic trajectories at larger integration timesteps without changing the degrees of freedom."
         },
         {
           "id": "c",
-          "text": "Increasing the mass of electrons and solvent atoms to equal the solute mass while keeping all explicit quantum wavefunctions."
+          "text": "Increasing the mass of electrons and solvent atoms to equal the solute mass while keeping all explicit quantum wavefunctions.",
+          "text_markdown": "Increasing the mass of electrons and solvent atoms to equal the solute mass while keeping all explicit quantum wavefunctions."
         },
         {
           "id": "d",
-          "text": "Truncating all interatomic forces at the nearest-neighbor shell while integrating Newton's equations with a 0.1 fs timestep."
+          "text": "Truncating all interatomic forces at the nearest-neighbor shell while integrating Newton's equations with a 0.1 fs timestep.",
+          "text_markdown": "Truncating all interatomic forces at the nearest-neighbor shell while integrating Newton's equations with a 0.1 fs timestep."
         }
       ],
       "correct": "a",
@@ -58,19 +62,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Explicit water molecules account for >90% of the atoms (dominating pair-force evaluations) and their fast O\u2013H vibrations/collisions force tiny ~1 fs timesteps."
+          "text": "Explicit water molecules account for $> 90\\%$ of the atoms (dominating pair-force evaluations) and their fast O\u2013H vibrations/collisions force tiny $\\sim 1\\text{ fs}$ timesteps.",
+          "text_markdown": "Explicit water molecules account for $> 90\\%$ of the atoms (dominating pair-force evaluations) and their fast O\u2013H vibrations/collisions force tiny $\\sim 1\\text{ fs}$ timesteps."
         },
         {
           "id": "b",
-          "text": "Water molecules interact only via three-body quantum exchange potentials that scale as O(N^4) in classical MD."
+          "text": "Water molecules interact only via three-body quantum exchange potentials that scale as O(N^4) in classical MD.",
+          "text_markdown": "Water molecules interact only via three-body quantum exchange potentials that scale as O(N^4) in classical MD."
         },
         {
           "id": "c",
-          "text": "Implicit solvent eliminates the need to satisfy detailed balance or conserve probability."
+          "text": "Implicit solvent eliminates the need to satisfy detailed balance or conserve probability.",
+          "text_markdown": "Implicit solvent eliminates the need to satisfy detailed balance or conserve probability."
         },
         {
           "id": "d",
-          "text": "Explicit solvent prevents the use of periodic boundary conditions and Verlet neighbor lists."
+          "text": "Explicit solvent prevents the use of periodic boundary conditions and Verlet neighbor lists.",
+          "text_markdown": "Explicit solvent prevents the use of periodic boundary conditions and Verlet neighbor lists."
         }
       ],
       "correct": "a",
@@ -87,19 +95,23 @@
       "options": [
         {
           "id": "a",
-          "text": "When trial moves are strictly local and respect conservation laws (such as Kawasaki nearest-neighbor spin/atom exchanges), maintaining local thermodynamic equilibrium."
+          "text": "When trial moves are strictly local and respect conservation laws (such as Kawasaki nearest-neighbor spin/atom exchanges), maintaining local thermodynamic equilibrium.",
+          "text_markdown": "When trial moves are strictly local and respect conservation laws (such as Kawasaki nearest-neighbor spin/atom exchanges), maintaining local thermodynamic equilibrium."
         },
         {
           "id": "b",
-          "text": "When global Wolff cluster flips are used so that critical slowing down is eliminated near the critical temperature."
+          "text": "When global Wolff cluster flips are used so that critical slowing down is eliminated near the critical temperature.",
+          "text_markdown": "When global Wolff cluster flips are used so that critical slowing down is eliminated near the critical temperature."
         },
         {
           "id": "c",
-          "text": "Whenever the Metropolis acceptance criterion is satisfied, regardless of whether atoms swap across the entire simulation box."
+          "text": "Whenever the Metropolis acceptance criterion is satisfied, regardless of whether atoms swap across the entire simulation box.",
+          "text_markdown": "Whenever the Metropolis acceptance criterion is satisfied, regardless of whether atoms swap across the entire simulation box."
         },
         {
           "id": "d",
-          "text": "Only when the acceptance ratio is tuned below 10% so that particles rarely move."
+          "text": "Only when the acceptance ratio is tuned below 10% so that particles rarely move.",
+          "text_markdown": "Only when the acceptance ratio is tuned below 10% so that particles rarely move."
         }
       ],
       "correct": "a",
@@ -116,23 +128,28 @@
       "options": [
         {
           "id": "a",
-          "text": "Small-step Brownian / Smart Monte Carlo with acceptance ratio near 99%"
+          "text": "Small-step Brownian / Smart Monte Carlo with acceptance ratio near 99%",
+          "text_markdown": "Small-step Brownian / Smart Monte Carlo with acceptance ratio near 99%"
         },
         {
           "id": "b",
-          "text": "Polymer reptation MC (slithering-snake moves along the entangled chain tube)"
+          "text": "Polymer reptation MC (slithering-snake moves along the entangled chain tube)",
+          "text_markdown": "Polymer reptation MC (slithering-snake moves along the entangled chain tube)"
         },
         {
           "id": "c",
-          "text": "Kawasaki nearest-neighbor spin-exchange MC in a conserved binary alloy"
+          "text": "Kawasaki nearest-neighbor spin-exchange MC in a conserved binary alloy",
+          "text_markdown": "Kawasaki nearest-neighbor spin-exchange MC in a conserved binary alloy"
         },
         {
           "id": "d",
-          "text": "Swendsen\u2013Wang / Wolff non-local cluster spin flips"
+          "text": "Swendsen\u2013Wang / Wolff non-local cluster spin flips",
+          "text_markdown": "Swendsen\u2013Wang / Wolff non-local cluster spin flips"
         },
         {
           "id": "e",
-          "text": "Kinetic Monte Carlo (KMC) using transition-state barrier rates"
+          "text": "Kinetic Monte Carlo (KMC) using transition-state barrier rates",
+          "text_markdown": "Kinetic Monte Carlo (KMC) using transition-state barrier rates"
         }
       ],
       "correct": [
@@ -174,19 +191,23 @@
       "options": [
         {
           "id": "a",
-          "text": "By the Central Limit Theorem, when a continuous walk is built from many infinitesimal steps, only the first moment (mean drift) and second cumulant (variance/diffusion) survive in the continuum limit."
+          "text": "By the Central Limit Theorem, when a continuous walk is built from many infinitesimal steps, only the first moment (mean drift) and second cumulant (variance/diffusion) survive in the continuum limit.",
+          "text_markdown": "By the Central Limit Theorem, when a continuous walk is built from many infinitesimal steps, only the first moment (mean drift) and second cumulant (variance/diffusion) survive in the continuum limit."
         },
         {
           "id": "b",
-          "text": "Higher spatial derivatives are forbidden by Newton's third law of action and reaction."
+          "text": "Higher spatial derivatives are forbidden by Newton's third law of action and reaction.",
+          "text_markdown": "Higher spatial derivatives are forbidden by Newton's third law of action and reaction."
         },
         {
           "id": "c",
-          "text": "The canonical Boltzmann distribution is a quadratic polynomial in position."
+          "text": "The canonical Boltzmann distribution is a quadratic polynomial in position.",
+          "text_markdown": "The canonical Boltzmann distribution is a quadratic polynomial in position."
         },
         {
           "id": "d",
-          "text": "Third- and fourth-order derivatives only appear when the temperature is negative."
+          "text": "Third- and fourth-order derivatives only appear when the temperature is negative.",
+          "text_markdown": "Third- and fourth-order derivatives only appear when the temperature is negative."
         }
       ],
       "correct": "a",
@@ -203,19 +224,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u2207\u03c1 = \u03b2F\u03c1 = -\u03b2(\u2207V)\u03c1, so the entropic diffusive flux -D\u2207\u03c1 exactly balances the force-driven drift flux +\u03b2DF\u03c1 everywhere."
+          "text": "$\\nabla\\rho = \\beta \\mathbf{F}\\rho = -\\beta(\\nabla V)\\rho$, so the entropic diffusive flux $-\\mathbf{D}\\nabla\\rho$ exactly balances the force-driven drift flux $+\\beta\\mathbf{D}\\mathbf{F}\\rho$ everywhere.",
+          "text_markdown": "$\\nabla\\rho = \\beta \\mathbf{F}\\rho = -\\beta(\\nabla V)\\rho$, so the entropic diffusive flux $-\\mathbf{D}\\nabla\\rho$ exactly balances the force-driven drift flux $+\\beta\\mathbf{D}\\mathbf{F}\\rho$ everywhere."
         },
         {
           "id": "b",
-          "text": "\u2207\u00b7D(R) = 0 and F(R) = 0 everywhere in the simulation box."
+          "text": "$\\nabla \\cdot \\mathbf{D}(\\mathbf{R}) = 0$ and $\\mathbf{F}(\\mathbf{R}) = 0$ everywhere in the simulation box.",
+          "text_markdown": "$\\nabla \\cdot \\mathbf{D}(\\mathbf{R}) = 0$ and $\\mathbf{F}(\\mathbf{R}) = 0$ everywhere in the simulation box."
         },
         {
           "id": "c",
-          "text": "\u2207\u03c1 = -\u03b2F\u03c1, so diffusion and drift push probability in the same direction."
+          "text": "$\\nabla\\rho = -\\beta \\mathbf{F}\\rho$, so diffusion and drift push probability in the same direction.",
+          "text_markdown": "$\\nabla\\rho = -\\beta \\mathbf{F}\\rho$, so diffusion and drift push probability in the same direction."
         },
         {
           "id": "d",
-          "text": "D(R) must be proportional to exp(+\u03b2V(R)) while \u03c1 remains spatially uniform."
+          "text": "$\\mathbf{D}(\\mathbf{R})$ must be proportional to $\\exp(+\\beta V(\\mathbf{R}))$ while $\\rho$ remains spatially uniform.",
+          "text_markdown": "$\\mathbf{D}(\\mathbf{R})$ must be proportional to $\\exp(+\\beta V(\\mathbf{R}))$ while $\\rho$ remains spatially uniform."
         }
       ],
       "correct": "a",
@@ -232,19 +257,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u2207\u00b7D(R) + \u03b2 D(R) F(R)"
+          "text": "$\\nabla \\cdot \\mathbf{D}(\\mathbf{R}) + \\beta \\mathbf{D}(\\mathbf{R})\\mathbf{F}(\\mathbf{R})$",
+          "text_markdown": "$\\nabla \\cdot \\mathbf{D}(\\mathbf{R}) + \\beta \\mathbf{D}(\\mathbf{R})\\mathbf{F}(\\mathbf{R})$"
         },
         {
           "id": "b",
-          "text": "\u03b2 D(R) F(R) only"
+          "text": "$\\beta \\mathbf{D}(\\mathbf{R})\\mathbf{F}(\\mathbf{R})$ only",
+          "text_markdown": "$\\beta \\mathbf{D}(\\mathbf{R})\\mathbf{F}(\\mathbf{R})$ only"
         },
         {
           "id": "c",
-          "text": "-\u2207\u00b7D(R) + \u03b2 D(R) F(R)"
+          "text": "$-\\nabla \\cdot \\mathbf{D}(\\mathbf{R}) + \\beta \\mathbf{D}(\\mathbf{R})\\mathbf{F}(\\mathbf{R})$",
+          "text_markdown": "$-\\nabla \\cdot \\mathbf{D}(\\mathbf{R}) + \\beta \\mathbf{D}(\\mathbf{R})\\mathbf{F}(\\mathbf{R})$"
         },
         {
           "id": "d",
-          "text": "D(R) \u2207\u00b7F(R)"
+          "text": "$\\mathbf{D}(\\mathbf{R})\\nabla \\cdot \\mathbf{F}(\\mathbf{R})$",
+          "text_markdown": "$\\mathbf{D}(\\mathbf{R})\\nabla \\cdot \\mathbf{F}(\\mathbf{R})$"
         }
       ],
       "correct": "a",
@@ -342,19 +371,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because the diffusion operator A = D\u2207\u00b2 and the position-dependent force-drift operator B do not commute ([A, B] \u2260 0), so their exponentials can only be factored independently over infinitesimal time steps \u03c4 = t/n."
+          "text": "Because the diffusion operator $A = D\\nabla^2$ and the position-dependent force-drift operator $B$ do not commute ($[A, B] \\ne 0$), so their exponentials can only be factored independently over infinitesimal time steps $\\tau = t/n$.",
+          "text_markdown": "Because the diffusion operator $A = D\\nabla^2$ and the position-dependent force-drift operator $B$ do not commute ($[A, B] \\ne 0$), so their exponentials can only be factored independently over infinitesimal time steps $\\tau = t/n$."
         },
         {
           "id": "b",
-          "text": "Because the diffusion operator D\u2207\u00b2 has no eigenfunctions in three dimensions."
+          "text": "Because the diffusion operator $D\\nabla^2$ has no eigenfunctions in three dimensions.",
+          "text_markdown": "Because the diffusion operator $D\\nabla^2$ has no eigenfunctions in three dimensions."
         },
         {
           "id": "c",
-          "text": "Because Trotter splitting converts a first-order differential equation in time into a fourth-order Runge\u2013Kutta integrator."
+          "text": "Because Trotter splitting converts a first-order differential equation in time into a fourth-order Runge\u2013Kutta integrator.",
+          "text_markdown": "Because Trotter splitting converts a first-order differential equation in time into a fourth-order Runge\u2013Kutta integrator."
         },
         {
           "id": "d",
-          "text": "Because the drift operator alone already generates the exact Gaussian heat kernel without needing the Laplacian."
+          "text": "Because the drift operator alone already generates the exact Gaussian heat kernel without needing the Laplacian.",
+          "text_markdown": "Because the drift operator alone already generates the exact Gaussian heat kernel without needing the Laplacian."
         }
       ],
       "correct": "a",
@@ -371,19 +404,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Eigenvalue Dk\u00b2, yielding the Gaussian kernel (4\u03c0D\u03c4)^(-3/2) exp(-|r - r'|\u00b2 / (4D\u03c4))."
+          "text": "Eigenvalue $D k^2$, yielding the Gaussian kernel $(4\\pi D\\tau)^{-3/2} \\exp\\left(-\\frac{|\\mathbf{r} - \\mathbf{r}'|^2}{4D\\tau}\\right)$.",
+          "text_markdown": "Eigenvalue $D k^2$, yielding the Gaussian kernel $(4\\pi D\\tau)^{-3/2} \\exp\\left(-\\frac{|\\mathbf{r} - \\mathbf{r}'|^2}{4D\\tau}\\right)$."
         },
         {
           "id": "b",
-          "text": "Eigenvalue -Dk\u00b2, yielding an oscillatory cosine kernel cos(|r - r'| / \u221a(D\u03c4))."
+          "text": "Eigenvalue $-D k^2$, yielding an oscillatory cosine kernel $\\cos\\left(\\frac{|\\mathbf{r} - \\mathbf{r}'|}{\\sqrt{D\\tau}}\\right)$.",
+          "text_markdown": "Eigenvalue $-D k^2$, yielding an oscillatory cosine kernel $\\cos\\left(\\frac{|\\mathbf{r} - \\mathbf{r}'|}{\\sqrt{D\\tau}}\\right)$."
         },
         {
           "id": "c",
-          "text": "Eigenvalue D|k|, yielding a Lorentzian Cauchy kernel 1 / (|r - r'|\u00b2 + (D\u03c4)\u00b2)\u00b2."
+          "text": "Eigenvalue $D|k|$, yielding a Lorentzian Cauchy kernel $\\frac{1}{(|\\mathbf{r} - \\mathbf{r}'|^2 + (D\\tau)^2)^2}$.",
+          "text_markdown": "Eigenvalue $D|k|$, yielding a Lorentzian Cauchy kernel $\\frac{1}{(|\\mathbf{r} - \\mathbf{r}'|^2 + (D\\tau)^2)^2}$."
         },
         {
           "id": "d",
-          "text": "Eigenvalue D\u00b2k\u2074, yielding a uniform hard-sphere step inside radius \u221a(2D\u03c4)."
+          "text": "Eigenvalue $D^2 k^4$, yielding a uniform hard-sphere step inside radius $\\sqrt{2D\\tau}$.",
+          "text_markdown": "Eigenvalue $D^2 k^4$, yielding a uniform hard-sphere step inside radius $\\sqrt{2D\\tau}$."
         }
       ],
       "correct": "a",
@@ -400,19 +437,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u03c1(x, t) = h(x - v_d t), a rigid translation of the probability distribution in the direction of F without spreading."
+          "text": "$\\rho(x, t) = h(x - v_d t)$, a rigid translation of the probability distribution in the direction of $F$ without spreading.",
+          "text_markdown": "$\\rho(x, t) = h(x - v_d t)$, a rigid translation of the probability distribution in the direction of $F$ without spreading."
         },
         {
           "id": "b",
-          "text": "\u03c1(x, t) = h(x) exp(-v_d t), an exponential decay in amplitude at fixed position."
+          "text": "$\\rho(x, t) = h(x)\\exp(-v_d t)$, an exponential decay in amplitude at fixed position.",
+          "text_markdown": "$\\rho(x, t) = h(x)\\exp(-v_d t)$, an exponential decay in amplitude at fixed position."
         },
         {
           "id": "c",
-          "text": "\u03c1(x, t) = h(x + v_d t\u00b2), a uniformly accelerated wave packet."
+          "text": "$\\rho(x, t) = h(x + v_d t^2)$, a uniformly accelerated wave packet.",
+          "text_markdown": "$\\rho(x, t) = h(x + v_d t^2)$, a uniformly accelerated wave packet."
         },
         {
           "id": "d",
-          "text": "\u03c1(x, t) = (4\u03c0 v_d t)^(-1/2) exp(-x\u00b2 / (4 v_d t)), pure diffusive spreading with zero mean shift."
+          "text": "$\\rho(x, t) = (4\\pi v_d t)^{-1/2}\\exp\\left(-\\frac{x^2}{4 v_d t}\\right)$, pure diffusive spreading with zero mean shift.",
+          "text_markdown": "$\\rho(x, t) = (4\\pi v_d t)^{-1/2}\\exp\\left(-\\frac{x^2}{4 v_d t}\\right)$, pure diffusive spreading with zero mean shift."
         }
       ],
       "correct": "a",
@@ -432,19 +473,23 @@
       "options": [
         {
           "id": "a",
-          "text": "A(r \u2192 r') = 1 identically for every trial move and any step size \u03c4."
+          "text": "$A(\\mathbf{r} \\to \\mathbf{r}') = 1$ identically for every trial move and any step size $\\tau$.",
+          "text_markdown": "$A(\\mathbf{r} \\to \\mathbf{r}') = 1$ identically for every trial move and any step size $\\tau$."
         },
         {
           "id": "b",
-          "text": "A(r \u2192 r') = exp(-\u03b2 F\u2080\u00b2 \u03c4 / 2), decaying exponentially with step size \u03c4."
+          "text": "$A(\\mathbf{r} \\to \\mathbf{r}') = \\exp(-\\beta F_0^2 \\tau / 2)$, decaying exponentially with step size $\\tau$.",
+          "text_markdown": "$A(\\mathbf{r} \\to \\mathbf{r}') = \\exp(-\\beta F_0^2 \\tau / 2)$, decaying exponentially with step size $\\tau$."
         },
         {
           "id": "c",
-          "text": "A(r \u2192 r') = 0.50 because half of the Gaussian steps move uphill against F\u2080."
+          "text": "$A(\\mathbf{r} \\to \\mathbf{r}') = 0.50$ because half of the Gaussian steps move uphill against $F_0$.",
+          "text_markdown": "$A(\\mathbf{r} \\to \\mathbf{r}') = 0.50$ because half of the Gaussian steps move uphill against $F_0$."
         },
         {
           "id": "d",
-          "text": "A(r \u2192 r') = min(1, exp(-\u03b2[V(r') - V(r)])), identical to unshifted Metropolis MC."
+          "text": "$A(\\mathbf{r} \\to \\mathbf{r}') = \\min(1, \\exp(-\\beta[V(\\mathbf{r}') - V(\\mathbf{r})]))$, identical to unshifted Metropolis MC.",
+          "text_markdown": "$A(\\mathbf{r} \\to \\mathbf{r}') = \\min(1, \\exp(-\\beta[V(\\mathbf{r}') - V(\\mathbf{r})]))$, identical to unshifted Metropolis MC."
         }
       ],
       "correct": "a",
@@ -478,19 +523,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because rejected moves artificially halt particle motion and distort time correlation functions; high acceptance (~99%) is required to keep the dynamical trajectory faithful to the Smoluchowski equation."
+          "text": "Because rejected moves artificially halt particle motion and distort time correlation functions; high acceptance (~99%) is required to keep the dynamical trajectory faithful to the Smoluchowski equation.",
+          "text_markdown": "Because rejected moves artificially halt particle motion and distort time correlation functions; high acceptance (~99%) is required to keep the dynamical trajectory faithful to the Smoluchowski equation."
         },
         {
           "id": "b",
-          "text": "Because the canonical partition function Z diverges whenever the acceptance rate drops below 95%."
+          "text": "Because the canonical partition function Z diverges whenever the acceptance rate drops below 95%.",
+          "text_markdown": "Because the canonical partition function Z diverges whenever the acceptance rate drops below 95%."
         },
         {
           "id": "c",
-          "text": "Because random number generators cannot sample Gaussian distributions when \u03c4 > 0.01."
+          "text": "Because random number generators cannot sample Gaussian distributions when $\\tau > 0.01$.",
+          "text_markdown": "Because random number generators cannot sample Gaussian distributions when $\\tau > 0.01$."
         },
         {
           "id": "d",
-          "text": "Because detailed balance is violated whenever a single trial move is rejected."
+          "text": "Because detailed balance is violated whenever a single trial move is rejected.",
+          "text_markdown": "Because detailed balance is violated whenever a single trial move is rejected."
         }
       ],
       "correct": "a",
@@ -550,19 +599,23 @@
       "options": [
         {
           "id": "a",
-          "text": "It decays as 1/r_ij, and longitudinal coupling is twice as large as transverse coupling (D_\u2225 / D_\u22a5 = 2)."
+          "text": "It decays as $1/r_{ij}$, and longitudinal coupling is twice as large as transverse coupling ($D_\\parallel / D_\\perp = 2$).",
+          "text_markdown": "It decays as $1/r_{ij}$, and longitudinal coupling is twice as large as transverse coupling ($D_\\parallel / D_\\perp = 2$)."
         },
         {
           "id": "b",
-          "text": "It decays as 1/r_ij\u00b3, and longitudinal coupling is equal to transverse coupling (D_\u2225 / D_\u22a5 = 1)."
+          "text": "It decays as $1/r_{ij}^3$, and longitudinal coupling is equal to transverse coupling ($D_\\parallel / D_\\perp = 1$).",
+          "text_markdown": "It decays as $1/r_{ij}^3$, and longitudinal coupling is equal to transverse coupling ($D_\\parallel / D_\\perp = 1$)."
         },
         {
           "id": "c",
-          "text": "It decays exponentially as exp(-\u03ba r_ij), and D_\u2225 / D_\u22a5 = 1/2."
+          "text": "It decays exponentially as $\\exp(-\\kappa r_{ij})$, and $D_\\parallel / D_\\perp = 1/2$.",
+          "text_markdown": "It decays exponentially as $\\exp(-\\kappa r_{ij})$, and $D_\\parallel / D_\\perp = 1/2$."
         },
         {
           "id": "d",
-          "text": "It decays as 1/r_ij^6 like dispersion forces, and D_\u2225 / D_\u22a5 = 4."
+          "text": "It decays as $1/r_{ij}^6$ like dispersion forces, and $D_\\parallel / D_\\perp = 4$.",
+          "text_markdown": "It decays as $1/r_{ij}^6$ like dispersion forces, and $D_\\parallel / D_\\perp = 4$."
         }
       ],
       "correct": "a",
@@ -596,19 +649,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because the thermal noise on all N particles is correlated through the dense 3N \u00d7 3N Oseen matrix D, requiring an O(N\u00b3) Cholesky decomposition D = S S^T to sample the noise."
+          "text": "Because the thermal noise on all $N$ particles is correlated through the dense $3N \\times 3N$ Oseen matrix $\\mathbf{D}$, requiring an $\\mathcal{O}(N^3)$ Cholesky decomposition $\\mathbf{D} = \\mathbf{S}\\mathbf{S}^T$ to sample the noise.",
+          "text_markdown": "Because the thermal noise on all $N$ particles is correlated through the dense $3N \\times 3N$ Oseen matrix $\\mathbf{D}$, requiring an $\\mathcal{O}(N^3)$ Cholesky decomposition $\\mathbf{D} = \\mathbf{S}\\mathbf{S}^T$ to sample the noise."
         },
         {
           "id": "b",
-          "text": "Because the Oseen tensor requires summing over all triplets (i, j, k) of solvent molecules."
+          "text": "Because the Oseen tensor requires summing over all triplets (i, j, k) of solvent molecules.",
+          "text_markdown": "Because the Oseen tensor requires summing over all triplets (i, j, k) of solvent molecules."
         },
         {
           "id": "c",
-          "text": "Because the 1D drift operator must be inverted using a 3D Fast Fourier Transform of size N \u00d7 N \u00d7 N."
+          "text": "Because the 1D drift operator must be inverted using a 3D Fast Fourier Transform of size N \u00d7 N \u00d7 N.",
+          "text_markdown": "Because the 1D drift operator must be inverted using a 3D Fast Fourier Transform of size N \u00d7 N \u00d7 N."
         },
         {
           "id": "d",
-          "text": "Because the Metropolis acceptance rate drops to O(N^-3) whenever viscosity \u03b7 is nonzero."
+          "text": "Because the Metropolis acceptance rate drops to $\\mathcal{O}(N^{-3})$ whenever viscosity $\\eta$ is nonzero.",
+          "text_markdown": "Because the Metropolis acceptance rate drops to $\\mathcal{O}(N^{-3})$ whenever viscosity $\\eta$ is nonzero."
         }
       ],
       "correct": "a",
@@ -625,19 +682,23 @@
       "options": [
         {
           "id": "a",
-          "text": "It vanishes identically (\u2207_r_j \u00b7 D_ij = 0 for i \u2260 j) because the Oseen velocity field describes an incompressible fluid (\u2207\u00b7v = 0)."
+          "text": "It vanishes identically ($\\nabla_{\\mathbf{r}_j} \\cdot \\mathbf{D}_{ij} = 0$ for $i \\ne j$) because the Oseen velocity field describes an incompressible fluid ($\\nabla \\cdot \\mathbf{v} = 0$).",
+          "text_markdown": "It vanishes identically ($\\nabla_{\\mathbf{r}_j} \\cdot \\mathbf{D}_{ij} = 0$ for $i \\ne j$) because the Oseen velocity field describes an incompressible fluid ($\\nabla \\cdot \\mathbf{v} = 0$)."
         },
         {
           "id": "b",
-          "text": "It diverges as 1/r_ij\u00b2 and dominates over all conservative forces at large distances."
+          "text": "It diverges as $1/r_{ij}^2$ and dominates over all conservative forces at large distances.",
+          "text_markdown": "It diverges as $1/r_{ij}^2$ and dominates over all conservative forces at large distances."
         },
         {
           "id": "c",
-          "text": "It equals a constant vector pointing toward the center of mass of the simulation box."
+          "text": "It equals a constant vector pointing toward the center of mass of the simulation box.",
+          "text_markdown": "It equals a constant vector pointing toward the center of mass of the simulation box."
         },
         {
           "id": "d",
-          "text": "It is proportional to the particle mass m_i divided by the timestep \u0394t."
+          "text": "It is proportional to the particle mass $m_i$ divided by the timestep $\\Delta t$.",
+          "text_markdown": "It is proportional to the particle mass $m_i$ divided by the timestep $\\Delta t$."
         }
       ],
       "correct": "a",
@@ -654,19 +715,23 @@
       "options": [
         {
           "id": "a",
-          "text": "D\u2080 and \u03b7 are phenomenological inputs supplied to the simulation, not emergent outputs."
+          "text": "$D_0$ and $\\eta$ are phenomenological inputs supplied to the simulation, not emergent outputs.",
+          "text_markdown": "$D_0$ and $\\eta$ are phenomenological inputs supplied to the simulation, not emergent outputs."
         },
         {
           "id": "b",
-          "text": "D\u2080 and \u03b7 are computed automatically from the electronic wavefunction at each Brownian step."
+          "text": "$D_0$ and $\\eta$ are computed automatically from the electronic wavefunction at each Brownian step.",
+          "text_markdown": "$D_0$ and $\\eta$ are computed automatically from the electronic wavefunction at each Brownian step."
         },
         {
           "id": "c",
-          "text": "D\u2080 and \u03b7 are always set to zero in Brownian dynamics."
+          "text": "$D_0$ and $\\eta$ are always set to zero in Brownian dynamics.",
+          "text_markdown": "$D_0$ and $\\eta$ are always set to zero in Brownian dynamics."
         },
         {
           "id": "d",
-          "text": "D\u2080 is an output of the Metropolis rejection step, whereas \u03b7 is fixed at infinity."
+          "text": "$D_0$ is an output of the Metropolis rejection step, whereas $\\eta$ is fixed at infinity.",
+          "text_markdown": "$D_0$ is an output of the Metropolis rejection step, whereas $\\eta$ is fixed at infinity."
         }
       ],
       "correct": "a",
@@ -727,19 +792,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u27e8p_solvent(t) p_solvent(t')\u27e9 = 2 m k_B T \u03b6 \u03b4(t - t')"
+          "text": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = 2 m k_B T \\zeta \\delta(t - t')$",
+          "text_markdown": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = 2 m k_B T \\zeta \\delta(t - t')$"
         },
         {
           "id": "b",
-          "text": "\u27e8p_solvent(t) p_solvent(t')\u27e9 = (k_B T / \u03b6) \u03b4(t - t')"
+          "text": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = \\frac{k_B T}{\\zeta} \\delta(t - t')$",
+          "text_markdown": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = \\frac{k_B T}{\\zeta} \\delta(t - t')$"
         },
         {
           "id": "c",
-          "text": "\u27e8p_solvent(t) p_solvent(t')\u27e9 = 2 m\u00b2 \u03b6\u00b2 \u03b4(t - t') independent of temperature T"
+          "text": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = 2 m^2 \\zeta^2 \\delta(t - t')$ independent of temperature $T$",
+          "text_markdown": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = 2 m^2 \\zeta^2 \\delta(t - t')$ independent of temperature $T$"
         },
         {
           "id": "d",
-          "text": "\u27e8p_solvent(t) p_solvent(t')\u27e9 = 0 for all t and t'"
+          "text": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = 0$ for all $t$ and $t'$",
+          "text_markdown": "$\\langle p_{\\text{solvent}}(t) p_{\\text{solvent}}(t') \\rangle = 0$ for all $t$ and $t'$"
         }
       ],
       "correct": "a",
@@ -759,19 +828,23 @@
       "options": [
         {
           "id": "a",
-          "text": "As \u03b6 \u2192 0, deterministic Newtonian MD is recovered; as \u03b6 \u2192 \u221e, the overdamped Smoluchowski (Brownian dynamics) equation is recovered."
+          "text": "As $\\zeta \\to 0$, deterministic Newtonian MD is recovered; as $\\zeta \\to \\infty$, the overdamped Smoluchowski (Brownian dynamics) equation is recovered.",
+          "text_markdown": "As $\\zeta \\to 0$, deterministic Newtonian MD is recovered; as $\\zeta \\to \\infty$, the overdamped Smoluchowski (Brownian dynamics) equation is recovered."
         },
         {
           "id": "b",
-          "text": "As \u03b6 \u2192 0, the Smoluchowski equation is recovered; as \u03b6 \u2192 \u221e, energy-conserving NVE MD is recovered."
+          "text": "As $\\zeta \\to 0$, the Smoluchowski equation is recovered; as $\\zeta \\to \\infty$, energy-conserving NVE MD is recovered.",
+          "text_markdown": "As $\\zeta \\to 0$, the Smoluchowski equation is recovered; as $\\zeta \\to \\infty$, energy-conserving NVE MD is recovered."
         },
         {
           "id": "c",
-          "text": "In both limits \u03b6 \u2192 0 and \u03b6 \u2192 \u221e, particles freeze motionless at their initial coordinates."
+          "text": "In both limits $\\zeta \\to 0$ and $\\zeta \\to \\infty$, particles freeze motionless at their initial coordinates.",
+          "text_markdown": "In both limits $\\zeta \\to 0$ and $\\zeta \\to \\infty$, particles freeze motionless at their initial coordinates."
         },
         {
           "id": "d",
-          "text": "As \u03b6 \u2192 0, Kinetic Monte Carlo is recovered; as \u03b6 \u2192 \u221e, Path-Integral MC is recovered."
+          "text": "As $\\zeta \\to 0$, Kinetic Monte Carlo is recovered; as $\\zeta \\to \\infty$, Path-Integral MC is recovered.",
+          "text_markdown": "As $\\zeta \\to 0$, Kinetic Monte Carlo is recovered; as $\\zeta \\to \\infty$, Path-Integral MC is recovered."
         }
       ],
       "correct": "a",
@@ -822,19 +895,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Cage backscattering: atoms rebound off their surrounding shell of nearest neighbors, reversing their velocity direction on average before escaping."
+          "text": "Cage backscattering: atoms rebound off their surrounding shell of nearest neighbors, reversing their velocity direction on average before escaping.",
+          "text_markdown": "Cage backscattering: atoms rebound off their surrounding shell of nearest neighbors, reversing their velocity direction on average before escaping."
         },
         {
           "id": "b",
-          "text": "Violation of energy conservation in the Verlet integrator at low temperatures."
+          "text": "Violation of energy conservation in the Verlet integrator at low temperatures.",
+          "text_markdown": "Violation of energy conservation in the Verlet integrator at low temperatures."
         },
         {
           "id": "c",
-          "text": "The diffusion coefficient D = \u222b\u2080^\u221e C_vv(t) dt is strictly negative in the liquid phase."
+          "text": "The diffusion coefficient $D = \\int_0^\\infty C_{vv}(t)\\,dt$ is strictly negative in the liquid phase.",
+          "text_markdown": "The diffusion coefficient $D = \\int_0^\\infty C_{vv}(t)\\,dt$ is strictly negative in the liquid phase."
         },
         {
           "id": "d",
-          "text": "Periodic boundary conditions force every atom to reverse direction when crossing x = L/2."
+          "text": "Periodic boundary conditions force every atom to reverse direction when crossing x = L/2.",
+          "text_markdown": "Periodic boundary conditions force every atom to reverse direction when crossing x = L/2."
         }
       ],
       "correct": "a",
@@ -854,19 +931,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Slope \u03b1 = 2 at short times (ballistic regime) transitioning at t ~ \u03b6\u207b\u00b9 to slope \u03b1 = 1 at long times (diffusive regime)."
+          "text": "Slope $\\alpha = 2$ at short times (ballistic regime) transitioning at $t \\sim \\zeta^{-1}$ to slope $\\alpha = 1$ at long times (diffusive regime).",
+          "text_markdown": "Slope $\\alpha = 2$ at short times (ballistic regime) transitioning at $t \\sim \\zeta^{-1}$ to slope $\\alpha = 1$ at long times (diffusive regime)."
         },
         {
           "id": "b",
-          "text": "Slope \u03b1 = 1 at short times transitioning to slope \u03b1 = 2 at long times."
+          "text": "Slope $\\alpha = 1$ at short times transitioning to slope $\\alpha = 2$ at long times.",
+          "text_markdown": "Slope $\\alpha = 1$ at short times transitioning to slope $\\alpha = 2$ at long times."
         },
         {
           "id": "c",
-          "text": "Slope \u03b1 = 1/2 at all times."
+          "text": "Slope $\\alpha = 1/2$ at all times.",
+          "text_markdown": "Slope $\\alpha = 1/2$ at all times."
         },
         {
           "id": "d",
-          "text": "Slope \u03b1 = 3 at short times transitioning to slope \u03b1 = 0 at long times."
+          "text": "Slope $\\alpha = 3$ at short times transitioning to slope $\\alpha = 0$ at long times.",
+          "text_markdown": "Slope $\\alpha = 3$ at short times transitioning to slope $\\alpha = 0$ at long times."
         }
       ],
       "correct": "a",
@@ -921,19 +1002,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because DPD applies equal-and-opposite friction and random forces (F_ij = -F_ji) to each interacting pair along their central line of centers r\u0302_ij, depending only on relative velocities v_ij."
+          "text": "Because DPD applies equal-and-opposite friction and random forces ($\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$) to each interacting pair along their central line of centers $\\hat{\\mathbf{r}}_{ij}$, depending only on relative velocities $\\mathbf{v}_{ij}$.",
+          "text_markdown": "Because DPD applies equal-and-opposite friction and random forces ($\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$) to each interacting pair along their central line of centers $\\hat{\\mathbf{r}}_{ij}$, depending only on relative velocities $\\mathbf{v}_{ij}$."
         },
         {
           "id": "b",
-          "text": "Because DPD sets both the friction coefficient and the random force to zero whenever particles move."
+          "text": "Because DPD sets both the friction coefficient and the random force to zero whenever particles move.",
+          "text_markdown": "Because DPD sets both the friction coefficient and the random force to zero whenever particles move."
         },
         {
           "id": "c",
-          "text": "Because DPD rescales all particle velocities globally every 100 steps to zero out the total momentum."
+          "text": "Because DPD rescales all particle velocities globally every 100 steps to zero out the total momentum.",
+          "text_markdown": "Because DPD rescales all particle velocities globally every 100 steps to zero out the total momentum."
         },
         {
           "id": "d",
-          "text": "Because DPD solves the Schr\u00f6dinger equation for explicit solvent electrons."
+          "text": "Because DPD solves the Schr\u00f6dinger equation for explicit solvent electrons.",
+          "text_markdown": "Because DPD solves the Schr\u00f6dinger equation for explicit solvent electrons."
         }
       ],
       "correct": "a",
@@ -953,19 +1038,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The drag -\u03b6v_i acts on absolute laboratory velocity, breaking Galilean invariance, screening out hydrodynamic momentum fluxes, and flattening the parabolic Navier\u2013Stokes profile into plug flow."
+          "text": "The drag $-\\zeta \\mathbf{v}_i$ acts on absolute laboratory velocity, breaking Galilean invariance, screening out hydrodynamic momentum fluxes, and flattening the parabolic Navier\u2013Stokes profile into plug flow.",
+          "text_markdown": "The drag $-\\zeta \\mathbf{v}_i$ acts on absolute laboratory velocity, breaking Galilean invariance, screening out hydrodynamic momentum fluxes, and flattening the parabolic Navier\u2013Stokes profile into plug flow."
         },
         {
           "id": "b",
-          "text": "The fluid viscosity drops to zero and the flow accelerates to infinite velocity."
+          "text": "The fluid viscosity drops to zero and the flow accelerates to infinite velocity.",
+          "text_markdown": "The fluid viscosity drops to zero and the flow accelerates to infinite velocity."
         },
         {
           "id": "c",
-          "text": "Total angular momentum increases exponentially while linear momentum remains exactly conserved."
+          "text": "Total angular momentum increases exponentially while linear momentum remains exactly conserved.",
+          "text_markdown": "Total angular momentum increases exponentially while linear momentum remains exactly conserved."
         },
         {
           "id": "d",
-          "text": "The fluid spontaneously crystallizes into a body-centered cubic solid at any temperature."
+          "text": "The fluid spontaneously crystallizes into a body-centered cubic solid at any temperature.",
+          "text_markdown": "The fluid spontaneously crystallizes into a body-centered cubic solid at any temperature."
         }
       ],
       "correct": "a",
@@ -982,19 +1071,23 @@
       "options": [
         {
           "id": "a",
-          "text": "w^D(r) = [w^R(r)]\u00b2 and \u03c3\u00b2 = 2 \u03b3 k_B T"
+          "text": "$w^D(r) = [w^R(r)]^2$ and $\\sigma^2 = 2\\gamma k_B T$",
+          "text_markdown": "$w^D(r) = [w^R(r)]^2$ and $\\sigma^2 = 2\\gamma k_B T$"
         },
         {
           "id": "b",
-          "text": "w^D(r) = w^R(r) and \u03c3 = \u03b3 k_B T"
+          "text": "$w^D(r) = w^R(r)$ and $\\sigma = \\gamma k_B T$",
+          "text_markdown": "$w^D(r) = w^R(r)$ and $\\sigma = \\gamma k_B T$"
         },
         {
           "id": "c",
-          "text": "w^D(r) = 1 / w^R(r) and \u03c3\u00b2 = \u03b3 / (2 k_B T)"
+          "text": "$w^D(r) = 1 / w^R(r)$ and $\\sigma^2 = \\gamma / (2 k_B T)$",
+          "text_markdown": "$w^D(r) = 1 / w^R(r)$ and $\\sigma^2 = \\gamma / (2 k_B T)$"
         },
         {
           "id": "d",
-          "text": "w^D(r) = 0 and w^R(r) = (1 - r/r_c)\u00b2"
+          "text": "$w^D(r) = 0$ and $w^R(r) = (1 - r/r_c)^2$",
+          "text_markdown": "$w^D(r) = 0$ and $w^R(r) = (1 - r/r_c)^2$"
         }
       ],
       "correct": "a",
@@ -1039,19 +1132,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because the dissipative force f(t) depends on the instantaneous velocity v(t) = \u00bd[v(t + \u0394t/2) + v(t - \u0394t/2)], so v(t + \u0394t/2) appears implicitly on both sides and must be solved self-consistently."
+          "text": "Because the dissipative force $\\mathbf{f}(t)$ depends on the instantaneous velocity $\\mathbf{v}(t) = \\frac{1}{2}[\\mathbf{v}(t + \\Delta t/2) + \\mathbf{v}(t - \\Delta t/2)]$, so $\\mathbf{v}(t + \\Delta t/2)$ appears implicitly on both sides and must be solved self-consistently.",
+          "text_markdown": "Because the dissipative force $\\mathbf{f}(t)$ depends on the instantaneous velocity $\\mathbf{v}(t) = \\frac{1}{2}[\\mathbf{v}(t + \\Delta t/2) + \\mathbf{v}(t - \\Delta t/2)]$, so $\\mathbf{v}(t + \\Delta t/2)$ appears implicitly on both sides and must be solved self-consistently."
         },
         {
           "id": "b",
-          "text": "Because the conservative force f^C(r) depends on the third time derivative of position (jerk)."
+          "text": "Because the conservative force $\\mathbf{f}^C(\\mathbf{r})$ depends on the third time derivative of position (jerk).",
+          "text_markdown": "Because the conservative force $\\mathbf{f}^C(\\mathbf{r})$ depends on the third time derivative of position (jerk)."
         },
         {
           "id": "c",
-          "text": "Because the particle masses m_i change randomly at every half-step."
+          "text": "Because the particle masses $m_i$ change randomly at every half-step.",
+          "text_markdown": "Because the particle masses $m_i$ change randomly at every half-step."
         },
         {
           "id": "d",
-          "text": "Because Verlet integration can only be applied to 1D lattice gases."
+          "text": "Because Verlet integration can only be applied to 1D lattice gases.",
+          "text_markdown": "Because Verlet integration can only be applied to 1D lattice gases."
         }
       ],
       "correct": "a",
@@ -1068,19 +1165,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Along +r\u0302_ij (repulsive, pushing particle i away from particle j to oppose their relative approach)."
+          "text": "Along $+\\hat{\\mathbf{r}}_{ij}$ (repulsive, pushing particle $i$ away from particle $j$ to oppose their relative approach).",
+          "text_markdown": "Along $+\\hat{\\mathbf{r}}_{ij}$ (repulsive, pushing particle $i$ away from particle $j$ to oppose their relative approach)."
         },
         {
           "id": "b",
-          "text": "Along -r\u0302_ij (attractive, accelerating particle i toward particle j)."
+          "text": "Along $-\\hat{\\mathbf{r}}_{ij}$ (attractive, accelerating particle $i$ toward particle $j$).",
+          "text_markdown": "Along $-\\hat{\\mathbf{r}}_{ij}$ (attractive, accelerating particle $i$ toward particle $j$)."
         },
         {
           "id": "c",
-          "text": "Perpendicular to r\u0302_ij, causing the pair to rotate around their center of mass."
+          "text": "Perpendicular to $\\hat{\\mathbf{r}}_{ij}$, causing the pair to rotate around their center of mass.",
+          "text_markdown": "Perpendicular to $\\hat{\\mathbf{r}}_{ij}$, causing the pair to rotate around their center of mass."
         },
         {
           "id": "d",
-          "text": "The dissipative force is identically zero whenever two particles move toward each other."
+          "text": "The dissipative force is identically zero whenever two particles move toward each other.",
+          "text_markdown": "The dissipative force is identically zero whenever two particles move toward each other."
         }
       ],
       "correct": "a",
@@ -1117,19 +1218,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Dissipative Particle Dynamics (DPD), which conserves local momentum via short-range O(N) pairwise forces and recovers Navier\u2013Stokes hydrodynamics without explicit solvent atoms."
+          "text": "Dissipative Particle Dynamics (DPD), which conserves local momentum via short-range $\\mathcal{O}(N)$ pairwise forces and recovers Navier\u2013Stokes hydrodynamics without explicit solvent atoms.",
+          "text_markdown": "Dissipative Particle Dynamics (DPD), which conserves local momentum via short-range $\\mathcal{O}(N)$ pairwise forces and recovers Navier\u2013Stokes hydrodynamics without explicit solvent atoms."
         },
         {
           "id": "b",
-          "text": "Brownian Dynamics with dense Oseen tensor Cholesky factorization at every step."
+          "text": "Brownian Dynamics with dense Oseen tensor Cholesky factorization at every step.",
+          "text_markdown": "Brownian Dynamics with dense Oseen tensor Cholesky factorization at every step."
         },
         {
           "id": "c",
-          "text": "Global Langevin Dynamics with a large friction coefficient \u03b6 to damp absolute velocities."
+          "text": "Global Langevin Dynamics with a large friction coefficient $\\zeta$ to damp absolute velocities.",
+          "text_markdown": "Global Langevin Dynamics with a large friction coefficient $\\zeta$ to damp absolute velocities."
         },
         {
           "id": "d",
-          "text": "Metropolis Monte Carlo with non-local cluster flips."
+          "text": "Metropolis Monte Carlo with non-local cluster flips.",
+          "text_markdown": "Metropolis Monte Carlo with non-local cluster flips."
         }
       ],
       "correct": "a",
@@ -1146,19 +1251,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u03c1\u0302 = lim_{n\u2192\u221e} [ e^(-\u03c4\u00c2) e^(-\u03c4B\u0302) e^(-\u03c4\u0108) ]^n"
+          "text": "$\\hat{\\rho} = \\lim_{n\\to\\infty} [ e^{-\\tau\\hat{A}} e^{-\\tau\\hat{B}} e^{-\\tau\\hat{C}} ]^n$",
+          "text_markdown": "$\\hat{\\rho} = \\lim_{n\\to\\infty} [ e^{-\\tau\\hat{A}} e^{-\\tau\\hat{B}} e^{-\\tau\\hat{C}} ]^n$"
         },
         {
           "id": "b",
-          "text": "\u03c1\u0302 = e^(-\u03b2\u00c2) + e^(-\u03b2B\u0302) + e^(-\u03b2\u0108) for any finite \u03b2"
+          "text": "$\\hat{\\rho} = e^{-\\beta\\hat{A}} + e^{-\\beta\\hat{B}} + e^{-\\beta\\hat{C}}$ for any finite $\\beta$",
+          "text_markdown": "$\\hat{\\rho} = e^{-\\beta\\hat{A}} + e^{-\\beta\\hat{B}} + e^{-\\beta\\hat{C}}$ for any finite $\\beta$"
         },
         {
           "id": "c",
-          "text": "\u03c1\u0302 = lim_{n\u2192\u221e} [ e^(-\u03b2\u00c2) + e^(-\u03b2B\u0302) + e^(-\u03b2\u0108) ] / n"
+          "text": "$\\hat{\\rho} = \\lim_{n\\to\\infty} [ e^{-\\beta\\hat{A}} + e^{-\\beta\\hat{B}} + e^{-\\beta\\hat{C}} ] / n$",
+          "text_markdown": "$\\hat{\\rho} = \\lim_{n\\to\\infty} [ e^{-\\beta\\hat{A}} + e^{-\\beta\\hat{B}} + e^{-\\beta\\hat{C}} ] / n$"
         },
         {
           "id": "d",
-          "text": "Trotter's theorem only holds for at most two operators and fails for three operators."
+          "text": "Trotter's theorem only holds for at most two operators and fails for three operators.",
+          "text_markdown": "Trotter's theorem only holds for at most two operators and fails for three operators."
         }
       ],
       "correct": "a",
@@ -1189,19 +1298,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Time-delayed solvent memory effects (viscoelastic/hydrodynamic history where past motion of the solute continues to exert correlated forces at later times)."
+          "text": "Time-delayed solvent memory effects (viscoelastic/hydrodynamic history where past motion of the solute continues to exert correlated forces at later times).",
+          "text_markdown": "Time-delayed solvent memory effects (viscoelastic/hydrodynamic history where past motion of the solute continues to exert correlated forces at later times)."
         },
         {
           "id": "b",
-          "text": "A breakdown of energy conservation that heats the system to infinite temperature."
+          "text": "A breakdown of energy conservation that heats the system to infinite temperature.",
+          "text_markdown": "A breakdown of energy conservation that heats the system to infinite temperature."
         },
         {
           "id": "c",
-          "text": "Instantaneous quantum tunneling of the heavy solute across the simulation box."
+          "text": "Instantaneous quantum tunneling of the heavy solute across the simulation box.",
+          "text_markdown": "Instantaneous quantum tunneling of the heavy solute across the simulation box."
         },
         {
           "id": "d",
-          "text": "Elimination of all conservative interatomic forces F(r)."
+          "text": "Elimination of all conservative interatomic forces $\\mathbf{F}(\\mathbf{r})$.",
+          "text_markdown": "Elimination of all conservative interatomic forces $\\mathbf{F}(\\mathbf{r})$."
         }
       ],
       "correct": "a",
@@ -1222,19 +1335,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The zero-flux stationary solution of the Smoluchowski equation is strictly the canonical Boltzmann distribution \u03c1_eq(R) \u221d exp(-\u03b2V(R))."
+          "text": "The zero-flux stationary solution of the Smoluchowski equation is strictly the canonical Boltzmann distribution $\\rho_{\\text{eq}}(\\mathbf{R}) \\propto \\exp(-\\beta V(\\mathbf{R}))$.",
+          "text_markdown": "The zero-flux stationary solution of the Smoluchowski equation is strictly the canonical Boltzmann distribution $\\rho_{\\text{eq}}(\\mathbf{R}) \\propto \\exp(-\\beta V(\\mathbf{R}))$."
         },
         {
           "id": "b",
-          "text": "In Hybrid Brownian / Smart MC, enforcing Metropolis rejections guarantees exact canonical static averages for any step size \u03c4, while accurate dynamics requires an acceptance ratio near 1 (~99%)."
+          "text": "In Hybrid Brownian / Smart MC, enforcing Metropolis rejections guarantees exact canonical static averages for any step size $\\tau$, while accurate dynamics requires an acceptance ratio near 1 ($\\sim 99\\%$).",
+          "text_markdown": "In Hybrid Brownian / Smart MC, enforcing Metropolis rejections guarantees exact canonical static averages for any step size $\\tau$, while accurate dynamics requires an acceptance ratio near 1 ($\\sim 99\\%$)."
         },
         {
           "id": "c",
-          "text": "In DPD, pairwise random and dissipative forces act along the central vector r\u0302_ij with F_ij = -F_ji, conserving both linear and angular momentum."
+          "text": "In DPD, pairwise random and dissipative forces act along the central vector $\\hat{\\mathbf{r}}_{ij}$ with $\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$, conserving both linear and angular momentum.",
+          "text_markdown": "In DPD, pairwise random and dissipative forces act along the central vector $\\hat{\\mathbf{r}}_{ij}$ with $\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$, conserving both linear and angular momentum."
         },
         {
           "id": "d",
-          "text": "A global Langevin thermostat strictly conserves local fluid momentum and leaves parabolic Poiseuille channel flow completely unaltered at high \u03b6."
+          "text": "A global Langevin thermostat strictly conserves local fluid momentum and leaves parabolic Poiseuille channel flow completely unaltered at high $\\zeta$.",
+          "text_markdown": "A global Langevin thermostat strictly conserves local fluid momentum and leaves parabolic Poiseuille channel flow completely unaltered at high $\\zeta$."
         }
       ],
       "correct": [

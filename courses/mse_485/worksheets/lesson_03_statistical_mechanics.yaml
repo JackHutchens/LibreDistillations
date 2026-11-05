@@ -1,8 +1,7 @@
 worksheet:
   id: lesson_03_statistical_mechanics
   title: 'Lesson 03: Basics of Statistical Mechanics, Phase Space, and Classical Ensembles'
-  topic: Phase Space, Ergodic Hypothesis, Liouville's Theorem, Microcanonical vs Canonical Ensembles, Equipartition, and Clausius
-    Virial Pressure
+  topic: Phase Space, Ergodic Hypothesis, Liouville's Theorem, Microcanonical vs Canonical Ensembles, Equipartition, and Clausius Virial Pressure
   estimated_minutes: 120
   learning_objectives:
   - Define classical 6N-dimensional phase space and articulate the Ergodic Hypothesis.
@@ -15,37 +14,27 @@ worksheet:
   - id: sec_intro_statmech
     type: markdown_section
     title: Phase Space, Ergodicity, and Classical Ensembles
-    body_markdown: 'In atomic-scale simulations, we track the microscopic positions $\mathbf{r}^N = (\mathbf{r}_1, \dots,
-      \mathbf{r}_N)$ and conjugate momenta $\mathbf{p}^N = (\mathbf{p}_1, \dots, \mathbf{p}_N)$ of $N$ classical particles.
-      Together, these form a single state point $\boldsymbol{\Gamma} = (\mathbf{r}^N, \mathbf{p}^N)$ in a $6N$-dimensional
-      **phase space**.
+    body_markdown: 'In atomic-scale simulations, we track the microscopic positions $\mathbf{r}^N = (\mathbf{r}_1, \dots, \mathbf{r}_N)$ and conjugate momenta $\mathbf{p}^N = (\mathbf{p}_1, \dots, \mathbf{p}_N)$ of $N$ classical particles. Together, these form a single state point $\boldsymbol{\Gamma} = (\mathbf{r}^N, \mathbf{p}^N)$ in a $6N$-dimensional **phase space**.
 
 
-      The fundamental postulate connecting microscopic simulation trajectories to macroscopic thermodynamic observables (like
-      temperature $T$, pressure $P$, and internal energy $E$) is the **Ergodic Hypothesis**:
+      The fundamental postulate connecting microscopic simulation trajectories to macroscopic thermodynamic observables (like temperature $T$, pressure $P$, and internal energy $E$) is the **Ergodic Hypothesis**:
 
 
-      $$\lim_{t_{\text{obs}} \to \infty} \frac{1}{t_{\text{obs}}} \int_0^{t_{\text{obs}}} A(\boldsymbol{\Gamma}(t))\, dt =
-      \langle A \rangle_{\text{ensemble}} = \int A(\boldsymbol{\Gamma})\, \rho(\boldsymbol{\Gamma})\, d\boldsymbol{\Gamma}$$
+      $$\lim_{t_{\text{obs}} \to \infty} \frac{1}{t_{\text{obs}}} \int_0^{t_{\text{obs}}} A(\boldsymbol{\Gamma}(t))\, dt = \langle A \rangle_{\text{ensemble}} = \int A(\boldsymbol{\Gamma})\, \rho(\boldsymbol{\Gamma})\, d\boldsymbol{\Gamma}$$
 
 
-      That is, the infinite-time average along a single physical trajectory equals the ensemble average over all accessible
-      phase-space microstates weighted by the probability density $\rho(\boldsymbol{\Gamma})$. Ergodicity requires that a
-      trajectory can explore all parts of the constant-energy surface without being partitioned by infinite energy barriers
-      or constrained by hidden invariants of motion (such as in the celebrated Fermi-Pasta-Ulam-Tsingou chain at low energy).'
+      That is, the infinite-time average along a single physical trajectory equals the ensemble average over all accessible phase-space microstates weighted by the probability density $\rho(\boldsymbol{\Gamma})$. Ergodicity requires that a trajectory can explore all parts of the constant-energy surface without being partitioned by infinite energy barriers or constrained by hidden invariants of motion (such as in the celebrated Fermi-Pasta-Ulam-Tsingou chain at low energy).'
   - id: q01_phase_space_dimension
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_intro_statmech
-    prompt_markdown: For a three-dimensional classical simulation of $N = 500$ argon atoms, what is the total dimensionality
-      of the classical phase space $(\mathbf{r}^N, \mathbf{p}^N)$?
+    prompt_markdown: For a three-dimensional classical simulation of $N = 500$ argon atoms, what is the total dimensionality of the classical phase space $(\mathbf{r}^N, \mathbf{p}^N)$?
     hint_markdown: Each atom has 3 spatial coordinates and 3 momentum components.
     correct:
       value: 3000
       tolerance: 0.01
-    rationale_markdown: Each particle in 3D has 3 position degrees of freedom $(x_i, y_i, z_i)$ and 3 momentum degrees of
-      freedom $(p_{ix}, p_{iy}, p_{iz})$. For $N = 500$ particles, the phase space has dimension $6N = 6 \times 500 = 3000$.
+    rationale_markdown: Each particle in 3D has 3 position degrees of freedom $(x_i, y_i, z_i)$ and 3 momentum degrees of freedom $(p_{ix}, p_{iy}, p_{iz})$. For $N = 500$ particles, the phase space has dimension $6N = 6 \times 500 = 3000$.
   - id: q02_ergodic_hypothesis_definition
     type: problem
     question_type: single_select
@@ -54,68 +43,67 @@ worksheet:
     prompt_markdown: Which statement precisely expresses the classical **Ergodic Hypothesis**?
     options:
     - id: a
-      text: The time average of an observable along a single trajectory equals its phase-space ensemble average as observation
-        time approaches infinity.
+      text: The time average of an observable along a single trajectory equals its phase-space ensemble average as observation time approaches infinity.
+      text_markdown: The time average of an observable along a single trajectory equals its phase-space ensemble average as observation time approaches infinity.
     - id: b
-      text: The kinetic energy of every particle is strictly constant and equal to 3/2 k_B T at every instant.
+      text: The kinetic energy of every particle is strictly constant and equal to $\frac{3}{2} k_B T$ at every instant.
+      text_markdown: The kinetic energy of every particle is strictly constant and equal to $\frac{3}{2} k_B T$ at every instant.
     - id: c
       text: Every microstate in phase space is visited at least once during any finite molecular dynamics run.
+      text_markdown: Every microstate in phase space is visited at least once during any finite molecular dynamics run.
     - id: d
       text: Phase-space volume contracts exponentially under dissipative friction forces.
+      text_markdown: Phase-space volume contracts exponentially under dissipative friction forces.
     correct: a
     hint_markdown: Think about equating time integration to phase-space integration.
-    rationale_markdown: The Ergodic Hypothesis asserts that the infinite-time average along a single dynamical trajectory
-      equals the ensemble average over phase space. A finite MD simulation never visits every continuous state (option c is
-      impossible in a continuum), kinetic energy fluctuates instantaneous around its mean (option b is wrong), and conservative
-      Hamiltonian flows preserve volume rather than contracting (option d is wrong).
+    rationale_markdown: The Ergodic Hypothesis asserts that the infinite-time average along a single dynamical trajectory equals the ensemble average over phase space. A finite MD simulation never visits every continuous state (option c is impossible in a continuum), kinetic energy fluctuates instantaneous around its mean (option b is wrong), and conservative Hamiltonian flows preserve volume rather than contracting (option d is wrong).
   - id: q03_fpu_nonergodicity
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_intro_statmech
-    prompt_markdown: In 1953, Fermi, Pasta, Ulam, and Tsingou (FPU) simulated a 1D chain of 32 particles with weak cubic/quartic
-      anharmonic spring interactions, expecting rapid thermalization into all normal modes. What did they actually discover?
+    prompt_markdown: In 1953, Fermi, Pasta, Ulam, and Tsingou (FPU) simulated a 1D chain of 32 particles with weak cubic/quartic anharmonic spring interactions, expecting rapid thermalization into all normal modes. What did they actually discover?
     options:
     - id: a
-      text: Energy remained trapped in the lowest few normal modes and exhibited quasi-periodic recurrence (FPU recurrence),
-        failing to reach equipartition and violating naive ergodicity.
+      text: Energy remained trapped in the lowest few normal modes and exhibited quasi-periodic recurrence (FPU recurrence), failing to reach equipartition and violating naive ergodicity.
+      text_markdown: Energy remained trapped in the lowest few normal modes and exhibited quasi-periodic recurrence (FPU recurrence), failing to reach equipartition and violating naive ergodicity.
     - id: b
       text: The chain disintegrated instantly because the equations of motion were unstable.
+      text_markdown: The chain disintegrated instantly because the equations of motion were unstable.
     - id: c
       text: All 32 modes reached equal energy within 5 vibrational periods.
+      text_markdown: All 32 modes reached equal energy within 5 vibrational periods.
     - id: d
       text: The total energy grew exponentially due to round-off error.
+      text_markdown: The total energy grew exponentially due to round-off error.
     correct: a
     hint_markdown: Think about why the FPU experiment is famous in nonlinear dynamics and soliton theory.
-    rationale_markdown: FPU expected that even tiny nonlinearities would cause rapid mode-mixing and equipartition. Instead,
-      energy sloshed quasi-periodically back into the initial low-frequency mode (FPU recurrence). Below a critical stochasticity
-      threshold, KAM tori and solitary waves prevent chaotic mixing, demonstrating that mechanical systems are not automatically
-      ergodic.
+    rationale_markdown: FPU expected that even tiny nonlinearities would cause rapid mode-mixing and equipartition. Instead, energy sloshed quasi-periodically back into the initial low-frequency mode (FPU recurrence). Below a critical stochasticity threshold, KAM tori and solitary waves prevent chaotic mixing, demonstrating that mechanical systems are not automatically ergodic.
   - id: q04_ergodicity_breaking_examples
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by: sec_intro_statmech
-    prompt_markdown: Which of the following physical situations lead to broken or broken-in-practice ergodicity in atomistic
-      simulations?
+    prompt_markdown: Which of the following physical situations lead to broken or broken-in-practice ergodicity in atomistic simulations?
     options:
     - id: a
       text: A purely harmonic crystal, where normal modes are completely decoupled and never exchange energy.
+      text_markdown: A purely harmonic crystal, where normal modes are completely decoupled and never exchange energy.
     - id: b
       text: A supercooled liquid trapped in a deep metastable free-energy basin below the glass transition temperature.
+      text_markdown: A supercooled liquid trapped in a deep metastable free-energy basin below the glass transition temperature.
     - id: c
       text: A dense Lennard-Jones liquid at high temperature simulated for 10^7 steps.
+      text_markdown: A dense Lennard-Jones liquid at high temperature simulated for 10^7 steps.
     - id: d
       text: A solid-state vacancy diffusion simulation where the hop barrier is 2.5 eV and the temperature is 300 K.
+      text_markdown: A solid-state vacancy diffusion simulation where the hop barrier is 2.5 eV and the temperature is 300 K.
     correct:
     - a
     - b
     - d
     hint_markdown: Identify which systems cannot explore all accessible phase space on simulation timescales.
-    rationale_markdown: A purely harmonic crystal (a) has decoupled normal modes that conserve their individual energies forever.
-      Glasses (b) are kinetically arrested in local free-energy basins for astronomical times. High-barrier rare events (d)
-      like a 2.5 eV hop at 300 K take years per hop in standard MD, so MD samples only a single basin. In contrast, a hot
-      LJ liquid (c) decorrelates within picoseconds and samples ergodically.
+    rationale_markdown: A purely harmonic crystal (a) has decoupled normal modes that conserve their individual energies forever. Glasses (b) are kinetically arrested in local free-energy basins for astronomical times. High-barrier rare events (d) like a 2.5 eV hop at 300 K take years per hop in standard MD, so MD samples only a single basin. In contrast, a hot LJ liquid (c) decorrelates within picoseconds and samples ergodically.
   - id: sec_liouville_markdown
     type: markdown_section
     title: Liouville's Theorem and Phase-Space Incompressibility
@@ -125,32 +113,25 @@ worksheet:
       $$\dot{q}_k = \frac{\partial \mathcal{H}}{\partial p_k}, \quad \dot{p}_k = -\frac{\partial \mathcal{H}}{\partial q_k}$$
 
 
-      The time evolution of an ensemble probability density $\rho(\mathbf{q}, \mathbf{p}, t)$ satisfies the continuity equation
-      in phase space:
+      The time evolution of an ensemble probability density $\rho(\mathbf{q}, \mathbf{p}, t)$ satisfies the continuity equation in phase space:
 
 
-      $$\frac{\partial \rho}{\partial t} + \sum_{k=1}^{3N} \left[ \frac{\partial}{\partial q_k}(\rho \dot{q}_k) + \frac{\partial}{\partial
-      p_k}(\rho \dot{p}_k) \right] = 0$$
+      $$\frac{\partial \rho}{\partial t} + \sum_{k=1}^{3N} \left[ \frac{\partial}{\partial q_k}(\rho \dot{q}_k) + \frac{\partial}{\partial p_k}(\rho \dot{p}_k) \right] = 0$$
 
 
       Using the product rule and substituting Hamilton''s equations, the phase-space velocity field divergence vanishes identically:
 
 
-      $$\sum_{k=1}^{3N} \left[ \frac{\partial \dot{q}_k}{\partial q_k} + \frac{\partial \dot{p}_k}{\partial p_k} \right] =
-      \sum_{k=1}^{3N} \left[ \frac{\partial^2 \mathcal{H}}{\partial q_k \partial p_k} - \frac{\partial^2 \mathcal{H}}{\partial
-      p_k \partial q_k} \right] = 0$$
+      $$\sum_{k=1}^{3N} \left[ \frac{\partial \dot{q}_k}{\partial q_k} + \frac{\partial \dot{p}_k}{\partial p_k} \right] = \sum_{k=1}^{3N} \left[ \frac{\partial^2 \mathcal{H}}{\partial q_k \partial p_k} - \frac{\partial^2 \mathcal{H}}{\partial p_k \partial q_k} \right] = 0$$
 
 
       This yields **Liouville''s Theorem**:
 
 
-      $$\frac{d\rho}{dt} = \frac{\partial \rho}{\partial t} + \sum_{k=1}^{3N} \left( \dot{q}_k \frac{\partial \rho}{\partial
-      q_k} + \dot{p}_k \frac{\partial \rho}{\partial p_k} \right) = 0$$
+      $$\frac{d\rho}{dt} = \frac{\partial \rho}{\partial t} + \sum_{k=1}^{3N} \left( \dot{q}_k \frac{\partial \rho}{\partial q_k} + \dot{p}_k \frac{\partial \rho}{\partial p_k} \right) = 0$$
 
 
-      The convective derivative of phase-space density along any trajectory is zero. Consequently, **phase-space volume is
-      strictly conserved** under Hamiltonian time evolution: an initial volume $\Omega(0)$ evolves into $\Omega(t)$ with $\Omega(t)
-      = \Omega(0)$ for all $t$.'
+      The convective derivative of phase-space density along any trajectory is zero. Consequently, **phase-space volume is strictly conserved** under Hamiltonian time evolution: an initial volume $\Omega(0)$ evolves into $\Omega(t)$ with $\Omega(t) = \Omega(0)$ for all $t$.'
   - id: concept_liouville_flow
     type: concept_cell
     title: Liouville Phase-Space Incompressibility and Filamentation
@@ -179,96 +160,79 @@ worksheet:
         max: 1.5
         step: 0.1
         default: 0.6
-    description_markdown: Watch how a closed cloud of initial microstates deforms in $(q, p)$ phase space under Hamiltonian
-      dynamics. While the exact polygon area is strictly conserved (Liouville's theorem), anharmonicity causes energy-dependent
-      orbital frequencies, shearing the patch into long, thin filaments whose coarse-grained bounding box expands.
-    takeaway_markdown: 'Hamiltonian phase-space flow behaves as an incompressible fluid: $\Omega(t) = \Omega(0)$ exactly.
-      Fine-grained Gibbs entropy $S = -k_B \int \rho \ln \rho$ is constant in time, but coarse-grained entropy increases as
-      filamentation mixes states across phase space.'
+    description_markdown: Watch how a closed cloud of initial microstates deforms in $(q, p)$ phase space under Hamiltonian dynamics. While the exact polygon area is strictly conserved (Liouville's theorem), anharmonicity causes energy-dependent orbital frequencies, shearing the patch into long, thin filaments whose coarse-grained bounding box expands.
+    takeaway_markdown: 'Hamiltonian phase-space flow behaves as an incompressible fluid: $\Omega(t) = \Omega(0)$ exactly. Fine-grained Gibbs entropy $S = -k_B \int \rho \ln \rho$ is constant in time, but coarse-grained entropy increases as filamentation mixes states across phase space.'
   - id: q05_liouville_divergence
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_liouville_markdown
-    prompt_markdown: What mathematical property of Hamilton's equations guarantees that the phase-space velocity field $\mathbf{v}_{\boldsymbol{\Gamma}}
-      = (\dot{\mathbf{q}}, \dot{\mathbf{p}})$ is divergence-free ($\nabla_{\boldsymbol{\Gamma}} \cdot \mathbf{v}_{\boldsymbol{\Gamma}}
-      = 0$)?
+    prompt_markdown: What mathematical property of Hamilton's equations guarantees that the phase-space velocity field $\mathbf{v}_{\boldsymbol{\Gamma}} = (\dot{\mathbf{q}}, \dot{\mathbf{p}})$ is divergence-free ($\nabla_{\boldsymbol{\Gamma}} \cdot \mathbf{v}_{\boldsymbol{\Gamma}} = 0$)?
     options:
     - id: a
-      text: 'Equality of mixed second partial derivatives: d^2 H / (dq_k dp_k) = d^2 H / (dp_k dq_k).'
+      text: 'Equality of mixed second partial derivatives: $\frac{\partial^2 H}{\partial q_k \partial p_k} = \frac{\partial^2 H}{\partial p_k \partial q_k}$.'
+      text_markdown: 'Equality of mixed second partial derivatives: $\frac{\partial^2 H}{\partial q_k \partial p_k} = \frac{\partial^2 H}{\partial p_k \partial q_k}$.'
     - id: b
       text: The kinetic energy is quadratic in momenta.
+      text_markdown: The kinetic energy is quadratic in momenta.
     - id: c
       text: The total energy is strictly negative.
+      text_markdown: The total energy is strictly negative.
     - id: d
       text: All particles have identical masses.
+      text_markdown: All particles have identical masses.
     correct: a
     hint_markdown: Substitute Hamilton's equations into the divergence expression.
-    rationale_markdown: The divergence in phase space is $\sum_k (\partial \dot{q}_k / \partial q_k + \partial \dot{p}_k /
-      \partial p_k) = \sum_k (\partial^2 \mathcal{H}/\partial q_k \partial p_k - \partial^2 \mathcal{H}/\partial p_k \partial
-      q_k) = 0$, which vanishes identically by Clairaut's theorem on the equality of mixed second partial derivatives of $\mathcal{H}$.
+    rationale_markdown: The divergence in phase space is $\sum_k (\partial \dot{q}_k / \partial q_k + \partial \dot{p}_k / \partial p_k) = \sum_k (\partial^2 \mathcal{H}/\partial q_k \partial p_k - \partial^2 \mathcal{H}/\partial p_k \partial q_k) = 0$, which vanishes identically by Clairaut's theorem on the equality of mixed second partial derivatives of $\mathcal{H}$.
   - id: q06_fine_vs_coarse_entropy
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: concept_liouville_flow
-    prompt_markdown: Because Liouville's theorem states that $d\rho/dt = 0$, the fine-grained Gibbs entropy $S_{\text{Gibbs}}
-      = -k_B \int \rho \ln \rho\, d\boldsymbol{\Gamma}$ is strictly constant in time for any isolated Hamiltonian system.
-      How then can the Second Law of Thermodynamics (entropy increases) be reconciled with classical mechanics?
+    prompt_markdown: Because Liouville's theorem states that $d\rho/dt = 0$, the fine-grained Gibbs entropy $S_{\text{Gibbs}} = -k_B \int \rho \ln \rho\, d\boldsymbol{\Gamma}$ is strictly constant in time for any isolated Hamiltonian system. How then can the Second Law of Thermodynamics (entropy increases) be reconciled with classical mechanics?
     options:
     - id: a
-      text: Nonlinear filamentation stretches the fine-grained distribution into thin filaments, causing any coarse-grained
-        (finite-resolution) entropy to increase to its equilibrium maximum.
+      text: Nonlinear filamentation stretches the fine-grained distribution into thin filaments, causing any coarse-grained (finite-resolution) entropy to increase to its equilibrium maximum.
+      text_markdown: Nonlinear filamentation stretches the fine-grained distribution into thin filaments, causing any coarse-grained (finite-resolution) entropy to increase to its equilibrium maximum.
     - id: b
       text: Liouville's theorem is violated whenever $N > 10$.
+      text_markdown: Liouville's theorem is violated whenever $N > 10$.
     - id: c
       text: The fine-grained Gibbs entropy is not defined for systems with potential energy.
+      text_markdown: The fine-grained Gibbs entropy is not defined for systems with potential energy.
     - id: d
       text: Hamilton's equations only hold at $T = 0\text{ K}$.
+      text_markdown: Hamilton's equations only hold at $T = 0\text{ K}$.
     correct: a
     hint_markdown: Consider what happens when you observe a filamented ink drop in water with finite optical resolution.
-    rationale_markdown: Like stirring an ink drop in water, Hamiltonian flow shears the initial microstate patch into convoluted
-      filaments throughout the energy shell. While the exact fine-grained volume (Gibbs entropy) remains constant, any finite-resolution
-      coarse-grained density $\bar{\rho}$ averages over the gaps, causing the observable coarse-grained entropy $\bar{S} =
-      -k_B \int \bar{\rho} \ln \bar{\rho}$ to increase monotonically toward the equilibrium maximum.
+    rationale_markdown: Like stirring an ink drop in water, Hamiltonian flow shears the initial microstate patch into convoluted filaments throughout the energy shell. While the exact fine-grained volume (Gibbs entropy) remains constant, any finite-resolution coarse-grained density $\bar{\rho}$ averages over the gaps, causing the observable coarse-grained entropy $\bar{S} = -k_B \int \bar{\rho} \ln \bar{\rho}$ to increase monotonically toward the equilibrium maximum.
   - id: q07_fpu_concept_coupling
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_intro_statmech
-    prompt_markdown: In the concept demonstration of the FPU chain, what happens to the mode energies as the specific energy
-      $\epsilon$ is raised above the stochasticity threshold?
+    prompt_markdown: In the concept demonstration of the FPU chain, what happens to the mode energies as the specific energy $\epsilon$ is raised above the stochasticity threshold?
     options:
     - id: a
       text: Energy spreads irreversibly across all normal modes toward the equipartition value 1/N.
+      text_markdown: Energy spreads irreversibly across all normal modes toward the equipartition value 1/N.
     - id: b
       text: All energy condenses entirely into the highest-frequency mode.
+      text_markdown: All energy condenses entirely into the highest-frequency mode.
     - id: c
       text: The recurrence period between mode 1 and mode 2 approaches zero.
+      text_markdown: The recurrence period between mode 1 and mode 2 approaches zero.
     - id: d
       text: The kinetic energy decays to zero while potential energy diverges.
+      text_markdown: The kinetic energy decays to zero while potential energy diverges.
     correct: a
     hint_markdown: Review the concept takeaway regarding high energy in the FPU chain.
-    rationale_markdown: Above the Chirikov stochasticity threshold, overlapping nonlinear resonances destroy KAM tori, enabling
-      chaotic phase-space mixing that drives all normal modes toward the equipartition limit $\langle E_k \rangle = E_{\text{tot}}
-      / N = 1/32$.
+    rationale_markdown: Above the Chirikov stochasticity threshold, overlapping nonlinear resonances destroy KAM tori, enabling chaotic phase-space mixing that drives all normal modes toward the equipartition limit $\langle E_k \rangle = E_{\text{tot}} / N = 1/32$.
   - id: sec_chaos_and_lyapunov
     type: markdown_section
     title: Lyapunov Instability, Chaos, and Poincaré Recurrence
-    body_markdown: "Two foundational paradoxes arise in classical statistical mechanics:\n\n1. **Poincaré Recurrence Theorem\
-      \ (1890)**: Any bounded Hamiltonian system will eventually return arbitrarily close to its initial microstate after\
-      \ a finite recurrence time $\\tau_{\\text{rec}}$. However, for a macroscopic system ($N \\sim 10^{23}$), Boltzmann showed\
-      \ that $\\tau_{\\text{rec}} \\sim 10^{10^{23}}$ years—vastly exceeding the age of the universe!\n2. **Lyapunov Instability\
-      \ (Chaos)**: Many-body trajectories are exponentially sensitive to initial conditions. If two trajectories begin separated\
-      \ by a tiny distance $|\\Delta \\mathbf{R}(0)| = \\varepsilon_0$, their separation grows as:\n\n$$|\\Delta \\mathbf{R}(t)|\
-      \ \\approx \\varepsilon_0\\, e^{\\lambda t}$$\n\nwhere $\\lambda > 0$ is the maximal **Lyapunov exponent** (typically\
-      \ $\\lambda \\sim 1\\text{ ps}^{-1}$ in dense liquids). \n\nBecause of this exponential growth, any perturbation $\\\
-      varepsilon_0 \\sim 10^{-16}$ (such as machine-precision floating-point roundoff) grows to macroscopic interatomic distances\
-      \ $|\\Delta \\mathbf{R}| \\sim \\sigma$ within a **predictability horizon**:\n\n$$t^* \\approx \\frac{1}{\\lambda} \\\
-      ln \\left( \\frac{\\sigma}{\\varepsilon_0} \\right) \\sim \\frac{\\ln(10^{16})}{1\\text{ ps}^{-1}} \\approx 37\\text{\
-      \ ps}$$\n\nBeyond $t^*$, MD trajectories do not represent the exact deterministic path of the original initial condition,\
-      \ yet **ensemble averages remain completely reliable** because the computed trajectory remains on the correct constant-energy\
-      \ surface (shadowing lemma)."
+    body_markdown: "Two foundational paradoxes arise in classical statistical mechanics:\n\n1. **Poincaré Recurrence Theorem (1890)**: Any bounded Hamiltonian system will eventually return arbitrarily close to its initial microstate after a finite recurrence time $\\tau_{\\text{rec}}$. However, for a macroscopic system ($N \\sim 10^{23}$), Boltzmann showed that $\\tau_{\\text{rec}} \\sim 10^{10^{23}}$ years—vastly exceeding the age of the universe!\n2. **Lyapunov Instability (Chaos)**: Many-body trajectories are exponentially sensitive to initial conditions. If two trajectories begin separated by a tiny distance $|\\Delta \\mathbf{R}(0)| = \\varepsilon_0$, their separation grows as:\n\n$$|\\Delta \\mathbf{R}(t)| \\approx \\varepsilon_0\\, e^{\\lambda t}$$\n\nwhere $\\lambda > 0$ is the maximal **Lyapunov exponent** (typically $\\lambda \\sim 1\\text{ ps}^{-1}$ in dense liquids). \n\nBecause of this exponential growth, any perturbation $\\varepsilon_0 \\sim 10^{-16}$ (such as machine-precision\
+      \ floating-point roundoff) grows to macroscopic interatomic distances $|\\Delta \\mathbf{R}| \\sim \\sigma$ within a **predictability horizon**:\n\n$$t^* \\approx \\frac{1}{\\lambda} \\ln \\left( \\frac{\\sigma}{\\varepsilon_0} \\right) \\sim \\frac{\\ln(10^{16})}{1\\text{ ps}^{-1}} \\approx 37\\text{ ps}$$\n\nBeyond $t^*$, MD trajectories do not represent the exact deterministic path of the original initial condition, yet **ensemble averages remain completely reliable** because the computed trajectory remains on the correct constant-energy surface (shadowing lemma)."
   - id: concept_lyapunov_divergence
     type: concept_cell
     title: Lyapunov Instability and Predictability Horizon
@@ -296,74 +260,63 @@ worksheet:
         max: 2.0
         step: 0.2
         default: 1.0
-    description_markdown: Explore the exponential divergence between two trajectories starting from nearly identical initial
-      conditions. Adjust the initial separation $\varepsilon_0 = 10^{\log_{10}\varepsilon}$ and Lyapunov exponent $\lambda$
-      to observe how rapidly the trajectory deviation saturates at interatomic scales.
-    takeaway_markdown: Because $\lambda > 0$ in liquids and dense gases, individual trajectories are intrinsically chaotic
-      and unrepeatable across different floating-point platforms after tens of picoseconds. However, statistical mechanics
-      guarantees that macrostate averages (temperature, pressure, structure) are robust.
+    description_markdown: Explore the exponential divergence between two trajectories starting from nearly identical initial conditions. Adjust the initial separation $\varepsilon_0 = 10^{\log_{10}\varepsilon}$ and Lyapunov exponent $\lambda$ to observe how rapidly the trajectory deviation saturates at interatomic scales.
+    takeaway_markdown: Because $\lambda > 0$ in liquids and dense gases, individual trajectories are intrinsically chaotic and unrepeatable across different floating-point platforms after tens of picoseconds. However, statistical mechanics guarantees that macrostate averages (temperature, pressure, structure) are robust.
   - id: q08_lyapunov_horizon_calculation
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_chaos_and_lyapunov
-    prompt_markdown: In a liquid Argon simulation with Lyapunov exponent $\lambda = 2.0\text{ ps}^{-1}$, two runs differ by
-      a numerical roundoff error of $\varepsilon_0 = 10^{-14}\sigma$. At what time $t^*$ (in picoseconds) will their trajectory
-      separation grow to the interatomic spacing $\sigma$?
-    hint_markdown: Relate the exponential separation rate of chaotic trajectories to the initial perturbation magnitude and
-      the macroscopic divergence threshold.
+    prompt_markdown: In a liquid Argon simulation with Lyapunov exponent $\lambda = 2.0\text{ ps}^{-1}$, two runs differ by a numerical roundoff error of $\varepsilon_0 = 10^{-14}\sigma$. At what time $t^*$ (in picoseconds) will their trajectory separation grow to the interatomic spacing $\sigma$?
+    hint_markdown: Relate the exponential separation rate of chaotic trajectories to the initial perturbation magnitude and the macroscopic divergence threshold.
     correct:
       value: 16.12
       tolerance: 0.2
-    rationale_markdown: Using $1 = \varepsilon_0 e^{\lambda t^*}$, we find $t^* = \frac{1}{\lambda} \ln(1/\varepsilon_0) =
-      \frac{\ln(10^{14})}{2.0\text{ ps}^{-1}} = \frac{14 \times 2.302585}{2.0} \approx 16.12\text{ ps}$.
+    rationale_markdown: Using $1 = \varepsilon_0 e^{\lambda t^*}$, we find $t^* = \frac{1}{\lambda} \ln(1/\varepsilon_0) = \frac{\ln(10^{14})}{2.0\text{ ps}^{-1}} = \frac{14 \times 2.302585}{2.0} \approx 16.12\text{ ps}$.
   - id: q09_poincare_vs_age_universe
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_chaos_and_lyapunov
-    prompt_markdown: Why does the Poincaré Recurrence Theorem not contradict the observation of irreversible thermodynamic
-      behavior in macroscopic materials?
+    prompt_markdown: Why does the Poincaré Recurrence Theorem not contradict the observation of irreversible thermodynamic behavior in macroscopic materials?
     options:
     - id: a
-      text: For N ~ 10^23 particles, the recurrence time is doubly exponential in N (~ 10^(10^23) years), far exceeding the
-        age of the universe.
+      text: For N ~ 10^23 particles, the recurrence time is doubly exponential in N (~ 10^(10^23) years), far exceeding the age of the universe.
+      text_markdown: For N ~ 10^23 particles, the recurrence time is doubly exponential in N (~ 10^(10^23) years), far exceeding the age of the universe.
     - id: b
       text: Poincaré's theorem only applies to 1-particle systems.
+      text_markdown: Poincaré's theorem only applies to 1-particle systems.
     - id: c
       text: Thermal noise always destroys phase space.
+      text_markdown: Thermal noise always destroys phase space.
     - id: d
       text: Recurrence only occurs at negative absolute temperatures.
+      text_markdown: Recurrence only occurs at negative absolute temperatures.
     correct: a
     hint_markdown: Consider the magnitude of the recurrence time for 1 mole of gas.
-    rationale_markdown: Poincaré recurrence guarantees eventual return, but the recurrence time scales with the hyper-volume
-      of phase space, roughly $\tau_{\text{rec}} \sim t_0 \exp(S/k_B) \sim \exp(10^{23})$. For any system with $N > 100$,
-      $\tau_{\text{rec}}$ is overwhelmingly greater than the 13.8 billion-year age of the universe, rendering recurrence physically
-      unobservable.
+    rationale_markdown: Poincaré recurrence guarantees eventual return, but the recurrence time scales with the hyper-volume of phase space, roughly $\tau_{\text{rec}} \sim t_0 \exp(S/k_B) \sim \exp(10^{23})$. For any system with $N > 100$, $\tau_{\text{rec}}$ is overwhelmingly greater than the 13.8 billion-year age of the universe, rendering recurrence physically unobservable.
   - id: q10_shadowing_lemma
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_chaos_and_lyapunov
-    prompt_markdown: If a numerical MD trajectory diverges exponentially from the exact analytical trajectory after only ~20
-      ps, why are MD thermodynamic properties scientifically valid? Which mathematical theorem provides this justification?
+    prompt_markdown: If a numerical MD trajectory diverges exponentially from the exact analytical trajectory after only ~20 ps, why are MD thermodynamic properties scientifically valid? Which mathematical theorem provides this justification?
     options:
     - id: a
-      text: 'The Shadowing Lemma: for hyperbolic/chaotic dynamical systems, there exists a true, exact trajectory starting
-        from a slightly different initial state that stays uniformly close (''shadows'') the numerical trajectory for long
-        times.'
+      text: 'The Shadowing Lemma: for hyperbolic/chaotic dynamical systems, there exists a true, exact trajectory starting from a slightly different initial state that stays uniformly close (''shadows'') the numerical trajectory for long times.'
+      text_markdown: 'The Shadowing Lemma: for hyperbolic/chaotic dynamical systems, there exists a true, exact trajectory starting from a slightly different initial state that stays uniformly close (''shadows'') the numerical trajectory for long times.'
     - id: b
       text: The Central Limit Theorem guarantees that numerical errors cancel to zero at every integration step.
+      text_markdown: The Central Limit Theorem guarantees that numerical errors cancel to zero at every integration step.
     - id: c
       text: Liouville's theorem states that coordinates do not matter for statistical averages.
+      text_markdown: Liouville's theorem states that coordinates do not matter for statistical averages.
     - id: d
       text: Equipartition theorem eliminates floating-point errors.
+      text_markdown: Equipartition theorem eliminates floating-point errors.
     correct: a
     hint_markdown: Look for the concept of 'shadowing' true trajectories.
-    rationale_markdown: The Shadowing Lemma in dynamical systems proves that although a numerical trajectory with finite precision
-      diverges from the exact trajectory with the *same* initial condition, there exists a nearby true trajectory with a slightly
-      shifted initial condition that closely shadows the numerical path. Since ensemble averages depend on the phase-space
-      distribution rather than individual identities, the averages remain exact.
+    rationale_markdown: The Shadowing Lemma in dynamical systems proves that although a numerical trajectory with finite precision diverges from the exact trajectory with the *same* initial condition, there exists a nearby true trajectory with a slightly shifted initial condition that closely shadows the numerical path. Since ensemble averages depend on the phase-space distribution rather than individual identities, the averages remain exact.
   - id: sec_ensembles_and_partition_function
     type: markdown_section
     title: Microcanonical (NVE) vs. Canonical (NVT) Ensembles
@@ -378,21 +331,18 @@ worksheet:
       $$\rho_{NVE}(\boldsymbol{\Gamma}) = \frac{1}{\Omega(N, V, E)}\, \delta(H(\boldsymbol{\Gamma}) - E)$$
 
 
-      The microcanonical density of states is $\Omega(N, V, E) = \frac{1}{h^{3N} N!} \int d\mathbf{r}^N d\mathbf{p}^N \, \delta(H(\boldsymbol{\Gamma})
-      - E)$, and Boltzmann entropy is:
+      The microcanonical density of states is $\Omega(N, V, E) = \frac{1}{h^{3N} N!} \int d\mathbf{r}^N d\mathbf{p}^N \, \delta(H(\boldsymbol{\Gamma}) - E)$, and Boltzmann entropy is:
 
 
       $$S = k_B \ln \Omega(N, V, E)$$
 
 
-      The $N!$ (Gibbs factor) corrects for the indistinguishability of identical particles, eliminating the Gibbs paradox
-      of non-extensive entropy of mixing.
+      The $N!$ (Gibbs factor) corrects for the indistinguishability of identical particles, eliminating the Gibbs paradox of non-extensive entropy of mixing.
 
 
       ### 2. Canonical Ensemble ($NVT$)
 
-      A closed system with fixed $N$ and $V$ in thermal contact with a heat bath at temperature $T$ (inverse temperature $\beta
-      = 1/(k_B T)$):
+      A closed system with fixed $N$ and $V$ in thermal contact with a heat bath at temperature $T$ (inverse temperature $\beta = 1/(k_B T)$):
 
 
       $$\rho_{NVT}(\boldsymbol{\Gamma}) = \frac{e^{-\beta H(\boldsymbol{\Gamma})}}{Z(N, V, T)}$$
@@ -401,12 +351,10 @@ worksheet:
       The canonical partition function factors into ideal kinetic and excess configurational integrals:
 
 
-      $$Z(N, V, T) = \frac{1}{h^{3N} N!} \int d\mathbf{p}^N e^{-\beta \sum \frac{p_i^2}{2m}} \int d\mathbf{r}^N e^{-\beta
-      V(\mathbf{r}^N)} = \frac{1}{N!\, \Lambda^{3N}} \, Q(N, V, T)$$
+      $$Z(N, V, T) = \frac{1}{h^{3N} N!} \int d\mathbf{p}^N e^{-\beta \sum \frac{p_i^2}{2m}} \int d\mathbf{r}^N e^{-\beta V(\mathbf{r}^N)} = \frac{1}{N!\, \Lambda^{3N}} \, Q(N, V, T)$$
 
 
-      where $\Lambda = \sqrt{\frac{h^2}{2\pi m k_B T}}$ is the **thermal de Broglie wavelength**, and $Q(N, V, T) = \int d\mathbf{r}^N
-      e^{-\beta V(\mathbf{r}^N)}$ is the **configurational integral**.
+      where $\Lambda = \sqrt{\frac{h^2}{2\pi m k_B T}}$ is the **thermal de Broglie wavelength**, and $Q(N, V, T) = \int d\mathbf{r}^N e^{-\beta V(\mathbf{r}^N)}$ is the **configurational integral**.
 
 
       The bridge to thermodynamics is the **Helmholtz Free Energy**:
@@ -418,44 +366,45 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: What criterion determines whether classical mechanics is valid for an atomistic simulation, or whether
-      quantum effects must be considered?
+    prompt_markdown: What criterion determines whether classical mechanics is valid for an atomistic simulation, or whether quantum effects must be considered?
     options:
     - id: a
-      text: The thermal de Broglie wavelength must be much smaller than the average interatomic spacing (Lambda << a).
+      text: The thermal de Broglie wavelength must be much smaller than the average interatomic spacing ($\Lambda \ll a$).
+      text_markdown: The thermal de Broglie wavelength must be much smaller than the average interatomic spacing ($\Lambda \ll a$).
     - id: b
       text: The temperature must be below 10 K.
+      text_markdown: The temperature must be below 10 K.
     - id: c
       text: The kinetic energy must equal the potential energy.
+      text_markdown: The kinetic energy must equal the potential energy.
     - id: d
       text: The number of particles must be odd.
+      text_markdown: The number of particles must be odd.
     correct: a
     hint_markdown: Think about wave-packet overlap between neighboring atoms.
-    rationale_markdown: Classical mechanics treats atoms as localized point particles. When the thermal de Broglie wavelength
-      $\Lambda = h/\sqrt{2\pi m k_B T}$ is comparable to or larger than the interatomic distance $a = \rho^{-1/3}$ ($\Lambda
-      \gtrsim a$), wavepackets overlap, producing quantum exchange and diffraction effects (e.g. liquid Helium, low-T Hydrogen,
-      or high-frequency zero-point vibrational modes).
+    rationale_markdown: Classical mechanics treats atoms as localized point particles. When the thermal de Broglie wavelength $\Lambda = h/\sqrt{2\pi m k_B T}$ is comparable to or larger than the interatomic distance $a = \rho^{-1/3}$ ($\Lambda \gtrsim a$), wavepackets overlap, producing quantum exchange and diffraction effects (e.g. liquid Helium, low-T Hydrogen, or high-frequency zero-point vibrational modes).
   - id: q12_helium_vs_argon_quantum
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: Liquid Helium-4 has molar mass $4\text{ g/mol}$ while liquid Argon has $40\text{ g/mol}$. At $T = 20\text{
-      K}$, how does the thermal de Broglie wavelength of Helium ($\Lambda_{\text{He}}$) compare to that of Argon ($\Lambda_{\text{Ar}}$)?
+    prompt_markdown: Liquid Helium-4 has molar mass $4\text{ g/mol}$ while liquid Argon has $40\text{ g/mol}$. At $T = 20\text{ K}$, how does the thermal de Broglie wavelength of Helium ($\Lambda_{\text{He}}$) compare to that of Argon ($\Lambda_{\text{Ar}}$)?
     options:
     - id: a
-      text: Lambda_He is sqrt(10) ~ 3.16 times larger than Lambda_Ar.
+      text: $\Lambda_{\text{He}}$ is $\sqrt{10} \approx 3.16$ times larger than $\Lambda_{\text{Ar}}$.
+      text_markdown: $\Lambda_{\text{He}}$ is $\sqrt{10} \approx 3.16$ times larger than $\Lambda_{\text{Ar}}$.
     - id: b
-      text: Lambda_He is 10 times smaller than Lambda_Ar.
+      text: $\Lambda_{\text{He}}$ is $10$ times smaller than $\Lambda_{\text{Ar}}$.
+      text_markdown: $\Lambda_{\text{He}}$ is $10$ times smaller than $\Lambda_{\text{Ar}}$.
     - id: c
-      text: Lambda_He equals Lambda_Ar because both are noble gases.
+      text: $\Lambda_{\text{He}}$ equals $\Lambda_{\text{Ar}}$ because both are noble gases.
+      text_markdown: $\Lambda_{\text{He}}$ equals $\Lambda_{\text{Ar}}$ because both are noble gases.
     - id: d
-      text: Lambda_He is 100 times larger.
+      text: $\Lambda_{\text{He}}$ is $100$ times larger.
+      text_markdown: $\Lambda_{\text{He}}$ is $100$ times larger.
     correct: a
     hint_markdown: Recall how thermal momentum scales with atomic mass in the de Broglie wavelength definition.
-    rationale_markdown: Since $\Lambda = \sqrt{h^2 / (2\pi m k_B T)} \propto m^{-1/2}$, we have $\Lambda_{\text{He}} / \Lambda_{\text{Ar}}
-      = \sqrt{m_{\text{Ar}} / m_{\text{He}}} = \sqrt{40 / 4} = \sqrt{10} \approx 3.162$. Helium's light mass makes its quantum
-      delocalization over 3 times larger, explaining why Helium remains a quantum liquid down to absolute zero.
+    rationale_markdown: Since $\Lambda = \sqrt{h^2 / (2\pi m k_B T)} \propto m^{-1/2}$, we have $\Lambda_{\text{He}} / \Lambda_{\text{Ar}} = \sqrt{m_{\text{Ar}} / m_{\text{He}}} = \sqrt{40 / 4} = \sqrt{10} \approx 3.162$. Helium's light mass makes its quantum delocalization over 3 times larger, explaining why Helium remains a quantum liquid down to absolute zero.
   - id: q13_gibbs_factor_factorial
     type: problem
     question_type: single_select
@@ -464,66 +413,47 @@ worksheet:
     prompt_markdown: Why must the classical partition function $Z(N, V, T)$ include the factor of $1/N!$?
     options:
     - id: a
-      text: To account for the indistinguishability of identical particles, preventing the Gibbs paradox of non-extensive
-        entropy.
+      text: To account for the indistinguishability of identical particles, preventing the Gibbs paradox of non-extensive entropy.
+      text_markdown: To account for the indistinguishability of identical particles, preventing the Gibbs paradox of non-extensive entropy.
     - id: b
       text: To convert energy from Joules to electron-volts.
+      text_markdown: To convert energy from Joules to electron-volts.
     - id: c
       text: To guarantee that kinetic energy is always positive.
+      text_markdown: To guarantee that kinetic energy is always positive.
     - id: d
       text: Because MD uses an N-step numerical integrator.
+      text_markdown: Because MD uses an N-step numerical integrator.
     correct: a
     hint_markdown: Think about what happens to entropy when two identical volumes of the same gas are mixed.
-    rationale_markdown: Permuting $N$ identical particles produces $N!$ microstates that are physically identical. Without
-      the $1/N!$ factor, mixing two containers of identical gas at the same $T$ and $P$ would predict a spurious entropy increase
-      $\Delta S = 2 N k_B \ln 2$ (the Gibbs paradox). The $1/N!$ factor ensures entropy $S$ and free energy $F$ are extensive
-      thermodynamic properties.
+    rationale_markdown: Permuting $N$ identical particles produces $N!$ microstates that are physically identical. Without the $1/N!$ factor, mixing two containers of identical gas at the same $T$ and $P$ would predict a spurious entropy increase $\Delta S = 2 N k_B \ln 2$ (the Gibbs paradox). The $1/N!$ factor ensures entropy $S$ and free energy $F$ are extensive thermodynamic properties.
   - id: q14_canonical_energy_fluctuations
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: In the canonical ensemble ($NVT$), total energy $E$ is not strictly fixed but fluctuates through heat
-      exchange with the reservoir. How do the relative energy fluctuations $\sigma_E / \langle E \rangle$ scale with system
-      size $N$?
+    prompt_markdown: In the canonical ensemble ($NVT$), total energy $E$ is not strictly fixed but fluctuates through heat exchange with the reservoir. How do the relative energy fluctuations $\sigma_E / \langle E \rangle$ scale with system size $N$?
     options:
     - id: a
-      text: sigma_E / <E> proportional to 1 / sqrt(N), vanishing in the thermodynamic limit N -> infinity where NVT and NVE
-        become equivalent.
+      text: $\sigma_E / \langle E \rangle \propto 1 / \sqrt{N}$, vanishing in the thermodynamic limit $N \to \infty$ where NVT and NVE become equivalent.
+      text_markdown: $\sigma_E / \langle E \rangle \propto 1 / \sqrt{N}$, vanishing in the thermodynamic limit $N \to \infty$ where NVT and NVE become equivalent.
     - id: b
-      text: sigma_E / <E> is constant and independent of N.
+      text: $\sigma_E / \langle E \rangle$ is constant and independent of $N$.
+      text_markdown: $\sigma_E / \langle E \rangle$ is constant and independent of $N$.
     - id: c
-      text: sigma_E / <E> grows as sqrt(N).
+      text: $\sigma_E / \langle E \rangle$ grows as $\sqrt{N}$.
+      text_markdown: $\sigma_E / \langle E \rangle$ grows as $\sqrt{N}$.
     - id: d
-      text: sigma_E / <E> decays as 1/N^2.
+      text: $\sigma_E / \langle E \rangle$ decays as $1/N^2$.
+      text_markdown: $\sigma_E / \langle E \rangle$ decays as $1/N^2$.
     correct: a
-    hint_markdown: Relate total energy variance to the constant-volume heat capacity via canonical partition function derivatives,
-      and consider how extensive quantities scale with system size.
-    rationale_markdown: The canonical variance is $\langle \Delta E^2 \rangle = k_B T^2 C_V$. Because $C_V \propto N$ and
-      $\langle E \rangle \propto N$, the root-mean-square relative fluctuation is $\frac{\sigma_E}{\langle E \rangle} = \frac{\sqrt{k_B
-      T^2 C_V}}{\langle E \rangle} \propto \frac{\sqrt{N}}{N} = \frac{1}{\sqrt{N}}$. For macroscopic $N \sim 10^{23}$, relative
-      fluctuations are $\sim 10^{-11.5}$ (utterly negligible), proving that $NVT$ and $NVE$ ensembles yield identical thermodynamics
-      in the thermodynamic limit.
+    hint_markdown: Relate total energy variance to the constant-volume heat capacity via canonical partition function derivatives, and consider how extensive quantities scale with system size.
+    rationale_markdown: The canonical variance is $\langle \Delta E^2 \rangle = k_B T^2 C_V$. Because $C_V \propto N$ and $\langle E \rangle \propto N$, the root-mean-square relative fluctuation is $\frac{\sigma_E}{\langle E \rangle} = \frac{\sqrt{k_B T^2 C_V}}{\langle E \rangle} \propto \frac{\sqrt{N}}{N} = \frac{1}{\sqrt{N}}$. For macroscopic $N \sim 10^{23}$, relative fluctuations are $\sim 10^{-11.5}$ (utterly negligible), proving that $NVT$ and $NVE$ ensembles yield identical thermodynamics in the thermodynamic limit.
   - id: sec_equipartition_and_virial
     type: markdown_section
     title: Equipartition Theorem and the Clausius Virial Pressure
-    body_markdown: "Two fundamental theorems link mechanical microscopic variables to thermodynamic state variables:\n\n###\
-      \ 1. Equipartition Theorem\nFor any generalized coordinate or momentum $x_i$ appearing quadratically in the Hamiltonian\
-      \ $\\mathcal{H}$:\n\n$$\\left\\langle x_i \\frac{\\partial \\mathcal{H}}{\\partial x_j} \\right\\rangle = k_B T \\,\
-      \ \\delta_{ij} \\implies \\left\\langle \\frac{p_{i\\alpha}^2}{2m_i} \\right\\rangle = \\frac{1}{2} k_B T$$\n\nEach\
-      \ quadratic degree of freedom carries $\\frac{1}{2}k_B T$ of thermal energy. In molecular dynamics, this provides the\
-      \ **instantaneous kinetic temperature estimator**:\n\n$$T_{\\text{kin}}(t) = \\frac{1}{N_{\\text{dof}} k_B} \\sum_{i=1}^N\
-      \ m_i |\\mathbf{v}_i(t)|^2$$\n\nFor $N$ particles in 3D with periodic boundary conditions and fixed total momentum $\\\
-      sum m_i \\mathbf{v}_i = \\mathbf{0}$, the number of degrees of freedom is $N_{\\text{dof}} = 3N - 3$.\n\n### 2. Clausius\
-      \ Virial Theorem and Pressure Estimator\nApplying the generalized equipartition identity to coordinates $\\sum_i \\\
-      langle \\mathbf{r}_i \\cdot \\nabla_{\\mathbf{r}_i} \\mathcal{H}\\rangle = 3N k_B T$ and separating external container\
-      \ wall forces from internal interatomic forces $\\mathbf{F}_{ij}$ yields the **Clausius Virial Equation of State**:\n\
-      \n$$P = \\rho k_B T + \\frac{1}{3V} \\left\\langle \\sum_{i < j} \\mathbf{r}_{ij} \\cdot \\mathbf{F}_{ij} \\right\\\
-      rangle$$\n\nwhere $\\rho = N/V$ is number density.\n- $\\rho k_B T$ is the **ideal gas kinetic pressure** (momentum\
-      \ transfer).\n- $\\frac{1}{3V} \\langle \\sum \\mathbf{r}_{ij} \\cdot \\mathbf{F}_{ij} \\rangle$ is the **internal virial\
-      \ contribution**:\n  - Positive ($P > P_{\\text{id}}$) when dominated by repulsive core collisions (e.g. dense liquids).\n\
-      \  - Negative ($P < P_{\\text{id}}$) when dominated by long-range attractive dispersion forces (e.g. moderately dense\
-      \ gases)."
+    body_markdown: "Two fundamental theorems link mechanical microscopic variables to thermodynamic state variables:\n\n### 1. Equipartition Theorem\nFor any generalized coordinate or momentum $x_i$ appearing quadratically in the Hamiltonian $\\mathcal{H}$:\n\n$$\\left\\langle x_i \\frac{\\partial \\mathcal{H}}{\\partial x_j} \\right\\rangle = k_B T \\, \\delta_{ij} \\implies \\left\\langle \\frac{p_{i\\alpha}^2}{2m_i} \\right\\rangle = \\frac{1}{2} k_B T$$\n\nEach quadratic degree of freedom carries $\\frac{1}{2}k_B T$ of thermal energy. In molecular dynamics, this provides the **instantaneous kinetic temperature estimator**:\n\n$$T_{\\text{kin}}(t) = \\frac{1}{N_{\\text{dof}} k_B} \\sum_{i=1}^N m_i |\\mathbf{v}_i(t)|^2$$\n\nFor $N$ particles in 3D with periodic boundary conditions and fixed total momentum $\\sum m_i \\mathbf{v}_i = \\mathbf{0}$, the number of degrees of freedom is $N_{\\text{dof}} = 3N - 3$.\n\n### 2. Clausius Virial Theorem and Pressure Estimator\nApplying the generalized\
+      \ equipartition identity to coordinates $\\sum_i \\langle \\mathbf{r}_i \\cdot \\nabla_{\\mathbf{r}_i} \\mathcal{H}\\rangle = 3N k_B T$ and separating external container wall forces from internal interatomic forces $\\mathbf{F}_{ij}$ yields the **Clausius Virial Equation of State**:\n\n$$P = \\rho k_B T + \\frac{1}{3V} \\left\\langle \\sum_{i < j} \\mathbf{r}_{ij} \\cdot \\mathbf{F}_{ij} \\right\\rangle$$\n\nwhere $\\rho = N/V$ is number density.\n- $\\rho k_B T$ is the **ideal gas kinetic pressure** (momentum transfer).\n- $\\frac{1}{3V} \\langle \\sum \\mathbf{r}_{ij} \\cdot \\mathbf{F}_{ij} \\rangle$ is the **internal virial contribution**:\n  - Positive ($P > P_{\\text{id}}$) when dominated by repulsive core collisions (e.g. dense liquids).\n  - Negative ($P < P_{\\text{id}}$) when dominated by long-range attractive dispersion forces (e.g. moderately dense gases)."
   - id: concept_virial_pressure
     type: concept_cell
     title: Virial Pressure and Energy Fluctuations
@@ -551,73 +481,63 @@ worksheet:
         max: 0.9
         step: 0.05
         default: 0.65
-    description_markdown: Decompose the total pressure into its kinetic ideal-gas component $P_{\text{id}} = \rho k_B T$ and
-      the interatomic virial component $P_{\text{vir}} = \frac{1}{3V}\langle \sum \mathbf{r}_{ij}\cdot\mathbf{F}_{ij}\rangle$.
-      Observe the transition from attraction-dominated ($P_{\text{vir}} < 0$) to repulsive-core-dominated ($P_{\text{vir}}
-      > 0$) as density increases.
-    takeaway_markdown: The virial estimator allows exact computation of bulk pressure in periodic boundary conditions without
-      simulating physical container walls. At high liquid densities, the repulsive core virial dominates, causing total pressure
-      $P$ to rise steeply above the ideal gas law ($Z = P/(\rho k_B T) \gg 1$).
+    description_markdown: Decompose the total pressure into its kinetic ideal-gas component $P_{\text{id}} = \rho k_B T$ and the interatomic virial component $P_{\text{vir}} = \frac{1}{3V}\langle \sum \mathbf{r}_{ij}\cdot\mathbf{F}_{ij}\rangle$. Observe the transition from attraction-dominated ($P_{\text{vir}} < 0$) to repulsive-core-dominated ($P_{\text{vir}} > 0$) as density increases.
+    takeaway_markdown: The virial estimator allows exact computation of bulk pressure in periodic boundary conditions without simulating physical container walls. At high liquid densities, the repulsive core virial dominates, causing total pressure $P$ to rise steeply above the ideal gas law ($Z = P/(\rho k_B T) \gg 1$).
   - id: q15_degrees_of_freedom_pbc
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: In an MD simulation of $N = 250$ atoms with periodic boundary conditions and fixed total center-of-mass
-      momentum ($\sum m_i \mathbf{v}_i = \mathbf{0}$), what is the exact number of independent degrees of freedom $N_{\text{dof}}$
-      that must be used in the equipartition temperature estimator $T = 2 K / (N_{\text{dof}} k_B)$?
+    prompt_markdown: In an MD simulation of $N = 250$ atoms with periodic boundary conditions and fixed total center-of-mass momentum ($\sum m_i \mathbf{v}_i = \mathbf{0}$), what is the exact number of independent degrees of freedom $N_{\text{dof}}$ that must be used in the equipartition temperature estimator $T = 2 K / (N_{\text{dof}} k_B)$?
     hint_markdown: 3N coordinates minus 3 conserved center-of-mass momentum components.
     correct:
       value: 747
       tolerance: 0.01
-    rationale_markdown: 'A 3D system of $N$ particles has $3N$ velocity components. Conserving the 3 components of total linear
-      momentum removes 3 constraints: $N_{\text{dof}} = 3N - 3 = 3(250) - 3 = 747$.'
+    rationale_markdown: 'A 3D system of $N$ particles has $3N$ velocity components. Conserving the 3 components of total linear momentum removes 3 constraints: $N_{\text{dof}} = 3N - 3 = 3(250) - 3 = 747$.'
   - id: q16_virial_sign_meaning
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: In a simulation of a Lennard-Jones gas at moderate density, the measured total pressure is $P = 0.8\rho
-      k_B T$ (so the compressibility factor is $Z = 0.8 < 1$). What does this indicate about the internal virial term $\frac{1}{3V}\langle
-      \sum \mathbf{r}_{ij} \cdot \mathbf{F}_{ij}\rangle$?
+    prompt_markdown: In a simulation of a Lennard-Jones gas at moderate density, the measured total pressure is $P = 0.8\rho k_B T$ (so the compressibility factor is $Z = 0.8 < 1$). What does this indicate about the internal virial term $\frac{1}{3V}\langle \sum \mathbf{r}_{ij} \cdot \mathbf{F}_{ij}\rangle$?
     options:
     - id: a
-      text: The virial term is negative, meaning that attractive intermolecular forces dominate over core repulsions, pulling
-        atoms inward.
+      text: The virial term is negative, meaning that attractive intermolecular forces dominate over core repulsions, pulling atoms inward.
+      text_markdown: The virial term is negative, meaning that attractive intermolecular forces dominate over core repulsions, pulling atoms inward.
     - id: b
       text: The virial term is zero, meaning particles behave as an ideal gas.
+      text_markdown: The virial term is zero, meaning particles behave as an ideal gas.
     - id: c
       text: The virial term is positive, meaning particles are colliding violently.
+      text_markdown: The virial term is positive, meaning particles are colliding violently.
     - id: d
       text: The kinetic energy was measured incorrectly.
+      text_markdown: The kinetic energy was measured incorrectly.
     correct: a
-    hint_markdown: Consider whether attractive intermolecular forces act to increase or decrease the total pressure relative
-      to a non-interacting gas at the same density.
-    rationale_markdown: Since $P = \rho k_B T + P_{\text{vir}}$, having $P < \rho k_B T$ requires $P_{\text{vir}} < 0$. Intermolecular
-      attractions produce forces directed toward each other ($\mathbf{r}_{ij} \cdot \mathbf{F}_{ij} < 0$), acting like an
-      internal tension that reduces the outward pressure exerted on the box.
+    hint_markdown: Consider whether attractive intermolecular forces act to increase or decrease the total pressure relative to a non-interacting gas at the same density.
+    rationale_markdown: Since $P = \rho k_B T + P_{\text{vir}}$, having $P < \rho k_B T$ requires $P_{\text{vir}} < 0$. Intermolecular attractions produce forces directed toward each other ($\mathbf{r}_{ij} \cdot \mathbf{F}_{ij} < 0$), acting like an internal tension that reduces the outward pressure exerted on the box.
   - id: q17_pair_force_virial_simplification
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: For central pairwise interatomic forces derived from a potential $V(r_{ij})$, the force on atom $i$ from
-      atom $j$ is $\mathbf{F}_{ij} = -\frac{dV}{dr_{ij}} \frac{\mathbf{r}_{ij}}{r_{ij}}$. What is the scalar value of $\mathbf{r}_{ij}
-      \cdot \mathbf{F}_{ij}$?
+    prompt_markdown: For central pairwise interatomic forces derived from a potential $V(r_{ij})$, the force on atom $i$ from atom $j$ is $\mathbf{F}_{ij} = -\frac{dV}{dr_{ij}} \frac{\mathbf{r}_{ij}}{r_{ij}}$. What is the scalar value of $\mathbf{r}_{ij} \cdot \mathbf{F}_{ij}$?
     options:
     - id: a
-      text: -r_ij * (dV / dr_ij)
+      text: $-r_{ij} \frac{dV}{dr_{ij}}$
+      text_markdown: $-r_{ij} \frac{dV}{dr_{ij}}$
     - id: b
-      text: +r_ij^2 * (dV / dr_ij)
+      text: $+r_{ij}^2 \frac{dV}{dr_{ij}}$
+      text_markdown: $+r_{ij}^2 \frac{dV}{dr_{ij}}$
     - id: c
-      text: -(dV / dr_ij) / r_ij
+      text: $-\frac{1}{r_{ij}} \frac{dV}{dr_{ij}}$
+      text_markdown: $-\frac{1}{r_{ij}} \frac{dV}{dr_{ij}}$
     - id: d
       text: 0, because force is always perpendicular to separation
+      text_markdown: 0, because force is always perpendicular to separation
     correct: a
     hint_markdown: Take the dot product of r_ij with -(dV/dr_ij) * (r_ij / r_ij). Note that r_ij . r_ij = r_ij^2.
-    rationale_markdown: $\mathbf{r}_{ij} \cdot \mathbf{F}_{ij} = \mathbf{r}_{ij} \cdot \left( -\frac{dV}{dr_{ij}} \frac{\mathbf{r}_{ij}}{r_{ij}}
-      \right) = -\frac{dV}{dr_{ij}} \frac{|\mathbf{r}_{ij}|^2}{r_{ij}} = -r_{ij} \frac{dV}{dr_{ij}}$. This simple scalar product
-      is accumulated directly during the pairwise force loop.
+    rationale_markdown: $\mathbf{r}_{ij} \cdot \mathbf{F}_{ij} = \mathbf{r}_{ij} \cdot \left( -\frac{dV}{dr_{ij}} \frac{\mathbf{r}_{ij}}{r_{ij}} \right) = -\frac{dV}{dr_{ij}} \frac{|\mathbf{r}_{ij}|^2}{r_{ij}} = -r_{ij} \frac{dV}{dr_{ij}}$. This simple scalar product is accumulated directly during the pairwise force loop.
   - id: concept_fpu_recurrence_cell
     type: concept_cell
     title: FPU Chain Normal-Mode Energy Sharing and Recurrence
@@ -638,216 +558,206 @@ worksheet:
         max: 5
         step: 1
         default: 4
-    description_markdown: Simulate normal mode energy exchange in a 32-particle 1D chain with nonlinear spring interactions
-      (the Fermi-Pasta-Ulam-Tsingou problem). At low specific energy, the system exhibits quasi-periodic recurrence without
-      equipartition. At high energy, nonlinear stochasticity mixes all modes to $E_k/E_{\text{tot}} = 1/32$.
-    takeaway_markdown: Integrable and near-integrable systems violate ergodicity. MD simulations of solids require sufficient
-      temperature or defect/phonon scattering to establish true thermodynamic equilibrium.
+    description_markdown: Simulate normal mode energy exchange in a 32-particle 1D chain with nonlinear spring interactions (the Fermi-Pasta-Ulam-Tsingou problem). At low specific energy, the system exhibits quasi-periodic recurrence without equipartition. At high energy, nonlinear stochasticity mixes all modes to $E_k/E_{\text{tot}} = 1/32$.
+    takeaway_markdown: Integrable and near-integrable systems violate ergodicity. MD simulations of solids require sufficient temperature or defect/phonon scattering to establish true thermodynamic equilibrium.
   - id: q18_microcanonical_estimator_c_v
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: In the microcanonical ensemble ($NVE$), total energy cannot fluctuate ($\sigma_E = 0$). How can the constant-volume
-      heat capacity $C_V$ be calculated from an $NVE$ simulation (Lebowitz-Percus-Verlet formula)?
+    prompt_markdown: In the microcanonical ensemble ($NVE$), total energy cannot fluctuate ($\sigma_E = 0$). How can the constant-volume heat capacity $C_V$ be calculated from an $NVE$ simulation (Lebowitz-Percus-Verlet formula)?
     options:
     - id: a
-      text: 'From the kinetic energy fluctuations: <Delta K^2>_NVE / <K>^2 = (2 / (3N)) * (1 - (3N k_B) / (2 C_V)).'
+      text: 'From the kinetic energy fluctuations: $\langle \Delta K^2 \rangle_{\text{NVE}} / \langle K \rangle^2 = \frac{2}{3N} \left(1 - \frac{3N k_B}{2 C_V}\right)$.'
+      text_markdown: 'From the kinetic energy fluctuations: $\langle \Delta K^2 \rangle_{\text{NVE}} / \langle K \rangle^2 = \frac{2}{3N} \left(1 - \frac{3N k_B}{2 C_V}\right)$.'
     - id: b
       text: It cannot be calculated from NVE under any circumstances.
+      text_markdown: It cannot be calculated from NVE under any circumstances.
     - id: c
       text: By measuring the volume fluctuations.
+      text_markdown: By measuring the volume fluctuations.
     - id: d
       text: By differentiating total energy with respect to simulation time.
+      text_markdown: By differentiating total energy with respect to simulation time.
     correct: a
     hint_markdown: Although total energy E = K + V is constant, kinetic energy K and potential energy V exchange fluctuations.
-    rationale_markdown: 'In $NVE$, total energy is strictly conserved, but kinetic and potential energies exchange: $\Delta
-      K = -\Delta V$. Lebowitz, Percus, and Verlet derived that the relative variance of kinetic energy directly yields the
-      microcanonical heat capacity: $\frac{\langle \Delta K^2 \rangle}{\langle K \rangle^2} = \frac{2}{3N} \left( 1 - \frac{3N
-      k_B}{2 C_V} \right)$.'
+    rationale_markdown: 'In $NVE$, total energy is strictly conserved, but kinetic and potential energies exchange: $\Delta K = -\Delta V$. Lebowitz, Percus, and Verlet derived that the relative variance of kinetic energy directly yields the microcanonical heat capacity: $\frac{\langle \Delta K^2 \rangle}{\langle K \rangle^2} = \frac{2}{3N} \left( 1 - \frac{3N k_B}{2 C_V} \right)$.'
   - id: q19_ideal_gas_law_from_virial
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: In the macroscopic virial equation of state, total pressure is decomposed into kinetic and configurational
-      pair contributions. When intermolecular interactions vanish identically (non-interacting particles), which thermodynamic
-      relation is recovered?
+    prompt_markdown: In the macroscopic virial equation of state, total pressure is decomposed into kinetic and configurational pair contributions. When intermolecular interactions vanish identically (non-interacting particles), which thermodynamic relation is recovered?
     options:
     - id: a
-      text: P = rho * k_B * T (the ideal gas law P V = N k_B T).
+      text: $P = \rho k_B T$ (the ideal gas law $P V = N k_B T$).
+      text_markdown: $P = \rho k_B T$ (the ideal gas law $P V = N k_B T$).
     - id: b
-      text: P = 0, because pressure requires forces.
+      text: $P = 0$, because pressure requires forces.
+      text_markdown: $P = 0$, because pressure requires forces.
     - id: c
-      text: P = infinity.
+      text: $P = \infty$.
+      text_markdown: $P = \infty$.
     - id: d
-      text: P = 3 / (2 k_B T).
+      text: $P = \frac{3}{2 k_B T}$.
+      text_markdown: $P = \frac{3}{2 k_B T}$.
     correct: a
-    hint_markdown: Consider the contribution of interatomic forces to the internal virial stress when the potential energy
-      is identically zero.
-    rationale_markdown: When interatomic forces $\mathbf{F}_{ij} = 0$, the internal virial vanishes, yielding $P = \rho k_B
-      T = \frac{N k_B T}{V} \implies P V = N k_B T$, which is exactly the ideal gas law.
+    hint_markdown: Consider the contribution of interatomic forces to the internal virial stress when the potential energy is identically zero.
+    rationale_markdown: When interatomic forces $\mathbf{F}_{ij} = 0$, the internal virial vanishes, yielding $P = \rho k_B T = \frac{N k_B T}{V} \implies P V = N k_B T$, which is exactly the ideal gas law.
   - id: q20_momentum_maxwell_boltzmann
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: In classical canonical statistical mechanics, why does the momentum distribution factor completely independently
-      from the spatial coordinate distribution, regardless of how complex or non-ideal the interatomic potential $V(\mathbf{r}^N)$
-      is?
+    prompt_markdown: In classical canonical statistical mechanics, why does the momentum distribution factor completely independently from the spatial coordinate distribution, regardless of how complex or non-ideal the interatomic potential $V(\mathbf{r}^N)$ is?
     options:
     - id: a
-      text: 'Because the classical Hamiltonian separates into a sum of purely momentum-dependent kinetic energy and purely
-        coordinate-dependent potential energy: H(r, p) = K(p) + V(r).'
+      text: 'Because the classical Hamiltonian separates into a sum of purely momentum-dependent kinetic energy and purely coordinate-dependent potential energy: H(r, p) = K(p) + V(r).'
+      text_markdown: 'Because the classical Hamiltonian separates into a sum of purely momentum-dependent kinetic energy and purely coordinate-dependent potential energy: H(r, p) = K(p) + V(r).'
     - id: b
       text: Because momentum is conserved by Newton's third law.
+      text_markdown: Because momentum is conserved by Newton's third law.
     - id: c
       text: Because particles do not interact in momentum space.
+      text_markdown: Because particles do not interact in momentum space.
     - id: d
       text: Because temperature is independent of velocity.
+      text_markdown: Because temperature is independent of velocity.
     correct: a
     hint_markdown: Consider exp(-beta H) when H = K(p) + V(r).
-    rationale_markdown: Since $\mathcal{H}(\mathbf{r}^N, \mathbf{p}^N) = \sum_i \frac{p_i^2}{2m} + V(\mathbf{r}^N)$, the Boltzmann
-      weight factors into $e^{-\beta \mathcal{H}} = e^{-\beta K(\mathbf{p}^N)} e^{-\beta V(\mathbf{r}^N)}$. The momentum integral
-      is a product of uncoupled 1D Gaussians, yielding the universal Maxwell-Boltzmann distribution for any classical fluid,
-      solid, or gas.
+    rationale_markdown: Since $\mathcal{H}(\mathbf{r}^N, \mathbf{p}^N) = \sum_i \frac{p_i^2}{2m} + V(\mathbf{r}^N)$, the Boltzmann weight factors into $e^{-\beta \mathcal{H}} = e^{-\beta K(\mathbf{p}^N)} e^{-\beta V(\mathbf{r}^N)}$. The momentum integral is a product of uncoupled 1D Gaussians, yielding the universal Maxwell-Boltzmann distribution for any classical fluid, solid, or gas.
   - id: q21_gibbs_entropy_formula
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: For any statistical ensemble with phase-space probability density $\rho(\boldsymbol{\Gamma})$, what is
-      the general Gibbs definition of ensemble entropy?
+    prompt_markdown: For any statistical ensemble with phase-space probability density $\rho(\boldsymbol{\Gamma})$, what is the general Gibbs definition of ensemble entropy?
     options:
     - id: a
-      text: S = -k_B * integral rho(Gamma) * ln rho(Gamma) dGamma
+      text: $S = -k_B \int \rho(\Gamma) \ln \rho(\Gamma)\,d\Gamma$
+      text_markdown: $S = -k_B \int \rho(\Gamma) \ln \rho(\Gamma)\,d\Gamma$
     - id: b
-      text: S = +k_B * integral rho(Gamma)^2 dGamma
+      text: $S = +k_B \int \rho(\Gamma)^2\,d\Gamma$
+      text_markdown: $S = +k_B \int \rho(\Gamma)^2\,d\Gamma$
     - id: c
-      text: S = k_B * T * ln Z
+      text: $S = k_B T \ln Z$
+      text_markdown: $S = k_B T \ln Z$
     - id: d
-      text: S = integral H(Gamma) * rho(Gamma) dGamma
+      text: $S = \int H(\Gamma) \rho(\Gamma)\,d\Gamma$
+      text_markdown: $S = \int H(\Gamma) \rho(\Gamma)\,d\Gamma$
     correct: a
     hint_markdown: Recall the information-theoretic Shannon/Gibbs entropy formula.
-    rationale_markdown: The Gibbs entropy is $S = -k_B \langle \ln \rho \rangle = -k_B \int \rho(\boldsymbol{\Gamma}) \ln
-      \rho(\boldsymbol{\Gamma})\, d\boldsymbol{\Gamma}$. For the microcanonical ensemble ($\rho = 1/\Omega$), this yields
-      Boltzmann's $S = k_B \ln \Omega$; for the canonical ensemble, it yields $S = (\langle E \rangle - F)/T$.
+    rationale_markdown: The Gibbs entropy is $S = -k_B \langle \ln \rho \rangle = -k_B \int \rho(\boldsymbol{\Gamma}) \ln \rho(\boldsymbol{\Gamma})\, d\boldsymbol{\Gamma}$. For the microcanonical ensemble ($\rho = 1/\Omega$), this yields Boltzmann's $S = k_B \ln \Omega$; for the canonical ensemble, it yields $S = (\langle E \rangle - F)/T$.
   - id: q22_kinetic_temperature_fluctuation_nve
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: In an $NVE$ molecular dynamics run of a liquid, why does the instantaneous kinetic temperature $T_{\text{kin}}(t)
-      = \frac{2 K(t)}{N_{\text{dof}} k_B}$ fluctuate from step to step, even though the total energy $E = K(t) + V(t)$ is
-      strictly conserved?
+    prompt_markdown: In an $NVE$ molecular dynamics run of a liquid, why does the instantaneous kinetic temperature $T_{\text{kin}}(t) = \frac{2 K(t)}{N_{\text{dof}} k_B}$ fluctuate from step to step, even though the total energy $E = K(t) + V(t)$ is strictly conserved?
     options:
     - id: a
       text: As particles move, collisions convert kinetic energy into potential energy and vice versa; only their sum is constant.
+      text_markdown: As particles move, collisions convert kinetic energy into potential energy and vice versa; only their sum is constant.
     - id: b
       text: The integrator has a bug that fails to conserve kinetic energy.
+      text_markdown: The integrator has a bug that fails to conserve kinetic energy.
     - id: c
       text: The periodic boundary conditions create artificial velocity shocks.
+      text_markdown: The periodic boundary conditions create artificial velocity shocks.
     - id: d
       text: Equipartition only holds at t = 0.
+      text_markdown: Equipartition only holds at t = 0.
     correct: a
     hint_markdown: What happens to particle velocities when two atoms climb a repulsive potential hill?
-    rationale_markdown: Conservative Newtonian dynamics preserves total energy $E = K + V$. When atoms climb up potential
-      energy walls during repulsive collisions, kinetic energy drops ($K \downarrow$, $V \uparrow$); when they fall into attractive
-      wells, kinetic energy increases ($K \uparrow$, $V \downarrow$). Thus $T_{\text{kin}}(t)$ fluctuates naturally around
-      its thermodynamic mean.
+    rationale_markdown: Conservative Newtonian dynamics preserves total energy $E = K + V$. When atoms climb up potential energy walls during repulsive collisions, kinetic energy drops ($K \downarrow$, $V \uparrow$); when they fall into attractive wells, kinetic energy increases ($K \uparrow$, $V \downarrow$). Thus $T_{\text{kin}}(t)$ fluctuates naturally around its thermodynamic mean.
   - id: q23_helmholtz_from_partition_function
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: What fundamental relation connects the canonical partition function $Z(N, V, T)$ to the Helmholtz free
-      energy $F$?
+    prompt_markdown: What fundamental relation connects the canonical partition function $Z(N, V, T)$ to the Helmholtz free energy $F$?
     options:
     - id: a
-      text: F = -k_B * T * ln Z
+      text: $F = -k_B T \ln Z$
+      text_markdown: $F = -k_B T \ln Z$
     - id: b
-      text: F = +k_B * T * Z
+      text: $F = +k_B T Z$
+      text_markdown: $F = +k_B T Z$
     - id: c
-      text: F = -1 / (k_B * T) * ln Z
+      text: $F = -\frac{1}{k_B T} \ln Z$
+      text_markdown: $F = -\frac{1}{k_B T} \ln Z$
     - id: d
-      text: F = dZ / dT
+      text: $F = \frac{dZ}{dT}$
+      text_markdown: $F = \frac{dZ}{dT}$
     correct: a
-    hint_markdown: Recall the fundamental thermodynamic bridge relation connecting the canonical partition function to thermodynamic
-      free energy.
-    rationale_markdown: 'The bridge between statistical mechanics and thermodynamics in the canonical ensemble is $F = -k_B
-      T \ln Z$. From $F$, all other thermodynamic variables follow: $P = -(\partial F/\partial V)_{N,T}$, $S = -(\partial
-      F/\partial T)_{N,V}$, and $\mu = (\partial F/\partial N)_{V,T}$.'
+    hint_markdown: Recall the fundamental thermodynamic bridge relation connecting the canonical partition function to thermodynamic free energy.
+    rationale_markdown: 'The bridge between statistical mechanics and thermodynamics in the canonical ensemble is $F = -k_B T \ln Z$. From $F$, all other thermodynamic variables follow: $P = -(\partial F/\partial V)_{N,T}$, $S = -(\partial F/\partial T)_{N,V}$, and $\mu = (\partial F/\partial N)_{V,T}$.'
   - id: q24_virial_cutoff_correction
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: When interatomic potentials are truncated at cutoff radius $r_c$, what long-range tail correction must
-      be added to the pressure $P_{\text{tail}}$ (assuming $g(r) \approx 1$ for $r > r_c$)?
+    prompt_markdown: When interatomic potentials are truncated at cutoff radius $r_c$, what long-range tail correction must be added to the pressure $P_{\text{tail}}$ (assuming $g(r) \approx 1$ for $r > r_c$)?
     options:
     - id: a
-      text: P_tail = - (2 * pi * rho^2 / 3) * integral from r_c to infinity of r^3 * (dV/dr) dr
+      text: $P_{\text{tail}} = -\frac{2\pi\rho^2}{3}\int_{r_c}^\infty r^3 \frac{dV}{dr}\,dr$
+      text_markdown: $P_{\text{tail}} = -\frac{2\pi\rho^2}{3}\int_{r_c}^\infty r^3 \frac{dV}{dr}\,dr$
     - id: b
-      text: P_tail = + (4 * pi * rho) * integral from r_c to infinity of V(r) dr
+      text: $P_{\text{tail}} = +4\pi\rho \int_{r_c}^\infty V(r)\,dr$
+      text_markdown: $P_{\text{tail}} = +4\pi\rho \int_{r_c}^\infty V(r)\,dr$
     - id: c
-      text: P_tail = 0, because forces beyond r_c are exactly zero.
+      text: $P_{\text{tail}} = 0$, because forces beyond $r_c$ are exactly zero.
+      text_markdown: $P_{\text{tail}} = 0$, because forces beyond $r_c$ are exactly zero.
     - id: d
-      text: P_tail = rho * k_B * T * exp(-r_c)
+      text: $P_{\text{tail}} = \rho k_B T e^{-r_c}$
+      text_markdown: $P_{\text{tail}} = \rho k_B T e^{-r_c}$
     correct: a
     hint_markdown: Integrate the virial kernel -r * (dV/dr) * 4 pi r^2 rho dr from r_c to infinity.
-    rationale_markdown: Integrating the virial sum $\frac{1}{3V} \sum \mathbf{r}_{ij} \cdot \mathbf{F}_{ij}$ over the uniform
-      fluid background $g(r) \approx 1$ beyond $r_c$ gives $P_{\text{tail}} = -\frac{2\pi\rho^2}{3} \int_{r_c}^\infty r^3
-      \frac{dV}{dr} dr$. For Lennard-Jones $12-6$, this tail correction is negative and scales as $r_c^{-3}$.
+    rationale_markdown: Integrating the virial sum $\frac{1}{3V} \sum \mathbf{r}_{ij} \cdot \mathbf{F}_{ij}$ over the uniform fluid background $g(r) \approx 1$ beyond $r_c$ gives $P_{\text{tail}} = -\frac{2\pi\rho^2}{3} \int_{r_c}^\infty r^3 \frac{dV}{dr} dr$. For Lennard-Jones $12-6$, this tail correction is negative and scales as $r_c^{-3}$.
   - id: q25_lyapunov_divergence_measure
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_chaos_and_lyapunov
-    prompt_markdown: If a system has a maximum Lyapunov exponent $\lambda = 1.0\text{ ps}^{-1}$, by what multiplicative factor
-      does an initial perturbation grow after $\Delta t = 6.908\text{ ps}$ (before saturation)?
-    hint_markdown: Apply the definition of the maximal Lyapunov exponent to find the growth factor of an infinitesimal phase-space
-      displacement over the specified time interval.
+    prompt_markdown: If a system has a maximum Lyapunov exponent $\lambda = 1.0\text{ ps}^{-1}$, by what multiplicative factor does an initial perturbation grow after $\Delta t = 6.908\text{ ps}$ (before saturation)?
+    hint_markdown: Apply the definition of the maximal Lyapunov exponent to find the growth factor of an infinitesimal phase-space displacement over the specified time interval.
     correct:
       value: 1000
       tolerance: 5.0
-    rationale_markdown: $\Delta R(t) / \Delta R(0) = e^{\lambda t} = e^{1.0 \times 6.907755} = 1000$. An initial perturbation
-      grows by a factor of 1000 in roughly $6.91\text{ ps}$.
+    rationale_markdown: $\Delta R(t) / \Delta R(0) = e^{\lambda t} = e^{1.0 \times 6.907755} = 1000$. An initial perturbation grows by a factor of 1000 in roughly $6.91\text{ ps}$.
   - id: q26_energy_fluctuation_vs_Cv
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: In a canonical simulation of $N = 1000$ atoms at $T = 300\text{ K}$, the constant-volume heat capacity
-      is $C_V = 3000\, k_B$ (Dulong–Petit limit). Calculate the root-mean-square total energy fluctuation $\sigma_E$ (in $\text{eV}$).
-    hint_markdown: Relate the total energy variance to temperature and heat capacity in the canonical ensemble, and convert
-      the resulting energy scale to electron-volts.
+    prompt_markdown: In a canonical simulation of $N = 1000$ atoms at $T = 300\text{ K}$, the constant-volume heat capacity is $C_V = 3000\, k_B$ (Dulong–Petit limit). Calculate the root-mean-square total energy fluctuation $\sigma_E$ (in $\text{eV}$).
+    hint_markdown: Relate the total energy variance to temperature and heat capacity in the canonical ensemble, and convert the resulting energy scale to electron-volts.
     correct:
       value: 22.68
       tolerance: 0.5
-    rationale_markdown: $\sigma_E = \sqrt{k_B T^2 C_V} = k_B T \sqrt{C_V / k_B} = (1.38065 \times 10^{-23})(300)\sqrt{3000}
-      = (4.14195 \times 10^{-21})(54.772) = 2.2686 \times 10^{-19}\text{ J} = 22.69 \times 10^{-20}\text{ J}$.
+    rationale_markdown: $\sigma_E = \sqrt{k_B T^2 C_V} = k_B T \sqrt{C_V / k_B} = (1.38065 \times 10^{-23})(300)\sqrt{3000} = (4.14195 \times 10^{-21})(54.772) = 2.2686 \times 10^{-19}\text{ J} = 22.69 \times 10^{-20}\text{ J}$.
   - id: q27_microcanonical_gibbs_paradox
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: If the Gibbs indistinguishability factor $N!$ were omitted from the classical partition function, how
-      would the calculated entropy $S$ behave if system volume $V$ and particle count $N$ were both doubled at constant $T$
-      and $\rho$?
+    prompt_markdown: If the Gibbs indistinguishability factor $N!$ were omitted from the classical partition function, how would the calculated entropy $S$ behave if system volume $V$ and particle count $N$ were both doubled at constant $T$ and $\rho$?
     options:
     - id: a
-      text: Entropy would fail to be extensive, increasing by more than a factor of 2 (specifically, an extra 2 N k_B ln 2).
+      text: Entropy would fail to be extensive, increasing by more than a factor of 2 (specifically, an extra $2 N k_B \ln 2$).
+      text_markdown: Entropy would fail to be extensive, increasing by more than a factor of 2 (specifically, an extra $2 N k_B \ln 2$).
     - id: b
       text: Entropy would double exactly.
+      text_markdown: Entropy would double exactly.
     - id: c
       text: Entropy would be halved.
+      text_markdown: Entropy would be halved.
     - id: d
       text: Entropy would become negative.
+      text_markdown: Entropy would become negative.
     correct: a
     hint_markdown: Consider ln(V^N) vs ln(V^N / N!).
-    rationale_markdown: Without $N!$, $\ln(V^N) = N \ln V$. When $N \to 2N$ and $V \to 2V$, $2N \ln(2V) = 2(N \ln V) + 2N
-      \ln 2$. The extra non-extensive term $2N k_B \ln 2$ is the Gibbs paradox, cured by subtracting $\ln N! \approx N \ln
-      N - N$.
+    rationale_markdown: Without $N!$, $\ln(V^N) = N \ln V$. When $N \to 2N$ and $V \to 2V$, $2N \ln(2V) = 2(N \ln V) + 2N \ln 2$. The extra non-extensive term $2N k_B \ln 2$ is the Gibbs paradox, cured by subtracting $\ln N! \approx N \ln N - N$.
   - id: q28_pressure_estimator_virial_ideal
     type: problem
     question_type: multi_select
@@ -856,37 +766,34 @@ worksheet:
     prompt_markdown: Which of the following statements about the virial pressure estimator are correct?
     options:
     - id: a
-      text: It computes the bulk macroscopic pressure directly from internal pair coordinates and forces without needing physical
-        walls.
+      text: It computes the bulk macroscopic pressure directly from internal pair coordinates and forces without needing physical walls.
+      text_markdown: It computes the bulk macroscopic pressure directly from internal pair coordinates and forces without needing physical walls.
     - id: b
-      text: It can be applied to periodic boundary conditions using minimum-image pair vectors r_ij.
+      text: It can be applied to periodic boundary conditions using minimum-image pair vectors $\mathbf{r}_{ij}$.
+      text_markdown: It can be applied to periodic boundary conditions using minimum-image pair vectors $\mathbf{r}_{ij}$.
     - id: c
       text: It is valid only for ideal gases and fails when interatomic forces exist.
+      text_markdown: It is valid only for ideal gases and fails when interatomic forces exist.
     - id: d
       text: At low densities and moderate temperatures, attractive van der Waals forces make the virial term negative.
+      text_markdown: At low densities and moderate temperatures, attractive van der Waals forces make the virial term negative.
     correct:
     - a
     - b
     - d
     hint_markdown: Consider how pressure is computed in PBC and what sign attractions produce.
-    rationale_markdown: 'Statements a, b, and d are all standard: the virial formula avoids walls in PBC by using minimum
-      image displacements $\mathbf{r}_{ij}$ and pair forces $\mathbf{F}_{ij}$. Statement c is false: the entire purpose of
-      the virial term is to account for non-ideal interactions.'
+    rationale_markdown: 'Statements a, b, and d are all standard: the virial formula avoids walls in PBC by using minimum image displacements $\mathbf{r}_{ij}$ and pair forces $\mathbf{F}_{ij}$. Statement c is false: the entire purpose of the virial term is to account for non-ideal interactions.'
   - id: q29_liouville_harmonic_oscillator_area
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_liouville_markdown
-    prompt_markdown: A 1D harmonic oscillator with mass $m = 1$ and spring constant $k = 1$ starts with an initial circular
-      phase-space patch of radius $r = 0.5$ (initial area $\Omega(0) = \pi r^2 = 0.25\pi \approx 0.7854$). According to Liouville's
-      theorem, what is the exact area $\Omega(t)$ at $t = 10.0$?
+    prompt_markdown: A 1D harmonic oscillator with mass $m = 1$ and spring constant $k = 1$ starts with an initial circular phase-space patch of radius $r = 0.5$ (initial area $\Omega(0) = \pi r^2 = 0.25\pi \approx 0.7854$). According to Liouville's theorem, what is the exact area $\Omega(t)$ at $t = 10.0$?
     hint_markdown: Liouville's theorem states phase-space volume is strictly conserved.
     correct:
       value: 0.7854
       tolerance: 0.01
-    rationale_markdown: Under conservative Hamiltonian flow, phase space is strictly incompressible ($d\Omega/dt = 0$). For
-      a harmonic oscillator, the circular patch merely rotates as a rigid disk with angular frequency $\omega = \sqrt{k/m}
-      = 1$, preserving its area $\pi (0.5)^2 \approx 0.7854$ exactly.
+    rationale_markdown: Under conservative Hamiltonian flow, phase space is strictly incompressible ($d\Omega/dt = 0$). For a harmonic oscillator, the circular patch merely rotates as a rigid disk with angular frequency $\omega = \sqrt{k/m} = 1$, preserving its area $\pi (0.5)^2 \approx 0.7854$ exactly.
   - id: q30_lyapunov_exponent_units
     type: problem
     question_type: single_select
@@ -896,172 +803,169 @@ worksheet:
     options:
     - id: a
       text: Inverse time (1/s or 1/ps)
+      text_markdown: Inverse time (1/s or 1/ps)
     - id: b
       text: Length (nm or Angstrom)
+      text_markdown: Length (nm or Angstrom)
     - id: c
       text: Energy (J or eV)
+      text_markdown: Energy (J or eV)
     - id: d
       text: Dimensionless
+      text_markdown: Dimensionless
     correct: a
     hint_markdown: In exp(lambda * t), the exponent lambda * t must be dimensionless.
-    rationale_markdown: Since $\lambda t$ appears as a dimensionless exponent in $|\Delta \mathbf{R}(t)| \sim e^{\lambda t}$,
-      $\lambda$ must have dimensions of inverse time ($[\text{time}]^{-1}$, typically $\text{ps}^{-1}$ in atomistic simulations).
+    rationale_markdown: Since $\lambda t$ appears as a dimensionless exponent in $|\Delta \mathbf{R}(t)| \sim e^{\lambda t}$, $\lambda$ must have dimensions of inverse time ($[\text{time}]^{-1}$, typically $\text{ps}^{-1}$ in atomistic simulations).
   - id: q31_partition_function_ideal_gas_scaling
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: For an ideal gas of $N$ classical particles in volume $V$ at temperature $T$, what is the exact expression
-      for the canonical partition function $Z(N, V, T)$?
+    prompt_markdown: For an ideal gas of $N$ classical particles in volume $V$ at temperature $T$, what is the exact expression for the canonical partition function $Z(N, V, T)$?
     options:
     - id: a
-      text: Z = V^N / (N! * Lambda^(3N))
+      text: $Z = \frac{V^N}{N! \Lambda^{3N}}$
+      text_markdown: $Z = \frac{V^N}{N! \Lambda^{3N}}$
     - id: b
-      text: Z = V / (Lambda * N!)
+      text: $Z = \frac{V}{\Lambda N!}$
+      text_markdown: $Z = \frac{V}{\Lambda N!}$
     - id: c
-      text: Z = exp(-beta * N * k_B * T)
+      text: $Z = \exp(-\beta N k_B T)$
+      text_markdown: $Z = \exp(-\beta N k_B T)$
     - id: d
-      text: Z = (3N)! * (k_B * T)^N
+      text: $Z = (3N)! (k_B T)^N$
+      text_markdown: $Z = (3N)! (k_B T)^N$
     correct: a
     hint_markdown: Integrate d^3 r for each particle independently, giving V^N, divided by N! * Lambda^(3N).
-    rationale_markdown: For non-interacting particles, $V(\mathbf{r}^N) = 0$, so the configurational integral is $Q = \int
-      d\mathbf{r}^N = V^N$. Including the $1/(N!\Lambda^{3N})$ prefactor yields $Z = \frac{V^N}{N!\Lambda^{3N}}$.
+    rationale_markdown: For non-interacting particles, $V(\mathbf{r}^N) = 0$, so the configurational integral is $Q = \int d\mathbf{r}^N = V^N$. Including the $1/(N!\Lambda^{3N})$ prefactor yields $Z = \frac{V^N}{N!\Lambda^{3N}}$.
   - id: q32_anharmonic_filamentation_entropy
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: concept_liouville_flow
-    prompt_markdown: In the concept demonstration of Liouville's theorem, why does an anharmonic potential ($V(x) = \frac{1}{2}x^2
-      + \frac{1}{4}\alpha x^4$) distort the circular phase-space patch into thin spirals, whereas a harmonic oscillator keeps
-      the patch circular?
+    prompt_markdown: In the concept demonstration of Liouville's theorem, why does an anharmonic potential ($V(x) = \frac{1}{2}x^2 + \frac{1}{4}\alpha x^4$) distort the circular phase-space patch into thin spirals, whereas a harmonic oscillator keeps the patch circular?
     options:
     - id: a
-      text: In an anharmonic potential, the oscillation frequency depends on energy (higher energy orbits faster or slower),
-        causing shear between inner and outer orbits.
+      text: In an anharmonic potential, the oscillation frequency depends on energy (higher energy orbits faster or slower), causing shear between inner and outer orbits.
+      text_markdown: In an anharmonic potential, the oscillation frequency depends on energy (higher energy orbits faster or slower), causing shear between inner and outer orbits.
     - id: b
       text: Anharmonic potentials violate Newton's third law.
+      text_markdown: Anharmonic potentials violate Newton's third law.
     - id: c
       text: The harmonic oscillator violates Liouville's theorem.
+      text_markdown: The harmonic oscillator violates Liouville's theorem.
     - id: d
       text: Friction forces are present in anharmonic potentials.
+      text_markdown: Friction forces are present in anharmonic potentials.
     correct: a
     hint_markdown: Recall whether a pendulum's period is independent of amplitude for large swings.
-    rationale_markdown: 'A harmonic oscillator is isochronous: every orbit has identical period $T = 2\pi/\omega$ regardless
-      of amplitude or energy, rotating the patch rigidly. In an anharmonic potential, period and orbital velocity depend on
-      energy $\mathcal{H}$, causing points at different energies to orbit at different angular speeds, shearing the patch
-      into spiral filaments.'
+    rationale_markdown: 'A harmonic oscillator is isochronous: every orbit has identical period $T = 2\pi/\omega$ regardless of amplitude or energy, rotating the patch rigidly. In an anharmonic potential, period and orbital velocity depend on energy $\mathcal{H}$, causing points at different energies to orbit at different angular speeds, shearing the patch into spiral filaments.'
   - id: q33_kinetic_temperature_sampling_distribution
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: Because the instantaneous kinetic energy $K = \sum_{i=1}^{3N-3} \frac{p_i^2}{2m}$ is a sum of $N_{\text{dof}}
-      = 3N-3$ independent squared Gaussian variables, what statistical distribution does the instantaneous kinetic temperature
-      $T_{\text{kin}}$ follow in the canonical ensemble?
+    prompt_markdown: Because the instantaneous kinetic energy $K = \sum_{i=1}^{3N-3} \frac{p_i^2}{2m}$ is a sum of $N_{\text{dof}} = 3N-3$ independent squared Gaussian variables, what statistical distribution does the instantaneous kinetic temperature $T_{\text{kin}}$ follow in the canonical ensemble?
     options:
     - id: a
-      text: A chi-squared distribution with N_dof degrees of freedom (approaching a narrow Gaussian for large N by the Central
-        Limit Theorem).
+      text: A $\chi^2$ distribution with $N_{\text{dof}}$ degrees of freedom (approaching a narrow Gaussian for large $N$ by the Central Limit Theorem).
+      text_markdown: A $\chi^2$ distribution with $N_{\text{dof}}$ degrees of freedom (approaching a narrow Gaussian for large $N$ by the Central Limit Theorem).
     - id: b
       text: A uniform distribution between 0 and 2 T.
+      text_markdown: A uniform distribution between 0 and 2 T.
     - id: c
       text: A Cauchy-Lorentzian distribution with infinite variance.
+      text_markdown: A Cauchy-Lorentzian distribution with infinite variance.
     - id: d
       text: A Poisson distribution.
+      text_markdown: A Poisson distribution.
     correct: a
     hint_markdown: The sum of squared independent standard normals follows a chi-squared distribution.
-    rationale_markdown: Each normalized momentum component $p_i / \sqrt{m k_B T}$ is an independent standard normal variable
-      $\mathcal{N}(0, 1)$. The sum of $N_{\text{dof}}$ squared standard normals follows a $\chi^2$ distribution with mean
-      $N_{\text{dof}}$ and variance $2 N_{\text{dof}}$, giving relative temperature fluctuations $\sigma_T / T = \sqrt{2 /
-      N_{\text{dof}}}$.
+    rationale_markdown: Each normalized momentum component $p_i / \sqrt{m k_B T}$ is an independent standard normal variable $\mathcal{N}(0, 1)$. The sum of $N_{\text{dof}}$ squared standard normals follows a $\chi^2$ distribution with mean $N_{\text{dof}}$ and variance $2 N_{\text{dof}}$, giving relative temperature fluctuations $\sigma_T / T = \sqrt{2 / N_{\text{dof}}}$.
   - id: q34_compressibility_factor_z
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: An MD simulation of liquid argon at density $\rho^* = 0.84$ and temperature $T^* = 1.0$ yields a measured
-      total pressure $P^* = 2.52$. What is the compressibility factor $Z = P / (\rho k_B T)$?
-    hint_markdown: Recall how the dimensionless compressibility factor measures the ratio of total measured pressure to the
-      kinetic ideal-gas pressure.
+    prompt_markdown: An MD simulation of liquid argon at density $\rho^* = 0.84$ and temperature $T^* = 1.0$ yields a measured total pressure $P^* = 2.52$. What is the compressibility factor $Z = P / (\rho k_B T)$?
+    hint_markdown: Recall how the dimensionless compressibility factor measures the ratio of total measured pressure to the kinetic ideal-gas pressure.
     correct:
       value: 3.0
       tolerance: 0.05
-    rationale_markdown: $Z = \frac{P^*}{\rho^* T^*} = \frac{2.52}{0.84 \times 1.0} = 3.00$. The pressure is 3 times higher
-      than an ideal gas at the same density and temperature, indicating strong repulsive core interactions.
+    rationale_markdown: $Z = \frac{P^*}{\rho^* T^*} = \frac{2.52}{0.84 \times 1.0} = 3.00$. The pressure is 3 times higher than an ideal gas at the same density and temperature, indicating strong repulsive core interactions.
   - id: q35_microcanonical_density_of_states_integral
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: The microcanonical partition function $\Omega(E)$ is related to the canonical partition function $Z(\beta)$
-      by which mathematical transform?
+    prompt_markdown: The microcanonical partition function $\Omega(E)$ is related to the canonical partition function $Z(\beta)$ by which mathematical transform?
     options:
     - id: a
-      text: 'Laplace transform: Z(beta) = integral from 0 to infinity of Omega(E) * exp(-beta * E) dE'
+      text: 'Laplace transform: $Z(\beta) = \int_0^\infty \Omega(E) e^{-\beta E}\,dE$'
+      text_markdown: 'Laplace transform: $Z(\beta) = \int_0^\infty \Omega(E) e^{-\beta E}\,dE$'
     - id: b
       text: Fourier cosine transform
+      text_markdown: Fourier cosine transform
     - id: c
       text: Legendre transform of coordinates
+      text_markdown: Legendre transform of coordinates
     - id: d
-      text: Z(beta) equals Omega(E)^2
+      text: $Z(\beta) = \Omega(E)^2$
+      text_markdown: $Z(\beta) = \Omega(E)^2$
     correct: a
     hint_markdown: Write the phase-space integral in terms of an energy integral over the density of states.
-    rationale_markdown: $Z(\beta) = \int d\boldsymbol{\Gamma} e^{-\beta H(\boldsymbol{\Gamma})} = \int_0^\infty dE \left[
-      \int d\boldsymbol{\Gamma}\, \delta(H(\boldsymbol{\Gamma})-E) \right] e^{-\beta E} = \int_0^\infty \Omega(E) e^{-\beta
-      E} dE$. Thus the canonical partition function is the two-sided/one-sided Laplace transform of the microcanonical density
-      of states $\Omega(E)$.
+    rationale_markdown: $Z(\beta) = \int d\boldsymbol{\Gamma} e^{-\beta H(\boldsymbol{\Gamma})} = \int_0^\infty dE \left[ \int d\boldsymbol{\Gamma}\, \delta(H(\boldsymbol{\Gamma})-E) \right] e^{-\beta E} = \int_0^\infty \Omega(E) e^{-\beta E} dE$. Thus the canonical partition function is the two-sided/one-sided Laplace transform of the microcanonical density of states $\Omega(E)$.
   - id: q36_ensemble_equivalence_limit
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_ensembles_and_partition_function
-    prompt_markdown: Under what condition are the Microcanonical ($NVE$), Canonical ($NVT$), and Isobaric-Isothermal ($NPT$)
-      ensembles guaranteed to yield identical thermodynamic equations of state?
+    prompt_markdown: Under what condition are the Microcanonical ($NVE$), Canonical ($NVT$), and Isobaric-Isothermal ($NPT$) ensembles guaranteed to yield identical thermodynamic equations of state?
     options:
     - id: a
-      text: In the thermodynamic limit (N -> infinity, V -> infinity with N/V = const) away from first-order phase transitions.
+      text: In the thermodynamic limit ($N \to \infty, V \to \infty$ with $N/V = \text{const}$) away from first-order phase transitions.
+      text_markdown: In the thermodynamic limit ($N \to \infty, V \to \infty$ with $N/V = \text{const}$) away from first-order phase transitions.
     - id: b
       text: Only at the critical point.
+      text_markdown: Only at the critical point.
     - id: c
-      text: Only when N < 100.
+      text: Only when $N < 100$.
+      text_markdown: Only when $N < 100$.
     - id: d
       text: They never yield identical properties.
+      text_markdown: They never yield identical properties.
     correct: a
     hint_markdown: Consider how relative fluctuations scale with N.
-    rationale_markdown: In the thermodynamic limit $N \to \infty$, relative fluctuations in energy, volume, and particle number
-      scale as $1/\sqrt{N} \to 0$. Away from phase transitions, the probability distributions become infinitely sharp delta
-      functions, making microcanonical, canonical, and grand canonical ensembles thermodynamically equivalent.
+    rationale_markdown: In the thermodynamic limit $N \to \infty$, relative fluctuations in energy, volume, and particle number scale as $1/\sqrt{N} \to 0$. Away from phase transitions, the probability distributions become infinitely sharp delta functions, making microcanonical, canonical, and grand canonical ensembles thermodynamically equivalent.
   - id: q37_virial_estimator_three_dimensions
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: In a $D$-dimensional simulation box of volume $V = L^D$, what is the general prefactor on the internal
-      virial sum in the pressure equation $P = \rho k_B T + \dots$?
+    prompt_markdown: In a $D$-dimensional simulation box of volume $V = L^D$, what is the general prefactor on the internal virial sum in the pressure equation $P = \rho k_B T + \dots$?
     options:
     - id: a
       text: 1 / (D * V)
+      text_markdown: 1 / (D * V)
     - id: b
       text: 1 / (2 * V)
+      text_markdown: 1 / (2 * V)
     - id: c
       text: D / V
+      text_markdown: D / V
     - id: d
       text: 3 / V regardless of D
+      text_markdown: 3 / V regardless of D
     correct: a
     hint_markdown: Trace of the pressure tensor in D dimensions divides by D.
-    rationale_markdown: In $D$ dimensions, the trace of the pressure tensor is $D P = \sum_{\alpha=1}^D P_{\alpha\alpha}$,
-      yielding $P = \rho k_B T + \frac{1}{D V} \left\langle \sum_{i<j} \mathbf{r}_{ij} \cdot \mathbf{F}_{ij} \right\rangle$.
-      For 2D simulations (monolayers), the prefactor is $\frac{1}{2A}$; for 3D, it is $\frac{1}{3V}$.
+    rationale_markdown: In $D$ dimensions, the trace of the pressure tensor is $D P = \sum_{\alpha=1}^D P_{\alpha\alpha}$, yielding $P = \rho k_B T + \frac{1}{D V} \left\langle \sum_{i<j} \mathbf{r}_{ij} \cdot \mathbf{F}_{ij} \right\rangle$. For 2D simulations (monolayers), the prefactor is $\frac{1}{2A}$; for 3D, it is $\frac{1}{3V}$.
   - id: q38_conserved_momentum_temperature_correction
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: If a simulation of $N = 100$ particles has total kinetic energy $K = 1500\text{ K} \times k_B$, and the
-      total linear momentum is conserved ($\sum \mathbf{p}_i = \mathbf{0}$), what is the correct kinetic temperature $T =
-      \frac{2 K}{(3N-3) k_B}$ rounded to two decimal places?
-    hint_markdown: Apply the equipartition theorem to the true number of independent quadratic kinetic degrees of freedom
-      in the system after removing center-of-mass constraints.
+    prompt_markdown: If a simulation of $N = 100$ particles has total kinetic energy $K = 1500\text{ K} \times k_B$, and the total linear momentum is conserved ($\sum \mathbf{p}_i = \mathbf{0}$), what is the correct kinetic temperature $T = \frac{2 K}{(3N-3) k_B}$ rounded to two decimal places?
+    hint_markdown: Apply the equipartition theorem to the true number of independent quadratic kinetic degrees of freedom in the system after removing center-of-mass constraints.
     correct:
       value: 10.1
       tolerance: 0.05
@@ -1071,23 +975,23 @@ worksheet:
     question_type: single_select
     difficulty: hard
     taught_by: sec_liouville_markdown
-    prompt_markdown: In operator notation, Liouville's theorem can be written using the Liouville operator $i \hat{L} = \dot{\mathbf{q}}\cdot\nabla_\mathbf{q}
-      + \dot{\mathbf{p}}\cdot\nabla_\mathbf{p} = \{\cdot, \mathcal{H}\}$. What is the formal solution for the time-evolved
-      state $\boldsymbol{\Gamma}(t)$ in terms of the initial state $\boldsymbol{\Gamma}(0)$?
+    prompt_markdown: In operator notation, Liouville's theorem can be written using the Liouville operator $i \hat{L} = \dot{\mathbf{q}}\cdot\nabla_\mathbf{q} + \dot{\mathbf{p}}\cdot\nabla_\mathbf{p} = \{\cdot, \mathcal{H}\}$. What is the formal solution for the time-evolved state $\boldsymbol{\Gamma}(t)$ in terms of the initial state $\boldsymbol{\Gamma}(0)$?
     options:
     - id: a
-      text: Gamma(t) = exp(i * L * t) * Gamma(0)
+      text: $\Gamma(t) = \exp(i \mathcal{L} t) \Gamma(0)$
+      text_markdown: $\Gamma(t) = \exp(i \mathcal{L} t) \Gamma(0)$
     - id: b
       text: Gamma(t) = Gamma(0) + i * L * t
+      text_markdown: Gamma(t) = Gamma(0) + i * L * t
     - id: c
-      text: Gamma(t) = ln(i * L * t) * Gamma(0)
+      text: $\Gamma(t) = \ln(i \mathcal{L} t) \Gamma(0)$
+      text_markdown: $\Gamma(t) = \ln(i \mathcal{L} t) \Gamma(0)$
     - id: d
-      text: Gamma(t) = exp(-H / k_B T) * Gamma(0)
+      text: $\Gamma(t) = \exp(-H / (k_B T)) \Gamma(0)$
+      text_markdown: $\Gamma(t) = \exp(-H / (k_B T)) \Gamma(0)$
     correct: a
     hint_markdown: The formal solution to dA/dt = i L A is A(t) = exp(i L t) A(0).
-    rationale_markdown: The equation of motion for any phase-space variable $A$ is $\frac{dA}{dt} = i\hat{L}A = \{A, \mathcal{H}\}$.
-      The formal unitary solution is the exponential propagator $A(t) = e^{i\hat{L}t}A(0)$, which serves as the exact foundation
-      for symplectic Trotter/Verlet integrators.
+    rationale_markdown: The equation of motion for any phase-space variable $A$ is $\frac{dA}{dt} = i\hat{L}A = \{A, \mathcal{H}\}$. The formal unitary solution is the exponential propagator $A(t) = e^{i\hat{L}t}A(0)$, which serves as the exact foundation for symplectic Trotter/Verlet integrators.
   - id: q40_lyapunov_exponential_divergence_summary
     type: problem
     question_type: multi_select
@@ -1096,21 +1000,20 @@ worksheet:
     prompt_markdown: Which of the following are consequences of the positive Lyapunov exponent (chaos) in many-body MD simulations?
     options:
     - id: a
-      text: Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated
-        roundoff errors.
+      text: Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated roundoff errors.
+      text_markdown: Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated roundoff errors.
     - id: b
-      text: The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic
-        coordinates after tens of picoseconds.
+      text: The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic coordinates after tens of picoseconds.
+      text_markdown: The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic coordinates after tens of picoseconds.
     - id: c
       text: Macroscopic properties like pressure, RDF, and diffusion coefficients are completely invalid and cannot be trusted.
+      text_markdown: Macroscopic properties like pressure, RDF, and diffusion coefficients are completely invalid and cannot be trusted.
     - id: d
       text: Macroscopic averages converge to the correct ensemble values despite individual trajectory divergence.
+      text_markdown: Macroscopic averages converge to the correct ensemble values despite individual trajectory divergence.
     correct:
     - a
     - b
     - d
     hint_markdown: Consider both the microscopic unpredictability and the macroscopic statistical validity.
-    rationale_markdown: 'Statements a, b, and d are all hallmarks of deterministic chaos in MD: finite-precision floating-point
-      roundoff amplifies exponentially, making microscopic paths uninvertible and non-reproducible across compilers/CPUs after
-      tens of picoseconds. However, statement c is completely false: statistical thermodynamics guarantees that ensemble averages
-      remain accurate.'
+    rationale_markdown: 'Statements a, b, and d are all hallmarks of deterministic chaos in MD: finite-precision floating-point roundoff amplifies exponentially, making microscopic paths uninvertible and non-reproducible across compilers/CPUs after tens of picoseconds. However, statement c is completely false: statistical thermodynamics guarantees that ensemble averages remain accurate.'

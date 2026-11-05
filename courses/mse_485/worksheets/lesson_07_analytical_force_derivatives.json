@@ -28,19 +28,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The force field becomes non-conservative (F_i != -nabla_{r_i} E_total), causing dH/dt != 0 and producing systematic drift in the total energy over time."
+            "text": "The force field becomes non-conservative ($\\mathbf{F}_i \\ne -\\nabla_{\\mathbf{r}_i} E_{\\text{total}}$), causing $dH/dt \\ne 0$ and producing systematic drift in the total energy over time.",
+            "text_markdown": "The force field becomes non-conservative ($\\mathbf{F}_i \\ne -\\nabla_{\\mathbf{r}_i} E_{\\text{total}}$), causing $dH/dt \\ne 0$ and producing systematic drift in the total energy over time."
           },
           {
             "id": "b",
-            "text": "The velocity Verlet integrator automatically projects out the non-conservative component of F_i, so total energy is still exactly conserved."
+            "text": "The velocity Verlet integrator automatically projects out the non-conservative component of $\\mathbf{F}_i$, so total energy is still exactly conserved.",
+            "text_markdown": "The velocity Verlet integrator automatically projects out the non-conservative component of $\\mathbf{F}_i$, so total energy is still exactly conserved."
           },
           {
             "id": "c",
-            "text": "Only the kinetic temperature fluctuates, while the total energy H remains constant to machine precision."
+            "text": "Only the kinetic temperature fluctuates, while the total energy H remains constant to machine precision.",
+            "text_markdown": "Only the kinetic temperature fluctuates, while the total energy H remains constant to machine precision."
           },
           {
             "id": "d",
-            "text": "The simulation remains conservative as long as the timestep Delta t is reduced by a factor of 2."
+            "text": "The simulation remains conservative as long as the timestep $\\Delta t$ is reduced by a factor of 2.",
+            "text_markdown": "The simulation remains conservative as long as the timestep $\\Delta t$ is reduced by a factor of 2."
           }
         ],
         "correct": "a",
@@ -57,19 +61,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Both covalent bond-stretching E_bond and non-bonded (Coulomb + Lennard-Jones) interactions depend strictly on 2-body interatomic distances r_ij = |r_i - r_j|."
+            "text": "Both covalent bond-stretching $E_{\\text{bond}}$ and non-bonded (Coulomb + Lennard-Jones) interactions depend strictly on 2-body interatomic distances $r_{ij} = |\\mathbf{r}_i - \\mathbf{r}_j|$.",
+            "text_markdown": "Both covalent bond-stretching $E_{\\text{bond}}$ and non-bonded (Coulomb + Lennard-Jones) interactions depend strictly on 2-body interatomic distances $r_{ij} = |\\mathbf{r}_i - \\mathbf{r}_j|$."
           },
           {
             "id": "b",
-            "text": "Bond-bending E_angle = sum K_theta (theta - theta_eq)^2 is a 3-body interaction depending on the angle theta_123 formed by two bond vectors sharing a central vertex atom."
+            "text": "Bond-bending $E_{\\text{angle}} = \\sum K_\\theta (\\theta - \\theta_{\\text{eq}})^2$ is a 3-body interaction depending on the angle $\\theta_{123}$ formed by two bond vectors sharing a central vertex atom.",
+            "text_markdown": "Bond-bending $E_{\\text{angle}} = \\sum K_\\theta (\\theta - \\theta_{\\text{eq}})^2$ is a 3-body interaction depending on the angle $\\theta_{123}$ formed by two bond vectors sharing a central vertex atom."
           },
           {
             "id": "c",
-            "text": "Torsion (dihedral) energy E(phi) is a 4-body interaction depending on the angle phi between the (1-2-3) and (2-3-4) atomic planes along a 4-atom chain."
+            "text": "Torsion (dihedral) energy $E(\\phi)$ is a 4-body interaction depending on the angle $\\phi$ between the (1-2-3) and (2-3-4) atomic planes along a 4-atom chain.",
+            "text_markdown": "Torsion (dihedral) energy $E(\\phi)$ is a 4-body interaction depending on the angle $\\phi$ between the (1-2-3) and (2-3-4) atomic planes along a 4-atom chain."
           },
           {
             "id": "d",
-            "text": "Lennard-Jones van der Waals interactions require 4-body cross-product normals to compute atomic forces."
+            "text": "Lennard-Jones van der Waals interactions require 4-body cross-product normals to compute atomic forces.",
+            "text_markdown": "Lennard-Jones van der Waals interactions require 4-body cross-product normals to compute atomic forces."
           }
         ],
         "correct": [
@@ -90,19 +98,23 @@
         "options": [
           {
             "id": "a",
-            "text": "sum_{i=1}^m nabla_{r_i} E = 0, so the internal forces satisfy sum_{i=1}^m F_i = 0 (allowing one atom's force to be obtained for free from the negative sum of the others)."
+            "text": "$\\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = 0$, so the internal forces satisfy $\\sum_{i=1}^m \\mathbf{F}_i = 0$ (allowing one atom's force to be obtained for free from the negative sum of the others).",
+            "text_markdown": "$\\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = 0$, so the internal forces satisfy $\\sum_{i=1}^m \\mathbf{F}_i = 0$ (allowing one atom's force to be obtained for free from the negative sum of the others)."
           },
           {
             "id": "b",
-            "text": "sum_{i=1}^m |nabla_{r_i} E|^2 = 0, implying all individual atomic forces must be zero."
+            "text": "$\\sum_{i=1}^m |\\nabla_{\\mathbf{r}_i} E|^2 = 0$, implying all individual atomic forces must be zero.",
+            "text_markdown": "$\\sum_{i=1}^m |\\nabla_{\\mathbf{r}_i} E|^2 = 0$, implying all individual atomic forces must be zero."
           },
           {
             "id": "c",
-            "text": "nabla_{r_1} E = nabla_{r_2} E = ... = nabla_{r_m} E for every geometry."
+            "text": "$\\nabla_{\\mathbf{r}_1} E = \\nabla_{\\mathbf{r}_2} E = \\dots = \\nabla_{\\mathbf{r}_m} E$ for every geometry.",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1} E = \\nabla_{\\mathbf{r}_2} E = \\dots = \\nabla_{\\mathbf{r}_m} E$ for every geometry."
           },
           {
             "id": "d",
-            "text": "sum_{i=1}^m r_i . F_i = 0 for all interatomic distances."
+            "text": "$\\sum_{i=1}^m \\mathbf{r}_i \\cdot \\mathbf{F}_i = 0$ for all interatomic distances.",
+            "text_markdown": "$\\sum_{i=1}^m \\mathbf{r}_i \\cdot \\mathbf{F}_i = 0$ for all interatomic distances."
           }
         ],
         "correct": "a",
@@ -133,19 +145,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Zero net internal torque: sum_i (r_i x F_i) = 0, ensuring exact conservation of total angular momentum for an isolated cluster."
+            "text": "Zero net internal torque: $\\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i) = 0$, ensuring exact conservation of total angular momentum for an isolated cluster.",
+            "text_markdown": "Zero net internal torque: $\\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i) = 0$, ensuring exact conservation of total angular momentum for an isolated cluster."
           },
           {
             "id": "b",
-            "text": "Zero virial pressure: sum_i (r_i . F_i) = 0 at all densities."
+            "text": "Zero virial pressure: $\\sum_i (\\mathbf{r}_i \\cdot \\mathbf{F}_i) = 0$ at all densities.",
+            "text_markdown": "Zero virial pressure: $\\sum_i (\\mathbf{r}_i \\cdot \\mathbf{F}_i) = 0$ at all densities."
           },
           {
             "id": "c",
-            "text": "Each individual force vector F_i must point radially toward the coordinate origin."
+            "text": "Each individual force vector $\\mathbf{F}_i$ must point radially toward the coordinate origin.",
+            "text_markdown": "Each individual force vector $\\mathbf{F}_i$ must point radially toward the coordinate origin."
           },
           {
             "id": "d",
-            "text": "The Hessian matrix of second derivatives must be diagonal."
+            "text": "The Hessian matrix of second derivatives must be diagonal.",
+            "text_markdown": "The Hessian matrix of second derivatives must be diagonal."
           }
         ],
         "correct": "a",
@@ -222,19 +238,23 @@
         "options": [
           {
             "id": "a",
-            "text": "(r_1 - r_2) / |r_1 - r_2| = r_12 / r_12 = r_hat_12 (the unit vector pointing from atom 2 to atom 1)"
+            "text": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12}$ (the unit vector pointing from atom 2 to atom 1)",
+            "text_markdown": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12}$ (the unit vector pointing from atom 2 to atom 1)"
           },
           {
             "id": "b",
-            "text": "2 * (r_1 - r_2)"
+            "text": "$2(\\mathbf{r}_1 - \\mathbf{r}_2)$",
+            "text_markdown": "$2(\\mathbf{r}_1 - \\mathbf{r}_2)$"
           },
           {
             "id": "c",
-            "text": "(r_1 - r_2) / |r_1 - r_2|^3"
+            "text": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|^3}$",
+            "text_markdown": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|^3}$"
           },
           {
             "id": "d",
-            "text": "1 / |r_1 - r_2| (a scalar rather than a vector)"
+            "text": "$\\frac{1}{|\\mathbf{r}_1 - \\mathbf{r}_2|}$ (a scalar rather than a vector)",
+            "text_markdown": "$\\frac{1}{|\\mathbf{r}_1 - \\mathbf{r}_2|}$ (a scalar rather than a vector)"
           }
         ],
         "correct": "a",
@@ -254,19 +274,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Along +r_hat_21 = -r_hat_12 (pointing from atom 1 toward atom 2)"
+            "text": "Along $+\\hat{\\mathbf{r}}_{21} = -\\hat{\\mathbf{r}}_{12}$ (pointing from atom 1 toward atom 2)",
+            "text_markdown": "Along $+\\hat{\\mathbf{r}}_{21} = -\\hat{\\mathbf{r}}_{12}$ (pointing from atom 1 toward atom 2)"
           },
           {
             "id": "b",
-            "text": "Along +r_hat_12 (pointing from atom 2 away from atom 1)"
+            "text": "Along $+\\hat{\\mathbf{r}}_{12}$ (pointing from atom 2 away from atom 1)",
+            "text_markdown": "Along $+\\hat{\\mathbf{r}}_{12}$ (pointing from atom 2 away from atom 1)"
           },
           {
             "id": "c",
-            "text": "Perpendicular to the bond vector r_12"
+            "text": "Perpendicular to the bond vector $\\mathbf{r}_{12}$",
+            "text_markdown": "Perpendicular to the bond vector $\\mathbf{r}_{12}$"
           },
           {
             "id": "d",
-            "text": "The force is zero because dv/dr vanishes when r_12 > r_eq"
+            "text": "The force is zero because $dv/dr$ vanishes when $r_{12} > r_{\\text{eq}}$",
+            "text_markdown": "The force is zero because $dv/dr$ vanishes when $r_{12} > r_{\\text{eq}}$"
           }
         ],
         "correct": "a",
@@ -314,19 +338,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because -(1/r)(dv_LJ/dr) = (24*epsilon / r^2) * [2*(sigma^2/r^2)^6 - (sigma^2/r^2)^3] depends only on even powers of r (i.e. r^2 = |r_12|^2), completely avoiding expensive sqrt(r^2) calls!"
+            "text": "Because $-\\frac{1}{r}\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r^2} \\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]$ depends only on even powers of $r$ (i.e. $r^2 = |\\mathbf{r}_{12}|^2$), completely avoiding expensive square-root calls!",
+            "text_markdown": "Because $-\\frac{1}{r}\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r^2} \\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]$ depends only on even powers of $r$ (i.e. $r^2 = |\\mathbf{r}_{12}|^2$), completely avoiding expensive square-root calls!"
           },
           {
             "id": "b",
-            "text": "Because the Lennard-Jones potential has no repulsive core when divided by r_12."
+            "text": "Because the Lennard-Jones potential has no repulsive core when divided by $r_{12}$.",
+            "text_markdown": "Because the Lennard-Jones potential has no repulsive core when divided by $r_{12}$."
           },
           {
             "id": "c",
-            "text": "Because dividing by r_12 converts the 2-body potential into a 3-body potential."
+            "text": "Because dividing by $r_{12}$ converts the 2-body potential into a 3-body potential.",
+            "text_markdown": "Because dividing by $r_{12}$ converts the 2-body potential into a 3-body potential."
           },
           {
             "id": "d",
-            "text": "Because dv_LJ/dr is constant for all r_12."
+            "text": "Because $dv_{\\text{LJ}}/dr$ is constant for all $r_{12}$.",
+            "text_markdown": "Because $dv_{\\text{LJ}}/dr$ is constant for all $r_{12}$."
           }
         ],
         "correct": "a",
@@ -343,19 +371,23 @@
         "options": [
           {
             "id": "a",
-            "text": "F_i^Coul = +(q_i q_j e^2 / r_ij^3) * (r_i - r_j)"
+            "text": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$",
+            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           },
           {
             "id": "b",
-            "text": "F_i^Coul = -(q_i q_j e^2 / r_ij^3) * (r_i - r_j)"
+            "text": "$\\mathbf{F}_i^{\\text{Coul}} = -\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$",
+            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = -\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           },
           {
             "id": "c",
-            "text": "F_i^Coul = +(q_i q_j e^2 / r_ij^2) * (r_i - r_j)"
+            "text": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^2}(\\mathbf{r}_i - \\mathbf{r}_j)$",
+            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^2}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           },
           {
             "id": "d",
-            "text": "F_i^Coul = -(q_i q_j e^2 / r_ij) * (r_i - r_j)"
+            "text": "$\\mathbf{F}_i^{\\text{Coul}} = -\\frac{q_i q_j e^2}{r_{ij}}(\\mathbf{r}_i - \\mathbf{r}_j)$",
+            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = -\\frac{q_i q_j e^2}{r_{ij}}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           }
         ],
         "correct": "a",
@@ -439,19 +471,23 @@
         "options": [
           {
             "id": "a",
-            "text": "-1 / sin(theta_123)"
+            "text": "$-\\frac{1}{\\sin\\theta_{123}}$",
+            "text_markdown": "$-\\frac{1}{\\sin\\theta_{123}}$"
           },
           {
             "id": "b",
-            "text": "+1 / sin(theta_123)"
+            "text": "$+\\frac{1}{\\sin\\theta_{123}}$",
+            "text_markdown": "$+\\frac{1}{\\sin\\theta_{123}}$"
           },
           {
             "id": "c",
-            "text": "-sin(theta_123)"
+            "text": "$-\\sin\\theta_{123}$",
+            "text_markdown": "$-\\sin\\theta_{123}$"
           },
           {
             "id": "d",
-            "text": "-1 / cos(theta_123)"
+            "text": "$-\\frac{1}{\\cos\\theta_{123}}$",
+            "text_markdown": "$-\\frac{1}{\\cos\\theta_{123}}$"
           }
         ],
         "correct": "a",
@@ -468,19 +504,23 @@
         "options": [
           {
             "id": "a",
-            "text": "(1 / r_12) * (r_hat_32 - cos(theta_123) * r_hat_12)"
+            "text": "$\\frac{1}{r_{12}}(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$",
+            "text_markdown": "$\\frac{1}{r_{12}}(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$"
           },
           {
             "id": "b",
-            "text": "(1 / r_32) * (r_hat_12 - cos(theta_123) * r_hat_32)"
+            "text": "$\\frac{1}{r_{32}}(\\hat{\\mathbf{r}}_{12} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{32})$",
+            "text_markdown": "$\\frac{1}{r_{32}}(\\hat{\\mathbf{r}}_{12} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{32})$"
           },
           {
             "id": "c",
-            "text": "-(1 / (r_12 * sin(theta_123))) * (r_hat_32 - cos(theta_123) * r_hat_12)"
+            "text": "$-\\frac{1}{r_{12}\\sin\\theta_{123}}(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$",
+            "text_markdown": "$-\\frac{1}{r_{12}\\sin\\theta_{123}}(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$"
           },
           {
             "id": "d",
-            "text": "(r_hat_32 + r_hat_12) / (r_12 * r_32)"
+            "text": "$\\frac{\\hat{\\mathbf{r}}_{32} + \\hat{\\mathbf{r}}_{12}}{r_{12} r_{32}}$",
+            "text_markdown": "$\\frac{\\hat{\\mathbf{r}}_{32} + \\hat{\\mathbf{r}}_{12}}{r_{12} r_{32}}$"
           }
         ],
         "correct": "a",
@@ -514,19 +554,23 @@
         "options": [
           {
             "id": "a",
-            "text": "|u_1| = sin(theta_123), which cancels the sin(theta_123) in the denominator so that |nabla_{r_1} theta_123| = 1 / r_12."
+            "text": "$|\\mathbf{u}_1| = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$.",
+            "text_markdown": "$|\\mathbf{u}_1| = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$."
           },
           {
             "id": "b",
-            "text": "|u_1| = cos(theta_123), so |nabla_{r_1} theta_123| = cot(theta_123) / r_12."
+            "text": "$|\\mathbf{u}_1| = \\cos\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{\\cot\\theta_{123}}{r_{12}}$.",
+            "text_markdown": "$|\\mathbf{u}_1| = \\cos\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{\\cot\\theta_{123}}{r_{12}}$."
           },
           {
             "id": "c",
-            "text": "|u_1| = 1, so |nabla_{r_1} theta_123| = 1 / (r_12 * sin(theta_123))."
+            "text": "$|\\mathbf{u}_1| = 1$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}\\sin\\theta_{123}}$.",
+            "text_markdown": "$|\\mathbf{u}_1| = 1$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}\\sin\\theta_{123}}$."
           },
           {
             "id": "d",
-            "text": "|u_1| = r_12 * sin(theta_123), so |nabla_{r_1} theta_123| = 1."
+            "text": "$|\\mathbf{u}_1| = r_{12}\\sin\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = 1$.",
+            "text_markdown": "$|\\mathbf{u}_1| = r_{12}\\sin\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = 1$."
           }
         ],
         "correct": "a",
@@ -546,19 +590,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because (r_hat_32 - cos(theta)*r_hat_12) points inward toward bond r_32 (which decreases theta_123), so multiplying by -1 makes nabla_{r_1} theta_123 point outward away from bond r_32 (the direction that increases theta_123)."
+            "text": "Because $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ points inward toward bond $\\mathbf{r}_{32}$ (which decreases $\\theta_{123}$), so multiplying by $-1$ makes $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ point outward away from bond $\\mathbf{r}_{32}$ (the direction that increases $\\theta_{123}$).",
+            "text_markdown": "Because $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ points inward toward bond $\\mathbf{r}_{32}$ (which decreases $\\theta_{123}$), so multiplying by $-1$ makes $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ point outward away from bond $\\mathbf{r}_{32}$ (the direction that increases $\\theta_{123}$)."
           },
           {
             "id": "b",
-            "text": "Because nabla_{r_1} theta_123 points in the direction that decreases theta_123."
+            "text": "Because $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ points in the direction that decreases $\\theta_{123}$.",
+            "text_markdown": "Because $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ points in the direction that decreases $\\theta_{123}$."
           },
           {
             "id": "c",
-            "text": "Because sin(theta_123) is negative for all acute and obtuse bond angles."
+            "text": "Because $\\sin\\theta_{123}$ is negative for all acute and obtuse bond angles.",
+            "text_markdown": "Because $\\sin\\theta_{123}$ is negative for all acute and obtuse bond angles."
           },
           {
             "id": "d",
-            "text": "Because the vector points perpendicular to the (1-2-3) plane."
+            "text": "Because the vector points perpendicular to the (1-2-3) plane.",
+            "text_markdown": "Because the vector points perpendicular to the (1-2-3) plane."
           }
         ],
         "correct": "a",
@@ -626,19 +674,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Both the numerator vector (r_hat_32 - cos(theta)*r_hat_12) and the denominator sin(theta_123) vanish simultaneously (0/0 indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet."
+            "text": "Both the numerator vector $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ and the denominator $\\sin\\theta_{123}$ vanish simultaneously ($0/0$ indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet.",
+            "text_markdown": "Both the numerator vector $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ and the denominator $\\sin\\theta_{123}$ vanish simultaneously ($0/0$ indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet."
           },
           {
             "id": "b",
-            "text": "The numerator remains unit length while sin(theta_123) -> 1, so no numerical issue occurs."
+            "text": "The numerator remains unit length while $\\sin\\theta_{123} \\to 1$, so no numerical issue occurs.",
+            "text_markdown": "The numerator remains unit length while $\\sin\\theta_{123} \\to 1$, so no numerical issue occurs."
           },
           {
             "id": "c",
-            "text": "cos(theta_123) diverges to infinity at theta = 180 deg."
+            "text": "$\\cos\\theta_{123}$ diverges to infinity at $\\theta = 180^\\circ$.",
+            "text_markdown": "$\\cos\\theta_{123}$ diverges to infinity at $\\theta = 180^\\circ$."
           },
           {
             "id": "d",
-            "text": "The bond lengths r_12 and r_32 vanish at theta = 180 deg."
+            "text": "The bond lengths $r_{12}$ and $r_{32}$ vanish at $\\theta = 180^\\circ$.",
+            "text_markdown": "The bond lengths $r_{12}$ and $r_{32}$ vanish at $\\theta = 180^\\circ$."
           }
         ],
         "correct": "a",
@@ -711,19 +763,23 @@
         "options": [
           {
             "id": "a",
-            "text": "dE/dphi = -sum_{n=1}^3 (n * V_n / 2) * sin(n*phi + f_n)"
+            "text": "$\\frac{dE}{d\\phi} = -\\sum_{n=1}^3 \\frac{n V_n}{2} \\sin(n\\phi + f_n)$",
+            "text_markdown": "$\\frac{dE}{d\\phi} = -\\sum_{n=1}^3 \\frac{n V_n}{2} \\sin(n\\phi + f_n)$"
           },
           {
             "id": "b",
-            "text": "dE/dphi = +sum_{n=1}^3 (V_n / 2) * sin(n*phi + f_n)"
+            "text": "$\\frac{dE}{d\\phi} = +\\sum_{n=1}^3 \\frac{V_n}{2} \\sin(n\\phi + f_n)$",
+            "text_markdown": "$\\frac{dE}{d\\phi} = +\\sum_{n=1}^3 \\frac{V_n}{2} \\sin(n\\phi + f_n)$"
           },
           {
             "id": "c",
-            "text": "dE/dphi = -sum_{n=1}^3 (V_n / (2*n)) * sin(n*phi + f_n)"
+            "text": "$\\frac{dE}{d\\phi} = -\\sum_{n=1}^3 \\frac{V_n}{2n} \\sin(n\\phi + f_n)$",
+            "text_markdown": "$\\frac{dE}{d\\phi} = -\\sum_{n=1}^3 \\frac{V_n}{2n} \\sin(n\\phi + f_n)$"
           },
           {
             "id": "d",
-            "text": "dE/dphi = +sum_{n=1}^3 (n * V_n / 2) * cos(n*phi + f_n)"
+            "text": "$\\frac{dE}{d\\phi} = +\\sum_{n=1}^3 \\frac{n V_n}{2} \\cos(n\\phi + f_n)$",
+            "text_markdown": "$\\frac{dE}{d\\phi} = +\\sum_{n=1}^3 \\frac{n V_n}{2} \\cos(n\\phi + f_n)$"
           }
         ],
         "correct": "a",
@@ -757,19 +813,23 @@
         "options": [
           {
             "id": "a",
-            "text": "n_123 = r_12 x r_32 and n_432 = r_43 x r_23"
+            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$",
+            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$"
           },
           {
             "id": "b",
-            "text": "n_123 = r_12 . r_32 and n_432 = r_43 . r_23"
+            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\cdot \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\cdot \\mathbf{r}_{23}$",
+            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\cdot \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\cdot \\mathbf{r}_{23}$"
           },
           {
             "id": "c",
-            "text": "n_123 = r_12 + r_32 and n_432 = r_43 + r_23"
+            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} + \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} + \\mathbf{r}_{23}$",
+            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} + \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} + \\mathbf{r}_{23}$"
           },
           {
             "id": "d",
-            "text": "n_123 = r_14 x r_23 and n_432 = r_12 x r_43"
+            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{14} \\times \\mathbf{r}_{23}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{12} \\times \\mathbf{r}_{43}$",
+            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{14} \\times \\mathbf{r}_{23}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{12} \\times \\mathbf{r}_{43}$"
           }
         ],
         "correct": "a",
@@ -789,19 +849,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Dihedral angles frequently pass through planar cis (phi = 0) and trans (phi = pi) conformations where sin(phi) = 0, causing -1/sin(phi) to divide by zero; Blondel-Karplus cancels sin(phi) analytically by expressing gradients directly via n_123 and n_432."
+            "text": "Dihedral angles frequently pass through planar cis ($\\phi = 0$) and trans ($\\phi = \\pi$) conformations where $\\sin\\phi = 0$, causing $-1/\\sin\\phi$ to divide by zero; Blondel-Karplus cancels $\\sin\\phi$ analytically by expressing gradients directly via $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$.",
+            "text_markdown": "Dihedral angles frequently pass through planar cis ($\\phi = 0$) and trans ($\\phi = \\pi$) conformations where $\\sin\\phi = 0$, causing $-1/\\sin\\phi$ to divide by zero; Blondel-Karplus cancels $\\sin\\phi$ analytically by expressing gradients directly via $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$."
           },
           {
             "id": "b",
-            "text": "The arccos formula only works when all four atoms lie in the same plane."
+            "text": "The arccos formula only works when all four atoms lie in the same plane.",
+            "text_markdown": "The arccos formula only works when all four atoms lie in the same plane."
           },
           {
             "id": "c",
-            "text": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives."
+            "text": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives.",
+            "text_markdown": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives."
           },
           {
             "id": "d",
-            "text": "The plane normals n_123 and n_432 vanish at phi = 0 and phi = pi."
+            "text": "The plane normals $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ vanish at $\\phi = 0$ and $\\phi = \\pi$.",
+            "text_markdown": "The plane normals $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ vanish at $\\phi = 0$ and $\\phi = \\pi$."
           }
         ],
         "correct": "a",
@@ -818,19 +882,23 @@
         "options": [
           {
             "id": "a",
-            "text": "nabla_{r_1} phi = (r_23 / n_123^2) * n_123 and nabla_{r_4} phi = (r_23 / n_432^2) * n_432"
+            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$"
           },
           {
             "id": "b",
-            "text": "nabla_{r_1} phi = (n_123 / r_23^2) * r_23 and nabla_{r_4} phi = (n_432 / r_23^2) * r_23"
+            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{n_{123}}{r_{23}^2}\\mathbf{r}_{23}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{n_{432}}{r_{23}^2}\\mathbf{r}_{23}$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{n_{123}}{r_{23}^2}\\mathbf{r}_{23}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{n_{432}}{r_{23}^2}\\mathbf{r}_{23}$"
           },
           {
             "id": "c",
-            "text": "nabla_{r_1} phi = (1 / n_123) * r_12 and nabla_{r_4} phi = (1 / n_432) * r_43"
+            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{1}{n_{123}}\\mathbf{r}_{12}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{1}{n_{432}}\\mathbf{r}_{43}$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{1}{n_{123}}\\mathbf{r}_{12}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{1}{n_{432}}\\mathbf{r}_{43}$"
           },
           {
             "id": "d",
-            "text": "nabla_{r_1} phi = -(1 / sin(phi)) * n_123 and nabla_{r_4} phi = -(1 / sin(phi)) * n_432"
+            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{432}$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{432}$"
           }
         ],
         "correct": "a",
@@ -847,19 +915,23 @@
         "options": [
           {
             "id": "a",
-            "text": "1 / (r_12 * sin(theta_123)), which is the reciprocal of the perpendicular distance (lever arm) d_1 from atom 1 to the central bond axis 2-3."
+            "text": "$\\frac{1}{r_{12}\\sin\\theta_{123}}$, which is the reciprocal of the perpendicular distance (lever arm) $d_1$ from atom 1 to the central bond axis 2-3.",
+            "text_markdown": "$\\frac{1}{r_{12}\\sin\\theta_{123}}$, which is the reciprocal of the perpendicular distance (lever arm) $d_1$ from atom 1 to the central bond axis 2-3."
           },
           {
             "id": "b",
-            "text": "r_23 / r_12^2, which depends only on the bond lengths and not on theta_123."
+            "text": "$\\frac{r_{23}}{r_{12}^2}$, which depends only on the bond lengths and not on $\\theta_{123}$.",
+            "text_markdown": "$\\frac{r_{23}}{r_{12}^2}$, which depends only on the bond lengths and not on $\\theta_{123}$."
           },
           {
             "id": "c",
-            "text": "sin(theta_123) / r_12, which vanishes at theta_123 = 90 deg."
+            "text": "$\\frac{\\sin\\theta_{123}}{r_{12}}$, which vanishes at $\\theta_{123} = 90^\\circ$.",
+            "text_markdown": "$\\frac{\\sin\\theta_{123}}{r_{12}}$, which vanishes at $\\theta_{123} = 90^\\circ$."
           },
           {
             "id": "d",
-            "text": "1 / (r_23 * sin(phi)), which diverges at phi = 0."
+            "text": "$\\frac{1}{r_{23}\\sin\\phi}$, which diverges at $\\phi = 0$.",
+            "text_markdown": "$\\frac{1}{r_{23}\\sin\\phi}$, which diverges at $\\phi = 0$."
           }
         ],
         "correct": "a",
@@ -890,19 +962,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Every gradient is a linear combination solely of n_123 and n_432 (hence strictly perpendicular to the central bond vector r_23!), and their sum is identically 0."
+            "text": "Every gradient is a linear combination solely of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ (hence strictly perpendicular to the central bond vector $\\mathbf{r}_{23}$!), and their sum is identically $0$.",
+            "text_markdown": "Every gradient is a linear combination solely of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ (hence strictly perpendicular to the central bond vector $\\mathbf{r}_{23}$!), and their sum is identically $0$."
           },
           {
             "id": "b",
-            "text": "The central atom gradients lie parallel to the central bond r_23, and their sum equals r_23."
+            "text": "The central atom gradients lie parallel to the central bond $\\mathbf{r}_{23}$, and their sum equals $\\mathbf{r}_{23}$.",
+            "text_markdown": "The central atom gradients lie parallel to the central bond $\\mathbf{r}_{23}$, and their sum equals $\\mathbf{r}_{23}$."
           },
           {
             "id": "c",
-            "text": "Only nabla_{r_1} phi and nabla_{r_4} phi are perpendicular to r_23, while nabla_{r_2} phi has a non-zero component along r_23."
+            "text": "Only $\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_4}\\phi$ are perpendicular to $\\mathbf{r}_{23}$, while $\\nabla_{\\mathbf{r}_2}\\phi$ has a non-zero component along $\\mathbf{r}_{23}$.",
+            "text_markdown": "Only $\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_4}\\phi$ are perpendicular to $\\mathbf{r}_{23}$, while $\\nabla_{\\mathbf{r}_2}\\phi$ has a non-zero component along $\\mathbf{r}_{23}$."
           },
           {
             "id": "d",
-            "text": "The sum of the four gradients equals (n_123 + n_432) / r_23."
+            "text": "The sum of the four gradients equals $\\frac{\\mathbf{n}_{123} + \\mathbf{n}_{432}}{r_{23}}$.",
+            "text_markdown": "The sum of the four gradients equals $\\frac{\\mathbf{n}_{123} + \\mathbf{n}_{432}}{r_{23}}$."
           }
         ],
         "correct": "a",
@@ -919,19 +995,23 @@
         "options": [
           {
             "id": "a",
-            "text": "nabla_{r_2} phi = -nabla_{r_1} phi and nabla_{r_3} phi = -nabla_{r_4} phi (so F_2 = -F_1 and F_3 = -F_4)"
+            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ (so $\\mathbf{F}_2 = -\\mathbf{F}_1$ and $\\mathbf{F}_3 = -\\mathbf{F}_4$)",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ (so $\\mathbf{F}_2 = -\\mathbf{F}_1$ and $\\mathbf{F}_3 = -\\mathbf{F}_4$)"
           },
           {
             "id": "b",
-            "text": "nabla_{r_2} phi = 0 and nabla_{r_3} phi = 0"
+            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = 0$ and $\\nabla_{\\mathbf{r}_3}\\phi = 0$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = 0$ and $\\nabla_{\\mathbf{r}_3}\\phi = 0$"
           },
           {
             "id": "c",
-            "text": "nabla_{r_2} phi = +nabla_{r_1} phi and nabla_{r_3} phi = +nabla_{r_4} phi"
+            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = +\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = +\\nabla_{\\mathbf{r}_4}\\phi$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = +\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = +\\nabla_{\\mathbf{r}_4}\\phi$"
           },
           {
             "id": "d",
-            "text": "nabla_{r_2} phi = -nabla_{r_4} phi and nabla_{r_3} phi = -nabla_{r_1} phi"
+            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$"
           }
         ],
         "correct": "a",
@@ -986,19 +1066,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The even-order Taylor terms (delta^2 * d^2E/dx^2) cancel out upon subtraction, leaving a leading truncation error of O(delta^2) instead of O(delta)."
+            "text": "The even-order Taylor terms ($\\delta^2 \\frac{d^2E}{dx^2}$) cancel out upon subtraction, leaving a leading truncation error of $\\mathcal{O}(\\delta^2)$ instead of $\\mathcal{O}(\\delta)$.",
+            "text_markdown": "The even-order Taylor terms ($\\delta^2 \\frac{d^2E}{dx^2}$) cancel out upon subtraction, leaving a leading truncation error of $\\mathcal{O}(\\delta^2)$ instead of $\\mathcal{O}(\\delta)$."
           },
           {
             "id": "b",
-            "text": "Central differencing eliminates IEEE-754 floating-point roundoff error for arbitrarily small delta."
+            "text": "Central differencing eliminates IEEE-754 floating-point roundoff error for arbitrarily small $\\delta$.",
+            "text_markdown": "Central differencing eliminates IEEE-754 floating-point roundoff error for arbitrarily small $\\delta$."
           },
           {
             "id": "c",
-            "text": "Central differencing requires only half as many energy evaluations as forward differencing."
+            "text": "Central differencing requires only half as many energy evaluations as forward differencing.",
+            "text_markdown": "Central differencing requires only half as many energy evaluations as forward differencing."
           },
           {
             "id": "d",
-            "text": "The third derivative d^3E/dx^3 is identically zero for all interatomic potentials."
+            "text": "The third derivative $d^3E/dx^3$ is identically zero for all interatomic potentials.",
+            "text_markdown": "The third derivative $d^3E/dx^3$ is identically zero for all interatomic potentials."
           }
         ],
         "correct": "a",
@@ -1032,19 +1116,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Subtractive cancellation of nearly equal floating-point numbers E(x + delta) and E(x - delta) produces a roundoff error of ~|E|*eps_mach, which grows as eps_mach / delta when divided by 2*delta."
+            "text": "Subtractive cancellation of nearly equal floating-point numbers $E(x + \\delta)$ and $E(x - \\delta)$ produces a roundoff error of $\\sim |E|\\varepsilon_{\\text{mach}}$, which grows as $\\varepsilon_{\\text{mach}} / \\delta$ when divided by $2\\delta$.",
+            "text_markdown": "Subtractive cancellation of nearly equal floating-point numbers $E(x + \\delta)$ and $E(x - \\delta)$ produces a roundoff error of $\\sim |E|\\varepsilon_{\\text{mach}}$, which grows as $\\varepsilon_{\\text{mach}} / \\delta$ when divided by $2\\delta$."
           },
           {
             "id": "b",
-            "text": "Taylor's theorem ceases to hold mathematically for delta < 10^-6 A."
+            "text": "Taylor's theorem ceases to hold mathematically for $\\delta < 10^{-6}\\text{ \u00c5}$.",
+            "text_markdown": "Taylor's theorem ceases to hold mathematically for $\\delta < 10^{-6}\\text{ \u00c5}$."
           },
           {
             "id": "c",
-            "text": "The analytical force diverges as delta approaches zero."
+            "text": "The analytical force diverges as $\\delta$ approaches zero.",
+            "text_markdown": "The analytical force diverges as $\\delta$ approaches zero."
           },
           {
             "id": "d",
-            "text": "The Born-Oppenheimer approximation breaks down at small numerical step sizes."
+            "text": "The Born-Oppenheimer approximation breaks down at small numerical step sizes.",
+            "text_markdown": "The Born-Oppenheimer approximation breaks down at small numerical step sizes."
           }
         ],
         "correct": "a",
@@ -1064,19 +1152,23 @@
         "options": [
           {
             "id": "a",
-            "text": "There is an algebraic or sign error in the internal-atom projection terms ((r_12 . r_32)/(n_123^2 r_23))*n_123 or ((r_43 . r_23)/(n_432^2 r_23))*n_432 that only enter nabla_{r_2} phi and nabla_{r_3} phi."
+            "text": "There is an algebraic or sign error in the internal-atom projection terms $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ or $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ that only enter $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$.",
+            "text_markdown": "There is an algebraic or sign error in the internal-atom projection terms $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ or $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ that only enter $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$."
           },
           {
             "id": "b",
-            "text": "The step size delta = 10^-5 A is too small for internal atoms."
+            "text": "The step size $\\delta = 10^{-5}\\text{ \u00c5}$ is too small for internal atoms.",
+            "text_markdown": "The step size $\\delta = 10^{-5}\\text{ \u00c5}$ is too small for internal atoms."
           },
           {
             "id": "c",
-            "text": "The scalar derivative dE/dphi has the wrong sign."
+            "text": "The scalar derivative $dE/d\\phi$ has the wrong sign.",
+            "text_markdown": "The scalar derivative $dE/d\\phi$ has the wrong sign."
           },
           {
             "id": "d",
-            "text": "Central finite differencing cannot be applied to internal atoms of a dihedral."
+            "text": "Central finite differencing cannot be applied to internal atoms of a dihedral.",
+            "text_markdown": "Central finite differencing cannot be applied to internal atoms of a dihedral."
           }
         ],
         "correct": "a",
@@ -1111,19 +1203,23 @@
         "options": [
           {
             "id": "a",
-            "text": "For a 2-body bond stretch E_bond(r_12), F_1 and F_2 are collinear with the bond vector r_12 and satisfy F_1 + F_2 = 0."
+            "text": "For a 2-body bond stretch $E_{\\text{bond}}(r_{12})$, $\\mathbf{F}_1$ and $\\mathbf{F}_2$ are collinear with the bond vector $\\mathbf{r}_{12}$ and satisfy $\\mathbf{F}_1 + \\mathbf{F}_2 = 0$.",
+            "text_markdown": "For a 2-body bond stretch $E_{\\text{bond}}(r_{12})$, $\\mathbf{F}_1$ and $\\mathbf{F}_2$ are collinear with the bond vector $\\mathbf{r}_{12}$ and satisfy $\\mathbf{F}_1 + \\mathbf{F}_2 = 0$."
           },
           {
             "id": "b",
-            "text": "For a 3-body bond angle E_angle(theta_123) with central vertex atom 2, F_1 lies in the (1-2-3) plane strictly perpendicular to r_12, F_3 lies in the (1-2-3) plane strictly perpendicular to r_32, and F_2 = -(F_1 + F_3)."
+            "text": "For a 3-body bond angle $E_{\\text{angle}}(\\theta_{123})$ with central vertex atom 2, $\\mathbf{F}_1$ lies in the (1-2-3) plane strictly perpendicular to $\\mathbf{r}_{12}$, $\\mathbf{F}_3$ lies in the (1-2-3) plane strictly perpendicular to $\\mathbf{r}_{32}$, and $\\mathbf{F}_2 = -(\\mathbf{F}_1 + \\mathbf{F}_3)$.",
+            "text_markdown": "For a 3-body bond angle $E_{\\text{angle}}(\\theta_{123})$ with central vertex atom 2, $\\mathbf{F}_1$ lies in the (1-2-3) plane strictly perpendicular to $\\mathbf{r}_{12}$, $\\mathbf{F}_3$ lies in the (1-2-3) plane strictly perpendicular to $\\mathbf{r}_{32}$, and $\\mathbf{F}_2 = -(\\mathbf{F}_1 + \\mathbf{F}_3)$."
           },
           {
             "id": "c",
-            "text": "For a 4-body torsion E(phi_1234), F_1 is parallel to the plane normal n_123, F_4 is parallel to the plane normal n_432, all four forces are perpendicular to the central bond r_23, and F_1 + F_2 + F_3 + F_4 = 0."
+            "text": "For a 4-body torsion $E(\\phi_{1234})$, $\\mathbf{F}_1$ is parallel to the plane normal $\\mathbf{n}_{123}$, $\\mathbf{F}_4$ is parallel to the plane normal $\\mathbf{n}_{432}$, all four forces are perpendicular to the central bond $\\mathbf{r}_{23}$, and $\\mathbf{F}_1 + \\mathbf{F}_2 + \\mathbf{F}_3 + \\mathbf{F}_4 = 0$.",
+            "text_markdown": "For a 4-body torsion $E(\\phi_{1234})$, $\\mathbf{F}_1$ is parallel to the plane normal $\\mathbf{n}_{123}$, $\\mathbf{F}_4$ is parallel to the plane normal $\\mathbf{n}_{432}$, all four forces are perpendicular to the central bond $\\mathbf{r}_{23}$, and $\\mathbf{F}_1 + \\mathbf{F}_2 + \\mathbf{F}_3 + \\mathbf{F}_4 = 0$."
           },
           {
             "id": "d",
-            "text": "For a 3-body bond angle E_angle(theta_123), the force F_2 on the central vertex atom is always zero."
+            "text": "For a 3-body bond angle $E_{\\text{angle}}(\\theta_{123})$, the force $\\mathbf{F}_2$ on the central vertex atom is always zero.",
+            "text_markdown": "For a 3-body bond angle $E_{\\text{angle}}(\\theta_{123})$, the force $\\mathbf{F}_2$ on the central vertex atom is always zero."
           }
         ],
         "correct": [
@@ -1147,19 +1243,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by E_bond and E_angle; evaluating unscaled (sigma/r)^12 Lennard-Jones repulsion at covalent bond lengths (~1.5 A << sigma ~ 3.5 A) would produce enormous spurious repulsive forces."
+            "text": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by $E_{\\text{bond}}$ and $E_{\\text{angle}}$; evaluating unscaled $(\\sigma/r)^{12}$ Lennard-Jones repulsion at covalent bond lengths ($\\sim 1.5\\text{ \u00c5} \\ll \\sigma \\sim 3.5\\text{ \u00c5}$) would produce enormous spurious repulsive forces.",
+            "text_markdown": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by $E_{\\text{bond}}$ and $E_{\\text{angle}}$; evaluating unscaled $(\\sigma/r)^{12}$ Lennard-Jones repulsion at covalent bond lengths ($\\sim 1.5\\text{ \u00c5} \\ll \\sigma \\sim 3.5\\text{ \u00c5}$) would produce enormous spurious repulsive forces."
           },
           {
             "id": "b",
-            "text": "Because the gradient nabla_{r_1} |r_1 - r_2| is undefined for covalently bonded atoms."
+            "text": "Because the gradient $\\nabla_{\\mathbf{r}_1}|\\mathbf{r}_1 - \\mathbf{r}_2|$ is undefined for covalently bonded atoms.",
+            "text_markdown": "Because the gradient $\\nabla_{\\mathbf{r}_1}|\\mathbf{r}_1 - \\mathbf{r}_2|$ is undefined for covalently bonded atoms."
           },
           {
             "id": "c",
-            "text": "Because covalently bonded atoms carry zero mass in MD."
+            "text": "Because covalently bonded atoms carry zero mass in MD.",
+            "text_markdown": "Because covalently bonded atoms carry zero mass in MD."
           },
           {
             "id": "d",
-            "text": "Because Lennard-Jones forces violate Newton's third law for bonded pairs."
+            "text": "Because Lennard-Jones forces violate Newton's third law for bonded pairs.",
+            "text_markdown": "Because Lennard-Jones forces violate Newton's third law for bonded pairs."
           }
         ],
         "correct": "a",
@@ -1180,19 +1280,23 @@
         "options": [
           {
             "id": "a",
-            "text": "By linearity of the gradient operator, F_i is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom i participates."
+            "text": "By linearity of the gradient operator, $\\mathbf{F}_i$ is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom $i$ participates.",
+            "text_markdown": "By linearity of the gradient operator, $\\mathbf{F}_i$ is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom $i$ participates."
           },
           {
             "id": "b",
-            "text": "Only the stiffest term (the bond-stretching gradient) is kept for each atom, while angle and torsion forces are discarded."
+            "text": "Only the stiffest term (the bond-stretching gradient) is kept for each atom, while angle and torsion forces are discarded.",
+            "text_markdown": "Only the stiffest term (the bond-stretching gradient) is kept for each atom, while angle and torsion forces are discarded."
           },
           {
             "id": "c",
-            "text": "The forces from different terms are multiplied together rather than added."
+            "text": "The forces from different terms are multiplied together rather than added.",
+            "text_markdown": "The forces from different terms are multiplied together rather than added."
           },
           {
             "id": "d",
-            "text": "Each atom can only receive a force from at most one internal coordinate per timestep."
+            "text": "Each atom can only receive a force from at most one internal coordinate per timestep.",
+            "text_markdown": "Each atom can only receive a force from at most one internal coordinate per timestep."
           }
         ],
         "correct": "a",

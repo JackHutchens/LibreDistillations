@@ -29,19 +29,23 @@
         "options": [
           {
             "id": "a",
-            "text": "A sublattice spin-inversion gauge transformation: invert all spins on sublattice B (s_j -> -s_j for j in B) while keeping spins on sublattice A unchanged."
+            "text": "A sublattice spin-inversion gauge transformation: invert all spins on sublattice $\\mathcal{B}$ ($s_j \\to -s_j$ for $j \\in \\mathcal{B}$) while keeping spins on sublattice $\\mathcal{A}$ unchanged.",
+            "text_markdown": "A sublattice spin-inversion gauge transformation: invert all spins on sublattice $\\mathcal{B}$ ($s_j \\to -s_j$ for $j \\in \\mathcal{B}$) while keeping spins on sublattice $\\mathcal{A}$ unchanged."
           },
           {
             "id": "b",
-            "text": "A global uniform spin inversion: invert every spin on the entire lattice simultaneously (s_i -> -s_i for all i)."
+            "text": "A global uniform spin inversion: invert every spin on the entire lattice simultaneously ($s_i \\to -s_i$ for all $i$).",
+            "text_markdown": "A global uniform spin inversion: invert every spin on the entire lattice simultaneously ($s_i \\to -s_i$ for all $i$)."
           },
           {
             "id": "c",
-            "text": "A 90-degree spatial rotation of the lattice coordinate axes that transposes nearest neighbors into next-nearest neighbors."
+            "text": "A $90^\\circ$ spatial rotation of the lattice coordinate axes that transposes nearest neighbors into next-nearest neighbors.",
+            "text_markdown": "A $90^\\circ$ spatial rotation of the lattice coordinate axes that transposes nearest neighbors into next-nearest neighbors."
           },
           {
             "id": "d",
-            "text": "An imaginary Wick rotation of the temperature variable: beta -> i * beta."
+            "text": "An imaginary Wick rotation of the inverse temperature variable: $\\beta \\to i\\beta$.",
+            "text_markdown": "An imaginary Wick rotation of the inverse temperature variable: $\\beta \\to i\\beta$."
           }
         ],
         "correct": "a",
@@ -58,19 +62,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The ground state possesses extensive macroscopic degeneracy, resulting in non-zero residual entropy S_0 > 0 at absolute zero and suppressing conventional long-range N\u00e9el order."
+            "text": "The ground state possesses extensive macroscopic degeneracy, resulting in non-zero residual entropy $S_0 > 0$ at absolute zero and suppressing conventional long-range N\u00e9el order.",
+            "text_markdown": "The ground state possesses extensive macroscopic degeneracy, resulting in non-zero residual entropy $S_0 > 0$ at absolute zero and suppressing conventional long-range N\u00e9el order."
           },
           {
             "id": "b",
-            "text": "The system collapses into a unique collinear ferromagnetic state to minimize total bond strain."
+            "text": "The system collapses into a unique collinear ferromagnetic state to minimize total bond strain.",
+            "text_markdown": "The system collapses into a unique collinear ferromagnetic state to minimize total bond strain."
           },
           {
             "id": "c",
-            "text": "The critical temperature Tc shifts to infinity because triangular loops amplify thermal correlations."
+            "text": "The critical temperature $T_c$ shifts to infinity because triangular loops amplify thermal correlations.",
+            "text_markdown": "The critical temperature $T_c$ shifts to infinity because triangular loops amplify thermal correlations."
           },
           {
             "id": "d",
-            "text": "The discrete Z_2 symmetry is dynamically broken into continuous SU(2) gauge symmetry."
+            "text": "The discrete $\\mathbb{Z}_2$ symmetry is dynamically broken into continuous $\\mathrm{SU}(2)$ gauge symmetry.",
+            "text_markdown": "The discrete $\\mathbb{Z}_2$ symmetry is dynamically broken into continuous $\\mathrm{SU}(2)$ gauge symmetry."
           }
         ],
         "correct": "a",
@@ -87,19 +95,23 @@
         "options": [
           {
             "id": "a",
-            "text": "mu_0 = -z * epsilon / 2"
+            "text": "$\\mu_0 = -\\frac{z\\epsilon}{2}$",
+            "text_markdown": "$\\mu_0 = -\\frac{z\\epsilon}{2}$"
           },
           {
             "id": "b",
-            "text": "mu_0 = -z * epsilon"
+            "text": "$\\mu_0 = -z\\epsilon$",
+            "text_markdown": "$\\mu_0 = -z\\epsilon$"
           },
           {
             "id": "c",
-            "text": "mu_0 = +z * epsilon / 4"
+            "text": "$\\mu_0 = +\\frac{z\\epsilon}{4}$",
+            "text_markdown": "$\\mu_0 = +\\frac{z\\epsilon}{4}$"
           },
           {
             "id": "d",
-            "text": "mu_0 = 0"
+            "text": "$\\mu_0 = 0$",
+            "text_markdown": "$\\mu_0 = 0$"
           }
         ],
         "correct": "a",
@@ -116,19 +128,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The alloy forms an ordered interpenetrating superlattice (chemical ordering) because unlike A-B pairs have lower energy than like A-A and B-B pairs."
+            "text": "The alloy forms an ordered interpenetrating superlattice (chemical ordering) because unlike A\u2013B pairs have lower energy than like A\u2013A and B\u2013B pairs.",
+            "text_markdown": "The alloy forms an ordered interpenetrating superlattice (chemical ordering) because unlike A\u2013B pairs have lower energy than like A\u2013A and B\u2013B pairs."
           },
           {
             "id": "b",
-            "text": "The alloy phase-separates into macroscopic A-rich and B-rich domains (miscibility gap) because like pairs are energetically favored."
+            "text": "The alloy phase-separates into macroscopic A-rich and B-rich domains (miscibility gap) because like pairs are energetically favored.",
+            "text_markdown": "The alloy phase-separates into macroscopic A-rich and B-rich domains (miscibility gap) because like pairs are energetically favored."
           },
           {
             "id": "c",
-            "text": "The alloy remains an ideal random solid solution down to absolute zero with zero heat of mixing."
+            "text": "The alloy remains an ideal random solid solution down to absolute zero with zero heat of mixing.",
+            "text_markdown": "The alloy remains an ideal random solid solution down to absolute zero with zero heat of mixing."
           },
           {
             "id": "d",
-            "text": "The lattice becomes mechanically unstable and undergoes a martensitic shear collapse."
+            "text": "The lattice becomes mechanically unstable and undergoes a martensitic shear collapse.",
+            "text_markdown": "The lattice becomes mechanically unstable and undergoes a martensitic shear collapse."
           }
         ],
         "correct": "a",
@@ -175,19 +191,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It diverges to infinity with critical exponent gamma, mirroring the divergence of the magnetic susceptibility chi_T in the Ising ferromagnet."
+            "text": "It diverges to infinity with critical exponent $\\gamma$, mirroring the divergence of the magnetic susceptibility $\\chi_T$ in the Ising ferromagnet.",
+            "text_markdown": "It diverges to infinity with critical exponent $\\gamma$, mirroring the divergence of the magnetic susceptibility $\\chi_T$ in the Ising ferromagnet."
           },
           {
             "id": "b",
-            "text": "It drops discontinuously to zero because liquid and vapor densities equalize."
+            "text": "It drops discontinuously to zero because liquid and vapor densities equalize.",
+            "text_markdown": "It drops discontinuously to zero because liquid and vapor densities equalize."
           },
           {
             "id": "c",
-            "text": "It remains strictly constant and equal to 1 / (rho_c * k_B * T)."
+            "text": "It remains strictly constant and equal to $\\frac{1}{\\rho_c k_B T}$.",
+            "text_markdown": "It remains strictly constant and equal to $\\frac{1}{\\rho_c k_B T}$."
           },
           {
             "id": "d",
-            "text": "It develops an imaginary component associated with mechanical cavitation."
+            "text": "It develops an imaginary component associated with mechanical cavitation.",
+            "text_markdown": "It develops an imaginary component associated with mechanical cavitation."
           }
         ],
         "correct": "a",
@@ -210,19 +230,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because factoring Z_N = lambda_1^N [1 + (lambda_2 / lambda_1)^N] reveals that (lambda_2 / lambda_1)^N vanishes exponentially as N -> infinity when lambda_1 > lambda_2."
+            "text": "Because factoring $Z_N = \\lambda_1^N \\left[1 + \\left(\\frac{\\lambda_2}{\\lambda_1}\\right)^N\\right]$ reveals that $(\\lambda_2 / \\lambda_1)^N$ vanishes exponentially as $N \\to \\infty$ when $\\lambda_1 > \\lambda_2$.",
+            "text_markdown": "Because factoring $Z_N = \\lambda_1^N \\left[1 + \\left(\\frac{\\lambda_2}{\\lambda_1}\\right)^N\\right]$ reveals that $(\\lambda_2 / \\lambda_1)^N$ vanishes exponentially as $N \\to \\infty$ when $\\lambda_1 > \\lambda_2$."
           },
           {
             "id": "b",
-            "text": "Because the trace of a matrix is mathematically identical to its largest eigenvalue."
+            "text": "Because the trace of a matrix is mathematically identical to its largest eigenvalue.",
+            "text_markdown": "Because the trace of a matrix is mathematically identical to its largest eigenvalue."
           },
           {
             "id": "c",
-            "text": "Because the second eigenvalue lambda_2 is strictly zero at all temperatures."
+            "text": "Because the second eigenvalue $\\lambda_2$ is strictly zero at all temperatures.",
+            "text_markdown": "Because the second eigenvalue $\\lambda_2$ is strictly zero at all temperatures."
           },
           {
             "id": "d",
-            "text": "Because quantum tunneling forces all lower eigenstates to collapse."
+            "text": "Because quantum tunneling forces all lower eigenstates to collapse.",
+            "text_markdown": "Because quantum tunneling forces all lower eigenstates to collapse."
           }
         ],
         "correct": "a",
@@ -239,19 +263,23 @@
         "options": [
           {
             "id": "a",
-            "text": "tanh(beta * J)"
+            "text": "$\\tanh(\\beta J)$",
+            "text_markdown": "$\\tanh(\\beta J)$"
           },
           {
             "id": "b",
-            "text": "coth(beta * J)"
+            "text": "$\\coth(\\beta J)$",
+            "text_markdown": "$\\coth(\\beta J)$"
           },
           {
             "id": "c",
-            "text": "exp(-2 * beta * J)"
+            "text": "$\\exp(-2\\beta J)$",
+            "text_markdown": "$\\exp(-2\\beta J)$"
           },
           {
             "id": "d",
-            "text": "sech(beta * J)"
+            "text": "$\\operatorname{sech}(\\beta J)$",
+            "text_markdown": "$\\operatorname{sech}(\\beta J)$"
           }
         ],
         "correct": "a",
@@ -282,19 +310,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In 1D, the energetic barrier Delta E = 2J is independent of system size while entropy grows as ln N, driving Delta F -> -infinity. In 2D, enclosing a domain of linear size L costs energy scaling with perimeter (Delta E ~ 2 sigma L), which overwhelms boundary configurational entropy at sufficiently low temperatures."
+            "text": "In 1D, the energetic barrier $\\Delta E = 2J$ is independent of system size while entropy grows as $\\ln N$, driving $\\Delta F \\to -\\infty$. In 2D, enclosing a domain of linear size $L$ costs energy scaling with perimeter ($\\Delta E \\sim 2\\sigma L$), which overwhelms boundary configurational entropy at sufficiently low temperatures.",
+            "text_markdown": "In 1D, the energetic barrier $\\Delta E = 2J$ is independent of system size while entropy grows as $\\ln N$, driving $\\Delta F \\to -\\infty$. In 2D, enclosing a domain of linear size $L$ costs energy scaling with perimeter ($\\Delta E \\sim 2\\sigma L$), which overwhelms boundary configurational entropy at sufficiently low temperatures."
           },
           {
             "id": "b",
-            "text": "In 1D, spins are prohibited by quantum uncertainty from having discrete values, whereas 2D spins are classical vectors."
+            "text": "In 1D, spins are prohibited by quantum uncertainty from having discrete values, whereas 2D spins are classical vectors.",
+            "text_markdown": "In 1D, spins are prohibited by quantum uncertainty from having discrete values, whereas 2D spins are classical vectors."
           },
           {
             "id": "c",
-            "text": "In 2D, domain walls cannot form closed loops due to topological conservation laws."
+            "text": "In 2D, domain walls cannot form closed loops due to topological conservation laws.",
+            "text_markdown": "In 2D, domain walls cannot form closed loops due to topological conservation laws."
           },
           {
             "id": "d",
-            "text": "The 1D transfer matrix has imaginary eigenvalues, which destabilizes boundary walls."
+            "text": "The 1D transfer matrix has imaginary eigenvalues, which destabilizes boundary walls.",
+            "text_markdown": "The 1D transfer matrix has imaginary eigenvalues, which destabilizes boundary walls."
           }
         ],
         "correct": "a",
@@ -311,19 +343,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It exhibits a broad, perfectly analytic Schottky-like peak that drops smoothly to zero both as T -> 0 and as T -> infinity, with no mathematical singularity at any non-zero temperature."
+            "text": "It exhibits a broad, perfectly analytic Schottky-like peak that drops smoothly to zero both as $T \\to 0$ and as $T \\to \\infty$, with no mathematical singularity at any non-zero temperature.",
+            "text_markdown": "It exhibits a broad, perfectly analytic Schottky-like peak that drops smoothly to zero both as $T \\to 0$ and as $T \\to \\infty$, with no mathematical singularity at any non-zero temperature."
           },
           {
             "id": "b",
-            "text": "It diverges logarithmically C_V ~ ln|T - T_c| at a finite critical temperature."
+            "text": "It diverges logarithmically $C_V \\sim \\ln|T - T_c|$ at a finite critical temperature.",
+            "text_markdown": "It diverges logarithmically $C_V \\sim \\ln|T - T_c|$ at a finite critical temperature."
           },
           {
             "id": "c",
-            "text": "It undergoes a discontinuous jump of Delta C_V = 3/2 k_B as predicted by mean-field theory."
+            "text": "It undergoes a discontinuous jump of $\\Delta C_V = \\frac{3}{2} k_B$ as predicted by mean-field theory.",
+            "text_markdown": "It undergoes a discontinuous jump of $\\Delta C_V = \\frac{3}{2} k_B$ as predicted by mean-field theory."
           },
           {
             "id": "d",
-            "text": "It remains strictly zero at all temperatures because 1D chains cannot absorb thermal energy."
+            "text": "It remains strictly zero at all temperatures because 1D chains cannot absorb thermal energy.",
+            "text_markdown": "It remains strictly zero at all temperatures because 1D chains cannot absorb thermal energy."
           }
         ],
         "correct": "a",
@@ -340,19 +376,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The free energy per spin is strictly identical in the thermodynamic limit because the boundary contributes an energy of order O(1), which vanishes when divided by N as N -> infinity."
+            "text": "The free energy per spin is strictly identical in the thermodynamic limit because the boundary contributes an energy of order $\\mathcal{O}(1)$, which vanishes when divided by $N$ as $N \\to \\infty$.",
+            "text_markdown": "The free energy per spin is strictly identical in the thermodynamic limit because the boundary contributes an energy of order $\\mathcal{O}(1)$, which vanishes when divided by $N$ as $N \\to \\infty$."
           },
           {
             "id": "b",
-            "text": "Open boundary conditions induce a finite-temperature phase transition, whereas periodic boundaries prevent it."
+            "text": "Open boundary conditions induce a finite-temperature phase transition, whereas periodic boundaries prevent it.",
+            "text_markdown": "Open boundary conditions induce a finite-temperature phase transition, whereas periodic boundaries prevent it."
           },
           {
             "id": "c",
-            "text": "Periodic boundaries double the critical temperature relative to open boundaries."
+            "text": "Periodic boundaries double the critical temperature relative to open boundaries.",
+            "text_markdown": "Periodic boundaries double the critical temperature relative to open boundaries."
           },
           {
             "id": "d",
-            "text": "The free energy per spin diverges under open boundaries due to boundary spin unbinding."
+            "text": "The free energy per spin diverges under open boundaries due to boundary spin unbinding.",
+            "text_markdown": "The free energy per spin diverges under open boundaries due to boundary spin unbinding."
           }
         ],
         "correct": "a",
@@ -375,19 +415,23 @@
         "options": [
           {
             "id": "a",
-            "text": "By establishing an exact mathematical duality relating the high-temperature expansion on the square lattice to the low-temperature domain wall expansion on its dual lattice, and identifying the self-dual fixed point sinh(2*beta*J) = 1."
+            "text": "By establishing an exact mathematical duality relating the high-temperature expansion on the square lattice to the low-temperature domain wall expansion on its dual lattice, and identifying the self-dual fixed point $\\sinh(2\\beta_c J) = 1$.",
+            "text_markdown": "By establishing an exact mathematical duality relating the high-temperature expansion on the square lattice to the low-temperature domain wall expansion on its dual lattice, and identifying the self-dual fixed point $\\sinh(2\\beta_c J) = 1$."
           },
           {
             "id": "b",
-            "text": "By performing high-precision Monte Carlo simulations on mechanical vacuum tube computers."
+            "text": "By performing high-precision Monte Carlo simulations on mechanical vacuum tube computers.",
+            "text_markdown": "By performing high-precision Monte Carlo simulations on mechanical vacuum tube computers."
           },
           {
             "id": "c",
-            "text": "By diagonalizing infinite-dimensional Toeplitz determinants using Wiener-Hopf techniques."
+            "text": "By diagonalizing infinite-dimensional Toeplitz determinants using Wiener\u2013Hopf techniques.",
+            "text_markdown": "By diagonalizing infinite-dimensional Toeplitz determinants using Wiener\u2013Hopf techniques."
           },
           {
             "id": "d",
-            "text": "By applying the Hartree-Fock self-consistent field approximation to the spin density."
+            "text": "By applying the Hartree\u2013Fock self-consistent field approximation to the spin density.",
+            "text_markdown": "By applying the Hartree\u2013Fock self-consistent field approximation to the spin density."
           }
         ],
         "correct": "a",
@@ -418,19 +462,23 @@
         "options": [
           {
             "id": "a",
-            "text": "beta = 1/8 = 0.125 in the 2D Ising model, which is four times smaller than the mean-field prediction of beta_MF = 1/2 = 0.50, causing magnetization to rise much more sharply below Tc."
+            "text": "$\\beta = 1/8 = 0.125$ in the 2D Ising model, which is four times smaller than the mean-field prediction of $\\beta_{\\text{MF}} = 1/2 = 0.50$, causing magnetization to rise much more sharply below $T_c$.",
+            "text_markdown": "$\\beta = 1/8 = 0.125$ in the 2D Ising model, which is four times smaller than the mean-field prediction of $\\beta_{\\text{MF}} = 1/2 = 0.50$, causing magnetization to rise much more sharply below $T_c$."
           },
           {
             "id": "b",
-            "text": "beta = 1/2 in both 2D and mean-field theory because critical exponents are strictly dimension-independent."
+            "text": "$\\beta = 1/2$ in both 2D and mean-field theory because critical exponents are strictly dimension-independent.",
+            "text_markdown": "$\\beta = 1/2$ in both 2D and mean-field theory because critical exponents are strictly dimension-independent."
           },
           {
             "id": "c",
-            "text": "beta = 1/4 in 2D and beta_MF = 1/8 in mean-field theory."
+            "text": "$\\beta = 1/4$ in 2D and $\\beta_{\\text{MF}} = 1/8$ in mean-field theory.",
+            "text_markdown": "$\\beta = 1/4$ in 2D and $\\beta_{\\text{MF}} = 1/8$ in mean-field theory."
           },
           {
             "id": "d",
-            "text": "beta = 1 in 2D, indicating a linear decrease of magnetization to zero."
+            "text": "$\\beta = 1$ in 2D, indicating a linear decrease of magnetization to zero.",
+            "text_markdown": "$\\beta = 1$ in 2D, indicating a linear decrease of magnetization to zero."
           }
         ],
         "correct": "a",
@@ -447,23 +495,28 @@
         "options": [
           {
             "id": "a",
-            "text": "The correlation length exponent is nu = 1, meaning the spatial correlation length diverges as xi ~ |T - Tc|^(-1)."
+            "text": "The correlation length exponent is $\\nu = 1$, meaning the spatial correlation length diverges as $\\xi \\sim |T - T_c|^{-1}$.",
+            "text_markdown": "The correlation length exponent is $\\nu = 1$, meaning the spatial correlation length diverges as $\\xi \\sim |T - T_c|^{-1}$."
           },
           {
             "id": "b",
-            "text": "The magnetic susceptibility exponent is gamma = 7/4 = 1.75, far stronger than the mean-field divergence of gamma_MF = 1."
+            "text": "The magnetic susceptibility exponent is $\\gamma = 7/4 = 1.75$, far stronger than the mean-field divergence of $\\gamma_{\\text{MF}} = 1$.",
+            "text_markdown": "The magnetic susceptibility exponent is $\\gamma = 7/4 = 1.75$, far stronger than the mean-field divergence of $\\gamma_{\\text{MF}} = 1$."
           },
           {
             "id": "c",
-            "text": "The specific heat exponent alpha = 0 corresponds to a symmetric logarithmic divergence C_V ~ -ln|T - Tc| rather than a power law."
+            "text": "The specific heat exponent $\\alpha = 0$ corresponds to a symmetric logarithmic divergence $C_V \\sim -\\ln|T - T_c|$ rather than a power law.",
+            "text_markdown": "The specific heat exponent $\\alpha = 0$ corresponds to a symmetric logarithmic divergence $C_V \\sim -\\ln|T - T_c|$ rather than a power law."
           },
           {
             "id": "d",
-            "text": "The critical correlation function at T = Tc decays as G(r) ~ r^(-1/4), giving anomalous dimension eta = 1/4."
+            "text": "The critical correlation function at $T = T_c$ decays as $G(r) \\sim r^{-1/4}$, giving anomalous dimension $\\eta = 1/4$.",
+            "text_markdown": "The critical correlation function at $T = T_c$ decays as $G(r) \\sim r^{-1/4}$, giving anomalous dimension $\\eta = 1/4$."
           },
           {
             "id": "e",
-            "text": "The upper critical dimension is d_u = 2, so mean-field exponents are exact in two dimensions."
+            "text": "The upper critical dimension is $d_u = 2$, so mean-field exponents are exact in two dimensions.",
+            "text_markdown": "The upper critical dimension is $d_u = 2$, so mean-field exponents are exact in two dimensions."
           }
         ],
         "correct": [
@@ -485,19 +538,23 @@
         "options": [
           {
             "id": "a",
-            "text": "alpha + 2*beta + gamma = 2"
+            "text": "$\\alpha + 2\\beta + \\gamma = 2$",
+            "text_markdown": "$\\alpha + 2\\beta + \\gamma = 2$"
           },
           {
             "id": "b",
-            "text": "alpha + beta + gamma = 1"
+            "text": "$\\alpha + \\beta + \\gamma = 1$",
+            "text_markdown": "$\\alpha + \\beta + \\gamma = 1$"
           },
           {
             "id": "c",
-            "text": "alpha * beta * gamma = 2"
+            "text": "$\\alpha \\beta \\gamma = 2$",
+            "text_markdown": "$\\alpha \\beta \\gamma = 2$"
           },
           {
             "id": "d",
-            "text": "2*alpha + beta - gamma = 0"
+            "text": "$2\\alpha + \\beta - \\gamma = 0$",
+            "text_markdown": "$2\\alpha + \\beta - \\gamma = 0$"
           }
         ],
         "correct": "a",
@@ -514,19 +571,23 @@
         "options": [
           {
             "id": "a",
-            "text": "d_u = 4; above four dimensions, thermal fluctuations on length scales xi become negligible over correlation volumes, rendering Landau mean-field critical exponents exact."
+            "text": "$d_u = 4$; above four dimensions, thermal fluctuations on length scales $\\xi$ become negligible over correlation volumes, rendering Landau mean-field critical exponents exact.",
+            "text_markdown": "$d_u = 4$; above four dimensions, thermal fluctuations on length scales $\\xi$ become negligible over correlation volumes, rendering Landau mean-field critical exponents exact."
           },
           {
             "id": "b",
-            "text": "d_u = 2; above two dimensions, phase transitions cease to exist."
+            "text": "$d_u = 2$; above two dimensions, phase transitions cease to exist.",
+            "text_markdown": "$d_u = 2$; above two dimensions, phase transitions cease to exist."
           },
           {
             "id": "c",
-            "text": "d_u = 3; systems in three dimensions always have mean-field exponents."
+            "text": "$d_u = 3$; systems in three dimensions always have mean-field exponents.",
+            "text_markdown": "$d_u = 3$; systems in three dimensions always have mean-field exponents."
           },
           {
             "id": "d",
-            "text": "d_u = infinity; fluctuations dominate in all finite dimensions."
+            "text": "$d_u = \\infty$; fluctuations dominate in all finite dimensions.",
+            "text_markdown": "$d_u = \\infty$; fluctuations dominate in all finite dimensions."
           }
         ],
         "correct": "a",
@@ -616,19 +677,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because periodic boundary conditions identify coordinate x = 0 with x = L; any slab of reversed spins embedded in the bulk must have both an entry interface (+ to -) and an exit interface (- to +) to satisfy cyclic continuity."
+            "text": "Because periodic boundary conditions identify coordinate $x = 0$ with $x = L$; any slab of reversed spins embedded in the bulk must have both an entry interface ($+ \\to -$) and an exit interface ($- \\to +$) to satisfy cyclic continuity.",
+            "text_markdown": "Because periodic boundary conditions identify coordinate $x = 0$ with $x = L$; any slab of reversed spins embedded in the bulk must have both an entry interface ($+ \\to -$) and an exit interface ($- \\to +$) to satisfy cyclic continuity."
           },
           {
             "id": "b",
-            "text": "Because spins are only permitted to flip in pairs by the Pauli exclusion principle."
+            "text": "Because spins are only permitted to flip in pairs by the Pauli exclusion principle.",
+            "text_markdown": "Because spins are only permitted to flip in pairs by the Pauli exclusion principle."
           },
           {
             "id": "c",
-            "text": "Because single domain walls violate energy conservation during Monte Carlo steps."
+            "text": "Because single domain walls violate energy conservation during Monte Carlo steps.",
+            "text_markdown": "Because single domain walls violate energy conservation during Monte Carlo steps."
           },
           {
             "id": "d",
-            "text": "Because the transfer matrix has two distinct eigenvalues."
+            "text": "Because the transfer matrix has two distinct eigenvalues.",
+            "text_markdown": "Because the transfer matrix has two distinct eigenvalues."
           }
         ],
         "correct": "a",
@@ -662,19 +727,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It scales exponentially as exp(2 * beta * N * h * M_0), completely suppressing the minority -M_0 state in macroscopic systems even for infinitesimal positive fields."
+            "text": "It scales exponentially as $\\exp(2\\beta N h M_0)$, completely suppressing the minority $-M_0$ state in macroscopic systems even for infinitesimal positive fields.",
+            "text_markdown": "It scales exponentially as $\\exp(2\\beta N h M_0)$, completely suppressing the minority $-M_0$ state in macroscopic systems even for infinitesimal positive fields."
           },
           {
             "id": "b",
-            "text": "It scales linearly with N as (1 + 2 * beta * h * M_0)."
+            "text": "It scales linearly with $N$ as $(1 + 2\\beta h M_0)$.",
+            "text_markdown": "It scales linearly with $N$ as $(1 + 2\\beta h M_0)$."
           },
           {
             "id": "c",
-            "text": "It remains equal to 1 because discrete Z_2 symmetry cannot be broken by a magnetic field."
+            "text": "It remains equal to $1$ because discrete $\\mathbb{Z}_2$ symmetry cannot be broken by a magnetic field.",
+            "text_markdown": "It remains equal to $1$ because discrete $\\mathbb{Z}_2$ symmetry cannot be broken by a magnetic field."
           },
           {
             "id": "d",
-            "text": "It decreases as 1 / N due to finite-size rounding."
+            "text": "It decreases as $1/N$ due to finite-size rounding.",
+            "text_markdown": "It decreases as $1/N$ due to finite-size rounding."
           }
         ],
         "correct": "a",
@@ -691,19 +760,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because U_4 is a dimensionless ratio whose leading-order scaling function is scale-invariant at T = Tc, causing curves of U_4(T, L) for different box sizes L to intersect at a common crossing point that pinpoints Tc."
+            "text": "Because $U_4$ is a dimensionless ratio whose leading-order scaling function is scale-invariant at $T = T_c$, causing curves of $U_4(T, L)$ for different box sizes $L$ to intersect at a common crossing point that pinpoints $T_c$.",
+            "text_markdown": "Because $U_4$ is a dimensionless ratio whose leading-order scaling function is scale-invariant at $T = T_c$, causing curves of $U_4(T, L)$ for different box sizes $L$ to intersect at a common crossing point that pinpoints $T_c$."
           },
           {
             "id": "b",
-            "text": "Because U_4 is strictly zero at all temperatures except exactly at T = Tc where it diverges to infinity."
+            "text": "Because $U_4$ is strictly zero at all temperatures except exactly at $T = T_c$ where it diverges to infinity.",
+            "text_markdown": "Because $U_4$ is strictly zero at all temperatures except exactly at $T = T_c$ where it diverges to infinity."
           },
           {
             "id": "c",
-            "text": "Because U_4 eliminates the need to perform Monte Carlo sampling by computing the partition function analytically."
+            "text": "Because $U_4$ eliminates the need to perform Monte Carlo sampling by computing the partition function analytically.",
+            "text_markdown": "Because $U_4$ eliminates the need to perform Monte Carlo sampling by computing the partition function analytically."
           },
           {
             "id": "d",
-            "text": "Because U_4 only requires measuring single-spin flip probabilities."
+            "text": "Because $U_4$ only requires measuring single-spin flip probabilities.",
+            "text_markdown": "Because $U_4$ only requires measuring single-spin flip probabilities."
           }
         ],
         "correct": "a",
@@ -720,19 +793,23 @@
         "options": [
           {
             "id": "a",
-            "text": "chi_max(L) ~ L^(gamma / nu) = L^(1.75 / 1) = L^1.75"
+            "text": "$\\chi_{\\max}(L) \\sim L^{\\gamma/\\nu} = L^{1.75}$",
+            "text_markdown": "$\\chi_{\\max}(L) \\sim L^{\\gamma/\\nu} = L^{1.75}$"
           },
           {
             "id": "b",
-            "text": "chi_max(L) ~ L^0 = constant"
+            "text": "$\\chi_{\\max}(L) \\sim L^0 = \\text{constant}$",
+            "text_markdown": "$\\chi_{\\max}(L) \\sim L^0 = \\text{constant}$"
           },
           {
             "id": "c",
-            "text": "chi_max(L) ~ L^2"
+            "text": "$\\chi_{\\max}(L) \\sim L^2$",
+            "text_markdown": "$\\chi_{\\max}(L) \\sim L^2$"
           },
           {
             "id": "d",
-            "text": "chi_max(L) ~ exp(-L)"
+            "text": "$\\chi_{\\max}(L) \\sim e^{-L}$",
+            "text_markdown": "$\\chi_{\\max}(L) \\sim e^{-L}$"
           }
         ],
         "correct": "a",
@@ -749,19 +826,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Via the fluctuation-dissipation theorem relating response to variance: chi_T = (N / (k_B * T)) * ( <M^2> - <M>^2 )."
+            "text": "Via the fluctuation-dissipation theorem relating response to variance: $\\chi_T = \\frac{N}{k_B T}(\\langle M^2 \\rangle - \\langle M \\rangle^2)$.",
+            "text_markdown": "Via the fluctuation-dissipation theorem relating response to variance: $\\chi_T = \\frac{N}{k_B T}(\\langle M^2 \\rangle - \\langle M \\rangle^2)$."
           },
           {
             "id": "b",
-            "text": "By computing the time derivative of total energy dE/dt."
+            "text": "By computing the time derivative of total energy $dE/dt$.",
+            "text_markdown": "By computing the time derivative of total energy $dE/dt$."
           },
           {
             "id": "c",
-            "text": "By evaluating the square root of the mean magnetization sqrt(<M>)."
+            "text": "By evaluating the square root of the mean magnetization $\\sqrt{\\langle M \\rangle}$.",
+            "text_markdown": "By evaluating the square root of the mean magnetization $\\sqrt{\\langle M \\rangle}$."
           },
           {
             "id": "d",
-            "text": "From the inverse of the transfer matrix trace 1 / Tr(T^N)."
+            "text": "From the inverse of the transfer matrix trace $1 / \\operatorname{Tr}(\\mathbf{T}^N)$.",
+            "text_markdown": "From the inverse of the transfer matrix trace $1 / \\operatorname{Tr}(\\mathbf{T}^N)$."
           }
         ],
         "correct": "a",
@@ -832,19 +913,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Kawasaki kinetics strictly conserves total magnetization M = (1/N) sum s_i (modeling diffusive mass transport and phase separation in binary alloys), whereas Glauber kinetics allows M to vary freely (modeling domain wall motion in magnetic materials)."
+            "text": "Kawasaki kinetics strictly conserves total magnetization $M = \\frac{1}{N}\\sum_i s_i$ (modeling diffusive mass transport and phase separation in binary alloys), whereas Glauber kinetics allows $M$ to vary freely (modeling domain wall motion in magnetic materials).",
+            "text_markdown": "Kawasaki kinetics strictly conserves total magnetization $M = \\frac{1}{N}\\sum_i s_i$ (modeling diffusive mass transport and phase separation in binary alloys), whereas Glauber kinetics allows $M$ to vary freely (modeling domain wall motion in magnetic materials)."
           },
           {
             "id": "b",
-            "text": "Kawasaki kinetics conserves total energy, whereas Glauber kinetics operates in the microcanonical ensemble."
+            "text": "Kawasaki kinetics conserves total energy, whereas Glauber kinetics operates in the microcanonical ensemble.",
+            "text_markdown": "Kawasaki kinetics conserves total energy, whereas Glauber kinetics operates in the microcanonical ensemble."
           },
           {
             "id": "c",
-            "text": "Glauber kinetics strictly conserves momentum, whereas Kawasaki kinetics includes hydrodynamic turbulence."
+            "text": "Glauber kinetics strictly conserves momentum, whereas Kawasaki kinetics includes hydrodynamic turbulence.",
+            "text_markdown": "Glauber kinetics strictly conserves momentum, whereas Kawasaki kinetics includes hydrodynamic turbulence."
           },
           {
             "id": "d",
-            "text": "Kawasaki dynamics is deterministic Newton's motion, whereas Glauber dynamics is stochastic Brownian motion."
+            "text": "Kawasaki dynamics is deterministic Newton's motion, whereas Glauber dynamics is stochastic Brownian motion.",
+            "text_markdown": "Kawasaki dynamics is deterministic Newton's motion, whereas Glauber dynamics is stochastic Brownian motion."
           }
         ],
         "correct": "a",
@@ -861,19 +946,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Interface velocity is driven by local mean curvature v_n = -Gamma * sigma * kappa ~ -1/L, yielding the parabolic Lifshitz-Allen-Cahn growth law L(t) ~ t^(1/2)."
+            "text": "Interface velocity is driven by local mean curvature $v_n = -\\Gamma \\sigma \\kappa \\sim -1/L$, yielding the parabolic Lifshitz-Allen-Cahn growth law $L(t) \\sim t^{1/2}$.",
+            "text_markdown": "Interface velocity is driven by local mean curvature $v_n = -\\Gamma \\sigma \\kappa \\sim -1/L$, yielding the parabolic Lifshitz-Allen-Cahn growth law $L(t) \\sim t^{1/2}$."
           },
           {
             "id": "b",
-            "text": "Interface velocity is driven by bulk chemical potential gradients, producing linear growth L(t) ~ t."
+            "text": "Interface velocity is driven by bulk chemical potential gradients, producing linear growth $L(t) \\sim t$.",
+            "text_markdown": "Interface velocity is driven by bulk chemical potential gradients, producing linear growth $L(t) \\sim t$."
           },
           {
             "id": "c",
-            "text": "Interface velocity is limited by long-range volume diffusion, producing L(t) ~ t^(1/3)."
+            "text": "Interface velocity is limited by long-range volume diffusion, producing $L(t) \\sim t^{1/3}$.",
+            "text_markdown": "Interface velocity is limited by long-range volume diffusion, producing $L(t) \\sim t^{1/3}$."
           },
           {
             "id": "d",
-            "text": "Interface velocity is logarithmic L(t) ~ ln(t) due to random pinning impurities."
+            "text": "Interface velocity is logarithmic $L(t) \\sim \\ln t$ due to random pinning impurities.",
+            "text_markdown": "Interface velocity is logarithmic $L(t) \\sim \\ln t$ due to random pinning impurities."
           }
         ],
         "correct": "a",
@@ -920,19 +1009,23 @@
         "options": [
           {
             "id": "a",
-            "text": "By the Gibbs-Thomson relation mu(R) = mu_flat + 2 * gamma * Omega / R, smaller droplets have higher interfacial curvature and elevated surface chemical potential, creating a concentration gradient that drives diffusive flux toward larger droplets."
+            "text": "By the Gibbs-Thomson relation $\\mu(R) = \\mu_{\\text{flat}} + \\frac{2\\gamma\\Omega}{R}$, smaller droplets have higher interfacial curvature and elevated surface chemical potential, creating a concentration gradient that drives diffusive flux toward larger droplets.",
+            "text_markdown": "By the Gibbs-Thomson relation $\\mu(R) = \\mu_{\\text{flat}} + \\frac{2\\gamma\\Omega}{R}$, smaller droplets have higher interfacial curvature and elevated surface chemical potential, creating a concentration gradient that drives diffusive flux toward larger droplets."
           },
           {
             "id": "b",
-            "text": "Gravitational settling forces smaller particles to sink and aggregate onto larger particles."
+            "text": "Gravitational settling forces smaller particles to sink and aggregate onto larger particles.",
+            "text_markdown": "Gravitational settling forces smaller particles to sink and aggregate onto larger particles."
           },
           {
             "id": "c",
-            "text": "Smaller domains have lower surface-to-volume ratio, making them thermodynamically more stable."
+            "text": "Smaller domains have lower surface-to-volume ratio, making them thermodynamically more stable.",
+            "text_markdown": "Smaller domains have lower surface-to-volume ratio, making them thermodynamically more stable."
           },
           {
             "id": "d",
-            "text": "Kawasaki dynamics introduces an artificial mechanical pressure that squeezes small domains."
+            "text": "Kawasaki dynamics introduces an artificial mechanical pressure that squeezes small domains.",
+            "text_markdown": "Kawasaki dynamics introduces an artificial mechanical pressure that squeezes small domains."
           }
         ],
         "correct": "a",
@@ -949,19 +1042,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The spinodal line where d^2 f / dM^2 = 0; inside the spinodal (d^2 f / dM^2 < 0), the homogeneous phase is barrierlessly unstable to infinitesimal long-wavelength concentration fluctuations."
+            "text": "The spinodal line where $\\frac{\\partial^2 f}{\\partial M^2} = 0$; inside the spinodal ($\\frac{\\partial^2 f}{\\partial M^2} < 0$), the homogeneous phase is barrierlessly unstable to infinitesimal long-wavelength concentration fluctuations.",
+            "text_markdown": "The spinodal line where $\\frac{\\partial^2 f}{\\partial M^2} = 0$; inside the spinodal ($\\frac{\\partial^2 f}{\\partial M^2} < 0$), the homogeneous phase is barrierlessly unstable to infinitesimal long-wavelength concentration fluctuations."
           },
           {
             "id": "b",
-            "text": "The binodal line where chemical potentials equalize, regardless of curvature."
+            "text": "The binodal line where chemical potentials equalize, regardless of curvature.",
+            "text_markdown": "The binodal line where chemical potentials equalize, regardless of curvature."
           },
           {
             "id": "c",
-            "text": "The zero-entropy contour S = 0."
+            "text": "The zero-entropy contour $S = 0$.",
+            "text_markdown": "The zero-entropy contour $S = 0$."
           },
           {
             "id": "d",
-            "text": "The line where the latent heat of transition vanishes."
+            "text": "The line where the latent heat of transition vanishes.",
+            "text_markdown": "The line where the latent heat of transition vanishes."
           }
         ],
         "correct": "a",
@@ -978,19 +1075,23 @@
         "options": [
           {
             "id": "a",
-            "text": "S(k, t) ~ k^(-(d + 1)), yielding k^(-3) in 2D and k^(-4) in 3D."
+            "text": "$S(k, t) \\sim k^{-(d + 1)}$, yielding $k^{-3}$ in 2D and $k^{-4}$ in 3D.",
+            "text_markdown": "$S(k, t) \\sim k^{-(d + 1)}$, yielding $k^{-3}$ in 2D and $k^{-4}$ in 3D."
           },
           {
             "id": "b",
-            "text": "S(k, t) ~ k^(-d), yielding k^(-2) in 2D and k^(-3) in 3D."
+            "text": "$S(k, t) \\sim k^{-d}$, yielding $k^{-2}$ in 2D and $k^{-3}$ in 3D.",
+            "text_markdown": "$S(k, t) \\sim k^{-d}$, yielding $k^{-2}$ in 2D and $k^{-3}$ in 3D."
           },
           {
             "id": "c",
-            "text": "S(k, t) ~ exp(-k^2 * L(t)^2)"
+            "text": "$S(k, t) \\sim \\exp(-k^2 L(t)^2)$",
+            "text_markdown": "$S(k, t) \\sim \\exp(-k^2 L(t)^2)$"
           },
           {
             "id": "d",
-            "text": "S(k, t) ~ k^(d - 1)"
+            "text": "$S(k, t) \\sim k^{d - 1}$",
+            "text_markdown": "$S(k, t) \\sim k^{d - 1}$"
           }
         ],
         "correct": "a",
@@ -1057,19 +1158,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because spatial correlations diverge (xi ~ |T - Tc|^(-nu)); rearranging a correlated domain of size xi using local single-spin flips requires a diffusive random walk of domain walls, causing relaxation time to scale as tau ~ xi^z."
+            "text": "Because spatial correlations diverge ($\\xi \\sim |T - T_c|^{-\\nu}$); rearranging a correlated domain of size $\\xi$ using local single-spin flips requires a diffusive random walk of domain walls, causing relaxation time to scale as $\\tau \\sim \\xi^z$.",
+            "text_markdown": "Because spatial correlations diverge ($\\xi \\sim |T - T_c|^{-\\nu}$); rearranging a correlated domain of size $\\xi$ using local single-spin flips requires a diffusive random walk of domain walls, causing relaxation time to scale as $\\tau \\sim \\xi^z$."
           },
           {
             "id": "b",
-            "text": "Because the pseudorandom number generator runs out of entropy at Tc."
+            "text": "Because the pseudorandom number generator runs out of entropy at $T_c$.",
+            "text_markdown": "Because the pseudorandom number generator runs out of entropy at $T_c$."
           },
           {
             "id": "c",
-            "text": "Because the acceptance probability of single spin flips drops to zero."
+            "text": "Because the acceptance probability of single spin flips drops to zero.",
+            "text_markdown": "Because the acceptance probability of single spin flips drops to zero."
           },
           {
             "id": "d",
-            "text": "Because the system runs out of accessible microstates."
+            "text": "Because the system runs out of accessible microstates.",
+            "text_markdown": "Because the system runs out of accessible microstates."
           }
         ],
         "correct": "a",
@@ -1100,19 +1205,23 @@
         "options": [
           {
             "id": "a",
-            "text": "For each connected cluster independently, a new collective spin orientation (+1 or -1) is chosen with equal probability 1/2 and assigned to all sites in that cluster."
+            "text": "For each connected cluster independently, a new collective spin orientation ($+1$ or $-1$) is chosen with equal probability $1/2$ and assigned to all sites in that cluster.",
+            "text_markdown": "For each connected cluster independently, a new collective spin orientation ($+1$ or $-1$) is chosen with equal probability $1/2$ and assigned to all sites in that cluster."
           },
           {
             "id": "b",
-            "text": "All clusters are inverted deterministically to their opposite orientation."
+            "text": "All clusters are inverted deterministically to their opposite orientation.",
+            "text_markdown": "All clusters are inverted deterministically to their opposite orientation."
           },
           {
             "id": "c",
-            "text": "Only the single largest cluster is flipped, while all smaller clusters retain their old spins."
+            "text": "Only the single largest cluster is flipped, while all smaller clusters retain their old spins.",
+            "text_markdown": "Only the single largest cluster is flipped, while all smaller clusters retain their old spins."
           },
           {
             "id": "d",
-            "text": "Spins inside clusters are randomized site-by-site without regard to cluster connectivity."
+            "text": "Spins inside clusters are randomized site-by-site without regard to cluster connectivity.",
+            "text_markdown": "Spins inside clusters are randomized site-by-site without regard to cluster connectivity."
           }
         ],
         "correct": "a",
@@ -1129,19 +1238,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Selecting a random seed site automatically selects clusters with probability proportional to their size C / N, focusing computational effort on flipping large, dominant clusters while avoiding the overhead of decomposing tiny 1-site clusters in disordered regions."
+            "text": "Selecting a random seed site automatically selects clusters with probability proportional to their size $C / N$, focusing computational effort on flipping large, dominant clusters while avoiding the overhead of decomposing tiny 1-site clusters in disordered regions.",
+            "text_markdown": "Selecting a random seed site automatically selects clusters with probability proportional to their size $C / N$, focusing computational effort on flipping large, dominant clusters while avoiding the overhead of decomposing tiny 1-site clusters in disordered regions."
           },
           {
             "id": "b",
-            "text": "Wolff algorithm does not require calculating the bond probability p."
+            "text": "Wolff algorithm does not require calculating the bond probability $p$.",
+            "text_markdown": "Wolff algorithm does not require calculating the bond probability $p$."
           },
           {
             "id": "c",
-            "text": "Wolff algorithm operates entirely without random numbers."
+            "text": "Wolff algorithm operates entirely without random numbers.",
+            "text_markdown": "Wolff algorithm operates entirely without random numbers."
           },
           {
             "id": "d",
-            "text": "Wolff algorithm completely avoids cluster recursion."
+            "text": "Wolff algorithm completely avoids cluster recursion.",
+            "text_markdown": "Wolff algorithm completely avoids cluster recursion."
           }
         ],
         "correct": "a",
@@ -1172,19 +1285,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In the presence of a strong external magnetic field h != 0, where clusters grow to encompass the entire box and collective flips are heavily penalized by the Zeeman energy."
+            "text": "In the presence of a strong external magnetic field $h \\ne 0$, where clusters grow to encompass the entire box and collective flips are heavily penalized by the Zeeman energy.",
+            "text_markdown": "In the presence of a strong external magnetic field $h \\ne 0$, where clusters grow to encompass the entire box and collective flips are heavily penalized by the Zeeman energy."
           },
           {
             "id": "b",
-            "text": "In geometrically frustrated systems (e.g., antiferromagnets on triangular lattices or spin glasses) with competing positive and negative exchange bonds."
+            "text": "In geometrically frustrated systems (e.g., antiferromagnets on triangular lattices or spin glasses) with competing positive and negative exchange bonds.",
+            "text_markdown": "In geometrically frustrated systems (e.g., antiferromagnets on triangular lattices or spin glasses) with competing positive and negative exchange bonds."
           },
           {
             "id": "c",
-            "text": "In standard zero-field ferromagnetic models near Tc."
+            "text": "In standard zero-field ferromagnetic models near $T_c$.",
+            "text_markdown": "In standard zero-field ferromagnetic models near $T_c$."
           },
           {
             "id": "d",
-            "text": "When measuring the Binder cumulant at the crossing point."
+            "text": "When measuring the Binder cumulant at the crossing point.",
+            "text_markdown": "When measuring the Binder cumulant at the crossing point."
           }
         ],
         "correct": [
@@ -1204,19 +1321,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Disjoint-Set (Union-Find) with path compression and union-by-rank, or the Hoshen-Kopelman algorithm."
+            "text": "Disjoint-Set (Union-Find) with path compression and union-by-rank, or the Hoshen-Kopelman algorithm.",
+            "text_markdown": "Disjoint-Set (Union-Find) with path compression and union-by-rank, or the Hoshen-Kopelman algorithm."
           },
           {
             "id": "b",
-            "text": "Dijkstra's single-source shortest path algorithm using a Fibonacci heap."
+            "text": "Dijkstra's single-source shortest path algorithm using a Fibonacci heap.",
+            "text_markdown": "Dijkstra's single-source shortest path algorithm using a Fibonacci heap."
           },
           {
             "id": "c",
-            "text": "Floyd-Warshall all-pairs shortest path matrix decomposition."
+            "text": "Floyd-Warshall all-pairs shortest path matrix decomposition.",
+            "text_markdown": "Floyd-Warshall all-pairs shortest path matrix decomposition."
           },
           {
             "id": "d",
-            "text": "Fast Fourier Transform spectral clustering."
+            "text": "Fast Fourier Transform spectral clustering.",
+            "text_markdown": "Fast Fourier Transform spectral clustering."
           }
         ],
         "correct": "a",
@@ -1233,19 +1354,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The Ising model corresponds to the q = 2 random cluster model where each connected component carries a statistical weight factor of 2, whereas standard uncorrelated percolation corresponds to the mathematical limit q -> 1."
+            "text": "The Ising model corresponds to the $q = 2$ random cluster model where each connected component carries a statistical weight factor of 2, whereas standard uncorrelated percolation corresponds to the mathematical limit $q \\to 1$.",
+            "text_markdown": "The Ising model corresponds to the $q = 2$ random cluster model where each connected component carries a statistical weight factor of 2, whereas standard uncorrelated percolation corresponds to the mathematical limit $q \\to 1$."
           },
           {
             "id": "b",
-            "text": "Standard percolation only occurs in one dimension, whereas the Ising model only exists in two dimensions."
+            "text": "Standard percolation only occurs in one dimension, whereas the Ising model only exists in two dimensions.",
+            "text_markdown": "Standard percolation only occurs in one dimension, whereas the Ising model only exists in two dimensions."
           },
           {
             "id": "c",
-            "text": "The Ising model and percolation are completely unrelated and share no mathematical similarities."
+            "text": "The Ising model and percolation are completely unrelated and share no mathematical similarities.",
+            "text_markdown": "The Ising model and percolation are completely unrelated and share no mathematical similarities."
           },
           {
             "id": "d",
-            "text": "Fortuin-Kasteleyn mapping replaces spins with continuous Gaussian random walks."
+            "text": "Fortuin-Kasteleyn mapping replaces spins with continuous Gaussian random walks.",
+            "text_markdown": "Fortuin-Kasteleyn mapping replaces spins with continuous Gaussian random walks."
           }
         ],
         "correct": "a",

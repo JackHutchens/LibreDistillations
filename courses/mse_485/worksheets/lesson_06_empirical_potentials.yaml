@@ -3,121 +3,77 @@ worksheet:
   title: 'MSE 485 · Lesson 06: Interatomic Potentials — From Born-Oppenheimer to LJ, EAM, Stillinger-Weber & Force Fields'
   estimated_minutes: 115
   learning_objectives:
-  - Explain the Born-Oppenheimer adiabatic approximation, its $\mathcal{O}(m_e/M_I)^{3/2}$ error scaling, Hartree atomic units,
-    and the trade-off between ab initio and semi-empirical potential energy surfaces.
-  - Derive key properties of the Lennard-Jones 12-6, Morse, and Born pair potentials, apply LJ reduced units and the Law of
-    Corresponding States, and analyze cubic-spline lookup tables.
-  - Diagnose the four classic failures of pair potentials in metals ($E_c/T_m$, $E_v/E_c$, the Cauchy relation $C_{12}=C_{44}$,
-    and inward surface relaxation) and show how the Embedded Atom Method (EAM) resolves them via $F(\rho) \propto -\sqrt{\rho}$.
-  - Analyze cluster potentials and functionals—including Modified EAM (MEAM) and the Stillinger-Weber 3-body potential for
-    tetrahedral Silicon ($\cos\theta_0 = -1/3$).
-  - Distinguish bonded (2-body stretch, 3-body bend, 4-body dihedral torsion) and non-bonded interactions in organic force
-    fields (AMBER/CHARMM), rigid water models (TIP3P/TIP4P/TIP5P), and polarizable Core-Shell ionic models.
+  - Explain the Born-Oppenheimer adiabatic approximation, its $\mathcal{O}(m_e/M_I)^{3/2}$ error scaling, Hartree atomic units, and the trade-off between ab initio and semi-empirical potential energy surfaces.
+  - Derive key properties of the Lennard-Jones 12-6, Morse, and Born pair potentials, apply LJ reduced units and the Law of Corresponding States, and analyze cubic-spline lookup tables.
+  - Diagnose the four classic failures of pair potentials in metals ($E_c/T_m$, $E_v/E_c$, the Cauchy relation $C_{12}=C_{44}$, and inward surface relaxation) and show how the Embedded Atom Method (EAM) resolves them via $F(\rho) \propto -\sqrt{\rho}$.
+  - Analyze cluster potentials and functionals—including Modified EAM (MEAM) and the Stillinger-Weber 3-body potential for tetrahedral Silicon ($\cos\theta_0 = -1/3$).
+  - Distinguish bonded (2-body stretch, 3-body bend, 4-body dihedral torsion) and non-bonded interactions in organic force fields (AMBER/CHARMM), rigid water models (TIP3P/TIP4P/TIP5P), and polarizable Core-Shell ionic models.
   sections:
   - id: sec_bo_and_atomic_units
     type: markdown_section
     title: 1. The Electronic-Structure Problem, Atomic Units & The Born-Oppenheimer Approximation
-    body_markdown: "Before running any Molecular Dynamics or Monte Carlo simulation, we must specify the **model** governing\
-      \ how atoms interact. Fundamentally, collections of $N_e$ electrons (coordinates $\\mathbf{r}_i$, mass $m_e$, charge\
-      \ $-e$) and $N_I$ atomic nuclei (coordinates $\\mathbf{R}_I$, mass $M_I$, charge $+Z_I e$) obey the non-relativistic\
-      \ many-body Schrödinger equation.\n\n### Hartree Atomic Units ($\\hbar = m_e = e = 4\\pi\\varepsilon_0 = 1$)\nTo eliminate\
-      \ fundamental constants from the quantum Hamiltonian, electronic-structure physics uses **Hartree atomic units**:\n\
-      - **Length (1 Bohr radius $a_0$):**\n  $$a_0 = \\frac{\\hbar^2}{m_e e^2} \\approx 0.52918\\text{ Å} = 5.29 \\times 10^{-9}\\\
-      text{ cm}$$\n- **Energy (1 Hartree $\\text{Ha}$):**\n  $$1\\text{ Ha} = \\frac{e^2}{a_0} = 2\\text{ Ry} \\approx 27.211\\\
-      text{ eV} \\approx 315,775\\text{ K} \\approx 316,000\\text{ K}$$\n- **Room-temperature accuracy challenge:** Thermal\
-      \ energy near room temperature ($T \\sim 100\\text{–}300\\text{ K}$) is only $\\sim 0.3\\text{–}1.0\\text{ mHa} \\approx\
-      \ 0.01\\text{–}0.025\\text{ eV}$. Because total electronic energies of heavy atoms are hundreds or thousands of Hartrees,\
-      \ predicting room-temperature phase stability directly from quantum mechanics requires **many decimal places of cancellation**!\n\
-      \nIn atomic units, the total Hamiltonian splits into an **electronic Hamiltonian** $H_e[\\mathbf{R}_I]$ and an **ionic\
-      \ Hamiltonian** $H_I$:\n$$H = \\underbrace{-\\sum_{i=1}^{N_e}\\frac{1}{2}\\nabla_i^2 + \\sum_{i<j}\\frac{1}{r_{ij}}\
-      \ - \\sum_{i=1}^{N_e}\\sum_{I=1}^{N_I}\\frac{Z_I}{r_{iI}}}_{H_e[\\mathbf{R}_I]\\text{ (electron KE + e-e + e-ion)}}\
-      \ \\;\\;+\\;\\; \\underbrace{-\\sum_{I=1}^{N_I}\\frac{m_e}{2M_I}\\nabla_I^2 + \\sum_{I<J}\\frac{Z_I Z_J}{R_{IJ}}}_{H_I\\\
-      text{ (ion KE + ion-ion)}}$$\n\n### The Born-Oppenheimer (1927) Adiabatic Approximation\nBecause even the lightest nucleus\
-      \ (a proton) is **$M_p / m_e \\approx 1836$ times heavier** than an electron, electrons move orders of magnitude faster\
-      \ than nuclei and relax almost instantaneously to their quantum ground state for any instantaneous nuclear configuration\
-      \ $\\{\\mathbf{R}_I\\}$:\n1. **Factor the total wavefunction:** $\\Psi(\\mathbf{r}_i, \\mathbf{R}_I) \\approx \\psi(\\\
-      mathbf{r}_i \\mid \\mathbf{R}_I)\\,\\phi(\\mathbf{R}_I)$ (the **adiabatic approximation**).\n2. **Solve the electronic\
-      \ ground state at clamped nuclear positions $\\mathbf{R}_I$:**\n   $$H_e[\\mathbf{R}_I]\\,\\psi(\\mathbf{r}_i \\mid\
-      \ \\mathbf{R}_I) = E_{\\text{BO}}(\\mathbf{R}_I)\\,\\psi(\\mathbf{r}_i \\mid \\mathbf{R}_I)$$\n3. **Eliminate electrons\
-      \ from the nuclear dynamics:** The nuclei move on a single effective **Potential Energy Surface (PES)**:\n   $$V(\\\
-      mathbf{R}_I) = E_{\\text{BO}}(\\mathbf{R}_I) + \\sum_{I<J}\\frac{Z_I Z_J}{R_{IJ}}, \\qquad \\left(-\\sum_I \\frac{m_e}{2M_I}\\\
-      nabla_I^2 + V(\\mathbf{R}_I)\\right)\\phi(\\mathbf{R}_I) = E_{\\text{total}}\\phi(\\mathbf{R}_I)$$\n- **Accuracy of\
-      \ BO:** The error in total energy from neglecting non-adiabatic electron-phonon coupling scales as:\n  $$\\text{error}(E_{\\\
-      text{total}}) \\sim \\mathcal{O}\\!\\left(\\frac{m_e}{M_I}\\right)^{3/2} E_{\\text{BO}} \\le 10^{-5}\\text{ Ha}$$\n\
-      - **Important subtlety:** The Born-Oppenheimer approximation **does NOT require classical ions**—$\\phi(\\mathbf{R}_I)$\
-      \ is still a nuclear wavefunction (allowing quantum zero-point motion and tunneling in Path-Integral MD). Classical\
-      \ MD makes a *second* approximation by replacing the nuclear Schrödinger equation with Newton's law $M_I \\ddot{\\mathbf{R}}_I\
-      \ = -\\nabla_I V(\\mathbf{R}_I)$.\n\n### Three Paradigms for Obtaining $V(\\mathbf{R}_I)$\n1. **Semi-empirical potentials:**\
-      \ Assume a physically motivated functional form (2-body, 3-body, EAM) and fit parameters to experimental data (lattice\
-      \ constants, cohesive energy, elastic moduli, defect/surface energies, gas virial coefficients) and/or DFT calculations.\
-      \ *Fast ($\\sim 10^6\\text{–}10^9$ atoms), but limited by **transferability** (extrapolating to environments far from\
-      \ the fitting set—GIGO: \"garbage in, garbage out\").*\n2. **Quantum chemistry surface fitting:** Compute $E_{\\text{BO}}$\
-      \ at selected geometries via high-level quantum chemistry and fit an analytic surface. *Hard in high dimensions!*\n\
-      3. **Ab initio MD (First-Principles):** Solve the electronic structure (e.g., Kohn-Sham DFT) **on the fly** at every\
-      \ MD timestep to obtain forces without any predetermined analytic potential. *Highly transferable, but computationally\
-      \ expensive ($N \\sim 10^2\\text{–}10^3$ atoms, $t \\sim 10\\text{–}100\\text{ ps}$).*\n"
+    body_markdown: "Before running any Molecular Dynamics or Monte Carlo simulation, we must specify the **model** governing how atoms interact. Fundamentally, collections of $N_e$ electrons (coordinates $\\mathbf{r}_i$, mass $m_e$, charge $-e$) and $N_I$ atomic nuclei (coordinates $\\mathbf{R}_I$, mass $M_I$, charge $+Z_I e$) obey the non-relativistic many-body Schrödinger equation.\n\n### Hartree Atomic Units ($\\hbar = m_e = e = 4\\pi\\varepsilon_0 = 1$)\nTo eliminate fundamental constants from the quantum Hamiltonian, electronic-structure physics uses **Hartree atomic units**:\n- **Length (1 Bohr radius $a_0$):**\n  $$a_0 = \\frac{\\hbar^2}{m_e e^2} \\approx 0.52918\\text{ Å} = 5.29 \\times 10^{-9}\\text{ cm}$$\n- **Energy (1 Hartree $\\text{Ha}$):**\n  $$1\\text{ Ha} = \\frac{e^2}{a_0} = 2\\text{ Ry} \\approx 27.211\\text{ eV} \\approx 315,775\\text{ K} \\approx 316,000\\text{ K}$$\n- **Room-temperature accuracy challenge:** Thermal energy near room temperature ($T \\sim 100\\text{–}300\\\
+      text{ K}$) is only $\\sim 0.3\\text{–}1.0\\text{ mHa} \\approx 0.01\\text{–}0.025\\text{ eV}$. Because total electronic energies of heavy atoms are hundreds or thousands of Hartrees, predicting room-temperature phase stability directly from quantum mechanics requires **many decimal places of cancellation**!\n\nIn atomic units, the total Hamiltonian splits into an **electronic Hamiltonian** $H_e[\\mathbf{R}_I]$ and an **ionic Hamiltonian** $H_I$:\n$$H = \\underbrace{-\\sum_{i=1}^{N_e}\\frac{1}{2}\\nabla_i^2 + \\sum_{i<j}\\frac{1}{r_{ij}} - \\sum_{i=1}^{N_e}\\sum_{I=1}^{N_I}\\frac{Z_I}{r_{iI}}}_{H_e[\\mathbf{R}_I]\\text{ (electron KE + e-e + e-ion)}} \\;\\;+\\;\\; \\underbrace{-\\sum_{I=1}^{N_I}\\frac{m_e}{2M_I}\\nabla_I^2 + \\sum_{I<J}\\frac{Z_I Z_J}{R_{IJ}}}_{H_I\\text{ (ion KE + ion-ion)}}$$\n\n### The Born-Oppenheimer (1927) Adiabatic Approximation\nBecause even the lightest nucleus (a proton) is **$M_p / m_e \\approx 1836$ times heavier** than an electron, electrons move orders\
+      \ of magnitude faster than nuclei and relax almost instantaneously to their quantum ground state for any instantaneous nuclear configuration $\\{\\mathbf{R}_I\\}$:\n1. **Factor the total wavefunction:** $\\Psi(\\mathbf{r}_i, \\mathbf{R}_I) \\approx \\psi(\\mathbf{r}_i \\mid \\mathbf{R}_I)\\,\\phi(\\mathbf{R}_I)$ (the **adiabatic approximation**).\n2. **Solve the electronic ground state at clamped nuclear positions $\\mathbf{R}_I$:**\n   $$H_e[\\mathbf{R}_I]\\,\\psi(\\mathbf{r}_i \\mid \\mathbf{R}_I) = E_{\\text{BO}}(\\mathbf{R}_I)\\,\\psi(\\mathbf{r}_i \\mid \\mathbf{R}_I)$$\n3. **Eliminate electrons from the nuclear dynamics:** The nuclei move on a single effective **Potential Energy Surface (PES)**:\n   $$V(\\mathbf{R}_I) = E_{\\text{BO}}(\\mathbf{R}_I) + \\sum_{I<J}\\frac{Z_I Z_J}{R_{IJ}}, \\qquad \\left(-\\sum_I \\frac{m_e}{2M_I}\\nabla_I^2 + V(\\mathbf{R}_I)\\right)\\phi(\\mathbf{R}_I) = E_{\\text{total}}\\phi(\\mathbf{R}_I)$$\n- **Accuracy of BO:** The error in total energy from\
+      \ neglecting non-adiabatic electron-phonon coupling scales as:\n  $$\\text{error}(E_{\\text{total}}) \\sim \\mathcal{O}\\!\\left(\\frac{m_e}{M_I}\\right)^{3/2} E_{\\text{BO}} \\le 10^{-5}\\text{ Ha}$$\n- **Important subtlety:** The Born-Oppenheimer approximation **does NOT require classical ions**—$\\phi(\\mathbf{R}_I)$ is still a nuclear wavefunction (allowing quantum zero-point motion and tunneling in Path-Integral MD). Classical MD makes a *second* approximation by replacing the nuclear Schrödinger equation with Newton's law $M_I \\ddot{\\mathbf{R}}_I = -\\nabla_I V(\\mathbf{R}_I)$.\n\n### Three Paradigms for Obtaining $V(\\mathbf{R}_I)$\n1. **Semi-empirical potentials:** Assume a physically motivated functional form (2-body, 3-body, EAM) and fit parameters to experimental data (lattice constants, cohesive energy, elastic moduli, defect/surface energies, gas virial coefficients) and/or DFT calculations. *Fast ($\\sim 10^6\\text{–}10^9$ atoms), but limited by **transferability**\
+      \ (extrapolating to environments far from the fitting set—GIGO: \"garbage in, garbage out\").*\n2. **Quantum chemistry surface fitting:** Compute $E_{\\text{BO}}$ at selected geometries via high-level quantum chemistry and fit an analytic surface. *Hard in high dimensions!*\n3. **Ab initio MD (First-Principles):** Solve the electronic structure (e.g., Kohn-Sham DFT) **on the fly** at every MD timestep to obtain forces without any predetermined analytic potential. *Highly transferable, but computationally expensive ($N \\sim 10^2\\text{–}10^3$ atoms, $t \\sim 10\\text{–}100\\text{ ps}$).*\n"
   - id: q01_bo_mass_ratio_and_error
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_bo_and_atomic_units
-    prompt_markdown: 'What physical small parameter justifies the Born-Oppenheimer (1927) adiabatic separation of electronic
-      and nuclear motion, and how does the resulting error in the total energy scale?
+    prompt_markdown: 'What physical small parameter justifies the Born-Oppenheimer (1927) adiabatic separation of electronic and nuclear motion, and how does the resulting error in the total energy scale?
 
       '
     hint_markdown: Check slide 3 of `05.potentials.pdf` for the mass ratio and exponent.
     options:
     - id: a
-      text: The electron-to-nuclear mass ratio $m_e / M_I \le 1/1836 \ll 1$, giving an energy error scaling as $\mathcal{O}(m_e
-        / M_I)^{3/2} E_{\text{BO}} \le 10^{-5}\text{ Ha}$
+      text: The electron-to-nuclear mass ratio $m_e / M_I \le 1/1836 \ll 1$, giving an energy error scaling as $\mathcal{O}(m_e / M_I)^{3/2} E_{\text{BO}} \le 10^{-5}\text{ Ha}$
+      text_markdown: The electron-to-nuclear mass ratio $m_e / M_I \le 1/1836 \ll 1$, giving an energy error scaling as $\mathcal{O}(m_e / M_I)^{3/2} E_{\text{BO}} \le 10^{-5}\text{ Ha}$
     - id: b
       text: The fine-structure constant $\alpha \approx 1/137$, giving a relativistic error of $\mathcal{O}(\alpha^2)$
+      text_markdown: The fine-structure constant $\alpha \approx 1/137$, giving a relativistic error of $\mathcal{O}(\alpha^2)$
     - id: c
       text: The ratio of thermal energy to Hartree energy $k_B T / \text{Ha}$, giving an error linear in temperature $T$
+      text_markdown: The ratio of thermal energy to Hartree energy $k_B T / \text{Ha}$, giving an error linear in temperature $T$
     - id: d
       text: The ratio of Bohr radius to box length $a_0 / L$, which vanishes only under Periodic Boundary Conditions
+      text_markdown: The ratio of Bohr radius to box length $a_0 / L$, which vanishes only under Periodic Boundary Conditions
     correct: a
-    rationale_markdown: Because nuclei are at least $1836\times$ heavier than electrons ($m_e / M_I \ll 1$), electrons remain
-      in their instantaneous ground state as ions move; perturbation theory shows the non-adiabatic energy error scales as
-      $\mathcal{O}(m_e / M_I)^{3/2} E_{\text{BO}} \le 10^{-5}\text{ Ha}$.
+    rationale_markdown: Because nuclei are at least $1836\times$ heavier than electrons ($m_e / M_I \ll 1$), electrons remain in their instantaneous ground state as ions move; perturbation theory shows the non-adiabatic energy error scales as $\mathcal{O}(m_e / M_I)^{3/2} E_{\text{BO}} \le 10^{-5}\text{ Ha}$.
   - id: q02_bo_classical_ions_misconception
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_bo_and_atomic_units
-    prompt_markdown: 'Does the Born-Oppenheimer approximation itself require that the atomic nuclei behave as **classical
-      point particles** obeying $\mathbf{F} = M\mathbf{a}$?
+    prompt_markdown: 'Does the Born-Oppenheimer approximation itself require that the atomic nuclei behave as **classical point particles** obeying $\mathbf{F} = M\mathbf{a}$?
 
       '
-    hint_markdown: 'Look at the bottom box on slide 3 of `05.potentials.pdf`: ''Does not require classical ions (though MD
-      uses that).'''
+    hint_markdown: 'Look at the bottom box on slide 3 of `05.potentials.pdf`: ''Does not require classical ions (though MD uses that).'''
     options:
     - id: a
-      text: No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface
-        $E_{\text{BO}}(\mathbf{R}_I)$ in the nuclear Schrödinger equation—treating nuclei classically is a separate approximation
-        made in classical MD
+      text: No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface $E_{\text{BO}}(\mathbf{R}_I)$ in the nuclear Schrödinger equation—treating nuclei classically is a separate approximation made in classical MD
+      text_markdown: No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface $E_{\text{BO}}(\mathbf{R}_I)$ in the nuclear Schrödinger equation—treating nuclei classically is a separate approximation made in classical MD
     - id: b
-      text: Yes; factoring $\Psi(\mathbf{r}_i, \mathbf{R}_I) = \psi(\mathbf{r}_i | \mathbf{R}_I)\phi(\mathbf{R}_I)$ mathematically
-        forces $\phi(\mathbf{R}_I)$ to be a classical Dirac delta function
+      text: Yes; factoring $\Psi(\mathbf{r}_i, \mathbf{R}_I) = \psi(\mathbf{r}_i | \mathbf{R}_I)\phi(\mathbf{R}_I)$ mathematically forces $\phi(\mathbf{R}_I)$ to be a classical Dirac delta function
+      text_markdown: Yes; factoring $\Psi(\mathbf{r}_i, \mathbf{R}_I) = \psi(\mathbf{r}_i | \mathbf{R}_I)\phi(\mathbf{R}_I)$ mathematically forces $\phi(\mathbf{R}_I)$ to be a classical Dirac delta function
     - id: c
       text: Yes; quantum nuclei cannot experience an effective potential energy surface
+      text_markdown: Yes; quantum nuclei cannot experience an effective potential energy surface
     - id: d
       text: Only for hydrogen and helium; heavier nuclei become strictly classical under the Born-Oppenheimer approximation
+      text_markdown: Only for hydrogen and helium; heavier nuclei become strictly classical under the Born-Oppenheimer approximation
     correct: a
-    rationale_markdown: The Born-Oppenheimer approximation eliminates explicit electrons and yields an effective nuclear Hamiltonian
-      $H_{\text{nuc}} = H_I + E_{\text{BO}}(\mathbf{R}_I)$ acting on the quantum nuclear wavefunction $\phi(\mathbf{R}_I)$.
-      Classical MD makes a *second*, distinct approximation (the classical limit $\hbar \to 0$ for nuclei).
+    rationale_markdown: The Born-Oppenheimer approximation eliminates explicit electrons and yields an effective nuclear Hamiltonian $H_{\text{nuc}} = H_I + E_{\text{BO}}(\mathbf{R}_I)$ acting on the quantum nuclear wavefunction $\phi(\mathbf{R}_I)$. Classical MD makes a *second*, distinct approximation (the classical limit $\hbar \to 0$ for nuclei).
   - id: q03_atomic_units_conversion
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by:
     - sec_bo_and_atomic_units
-    prompt_markdown: 'In Hartree atomic units ($\hbar = m_e = e = 1$), $1\text{ Hartree (Ha)} = 27.211\text{ eV}$. If an ab
-      initio calculation reports a vacancy migration barrier of $\Delta E = 0.050\text{ Ha}$ in a metal, what is this barrier
-      in $\text{eV}$? (Enter a number to two decimal places, e.g., `1.36`.)
+    prompt_markdown: 'In Hartree atomic units ($\hbar = m_e = e = 1$), $1\text{ Hartree (Ha)} = 27.211\text{ eV}$. If an ab initio calculation reports a vacancy migration barrier of $\Delta E = 0.050\text{ Ha}$ in a metal, what is this barrier in $\text{eV}$? (Enter a number to two decimal places, e.g., `1.36`.)
 
       '
     hint_markdown: Apply the Hartree-to-eV conversion factor to the given energy barrier.
@@ -131,50 +87,50 @@ worksheet:
     difficulty: easy
     taught_by:
     - sec_bo_and_atomic_units
-    prompt_markdown: 'According to slide 2 of `05.potentials.pdf`, why is solving the electronic-structure problem directly
-      to predict room-temperature phase stability ($\sim 100\text{–}300\text{ K}$) so computationally demanding?
+    prompt_markdown: 'According to slide 2 of `05.potentials.pdf`, why is solving the electronic-structure problem directly to predict room-temperature phase stability ($\sim 100\text{–}300\text{ K}$) so computationally demanding?
 
       '
     hint_markdown: Compare $100\text{ K}$ in eV and Hartrees against the total electronic energy of an atom.
     options:
     - id: a
-      text: $100\text{ K}$ corresponds to only $\approx 0.3\text{ mHa}$ ($0.01\text{ eV}$), whereas total electronic energies
-        are tens to thousands of Hartrees ($1\text{ Ha} \approx 316,000\text{ K}$), requiring extreme relative precision across
-        many decimal places
+      text: $100\text{ K}$ corresponds to only $\approx 0.3\text{ mHa}$ ($0.01\text{ eV}$), whereas total electronic energies are tens to thousands of Hartrees ($1\text{ Ha} \approx 316,000\text{ K}$), requiring extreme relative precision across many decimal places
+      text_markdown: $100\text{ K}$ corresponds to only $\approx 0.3\text{ mHa}$ ($0.01\text{ eV}$), whereas total electronic energies are tens to thousands of Hartrees ($1\text{ Ha} \approx 316,000\text{ K}$), requiring extreme relative precision across many decimal places
     - id: b
       text: Room temperature ($300\text{ K}$) exceeds $10\text{ Hartrees}$, causing all core electrons to ionize into a plasma
+      text_markdown: Room temperature ($300\text{ K}$) exceeds $10\text{ Hartrees}$, causing all core electrons to ionize into a plasma
     - id: c
       text: The Bohr radius $a_0 = 0.529\text{ Å}$ is larger than macroscopic simulation boxes
+      text_markdown: The Bohr radius $a_0 = 0.529\text{ Å}$ is larger than macroscopic simulation boxes
     - id: d
       text: The Coulomb interaction between nuclei vanishes at $T = 100\text{ K}$
+      text_markdown: The Coulomb interaction between nuclei vanishes at $T = 100\text{ K}$
     correct: a
-    rationale_markdown: Since $1\text{ Ha} \approx 316,000\text{ K}$, an energy resolution of $100\text{ K}$ is just $0.0003\text{
-      Ha} = 0.3\text{ mHa} \approx 0.01\text{ eV}$. Resolving such tiny energy differences on top of huge total electronic
-      energies requires many significant digits.
+    rationale_markdown: Since $1\text{ Ha} \approx 316,000\text{ K}$, an energy resolution of $100\text{ K}$ is just $0.0003\text{ Ha} = 0.3\text{ mHa} \approx 0.01\text{ eV}$. Resolving such tiny energy differences on top of huge total electronic energies requires many significant digits.
   - id: q05_three_potential_paradigms
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_bo_and_atomic_units
-    prompt_markdown: 'Which simulation approach computes the electronic quantum ground state **\"on the fly\"** at every step
-      along the trajectory as the nuclei move, avoiding the need to postulate or fit an analytic functional form for $V(\mathbf{R})$?
+    prompt_markdown: 'Which simulation approach computes the electronic quantum ground state **\"on the fly\"** at every step along the trajectory as the nuclei move, avoiding the need to postulate or fit an analytic functional form for $V(\mathbf{R})$?
 
       '
     hint_markdown: Compare semi-empirical, quantum chemistry surface fitting, and ab initio approaches on slide 1 of `05.potentials.pdf`.
     options:
     - id: a
       text: Ab initio Molecular Dynamics (e.g., Born-Oppenheimer / Car-Parrinello MD)
+      text_markdown: Ab initio Molecular Dynamics (e.g., Born-Oppenheimer / Car-Parrinello MD)
     - id: b
       text: Semi-empirical pair potentials (e.g., Lennard-Jones 12-6)
+      text_markdown: Semi-empirical pair potentials (e.g., Lennard-Jones 12-6)
     - id: c
       text: Cubic-spline lookup tables of Morse potentials
+      text_markdown: Cubic-spline lookup tables of Morse potentials
     - id: d
       text: Hard-sphere Monte Carlo
+      text_markdown: Hard-sphere Monte Carlo
     correct: a
-    rationale_markdown: In the ab initio approach, electronic structure calculations (such as Kohn-Sham DFT) are performed
-      'on the fly' at each nuclear configuration along the trajectory, coupling quantum electrons with classical nuclei without
-      needing an analytic form for $V(\mathbf{R})$.
+    rationale_markdown: In the ab initio approach, electronic structure calculations (such as Kohn-Sham DFT) are performed 'on the fly' at each nuclear configuration along the trajectory, coupling quantum electrons with classical nuclei without needing an analytic form for $V(\mathbf{R})$.
   - id: q06_transferability_definition
     type: problem
     question_type: single_select
@@ -187,97 +143,57 @@ worksheet:
     hint_markdown: Think about interpolation vs. extrapolation (slide 4 & 33 of `05.potentials.pdf`).
     options:
     - id: a
-      text: The ability of a potential fitted to a limited set of reference properties (e.g., bulk T=0 crystal data) to accurately
-        predict behavior in very different local environments (e.g., surfaces, dislocations, liquids, or high pressures)
+      text: The ability of a potential fitted to a limited set of reference properties (e.g., bulk $T = 0$ crystal data) to accurately predict behavior in very different local environments (e.g., surfaces, dislocations, liquids, or high pressures).
+      text_markdown: The ability of a potential fitted to a limited set of reference properties (e.g., bulk $T = 0$ crystal data) to accurately predict behavior in very different local environments (e.g., surfaces, dislocations, liquids, or high pressures).
     - id: b
       text: The ability to port the potential's C++ source code to a GPU without syntax errors
+      text_markdown: The ability to port the potential's C++ source code to a GPU without syntax errors
     - id: c
       text: The exact conservation of linear momentum under Periodic Boundary Conditions
+      text_markdown: The exact conservation of linear momentum under Periodic Boundary Conditions
     - id: d
       text: The guarantee that adding more fitting parameters always reduces extrapolation error to zero
+      text_markdown: The guarantee that adding more fitting parameters always reduces extrapolation error to zero
     correct: a
-    rationale_markdown: Fitting a potential within its training set is interpolation; **transferability** measures how well
-      the potential extrapolates to different coordination numbers, phases, defects, or thermodynamic states not included
-      in the fit.
+    rationale_markdown: Fitting a potential within its training set is interpolation; **transferability** measures how well the potential extrapolates to different coordination numbers, phases, defects, or thermodynamic states not included in the fit.
   - id: q07_statistical_vs_systematic_error
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_bo_and_atomic_units
-    prompt_markdown: 'As summarized on slide 33 of `05.potentials.pdf` ("Which approach to use?"), the total error in an atomistic
-      simulation is a combination of **statistical error** and **systematic error**. How are these two error sources governed?
+    prompt_markdown: 'As summarized on slide 33 of `05.potentials.pdf` ("Which approach to use?"), the total error in an atomistic simulation is a combination of **statistical error** and **systematic error**. How are these two error sources governed?
 
       '
-    hint_markdown: Which error decreases with more MD timesteps, and which error is inherent to the interatomic potential
-      $V(\mathbf{R})$?
+    hint_markdown: Which error decreases with more MD timesteps, and which error is inherent to the interatomic potential $V(\mathbf{R})$?
     options:
     - id: a
-      text: Statistical error is governed by finite sampling (the number of time steps $N_{\text{steps}}$), whereas systematic
-        error is governed by inaccuracies in the interatomic potential $V(\mathbf{R})$
+      text: Statistical error is governed by finite sampling (the number of time steps $N_{\text{steps}}$), whereas systematic error is governed by inaccuracies in the interatomic potential $V(\mathbf{R})$
+      text_markdown: Statistical error is governed by finite sampling (the number of time steps $N_{\text{steps}}$), whereas systematic error is governed by inaccuracies in the interatomic potential $V(\mathbf{R})$
     - id: b
       text: Statistical error is caused by the Born-Oppenheimer approximation, whereas systematic error vanishes as $N_{\text{steps}}^{-1/2}$
+      text_markdown: Statistical error is caused by the Born-Oppenheimer approximation, whereas systematic error vanishes as $N_{\text{steps}}^{-1/2}$
     - id: c
       text: Running a simulation with an inaccurate empirical potential for $10^{12}$ time steps eliminates systematic error
+      text_markdown: Running a simulation with an inaccurate empirical potential for $10^{12}$ time steps eliminates systematic error
     - id: d
       text: Ab initio MD has zero statistical error even for a 10-femtosecond trajectory
+      text_markdown: Ab initio MD has zero statistical error even for a 10-femtosecond trajectory
     correct: a
-    rationale_markdown: Longer runs ($N_{\text{steps}} \to \infty$) reduce **statistical (sampling) error** as $N_{\text{steps}}^{-1/2}$,
-      but cannot reduce **systematic (model) error** arising from an imperfect potential $V(\mathbf{R})$. Conversely, ab initio
-      DFT has lower systematic error but often suffers from larger statistical error due to short affordable trajectories.
+    rationale_markdown: Longer runs ($N_{\text{steps}} \to \infty$) reduce **statistical (sampling) error** as $N_{\text{steps}}^{-1/2}$, but cannot reduce **systematic (model) error** arising from an imperfect potential $V(\mathbf{R})$. Conversely, ab initio DFT has lower systematic error but often suffers from larger statistical error due to short affordable trajectories.
   - id: sec_pair_potentials_lj_morse
     type: markdown_section
     title: '2. Two-Body Pair Potentials: Lennard-Jones 12-6, Reduced Units, Morse, Born & Spline Tables'
-    body_markdown: "In a **pair potential**, the total potential energy is a sum purely over two-body distances $r_{ij} =\
-      \ |\\mathbf{r}_i - \\mathbf{r}_j|$:\n$$V(\\{\\mathbf{r}_i\\}) = \\sum_{i<j} v(r_{ij})$$\nThis approximation works well\
-      \ when closed-shell atoms or rigid molecules remain in a non-degenerate electronic ground state that is only weakly\
-      \ perturbed by neighbors—most notably **neutral rare-gas atoms** ($\\text{He, Ne, Ar, Kr, Xe}$).\n\n### Physical Origin\
-      \ of Rare-Gas Interactions\n- **Short-range repulsion ($r \\to 0$):** Overlap of closed-shell electron clouds triggers\
-      \ Pauli exclusion, raising kinetic energy exponentially: $v_{\\text{rep}}(r) \\propto \\exp(-r/c)$.\n- **Long-range\
-      \ attraction ($r \\gg r_{\\text{core}}$):** Second-order quantum perturbation theory between neutral spherical atoms\
-      \ produces the **London dispersion (fluctuating dipole–induced-dipole) interaction**:\n  $$v_{\\text{disp}}(r) = -\\\
-      frac{C_6}{r^6} - \\frac{C_8}{r^8} - \\cdots$$\n\n### The Lennard-Jones (12-6) Potential (1931)\n$$v_{\\text{LJ}}(r)\
-      \ = 4\\varepsilon\\left[\\left(\\frac{\\sigma}{r}\\right)^{12} - \\left(\\frac{\\sigma}{r}\\right)^6\\right]$$\n- **Why\
-      \ exponents 6 and 12?** The $-(\\sigma/r)^6$ term has a rigorous physical basis (London dipole–induced-dipole dispersion).\
-      \ The $+(\\sigma/r)^{12}$ Pauli repulsion is chosen for **computational convenience** because $(\\sigma/r)^{12} = [(\\\
-      sigma/r)^6]^2$ can be evaluated by squaring the $r^{-6}$ term without calling `exp(-r/c)`!\n- **Key geometric landmarks:**\n\
-      \  1. **Zero-crossing (hard wall diameter):** $v_{\\text{LJ}}(\\sigma) = 0$.\n  2. **Equilibrium pair distance $r_{\\\
-      min}$:** Setting $\\frac{dv}{dr} = 0$ gives:\n     $$r_{\\min} = 2^{1/6}\\sigma \\approx 1.12246\\,\\sigma, \\qquad\
-      \ v_{\\text{LJ}}(r_{\\min}) = -\\varepsilon$$\n  3. **Force:** $F(r) = -\\frac{dv}{dr} = \\frac{24\\varepsilon}{r}\\\
-      left[2\\left(\\frac{\\sigma}{r}\\right)^{12} - \\left(\\frac{\\sigma}{r}\\right)^6\\right]$.\n\n### LJ Reduced Units\
-      \ & The Law of Corresponding States\nBy measuring lengths in $\\sigma$, energies in $\\varepsilon$, and masses in atomic\
-      \ mass $m$:\n$$r^* = \\frac{r}{\\sigma}, \\quad E^* = \\frac{E}{\\varepsilon}, \\quad T^* = \\frac{k_B T}{\\varepsilon},\
-      \ \\quad \\rho^* = \\rho\\sigma^3, \\quad P^* = \\frac{P\\sigma^3}{\\varepsilon}, \\quad t^* = t\\sqrt{\\frac{\\varepsilon}{m\\\
-      sigma^2}}$$\nthe Lennard-Jones potential becomes parameter-free: $v^*(r^*) = 4\\left[(r^*)^{-12} - (r^*)^{-6}\\right]$.\n\
-      - **\"There is only 1 LJ system!\" (Law of Corresponding States):** A single dimensionless simulation of the LJ fluid\
-      \ determines the phase diagram for *all* noble gases ($\\text{Ne, Ar, Kr, Xe}$), predicting a universal critical point\
-      \ ($T_c^* \\approx 1.31$, $P_c^* \\approx 0.12$, $\\rho_c^* \\approx 0.31$) and triple point ($T_t^* \\approx 0.68\\\
-      text{–}0.70$).\n\n### The Morse Potential (1929)\nBecause the LJ $12$-$6$ potential has only **2 parameters** ($\\varepsilon,\
-      \ \\sigma$), once you fit the lattice constant ($r_0$) and cohesive energy ($\\varepsilon$), the curvature at the minimum\
-      \ $v''(r_{\\min}) = 72\\varepsilon / r_{\\min}^2$ (and thus the **bulk modulus $B$**) is completely fixed!\nThe **Morse\
-      \ potential** replaces power laws with exponentials and introduces a **3rd independent parameter $\\alpha$** (width/stiffness\
-      \ parameter):\n$$v_{\\text{Morse}}(r) = \\varepsilon\\left[e^{-2\\alpha(r - r_0)} - 2e^{-\\alpha(r - r_0)}\\right] =\
-      \ \\varepsilon\\left[\\left(1 - e^{-\\alpha(r-r_0)}\\right)^2 - 1\\right]$$\n- Minimum at $r = r_0$ with well depth\
-      \ $v_{\\text{Morse}}(r_0) = -\\varepsilon$.\n- Curvature at $r_0$: $v_{\\text{Morse}}''(r_0) = 2\\alpha^2\\varepsilon$.\n\
-      - The 3 parameters $(r_0, \\varepsilon, \\alpha)$ allow simultaneous fitting to **three experimental properties**:\n\
-      \  1. Equilibrium volume / lattice constant: $\\left.\\frac{dE}{dV}\\right|_{V_0} = 0$\n  2. Cohesive energy: $E_{\\\
-      text{cohesive}} = -E(V_0)$\n  3. Bulk modulus: $B = -V\\left.\\frac{dP}{dV}\\right|_{V_0} = V\\left.\\frac{d^2 E}{dV^2}\\\
-      right|_{V_0}$\n\n### Born Ionic Potential & Table-Driven Spline Potentials\n- **Born Potential for Ionic Crystals (e.g.,\
-      \ NaCl):**\n  $$v(r) = \\frac{Z_i Z_j e^2}{r} + \\frac{A}{r^n}$$\n  Summing over the alternating $\\pm 1$ rock-salt\
-      \ lattice introduces the **Madelung constant** ($\\alpha_M \\approx 1.7476$). Fitting $A$ and $n$ to the experimental\
-      \ $T=0$ lattice constant $a_0$ and cohesive energy yields $n = 8.87$, and checking the un-fitted bulk modulus gives\
-      \ $B_{\\text{calc}} = 4.35 \\times 10^{11}\\text{ dyn/cm}^2$ vs. $B_{\\text{exp}} = 2.52 \\times 10^{11}\\text{ dyn/cm}^2$—illustrating\
-      \ **\"You get what you fit for!\"**\n- **Table-Driven Cubic Splines for Arbitrary Pair Potentials:**\n  For any pair\
-      \ potential more complicated than LJ 12-6 (containing exponentials, square roots, or DFT data), MD codes pre-tabulate\
-      \ $V(r)$ and $dV/dr$ on a radial grid at startup. During the force loop, each distance $r_{ij}$ is mapped to a grid\
-      \ index and interpolated with a **cubic polynomial**, trading expensive transcendental math for a fast **memory fetch\
-      \ + a few FLOPs** (with the minor disadvantage of potential CPU cache misses).\n"
+    body_markdown: "In a **pair potential**, the total potential energy is a sum purely over two-body distances $r_{ij} = |\\mathbf{r}_i - \\mathbf{r}_j|$:\n$$V(\\{\\mathbf{r}_i\\}) = \\sum_{i<j} v(r_{ij})$$\nThis approximation works well when closed-shell atoms or rigid molecules remain in a non-degenerate electronic ground state that is only weakly perturbed by neighbors—most notably **neutral rare-gas atoms** ($\\text{He, Ne, Ar, Kr, Xe}$).\n\n### Physical Origin of Rare-Gas Interactions\n- **Short-range repulsion ($r \\to 0$):** Overlap of closed-shell electron clouds triggers Pauli exclusion, raising kinetic energy exponentially: $v_{\\text{rep}}(r) \\propto \\exp(-r/c)$.\n- **Long-range attraction ($r \\gg r_{\\text{core}}$):** Second-order quantum perturbation theory between neutral spherical atoms produces the **London dispersion (fluctuating dipole–induced-dipole) interaction**:\n  $$v_{\\text{disp}}(r) = -\\frac{C_6}{r^6} - \\frac{C_8}{r^8} - \\cdots$$\n\n### The Lennard-Jones\
+      \ (12-6) Potential (1931)\n$$v_{\\text{LJ}}(r) = 4\\varepsilon\\left[\\left(\\frac{\\sigma}{r}\\right)^{12} - \\left(\\frac{\\sigma}{r}\\right)^6\\right]$$\n- **Why exponents 6 and 12?** The $-(\\sigma/r)^6$ term has a rigorous physical basis (London dipole–induced-dipole dispersion). The $+(\\sigma/r)^{12}$ Pauli repulsion is chosen for **computational convenience** because $(\\sigma/r)^{12} = [(\\sigma/r)^6]^2$ can be evaluated by squaring the $r^{-6}$ term without calling `exp(-r/c)`!\n- **Key geometric landmarks:**\n  1. **Zero-crossing (hard wall diameter):** $v_{\\text{LJ}}(\\sigma) = 0$.\n  2. **Equilibrium pair distance $r_{\\min}$:** Setting $\\frac{dv}{dr} = 0$ gives:\n     $$r_{\\min} = 2^{1/6}\\sigma \\approx 1.12246\\,\\sigma, \\qquad v_{\\text{LJ}}(r_{\\min}) = -\\varepsilon$$\n  3. **Force:** $F(r) = -\\frac{dv}{dr} = \\frac{24\\varepsilon}{r}\\left[2\\left(\\frac{\\sigma}{r}\\right)^{12} - \\left(\\frac{\\sigma}{r}\\right)^6\\right]$.\n\n### LJ Reduced Units & The Law\
+      \ of Corresponding States\nBy measuring lengths in $\\sigma$, energies in $\\varepsilon$, and masses in atomic mass $m$:\n$$r^* = \\frac{r}{\\sigma}, \\quad E^* = \\frac{E}{\\varepsilon}, \\quad T^* = \\frac{k_B T}{\\varepsilon}, \\quad \\rho^* = \\rho\\sigma^3, \\quad P^* = \\frac{P\\sigma^3}{\\varepsilon}, \\quad t^* = t\\sqrt{\\frac{\\varepsilon}{m\\sigma^2}}$$\nthe Lennard-Jones potential becomes parameter-free: $v^*(r^*) = 4\\left[(r^*)^{-12} - (r^*)^{-6}\\right]$.\n- **\"There is only 1 LJ system!\" (Law of Corresponding States):** A single dimensionless simulation of the LJ fluid determines the phase diagram for *all* noble gases ($\\text{Ne, Ar, Kr, Xe}$), predicting a universal critical point ($T_c^* \\approx 1.31$, $P_c^* \\approx 0.12$, $\\rho_c^* \\approx 0.31$) and triple point ($T_t^* \\approx 0.68\\text{–}0.70$).\n\n### The Morse Potential (1929)\nBecause the LJ $12$-$6$ potential has only **2 parameters** ($\\varepsilon, \\sigma$), once you fit the lattice constant\
+      \ ($r_0$) and cohesive energy ($\\varepsilon$), the curvature at the minimum $v''(r_{\\min}) = 72\\varepsilon / r_{\\min}^2$ (and thus the **bulk modulus $B$**) is completely fixed!\nThe **Morse potential** replaces power laws with exponentials and introduces a **3rd independent parameter $\\alpha$** (width/stiffness parameter):\n$$v_{\\text{Morse}}(r) = \\varepsilon\\left[e^{-2\\alpha(r - r_0)} - 2e^{-\\alpha(r - r_0)}\\right] = \\varepsilon\\left[\\left(1 - e^{-\\alpha(r-r_0)}\\right)^2 - 1\\right]$$\n- Minimum at $r = r_0$ with well depth $v_{\\text{Morse}}(r_0) = -\\varepsilon$.\n- Curvature at $r_0$: $v_{\\text{Morse}}''(r_0) = 2\\alpha^2\\varepsilon$.\n- The 3 parameters $(r_0, \\varepsilon, \\alpha)$ allow simultaneous fitting to **three experimental properties**:\n  1. Equilibrium volume / lattice constant: $\\left.\\frac{dE}{dV}\\right|_{V_0} = 0$\n  2. Cohesive energy: $E_{\\text{cohesive}} = -E(V_0)$\n  3. Bulk modulus: $B = -V\\left.\\frac{dP}{dV}\\right|_{V_0} = V\\left.\\\
+      frac{d^2 E}{dV^2}\\right|_{V_0}$\n\n### Born Ionic Potential & Table-Driven Spline Potentials\n- **Born Potential for Ionic Crystals (e.g., NaCl):**\n  $$v(r) = \\frac{Z_i Z_j e^2}{r} + \\frac{A}{r^n}$$\n  Summing over the alternating $\\pm 1$ rock-salt lattice introduces the **Madelung constant** ($\\alpha_M \\approx 1.7476$). Fitting $A$ and $n$ to the experimental $T=0$ lattice constant $a_0$ and cohesive energy yields $n = 8.87$, and checking the un-fitted bulk modulus gives $B_{\\text{calc}} = 4.35 \\times 10^{11}\\text{ dyn/cm}^2$ vs. $B_{\\text{exp}} = 2.52 \\times 10^{11}\\text{ dyn/cm}^2$—illustrating **\"You get what you fit for!\"**\n- **Table-Driven Cubic Splines for Arbitrary Pair Potentials:**\n  For any pair potential more complicated than LJ 12-6 (containing exponentials, square roots, or DFT data), MD codes pre-tabulate $V(r)$ and $dV/dr$ on a radial grid at startup. During the force loop, each distance $r_{ij}$ is mapped to a grid index and interpolated with a **cubic\
+      \ polynomial**, trading expensive transcendental math for a fast **memory fetch + a few FLOPs** (with the minor disadvantage of potential CPU cache misses).\n"
   - id: concept_lj_vs_morse
     type: concept_cell
     title: 'Interactive Explorer: Lennard-Jones 12-6 vs. Morse Potential & Force'
-    description_markdown: Adjust the dimensionless Morse stiffness parameter $\alpha r_0$ and toggle between potential energy
-      $V(r)/\varepsilon$ and interatomic force $F(r)r_0/\varepsilon$. Observe how $\alpha r_0$ tunes the well curvature (bulk
-      modulus $B$) independently of $r_0$ and $\varepsilon$.
+    description_markdown: Adjust the dimensionless Morse stiffness parameter $\alpha r_0$ and toggle between potential energy $V(r)/\varepsilon$ and interatomic force $F(r)r_0/\varepsilon$. Observe how $\alpha r_0$ tunes the well curvature (bulk modulus $B$) independently of $r_0$ and $\varepsilon$.
     render_function: render_lj_vs_morse
     layout: figure_left
     controls:
@@ -297,40 +213,32 @@ worksheet:
         - label: Interatomic Force F(r) * r_0 / eps
           value: 1
         default: 0
-    takeaway_markdown: '**Key Takeaway:** At $\alpha r_0 = 6.0$, the Morse potential has the exact same harmonic curvature
-      $V''''(r_0) = 72\varepsilon / r_0^2$ as the LJ 12-6 potential at $r_0$, but a softer exponential core for $r < r_0$.
-      In cubic metals (Girifalco & Weizer, slide 13), $\alpha r_0$ typically ranges from $3.5$ to $4.5$, which is much softer
-      than LJ!'
+    takeaway_markdown: '**Key Takeaway:** At $\alpha r_0 = 6.0$, the Morse potential has the exact same harmonic curvature $V''''(r_0) = 72\varepsilon / r_0^2$ as the LJ 12-6 potential at $r_0$, but a softer exponential core for $r < r_0$. In cubic metals (Girifalco & Weizer, slide 13), $\alpha r_0$ typically ranges from $3.5$ to $4.5$, which is much softer than LJ!'
   - id: q08_origin_of_r6_and_r12
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'In the Lennard-Jones 12-6 potential $v(r) = 4\varepsilon\left[(\sigma/r)^{12} - (\sigma/r)^6\right]$
-      for neutral rare-gas atoms, what is the physical origin of the attractive $-(\sigma/r)^6$ term and the reason for choosing
-      the repulsive $+(\sigma/r)^{12}$ exponent?
+    prompt_markdown: 'In the Lennard-Jones 12-6 potential $v(r) = 4\varepsilon\left[(\sigma/r)^{12} - (\sigma/r)^6\right]$ for neutral rare-gas atoms, what is the physical origin of the attractive $-(\sigma/r)^6$ term and the reason for choosing the repulsive $+(\sigma/r)^{12}$ exponent?
 
       '
     hint_markdown: Review slides 6, 7, and 8 of `05.potentials.pdf`.
     options:
     - id: a
-      text: The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole–induced-dipole) forces;
-        the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential
-        $\exp(-r/c)$
+      text: The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole–induced-dipole) forces; the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential $\exp(-r/c)$
+      text_markdown: The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole–induced-dipole) forces; the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential $\exp(-r/c)$
     - id: b
-      text: Both $r^{-6}$ and $r^{-12}$ are exact analytical solutions of the Schrödinger equation for two Argon atoms at
-        all distances
+      text: Both $r^{-6}$ and $r^{-12}$ are exact analytical solutions of the Schrödinger equation for two Argon atoms at all distances
+      text_markdown: Both $r^{-6}$ and $r^{-12}$ are exact analytical solutions of the Schrödinger equation for two Argon atoms at all distances
     - id: c
-      text: The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational
-        repulsion
+      text: The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational repulsion
+      text_markdown: The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational repulsion
     - id: d
       text: The $+r^{-12}$ term is physically softer than $\exp(-r/c)$ at very small $r$
+      text_markdown: The $+r^{-12}$ term is physically softer than $\exp(-r/c)$ at very small $r$
     correct: a
-    rationale_markdown: Quantum perturbation theory shows that instantaneous dipole fluctuations on one closed-shell atom
-      induce a dipole on a neighbor, producing a $-C_6/r^6$ dispersion attraction. True core overlap repulsion is exponential
-      $\exp(-r/c)$, but Lennard-Jones chose $r^{-12} = (r^{-6})^2$ so it can be computed by a single multiplication after
-      finding $r^{-6}$.
+    rationale_markdown: Quantum perturbation theory shows that instantaneous dipole fluctuations on one closed-shell atom induce a dipole on a neighbor, producing a $-C_6/r^6$ dispersion attraction. True core overlap repulsion is exponential $\exp(-r/c)$, but Lennard-Jones chose $r^{-12} = (r^{-6})^2$ so it can be computed by a single multiplication after finding $r^{-6}$.
   - id: q09_lj_equilibrium_distance
     type: problem
     question_type: numeric
@@ -338,108 +246,93 @@ worksheet:
     taught_by:
     - sec_pair_potentials_lj_morse
     - concept_lj_vs_morse
-    prompt_markdown: For Argon, the Lennard-Jones diameter parameter (where $v(\sigma) = 0$) is $\sigma = 3.40\text{ Å}$.
-      What is the equilibrium pair separation $r_{\min}$ (in $\text{Å}$) where the potential reaches its minimum $v(r_{\min})
-      = -\varepsilon$ and the interatomic force vanishes? (Enter a value to two decimal places, e.g., `3.82`.)
+    prompt_markdown: For Argon, the Lennard-Jones diameter parameter (where $v(\sigma) = 0$) is $\sigma = 3.40\text{ Å}$. What is the equilibrium pair separation $r_{\min}$ (in $\text{Å}$) where the potential reaches its minimum $v(r_{\min}) = -\varepsilon$ and the interatomic force vanishes? (Enter a value to two decimal places, e.g., `3.82`.)
     hint_markdown: Find the radial distance where the first derivative of the Lennard-Jones potential $dv/dr$ equals zero.
     correct:
       value: 3.82
       tolerance: 0.03
-    rationale_markdown: Setting $dv/dr = 0$ gives $2(\sigma/r)^6 = 1 \implies r_{\min} = 2^{1/6}\sigma \approx 1.12246 \times
-      3.40\text{ Å} = 3.816\text{ Å} \approx 3.82\text{ Å}$.
+    rationale_markdown: Setting $dv/dr = 0$ gives $2(\sigma/r)^6 = 1 \implies r_{\min} = 2^{1/6}\sigma \approx 1.12246 \times 3.40\text{ Å} = 3.816\text{ Å} \approx 3.82\text{ Å}$.
   - id: q10_lj_force_at_sigma
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'Evaluate the dimensionless Lennard-Jones pair force $F^* = F(r)\frac{\sigma}{\varepsilon} = -\frac{\sigma}{\varepsilon}\frac{dv}{dr}$
-      at the zero-crossing distance $r = \sigma$.
+    prompt_markdown: 'Evaluate the dimensionless Lennard-Jones pair force $F^* = F(r)\frac{\sigma}{\varepsilon} = -\frac{\sigma}{\varepsilon}\frac{dv}{dr}$ at the zero-crossing distance $r = \sigma$.
 
       '
-    hint_markdown: Differentiate the Lennard-Jones potential with respect to distance to obtain the force expression, then
-      evaluate it at $r = \sigma$.
+    hint_markdown: Differentiate the Lennard-Jones potential with respect to distance to obtain the force expression, then evaluate it at $r = \sigma$.
     correct:
       value: 24.0
       tolerance: 0.1
-    rationale_markdown: Differentiating $v(r) = 4\varepsilon[(\sigma/r)^{12} - (\sigma/r)^6]$ gives $F(r) = -dv/dr = \frac{24\varepsilon}{r}[2(\sigma/r)^{12}
-      - (\sigma/r)^6]$. At $r = \sigma$, $F(\sigma) = \frac{24\varepsilon}{\sigma}(2 - 1) = +24\,\varepsilon/\sigma$ (strongly
-      repulsive).
+    rationale_markdown: Differentiating $v(r) = 4\varepsilon[(\sigma/r)^{12} - (\sigma/r)^6]$ gives $F(r) = -dv/dr = \frac{24\varepsilon}{r}[2(\sigma/r)^{12} - (\sigma/r)^6]$. At $r = \sigma$, $F(\sigma) = \frac{24\varepsilon}{\sigma}(2 - 1) = +24\,\varepsilon/\sigma$ (strongly repulsive).
   - id: q11_corresponding_states_meaning
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'Slide 8 of `05.potentials.pdf` states: **"There is only 1 LJ system!"** and Slide 9 compares reduced
-      critical and triple-point parameters ($T_c^*, P_c^*, \rho_c^*, T_t^*, P_t^*$) across Neon, Argon, Krypton, and Xenon.
-      What does this principle imply?
+    prompt_markdown: 'Slide 8 of `05.potentials.pdf` states: **"There is only 1 LJ system!"** and Slide 9 compares reduced critical and triple-point parameters ($T_c^*, P_c^*, \rho_c^*, T_t^*, P_t^*$) across Neon, Argon, Krypton, and Xenon. What does this principle imply?
 
       '
     hint_markdown: Think about what happens when lengths, energies, and temperatures are scaled by $\sigma$ and $\varepsilon$.
     options:
     - id: a
-      text: When expressed in reduced units ($T^* = k_B T/\varepsilon$, $\rho^* = \rho\sigma^3$, $P^* = P\sigma^3/\varepsilon$),
-        all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram
+      text: When expressed in reduced units ($T^* = k_B T/\varepsilon$, $\rho^* = \rho\sigma^3$, $P^* = P\sigma^3/\varepsilon$), all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram
+      text_markdown: When expressed in reduced units ($T^* = k_B T/\varepsilon$, $\rho^* = \rho\sigma^3$, $P^* = P\sigma^3/\varepsilon$), all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram
     - id: b
       text: Neon, Argon, Krypton, and Xenon all have the exact same melting temperature in Kelvin ($T_m = 84\text{ K}$)
+      text_markdown: Neon, Argon, Krypton, and Xenon all have the exact same melting temperature in Kelvin ($T_m = 84\text{ K}$)
     - id: c
       text: The Lennard-Jones potential has only one stable phase (liquid) at all temperatures
+      text_markdown: The Lennard-Jones potential has only one stable phase (liquid) at all temperatures
     - id: d
       text: Quantum zero-point effects are identical in Helium-4 and Xenon
+      text_markdown: Quantum zero-point effects are identical in Helium-4 and Xenon
     correct: a
-    rationale_markdown: In reduced units ($r^* = r/\sigma, E^* = E/\varepsilon$), the parameters $\sigma$ and $\varepsilon$
-      scale out of the classical partition function and equations of motion. Consequently, all heavy noble gases collapse
-      onto a single universal phase diagram ($T_c^* \approx 1.31$, $T_t^* \approx 0.70$).
+    rationale_markdown: In reduced units ($r^* = r/\sigma, E^* = E/\varepsilon$), the parameters $\sigma$ and $\varepsilon$ scale out of the classical partition function and equations of motion. Consequently, all heavy noble gases collapse onto a single universal phase diagram ($T_c^* \approx 1.31$, $T_t^* \approx 0.70$).
   - id: q12_reduced_temperature_calc
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'According to the Lennard-Jones phase diagram table (Slide 9 of `05.potentials.pdf`), the triple-point
-      temperature of the LJ fluid is $T_t^* = k_B T_t / \varepsilon \approx 0.70$. Given that Argon has well depth $\varepsilon
-      / k_B = 119.8\text{ K}$, what is the predicted triple-point temperature $T_t$ of Argon in $\text{K}$? (Enter a value
-      to one decimal place, e.g., `83.9`.)
+    prompt_markdown: 'According to the Lennard-Jones phase diagram table (Slide 9 of `05.potentials.pdf`), the triple-point temperature of the LJ fluid is $T_t^* = k_B T_t / \varepsilon \approx 0.70$. Given that Argon has well depth $\varepsilon / k_B = 119.8\text{ K}$, what is the predicted triple-point temperature $T_t$ of Argon in $\text{K}$? (Enter a value to one decimal place, e.g., `83.9`.)
 
       '
     hint_markdown: Convert the dimensionless reduced temperature into Kelvin using the characteristic energy well depth.
     correct:
       value: 83.9
       tolerance: 0.5
-    rationale_markdown: $T_t = T_t^* (\varepsilon / k_B) = 0.70 \times 119.8\text{ K} = 83.86\text{ K} \approx 83.9\text{
-      K}$ ( remarkably close to the experimental Argon triple point of $83.81\text{ K}$!).
+    rationale_markdown: $T_t = T_t^* (\varepsilon / k_B) = 0.70 \times 119.8\text{ K} = 83.86\text{ K} \approx 83.9\text{ K}$ ( remarkably close to the experimental Argon triple point of $83.81\text{ K}$!).
   - id: q13_aziz_helium_and_h2
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'Based on Slide 7 of `05.potentials.pdf` ("Atomic systems"), select **all** true statements regarding
-      rare-gas and $\text{H}_2$ pair interactions:
+    prompt_markdown: 'Based on Slide 7 of `05.potentials.pdf` ("Atomic systems"), select **all** true statements regarding rare-gas and $\text{H}_2$ pair interactions:
 
       '
     hint_markdown: Check the notes on the Aziz He-He potential and why $\text{H}_2$ behaves almost like a rare gas.
     options:
     - id: a
-      text: The He–He pair interaction (constructed by Aziz using virial coefficients, transport data, and quantum chemistry)
-        is known to better than $0.1\text{ K}$, but simulating condensed Helium requires quantum simulations due to its tiny
-        mass
+      text: The He–He pair interaction (constructed by Aziz using virial coefficients, transport data, and quantum chemistry) is known to better than $0.1\text{ K}$, but simulating condensed Helium requires quantum simulations due to its tiny mass
+      text_markdown: The He–He pair interaction (constructed by Aziz using virial coefficients, transport data, and quantum chemistry) is known to better than $0.1\text{ K}$, but simulating condensed Helium requires quantum simulations due to its tiny mass
     - id: b
-      text: Molecular $\text{H}_2$ behaves almost like a spherical rare-gas atom because its rotational (angular) degree of
-        freedom averages out due to quantum effects, though it has a much larger polarizability
+      text: Molecular $\text{H}_2$ behaves almost like a spherical rare-gas atom because its rotational (angular) degree of freedom averages out due to quantum effects, though it has a much larger polarizability
+      text_markdown: Molecular $\text{H}_2$ behaves almost like a spherical rare-gas atom because its rotational (angular) degree of freedom averages out due to quantum effects, though it has a much larger polarizability
     - id: c
-      text: Three-body and many-body interactions in rare gases are small compared to the two-body term, though not strictly
-        zero
+      text: Three-body and many-body interactions in rare gases are small compared to the two-body term, though not strictly zero
+      text_markdown: Three-body and many-body interactions in rare gases are small compared to the two-body term, though not strictly zero
     - id: d
       text: Helium-4 solidifies at room temperature and atmospheric pressure under classical Lennard-Jones dynamics
+      text_markdown: Helium-4 solidifies at room temperature and atmospheric pressure under classical Lennard-Jones dynamics
     correct:
     - a
     - b
     - c
-    rationale_markdown: Slides 7 notes that the Aziz He-He pair potential is accurate to $<0.1\text{ K}$ (requiring quantum
-      simulations like Path-Integral MC), $\text{H}_2$ acts like a pseudo-rare-gas due to quantum rotational averaging, and
-      three-body (Axilrod-Teller) terms in rare gases are small ($\sim 5\%$) but non-zero.
+    rationale_markdown: Slides 7 notes that the Aziz He-He pair potential is accurate to $<0.1\text{ K}$ (requiring quantum simulations like Path-Integral MC), $\text{H}_2$ acts like a pseudo-rare-gas due to quantum rotational averaging, and three-body (Axilrod-Teller) terms in rare gases are small ($\sim 5\%$) but non-zero.
   - id: q14_morse_three_parameters
     type: problem
     question_type: single_select
@@ -447,26 +340,25 @@ worksheet:
     taught_by:
     - sec_pair_potentials_lj_morse
     - concept_lj_vs_morse
-    prompt_markdown: 'In the Morse potential $v(r) = \varepsilon\left[e^{-2\alpha(r-r_0)} - 2e^{-\alpha(r-r_0)}\right]$, what
-      is the specific role of the third parameter $\alpha$ (compared to the 2-parameter Lennard-Jones potential)?
+    prompt_markdown: 'In the Morse potential $v(r) = \varepsilon\left[e^{-2\alpha(r-r_0)} - 2e^{-\alpha(r-r_0)}\right]$, what is the specific role of the third parameter $\alpha$ (compared to the 2-parameter Lennard-Jones potential)?
 
       '
     hint_markdown: Check slide 12 of `05.potentials.pdf` and the interactive LJ vs. Morse explorer.
     options:
     - id: a
-      text: 'It independently controls the width/curvature of the potential well ($v''''(r_0) = 2\alpha^2\varepsilon$), allowing
-        the potential to simultaneously fit three properties: lattice constant ($r_0$), cohesive energy ($\varepsilon$), and
-        bulk modulus ($B = V d^2E/dV^2$)'
+      text: 'It independently controls the width/curvature of the potential well ($v''''(r_0) = 2\alpha^2\varepsilon$), allowing the potential to simultaneously fit three properties: lattice constant ($r_0$), cohesive energy ($\varepsilon$), and bulk modulus ($B = V d^2E/dV^2$)'
+      text_markdown: 'It independently controls the width/curvature of the potential well ($v''''(r_0) = 2\alpha^2\varepsilon$), allowing the potential to simultaneously fit three properties: lattice constant ($r_0$), cohesive energy ($\varepsilon$), and bulk modulus ($B = V d^2E/dV^2$)'
     - id: b
       text: It makes the potential energy oscillate between positive and negative values at large $r$
+      text_markdown: It makes the potential energy oscillate between positive and negative values at large $r$
     - id: c
       text: It introduces a 3-body angular dependence on $\cos\theta_{ijk}$
+      text_markdown: It introduces a 3-body angular dependence on $\cos\theta_{ijk}$
     - id: d
       text: It forces the cohesive energy $E_{\text{coh}}$ to equal the vacancy formation energy $E_v$
+      text_markdown: It forces the cohesive energy $E_{\text{coh}}$ to equal the vacancy formation energy $E_v$
     correct: a
-    rationale_markdown: A 2-parameter potential like LJ fixes $v''(r_0)$ once $r_0$ and $\varepsilon$ are chosen. Morse adds
-      the inverse-width parameter $\alpha$, enabling independent fitting of the equilibrium volume ($dE/dV = 0$), cohesive
-      energy ($-E(V_0)$), and bulk modulus ($B = V d^2E/dV^2|_{V_0}$).
+    rationale_markdown: A 2-parameter potential like LJ fixes $v''(r_0)$ once $r_0$ and $\varepsilon$ are chosen. Morse adds the inverse-width parameter $\alpha$, enabling independent fitting of the equilibrium volume ($dE/dV = 0$), cohesive energy ($-E(V_0)$), and bulk modulus ($B = V d^2E/dV^2|_{V_0}$).
   - id: q15_morse_curvature_matching
     type: problem
     question_type: numeric
@@ -474,159 +366,102 @@ worksheet:
     taught_by:
     - sec_pair_potentials_lj_morse
     - concept_lj_vs_morse
-    prompt_markdown: 'At the equilibrium distance $r_0$, the Lennard-Jones 12-6 potential has second derivative $v_{\text{LJ}}''''(r_0)
-      = 72\,\varepsilon / r_0^2$, while the Morse potential has second derivative $v_{\text{Morse}}''''(r_0) = 2\alpha^2 \varepsilon$.
-      What dimensionless value of $\alpha r_0$ makes the Morse potential have the **exact same harmonic curvature (stiffness)**
-      at $r = r_0$ as the Lennard-Jones 12-6 potential?
+    prompt_markdown: 'At the equilibrium distance $r_0$, the Lennard-Jones 12-6 potential has second derivative $v_{\text{LJ}}''''(r_0) = 72\,\varepsilon / r_0^2$, while the Morse potential has second derivative $v_{\text{Morse}}''''(r_0) = 2\alpha^2 \varepsilon$. What dimensionless value of $\alpha r_0$ makes the Morse potential have the **exact same harmonic curvature (stiffness)** at $r = r_0$ as the Lennard-Jones 12-6 potential?
 
       '
-    hint_markdown: Equate the two second-derivative expressions at the equilibrium separation and solve for the dimensionless
-      parameter combination.
+    hint_markdown: Equate the two second-derivative expressions at the equilibrium separation and solve for the dimensionless parameter combination.
     correct:
       value: 6.0
       tolerance: 0.05
-    rationale_markdown: Equating $2\alpha^2 \varepsilon = 72\varepsilon / r_0^2$ gives $(\alpha r_0)^2 = 36 \implies \alpha
-      r_0 = 6.0$.
+    rationale_markdown: Equating $2\alpha^2 \varepsilon = 72\varepsilon / r_0^2$ gives $(\alpha r_0)^2 = 36 \implies \alpha r_0 = 6.0$.
   - id: q16_hard_sphere_integration_error
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'On Slide 14 of `05.potentials.pdf` ("Various Other Empirical Potentials"), the **Hard Sphere** potential
-      ($v(r) = \infty$ for $r < \sigma$, $0$ for $r \ge \sigma$, used by Alder & Wainwright in 1957) is described as having
-      **"no integration error"**. Why?
+    prompt_markdown: 'On Slide 14 of `05.potentials.pdf` ("Various Other Empirical Potentials"), the **Hard Sphere** potential ($v(r) = \infty$ for $r < \sigma$, $0$ for $r \ge \sigma$, used by Alder & Wainwright in 1957) is described as having **"no integration error"**. Why?
 
       '
     hint_markdown: How do hard spheres move between instantaneous elastic collisions?
     options:
     - id: a
-      text: Between collisions, hard spheres experience zero force and travel in exact straight lines ($\mathbf{r}(t) = \mathbf{r}_0
-        + \mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep
-        truncation error
+      text: Between collisions, hard spheres experience zero force and travel in exact straight lines ($\mathbf{r}(t) = \mathbf{r}_0 + \mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep truncation error
+      text_markdown: Between collisions, hard spheres experience zero force and travel in exact straight lines ($\mathbf{r}(t) = \mathbf{r}_0 + \mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep truncation error
     - id: b
       text: The hard-sphere potential is infinitely differentiable ($C^\infty$) at $r = \sigma$
+      text_markdown: The hard-sphere potential is infinitely differentiable ($C^\infty$) at $r = \sigma$
     - id: c
       text: Hard spheres do not exchange momentum during collisions
+      text_markdown: Hard spheres do not exchange momentum during collisions
     - id: d
       text: The Verlet algorithm has $\mathcal{O}(\Delta t^{12})$ accuracy for discontinuous step potentials
+      text_markdown: The Verlet algorithm has $\mathcal{O}(\Delta t^{12})$ accuracy for discontinuous step potentials
     correct: a
-    rationale_markdown: Because $v(r) = 0$ for $r > \sigma$, particles move in exact ballistic straight lines between collisions.
-      Event-driven MD advances directly from one exact quadratic collision time to the next with only floating-point roundoff
-      error (no $\Delta t$ discretization error).
+    rationale_markdown: Because $v(r) = 0$ for $r > \sigma$, particles move in exact ballistic straight lines between collisions. Event-driven MD advances directly from one exact quadratic collision time to the next with only floating-point roundoff error (no $\Delta t$ discretization error).
   - id: q17_born_ionic_potential_nacl
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'In Slide 15 of `05.potentials.pdf` ("Fit for a Born potential"), the parameters $A$ and $n$ in $v(r)
-      = \frac{Z_i Z_j e^2}{r} + \frac{A}{r^n}$ for NaCl are determined by fitting the $T=0$ cohesive energy and lattice constant
-      $a_0$ (yielding $n = 8.87$). When this fitted potential is used to predict the bulk modulus $B$, it gives $4.35 \times
-      10^{11}\text{ dyn/cm}^2$ compared to the experimental value of $2.52 \times 10^{11}\text{ dyn/cm}^2$. What lesson does
-      this illustrate?
+    prompt_markdown: 'In Slide 15 of `05.potentials.pdf` ("Fit for a Born potential"), the parameters $A$ and $n$ in $v(r) = \frac{Z_i Z_j e^2}{r} + \frac{A}{r^n}$ for NaCl are determined by fitting the $T=0$ cohesive energy and lattice constant $a_0$ (yielding $n = 8.87$). When this fitted potential is used to predict the bulk modulus $B$, it gives $4.35 \times 10^{11}\text{ dyn/cm}^2$ compared to the experimental value of $2.52 \times 10^{11}\text{ dyn/cm}^2$. What lesson does this illustrate?
 
       '
     hint_markdown: Read the highlighted takeaway at the bottom of Slide 15.
     options:
     - id: a
-      text: '"You get what you fit for!" — fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$)
-        does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)'
+      text: '"You get what you fit for!" — fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$) does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)'
+      text_markdown: '"You get what you fit for!" — fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$) does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)'
     - id: b
       text: NaCl is a covalent metal that has zero Coulomb interaction
+      text_markdown: NaCl is a covalent metal that has zero Coulomb interaction
     - id: c
       text: The Madelung constant for a simple cubic alternating lattice is zero
+      text_markdown: The Madelung constant for a simple cubic alternating lattice is zero
     - id: d
       text: A power-law core $A/r^n$ always underestimates the bulk modulus by a factor of 10
+      text_markdown: A power-law core $A/r^n$ always underestimates the bulk modulus by a factor of 10
     correct: a
-    rationale_markdown: Because the repulsive term had only two adjustable parameters ($A$ and $n$) that were consumed by
-      fitting $E_{\text{bind}}(a_0)$ and $dE_{\text{bind}}/da_0 = 0$, the curvature $d^2E/da_0^2$ (bulk modulus) was constrained
-      by the rigid $1/r^n$ functional form and overestimated experiment by $\sim 73\%$.
+    rationale_markdown: Because the repulsive term had only two adjustable parameters ($A$ and $n$) that were consumed by fitting $E_{\text{bind}}(a_0)$ and $dE_{\text{bind}}/da_0 = 0$, the curvature $d^2E/da_0^2$ (bulk modulus) was constrained by the rigid $1/r^n$ functional form and overestimated experiment by $\sim 73\%$.
   - id: q18_table_lookup_splines
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_pair_potentials_lj_morse
-    prompt_markdown: 'In production MD codes, why are arbitrary pair potentials (and EAM functions) evaluated using **pre-computed
-      lookup tables with cubic polynomial (spline) interpolation** rather than evaluating analytic expressions at every pair
-      distance, and what is the main hardware trade-off?
+    prompt_markdown: 'In production MD codes, why are arbitrary pair potentials (and EAM functions) evaluated using **pre-computed lookup tables with cubic polynomial (spline) interpolation** rather than evaluating analytic expressions at every pair distance, and what is the main hardware trade-off?
 
       '
     hint_markdown: Check Slide 16 of `05.potentials.pdf` ('Arbitrary pair potential').
     options:
     - id: a
-      text: 'Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental
-        functions; Disadvantage: memory fetch latency and potential CPU cache misses'
+      text: 'Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental functions; Disadvantage: memory fetch latency and potential CPU cache misses'
+      text_markdown: 'Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental functions; Disadvantage: memory fetch latency and potential CPU cache misses'
     - id: b
-      text: 'Advantage: reduces all-pairs complexity from $\mathcal{O}(N^2)$ to $\mathcal{O}(\log N)$; Disadvantage: only
-        works for Lennard-Jones 12-6'
+      text: 'Advantage: reduces all-pairs complexity from $\mathcal{O}(N^2)$ to $\mathcal{O}(\log N)$; Disadvantage: only works for Lennard-Jones 12-6'
+      text_markdown: 'Advantage: reduces all-pairs complexity from $\mathcal{O}(N^2)$ to $\mathcal{O}(\log N)$; Disadvantage: only works for Lennard-Jones 12-6'
     - id: c
-      text: 'Advantage: eliminates the need for a radial cutoff $r_c$; Disadvantage: requires solving a $N \times N$ matrix
-        inversion at every step'
+      text: 'Advantage: eliminates the need for a radial cutoff $r_c$; Disadvantage: requires solving a $N \times N$ matrix inversion at every step'
+      text_markdown: 'Advantage: eliminates the need for a radial cutoff $r_c$; Disadvantage: requires solving a $N \times N$ matrix inversion at every step'
     - id: d
       text: 'Advantage: zero memory usage; Disadvantage: forces become discontinuous at every grid point'
+      text_markdown: 'Advantage: zero memory usage; Disadvantage: forces become discontinuous at every grid point'
     correct: a
-    rationale_markdown: Mapping $r_{ij}$ to a table index and evaluating a 4-term cubic polynomial takes only a memory fetch
-      plus a few multiply-adds regardless of how complex the underlying analytic or DFT-tabulated potential is; the primary
-      drawback is memory bandwidth/cache-miss overhead.
+    rationale_markdown: Mapping $r_{ij}$ to a table index and evaluating a 4-term cubic polynomial takes only a memory fetch plus a few multiply-adds regardless of how complex the underlying analytic or DFT-tabulated potential is; the primary drawback is memory bandwidth/cache-miss overhead.
   - id: sec_metals_and_eam
     type: markdown_section
     title: 3. Failure of Pair Potentials in Metals & The Embedded Atom Method (EAM / MEAM)
-    body_markdown: "In **metals**, valence electrons are delocalized across the crystal, forming a \"sea\" of conduction electrons\
-      \ around positively charged ion cores. Because of the **Pauli exclusion principle** and metallic screening, the strength\
-      \ of an individual metallic bond **depends strongly on the local coordination number $Z$** (the local electron density):\n\
-      - As coordination number $Z$ **increases**, electrons are crowded into higher kinetic-energy states, so **each individual\
-      \ bond becomes weaker**.\n- Conversely, when neighbors are removed (at a **free surface** or around a **vacancy**),\
-      \ the remaining bonds become **stronger and shorter**!\n- Tight-binding second-moment theory shows that metallic cohesive\
-      \ energy per atom scales approximately as the **square root of coordination number**:\n  $$E_{\\text{metal}}(Z) \\propto\
-      \ -\\sqrt{Z} \\qquad \\text{whereas a pair potential forces} \\qquad E_{\\text{pair}}(Z) \\propto -Z$$\n\n### The 4\
-      \ Classic Failures of Pair Potentials in Metals\nComparing experimental FCC metals ($\\text{Cu, Ag, Pt, Au}$) against\
-      \ rare-gas Argon ($\\text{Ar}$) and the Lennard-Jones ($\\text{LJ}$) pair potential (Slide 17 & 20 of `05.potentials.pdf`,\
-      \ after Ercolessi 1997):\n\n| Dimensionless Property | Cu | Ag | Pt | Au | Ar (Rare Gas) | LJ Pair Potential |\n| :---\
-      \ | :---: | :---: | :---: | :---: | :---: | :---: |\n| **$E_c / (k_B T_m)$** (Cohesive / Melting) | $30$ | $28$ | $33$\
-      \ | $33$ | $11$ | $13$ |\n| **$E_v / E_c$** (Vacancy Formation / Cohesive) | $0.33$ | $0.36$ | $0.26$ | $0.25$ | $0.95$\
-      \ | $1.0$ |\n| **$C_{12} / C_{44}$** (Cubic Shear Elastic Ratio) | $1.5$ | $1.9$ | $3.3$ | $3.7$ | $1.1$ | $1.0$ (Cauchy)\
-      \ |\n| **Surface Relaxation Direction** | **Inward** | **Inward** | **Inward** | **Inward** | Outward | **Outward**\
-      \ |\n\n1. **Cohesive-to-Melting Ratio ($E_c / k_B T_m \\approx 30$ vs. $13$):** In a metal, a huge cohesive energy comes\
-      \ from the uniform volume-dependent electron gas (which doesn't resist shear/melting), whereas pair potentials tie all\
-      \ cohesion to pair bonds.\n2. **Vacancy Formation Energy ($E_v / E_c \\approx \\frac{1}{4}\\text{–}\\frac{1}{3}$ vs.\
-      \ $1$):** In an unrelaxed pair potential, removing one atom from bulk ($Z=12$) and placing it on the surface breaks\
-      \ $Z$ bonds and reforms $Z/2$ bonds, costing $E_v = E_c$. In a metal ($E \\propto -\\sqrt{Z}$), the 12 neighbors around\
-      \ the vacancy drop from $Z=12$ to $Z=11$, **strengthening their remaining bonds** and lowering $E_v$ to:\n   $$\\frac{E_v}{E_c}\
-      \ \\approx 12\\left(1 - \\sqrt{\\frac{11}{12}}\\right) \\approx 0.51 \\quad (\\text{and } \\approx 0.25\\text{–}0.35\
-      \ \\text{ after lattice relaxation!})$$\n3. **Elastic Constants & The Cauchy Relation ($C_{12} = C_{44}$):** For *any*\
-      \ central two-body pair potential in a cubic crystal where every atom sits at a center of inversion symmetry (at $P=0$),\
-      \ elasticity theory proves the **Cauchy relation $C_{12} = C_{44}$** ($C_{12}/C_{44} = 1$). Real cubic metals violate\
-      \ this strongly ($C_{12}/C_{44} \\approx 1.5\\text{–}3.7$) because the electron gas resists volume change ($C_{12}$)\
-      \ much more than volume-conserving shear ($C_{44}$).\n4. **Inward Surface Relaxation:** At a free metal surface, under-coordinated\
-      \ surface atoms ($Z_{\\text{surf}} < 12$) form stronger, shorter bonds with the subsurface layer, causing the top interlayer\
-      \ spacing to **contract inward**. Pair potentials Have constant bond strength and lose attractive 2nd-neighbor forces\
-      \ across the surface, falsely predicting **outward expansion**.\n\n### Taxonomy: Overcoming Deficiencies of Pair Potentials\
-      \ (Slide 18)\n- **Pair potentials $\\to$ Pair functionals** (via *Non-linearity*): e.g., **EAM** / Finnis-Sinclair /\
-      \ Glue models.\n- **Pair potentials $\\to$ Cluster potentials** (via *Many-body explicit angles*): e.g., **Stillinger-Weber**.\n\
-      - **Cluster potentials + Non-linearity $\\to$ Cluster functionals**: e.g., **MEAM**, Tersoff, Brenner.\n\n### The Embedded\
-      \ Atom Method (EAM — Daw & Baskes, 1984)\nEAM models the total energy as the sum of a non-linear **embedding energy**\
-      \ $F_i(\\rho_i)$ required to place atom $i$ into the local host electron density $\\rho_i$, plus a short-range repulsive\
-      \ core-core **pair potential** $\\phi_{ij}(R_{ij})$:\n$$E_{\\text{tot}} = \\sum_i F_i(\\rho_i) + \\frac{1}{2}\\sum_{i\
-      \ \\ne j}\\phi_{ij}(R_{ij}), \\qquad \\rho_i = \\sum_{j \\ne i} f_j(R_{ij})$$\n- **Three 1D functions to optimize**\
-      \ for a single element: pair repulsion $\\phi(r)$, atomic electron density tail $f(r)$, and embedding function $F(\\\
-      rho)$.\n- Because $F(\\rho)$ is concave upward ($F'(\\rho) < 0, F''(\\rho) > 0$, roughly $F(\\rho) \\propto -\\sqrt{\\\
-      rho}$), the incremental energy gained per additional neighbor diminishes with increasing $\\rho$.\n- **Computational\
-      \ cost:** Even though EAM is a many-body potential, it requires only **two radial passes** over the standard neighbor\
-      \ list (Pass 1: accumulate $\\rho_i = \\sum_j f(R_{ij})$ and compute $F'(\\rho_i)$; Pass 2: compute forces), so it remains\
-      \ **$\\mathcal{O}(N)$ and only $\\sim 2\\times$ the cost of a simple pair potential**!\n- **Limitations of standard\
-      \ EAM & Modified EAM (MEAM):** Standard EAM uses spherically symmetric density tails $f(R_{ij})$, making it ideal for\
-      \ late FCC transition metals ($\\text{Cu, Ag, Au, Ni, Pd, Pt}$, Slide 22), but inadequate for covalent semiconductors\
-      \ ($\\text{Si}$), early BCC/HCP transition metals ($\\text{Ti, Mo, W, Cr}$), or metals like $\\text{Al}$ with strong\
-      \ directional charge distortion under shear. **Modified EAM (MEAM, Baskes)** augments the background density with 3-body\
-      \ angular terms:\n  $$\\rho_i = \\sum_{j,k} f(R_{ij})\\,f(R_{ik})\\,g(\\cos\\theta_{ijk})$$\n"
+    body_markdown: "In **metals**, valence electrons are delocalized across the crystal, forming a \"sea\" of conduction electrons around positively charged ion cores. Because of the **Pauli exclusion principle** and metallic screening, the strength of an individual metallic bond **depends strongly on the local coordination number $Z$** (the local electron density):\n- As coordination number $Z$ **increases**, electrons are crowded into higher kinetic-energy states, so **each individual bond becomes weaker**.\n- Conversely, when neighbors are removed (at a **free surface** or around a **vacancy**), the remaining bonds become **stronger and shorter**!\n- Tight-binding second-moment theory shows that metallic cohesive energy per atom scales approximately as the **square root of coordination number**:\n  $$E_{\\text{metal}}(Z) \\propto -\\sqrt{Z} \\qquad \\text{whereas a pair potential forces} \\qquad E_{\\text{pair}}(Z) \\propto -Z$$\n\n### The 4 Classic Failures of Pair Potentials in Metals\n\
+      Comparing experimental FCC metals ($\\text{Cu, Ag, Pt, Au}$) against rare-gas Argon ($\\text{Ar}$) and the Lennard-Jones ($\\text{LJ}$) pair potential (Slide 17 & 20 of `05.potentials.pdf`, after Ercolessi 1997):\n\n| Dimensionless Property | Cu | Ag | Pt | Au | Ar (Rare Gas) | LJ Pair Potential |\n| :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n| **$E_c / (k_B T_m)$** (Cohesive / Melting) | $30$ | $28$ | $33$ | $33$ | $11$ | $13$ |\n| **$E_v / E_c$** (Vacancy Formation / Cohesive) | $0.33$ | $0.36$ | $0.26$ | $0.25$ | $0.95$ | $1.0$ |\n| **$C_{12} / C_{44}$** (Cubic Shear Elastic Ratio) | $1.5$ | $1.9$ | $3.3$ | $3.7$ | $1.1$ | $1.0$ (Cauchy) |\n| **Surface Relaxation Direction** | **Inward** | **Inward** | **Inward** | **Inward** | Outward | **Outward** |\n\n1. **Cohesive-to-Melting Ratio ($E_c / k_B T_m \\approx 30$ vs. $13$):** In a metal, a huge cohesive energy comes from the uniform volume-dependent electron gas (which doesn't resist shear/melting), whereas pair potentials\
+      \ tie all cohesion to pair bonds.\n2. **Vacancy Formation Energy ($E_v / E_c \\approx \\frac{1}{4}\\text{–}\\frac{1}{3}$ vs. $1$):** In an unrelaxed pair potential, removing one atom from bulk ($Z=12$) and placing it on the surface breaks $Z$ bonds and reforms $Z/2$ bonds, costing $E_v = E_c$. In a metal ($E \\propto -\\sqrt{Z}$), the 12 neighbors around the vacancy drop from $Z=12$ to $Z=11$, **strengthening their remaining bonds** and lowering $E_v$ to:\n   $$\\frac{E_v}{E_c} \\approx 12\\left(1 - \\sqrt{\\frac{11}{12}}\\right) \\approx 0.51 \\quad (\\text{and } \\approx 0.25\\text{–}0.35 \\text{ after lattice relaxation!})$$\n3. **Elastic Constants & The Cauchy Relation ($C_{12} = C_{44}$):** For *any* central two-body pair potential in a cubic crystal where every atom sits at a center of inversion symmetry (at $P=0$), elasticity theory proves the **Cauchy relation $C_{12} = C_{44}$** ($C_{12}/C_{44} = 1$). Real cubic metals violate this strongly ($C_{12}/C_{44} \\approx 1.5\\text{–}3.7$)\
+      \ because the electron gas resists volume change ($C_{12}$) much more than volume-conserving shear ($C_{44}$).\n4. **Inward Surface Relaxation:** At a free metal surface, under-coordinated surface atoms ($Z_{\\text{surf}} < 12$) form stronger, shorter bonds with the subsurface layer, causing the top interlayer spacing to **contract inward**. Pair potentials Have constant bond strength and lose attractive 2nd-neighbor forces across the surface, falsely predicting **outward expansion**.\n\n### Taxonomy: Overcoming Deficiencies of Pair Potentials (Slide 18)\n- **Pair potentials $\\to$ Pair functionals** (via *Non-linearity*): e.g., **EAM** / Finnis-Sinclair / Glue models.\n- **Pair potentials $\\to$ Cluster potentials** (via *Many-body explicit angles*): e.g., **Stillinger-Weber**.\n- **Cluster potentials + Non-linearity $\\to$ Cluster functionals**: e.g., **MEAM**, Tersoff, Brenner.\n\n### The Embedded Atom Method (EAM — Daw & Baskes, 1984)\nEAM models the total energy as the sum of\
+      \ a non-linear **embedding energy** $F_i(\\rho_i)$ required to place atom $i$ into the local host electron density $\\rho_i$, plus a short-range repulsive core-core **pair potential** $\\phi_{ij}(R_{ij})$:\n$$E_{\\text{tot}} = \\sum_i F_i(\\rho_i) + \\frac{1}{2}\\sum_{i \\ne j}\\phi_{ij}(R_{ij}), \\qquad \\rho_i = \\sum_{j \\ne i} f_j(R_{ij})$$\n- **Three 1D functions to optimize** for a single element: pair repulsion $\\phi(r)$, atomic electron density tail $f(r)$, and embedding function $F(\\rho)$.\n- Because $F(\\rho)$ is concave upward ($F'(\\rho) < 0, F''(\\rho) > 0$, roughly $F(\\rho) \\propto -\\sqrt{\\rho}$), the incremental energy gained per additional neighbor diminishes with increasing $\\rho$.\n- **Computational cost:** Even though EAM is a many-body potential, it requires only **two radial passes** over the standard neighbor list (Pass 1: accumulate $\\rho_i = \\sum_j f(R_{ij})$ and compute $F'(\\rho_i)$; Pass 2: compute forces), so it remains **$\\mathcal{O}(N)$ and only\
+      \ $\\sim 2\\times$ the cost of a simple pair potential**!\n- **Limitations of standard EAM & Modified EAM (MEAM):** Standard EAM uses spherically symmetric density tails $f(R_{ij})$, making it ideal for late FCC transition metals ($\\text{Cu, Ag, Au, Ni, Pd, Pt}$, Slide 22), but inadequate for covalent semiconductors ($\\text{Si}$), early BCC/HCP transition metals ($\\text{Ti, Mo, W, Cr}$), or metals like $\\text{Al}$ with strong directional charge distortion under shear. **Modified EAM (MEAM, Baskes)** augments the background density with 3-body angular terms:\n  $$\\rho_i = \\sum_{j,k} f(R_{ij})\\,f(R_{ik})\\,g(\\cos\\theta_{ijk})$$\n"
   - id: concept_eam_metals
     type: concept_cell
     title: 'Interactive Explorer: Pair Potentials ($-Z$) vs. EAM ($-Z^p$) in Metals'
-    description_markdown: Adjust the EAM embedding non-linearity exponent $p$ ($E(Z) \propto -Z^p$, where $p = 0.5$ corresponds
-      to $F(\rho) \propto -\sqrt{\rho}$ and $p = 1.0$ recovers a linear pair potential) and toggle between Cohesive Energy
-      per Atom and Relative Bond Strength.
+    description_markdown: Adjust the EAM embedding non-linearity exponent $p$ ($E(Z) \propto -Z^p$, where $p = 0.5$ corresponds to $F(\rho) \propto -\sqrt{\rho}$ and $p = 1.0$ recovers a linear pair potential) and toggle between Cohesive Energy per Atom and Relative Bond Strength.
     render_function: render_eam_vs_pair_metals
     layout: figure_left
     controls:
@@ -646,9 +481,7 @@ worksheet:
         - label: Strength per Individual Bond vs Z
           value: bond_strength
         default: cohesive
-    takeaway_markdown: '**Key Takeaway:** When $p = 0.5$ ($E \propto -\sqrt{Z}$), breaking a bond strengthens the remaining
-      bonds ($\propto Z^{-1/2}$). This single physical feature explains both why $E_v / E_c \ll 1$ and why under-coordinated
-      metal surfaces ($Z=8$) contract inward!'
+    takeaway_markdown: '**Key Takeaway:** When $p = 0.5$ ($E \propto -\sqrt{Z}$), breaking a bond strengthens the remaining bonds ($\propto Z^{-1/2}$). This single physical feature explains both why $E_v / E_c \ll 1$ and why under-coordinated metal surfaces ($Z=8$) contract inward!'
   - id: q19_four_failures_table_matching
     type: problem
     question_type: multi_select
@@ -656,29 +489,28 @@ worksheet:
     taught_by:
     - sec_metals_and_eam
     - concept_eam_metals
-    prompt_markdown: 'Based on the Ercolessi comparison table (Slide 17 & 20 of `05.potentials.pdf`), select **all** statements
-      that accurately contrast real FCC metals ($\text{Cu, Ag, Pt, Au}$) with Lennard-Jones ($\text{LJ}$) pair potentials:
+    prompt_markdown: 'Based on the Ercolessi comparison table (Slide 17 & 20 of `05.potentials.pdf`), select **all** statements that accurately contrast real FCC metals ($\text{Cu, Ag, Pt, Au}$) with Lennard-Jones ($\text{LJ}$) pair potentials:
 
       '
     hint_markdown: 'Check all four rows: $E_c/T_m$, $E_v/E_c$, $C_{12}/C_{44}$, and surface relaxation.'
     options:
     - id: a
-      text: In real FCC metals, $E_c / T_m \approx 28\text{–}33$, whereas a Lennard-Jones pair potential gives $E_c / T_m
-        \approx 13$ (similar to Argon at $11$)
+      text: In real FCC metals, $E_c / T_m \approx 28\text{–}33$, whereas a Lennard-Jones pair potential gives $E_c / T_m \approx 13$ (similar to Argon at $11$)
+      text_markdown: In real FCC metals, $E_c / T_m \approx 28\text{–}33$, whereas a Lennard-Jones pair potential gives $E_c / T_m \approx 13$ (similar to Argon at $11$)
     - id: b
-      text: In real FCC metals, the vacancy formation energy is only $E_v / E_c \approx 0.25\text{–}0.36$, whereas an unrelaxed
-        pair potential predicts $E_v / E_c = 1.0$
+      text: In real FCC metals, the vacancy formation energy is only $E_v / E_c \approx 0.25\text{–}0.36$, whereas an unrelaxed pair potential predicts $E_v / E_c = 1.0$
+      text_markdown: In real FCC metals, the vacancy formation energy is only $E_v / E_c \approx 0.25\text{–}0.36$, whereas an unrelaxed pair potential predicts $E_v / E_c = 1.0$
     - id: c
-      text: In real FCC metals, $C_{12} / C_{44} \approx 1.5\text{–}3.7$, whereas any central pair potential in a cubic lattice
-        forces the Cauchy relation $C_{12} / C_{44} = 1.0$
+      text: In real FCC metals, $C_{12} / C_{44} \approx 1.5\text{–}3.7$, whereas any central pair potential in a cubic lattice forces the Cauchy relation $C_{12} / C_{44} = 1.0$
+      text_markdown: In real FCC metals, $C_{12} / C_{44} \approx 1.5\text{–}3.7$, whereas any central pair potential in a cubic lattice forces the Cauchy relation $C_{12} / C_{44} = 1.0$
     - id: d
       text: At a free surface, real metals expand outward whereas a Lennard-Jones pair potential predicts inward contraction
+      text_markdown: At a free surface, real metals expand outward whereas a Lennard-Jones pair potential predicts inward contraction
     correct:
     - a
     - b
     - c
-    rationale_markdown: 'Statements (A), (B), and (C) match Slide 17 directly. Statement (D) is reversed: Slide 20 emphasizes
-      that **at a surface, a LJ pair potential predicts expansion whereas real metals contract inward**.'
+    rationale_markdown: 'Statements (A), (B), and (C) match Slide 17 directly. Statement (D) is reversed: Slide 20 emphasizes that **at a surface, a LJ pair potential predicts expansion whereas real metals contract inward**.'
   - id: q20_pair_potential_vacancy_derivation
     type: problem
     question_type: numeric
@@ -686,17 +518,12 @@ worksheet:
     taught_by:
     - sec_metals_and_eam
     - concept_eam_metals
-    prompt_markdown: In a crystal with nearest-neighbor coordination number $Z = 12$ modeled by a nearest-neighbor pair potential
-      of bond energy $-\epsilon_b$, calculate the unrelaxed vacancy formation energy ratio $E_v / E_c$, where $E_c$ is the
-      bulk cohesive energy per atom and $E_v$ is the net energy cost of removing an atom from the bulk to a surface kink site.
-    hint_markdown: Account for the bulk bonds broken to extract the atom versus the bonds reformed when re-adsorbing it at
-      a kink site, and compare this net energy to the cohesive energy per atom.
+    prompt_markdown: In a crystal with nearest-neighbor coordination number $Z = 12$ modeled by a nearest-neighbor pair potential of bond energy $-\epsilon_b$, calculate the unrelaxed vacancy formation energy ratio $E_v / E_c$, where $E_c$ is the bulk cohesive energy per atom and $E_v$ is the net energy cost of removing an atom from the bulk to a surface kink site.
+    hint_markdown: Account for the bulk bonds broken to extract the atom versus the bonds reformed when re-adsorbing it at a kink site, and compare this net energy to the cohesive energy per atom.
     correct:
       value: 1.0
       tolerance: 0.02
-    rationale_markdown: Breaking $Z$ bonds costs $Z\epsilon_b$, and placing the atom back into a bulk-equivalent surface kink
-      site recovers $\frac{1}{2}Z\epsilon_b$. Thus $E_v = \frac{1}{2}Z\epsilon_b = E_c$, giving $E_v / E_c = 1.0$ for any
-      unrelaxed pair potential.
+    rationale_markdown: Breaking $Z$ bonds costs $Z\epsilon_b$, and placing the atom back into a bulk-equivalent surface kink site recovers $\frac{1}{2}Z\epsilon_b$. Thus $E_v = \frac{1}{2}Z\epsilon_b = E_c$, giving $E_v / E_c = 1.0$ for any unrelaxed pair potential.
   - id: q21_sqrt_z_vacancy_derivation
     type: problem
     question_type: numeric
@@ -704,44 +531,37 @@ worksheet:
     taught_by:
     - sec_metals_and_eam
     - concept_eam_metals
-    prompt_markdown: Now consider the metallic square-root coordination model where an atom with local coordination $Z$ has
-      binding energy $E(Z) = -E_c \sqrt{Z / Z_0}$, with bulk FCC coordination $Z_0 = 12$. When one bulk atom is removed to
-      a kink site with full bulk coordination, each of its 12 former nearest neighbors drops from $Z = 12$ to $Z = 11$. Calculate
-      the resulting unrelaxed vacancy formation energy ratio $E_v / E_c$ to two decimal places (e.g., `0.51`).
-    hint_markdown: Sum the change in binding energy across all undercoordinated neighbor atoms whose coordination was reduced,
-      and express the total vacancy energy in units of $E_c$.
+    prompt_markdown: Now consider the metallic square-root coordination model where an atom with local coordination $Z$ has binding energy $E(Z) = -E_c \sqrt{Z / Z_0}$, with bulk FCC coordination $Z_0 = 12$. When one bulk atom is removed to a kink site with full bulk coordination, each of its 12 former nearest neighbors drops from $Z = 12$ to $Z = 11$. Calculate the resulting unrelaxed vacancy formation energy ratio $E_v / E_c$ to two decimal places (e.g., `0.51`).
+    hint_markdown: Sum the change in binding energy across all undercoordinated neighbor atoms whose coordination was reduced, and express the total vacancy energy in units of $E_c$.
     correct:
       value: 0.51
       tolerance: 0.02
-    rationale_markdown: Each of the 12 neighbors surrounding the vacancy loses one partner ($12 \to 11$), changing its energy
-      by $\Delta E = -E_c\sqrt{11/12} - (-E_c) = E_c(1 - \sqrt{11/12})$. Summing over all 12 neighbors gives $E_v / E_c =
-      12(1 - \sqrt{11/12}) = 12(1 - 0.957427) = 0.511 \approx 0.51$ (half the pair-potential value even before atomic relaxation!).
+    rationale_markdown: Each of the 12 neighbors surrounding the vacancy loses one partner ($12 \to 11$), changing its energy by $\Delta E = -E_c\sqrt{11/12} - (-E_c) = E_c(1 - \sqrt{11/12})$. Summing over all 12 neighbors gives $E_v / E_c = 12(1 - \sqrt{11/12}) = 12(1 - 0.957427) = 0.511 \approx 0.51$ (half the pair-potential value even before atomic relaxation!).
   - id: q22_cauchy_relation_metals
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_metals_and_eam
-    prompt_markdown: 'In a cubic crystal at zero external pressure where every atom occupies a site with inversion symmetry,
-      any central two-body pair potential $V = \sum_{i<j}\phi(r_{ij})$ mathematically enforces which relationship between
-      the elastic stiffness constants $C_{12}$ and $C_{44}$?
+    prompt_markdown: 'In a cubic crystal at zero external pressure where every atom occupies a site with inversion symmetry, any central two-body pair potential $V = \sum_{i<j}\phi(r_{ij})$ mathematically enforces which relationship between the elastic stiffness constants $C_{12}$ and $C_{44}$?
 
       '
     hint_markdown: Check Slide 17 of `05.potentials.pdf`.
     options:
     - id: a
       text: The Cauchy relation $C_{12} = C_{44}$ ($C_{12} / C_{44} = 1$)
+      text_markdown: The Cauchy relation $C_{12} = C_{44}$ ($C_{12} / C_{44} = 1$)
     - id: b
       text: $C_{12} = 0$
+      text_markdown: $C_{12} = 0$
     - id: c
       text: $C_{12} = 3 C_{44}$
+      text_markdown: $C_{12} = 3 C_{44}$
     - id: d
       text: $C_{12} = -C_{44}$
+      text_markdown: $C_{12} = -C_{44}$
     correct: a
-    rationale_markdown: For any central pair potential at zero stress in a centrosymmetric cubic lattice, the fourth-rank
-      elasticity tensor is symmetric under all index permutations, forcing the Cauchy relation $C_{12} = C_{44}$. In EAM,
-      the volume-dependent embedding term $F(\rho)$ adds a positive contribution $F''(\rho)$ selectively to $C_{11}$ and $C_{12}$
-      without affecting pure shear $C_{44}$, yielding $C_{12} > C_{44}$ in agreement with real metals.
+    rationale_markdown: For any central pair potential at zero stress in a centrosymmetric cubic lattice, the fourth-rank elasticity tensor is symmetric under all index permutations, forcing the Cauchy relation $C_{12} = C_{44}$. In EAM, the volume-dependent embedding term $F(\rho)$ adds a positive contribution $F''(\rho)$ selectively to $C_{11}$ and $C_{12}$ without affecting pure shear $C_{44}$, yielding $C_{12} > C_{44}$ in agreement with real metals.
   - id: q23_metal_surface_inward_relaxation
     type: problem
     question_type: single_select
@@ -749,35 +569,32 @@ worksheet:
     taught_by:
     - sec_metals_and_eam
     - concept_eam_metals
-    prompt_markdown: 'Why does the outermost atomic layer of a clean metal surface relax **inward** (contract toward the second
-      layer), whereas a Lennard-Jones pair potential predicts **outward** relaxation?
+    prompt_markdown: 'Why does the outermost atomic layer of a clean metal surface relax **inward** (contract toward the second layer), whereas a Lennard-Jones pair potential predicts **outward** relaxation?
 
       '
-    hint_markdown: What happens to the electron density $\rho_i$ and the strength of the remaining back-bonds when a surface
-      atom loses its top neighbors?
+    hint_markdown: What happens to the electron density $\rho_i$ and the strength of the remaining back-bonds when a surface atom loses its top neighbors?
     options:
     - id: a
-      text: In a metal, losing neighbors at the surface lowers the local electron density $\rho_i$; because $F(\rho)$ is concave
-        ($E \propto -\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface
-        layer inward
+      text: In a metal, losing neighbors at the surface lowers the local electron density $\rho_i$; because $F(\rho)$ is concave ($E \propto -\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface layer inward
+      text_markdown: In a metal, losing neighbors at the surface lowers the local electron density $\rho_i$; because $F(\rho)$ is concave ($E \propto -\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface layer inward
     - id: b
       text: In a metal, atmospheric pressure pushes the surface atoms inward
+      text_markdown: In a metal, atmospheric pressure pushes the surface atoms inward
     - id: c
       text: In a pair potential, losing second-neighbor attractions across the surface pulls the top layer inward
+      text_markdown: In a pair potential, losing second-neighbor attractions across the surface pulls the top layer inward
     - id: d
       text: Surface atoms in metals have higher coordination number ($Z = 18$) than bulk atoms ($Z = 12$)
+      text_markdown: Surface atoms in metals have higher coordination number ($Z = 18$) than bulk atoms ($Z = 12$)
     correct: a
-    rationale_markdown: At a free surface, atoms have fewer neighbors ($Z_{\text{surf}} < Z_{\text{bulk}}$) and thus lower
-      local background electron density $\rho_i$. To approach the optimal embedding density (equivalently, because fewer shared
-      electrons suffer less Pauli repulsion per bond), the back-bonds to the second layer strengthen and contract inward.
+    rationale_markdown: At a free surface, atoms have fewer neighbors ($Z_{\text{surf}} < Z_{\text{bulk}}$) and thus lower local background electron density $\rho_i$. To approach the optimal embedding density (equivalently, because fewer shared electrons suffer less Pauli repulsion per bond), the back-bonds to the second layer strengthen and contract inward.
   - id: q24_eam_functional_form
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_metals_and_eam
-    prompt_markdown: 'In the Embedded Atom Method (Daw & Baskes, 1984), the total potential energy of a monatomic metal is
-      written as:
+    prompt_markdown: 'In the Embedded Atom Method (Daw & Baskes, 1984), the total potential energy of a monatomic metal is written as:
 
       $$E_{\text{tot}} = \sum_i F(\rho_i) + \frac{1}{2}\sum_{i \ne j}\phi(R_{ij}), \qquad \rho_i = \sum_{j \ne i} f(R_{ij})$$
 
@@ -787,22 +604,19 @@ worksheet:
     hint_markdown: Review Slides 20 and 21 of `05.potentials.pdf`.
     options:
     - id: a
-      text: $f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\rho_i)$
-        is the non-linear embedding energy to place atom $i$ into host electron density $\rho_i$; and $\phi(R_{ij})$ is a
-        short-range electrostatic core-core pair repulsion
+      text: $f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\rho_i)$ is the non-linear embedding energy to place atom $i$ into host electron density $\rho_i$; and $\phi(R_{ij})$ is a short-range electrostatic core-core pair repulsion
+      text_markdown: $f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\rho_i)$ is the non-linear embedding energy to place atom $i$ into host electron density $\rho_i$; and $\phi(R_{ij})$ is a short-range electrostatic core-core pair repulsion
     - id: b
-      text: $f(R_{ij})$ is the pair force; $F(\rho_i)$ is the nuclear kinetic energy; and $\phi(R_{ij})$ is the long-range
-        dipole-dipole dispersion
+      text: $f(R_{ij})$ is the pair force; $F(\rho_i)$ is the nuclear kinetic energy; and $\phi(R_{ij})$ is the long-range dipole-dipole dispersion
+      text_markdown: $f(R_{ij})$ is the pair force; $F(\rho_i)$ is the nuclear kinetic energy; and $\phi(R_{ij})$ is the long-range dipole-dipole dispersion
     - id: c
-      text: $f(R_{ij})$ is a 3-body bond angle cosine; $F(\rho_i)$ is a linear function $F(\rho) = c\rho$; and $\phi(R_{ij})
-        = 0$
+      text: $f(R_{ij})$ is a 3-body bond angle cosine; $F(\rho_i)$ is a linear function $F(\rho) = c\rho$; and $\phi(R_{ij}) = 0$
+      text_markdown: $f(R_{ij})$ is a 3-body bond angle cosine; $F(\rho_i)$ is a linear function $F(\rho) = c\rho$; and $\phi(R_{ij}) = 0$
     - id: d
-      text: $f(R_{ij})$ is the Fermi-Dirac distribution; $F(\rho_i)$ is the Helmholtz free energy; and $\phi(R_{ij})$ is the
-        Madelung constant
+      text: $f(R_{ij})$ is the Fermi-Dirac distribution; $F(\rho_i)$ is the Helmholtz free energy; and $\phi(R_{ij})$ is the Madelung constant
+      text_markdown: $f(R_{ij})$ is the Fermi-Dirac distribution; $F(\rho_i)$ is the Helmholtz free energy; and $\phi(R_{ij})$ is the Madelung constant
     correct: a
-    rationale_markdown: In EAM, $\rho_i = \sum_{j \ne i} f(R_{ij})$ superposes the atomic electron density tails of surrounding
-      atoms at site $i$, $F(\rho_i)$ is the many-body cohesive embedding energy in that electron gas, and $\phi(R_{ij})$ represents
-      short-range core-core electrostatic repulsion.
+    rationale_markdown: In EAM, $\rho_i = \sum_{j \ne i} f(R_{ij})$ superposes the atomic electron density tails of surrounding atoms at site $i$, $F(\rho_i)$ is the many-body cohesive embedding energy in that electron gas, and $\phi(R_{ij})$ represents short-range core-core electrostatic repulsion.
   - id: q25_linear_embedding_reduces_to_pair
     type: problem
     question_type: single_select
@@ -810,170 +624,113 @@ worksheet:
     taught_by:
     - sec_metals_and_eam
     - concept_eam_metals
-    prompt_markdown: 'Suppose someone chooses a **linear** embedding function $F(\rho_i) = c \rho_i$ (where $c$ is a constant)
-      in the EAM energy expression $E_{\text{tot}} = \sum_i F\!\left(\sum_{j\ne i} f(R_{ij})\right) + \frac{1}{2}\sum_{i\ne
-      j}\phi(R_{ij})$. What happens to the EAM model in this case?
+    prompt_markdown: 'Suppose someone chooses a **linear** embedding function $F(\rho_i) = c \rho_i$ (where $c$ is a constant) in the EAM energy expression $E_{\text{tot}} = \sum_i F\!\left(\sum_{j\ne i} f(R_{ij})\right) + \frac{1}{2}\sum_{i\ne j}\phi(R_{ij})$. What happens to the EAM model in this case?
 
       '
     hint_markdown: Substitute $F(\rho_i) = c \sum_{j \ne i} f(R_{ij})$ into $\sum_i F(\rho_i)$ and combine with the pair sum.
     options:
     - id: a
-      text: It collapses mathematically into an ordinary two-body pair potential $\frac{1}{2}\sum_{i\ne j} \phi_{\text{eff}}(R_{ij})$
-        with $\phi_{\text{eff}}(r) = \phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and
-        $E_v = E_c$ again!)
+      text: It collapses mathematically into an ordinary two-body pair potential $\frac{1}{2}\sum_{i\ne j} \phi_{\text{eff}}(R_{ij})$ with $\phi_{\text{eff}}(r) = \phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and $E_v = E_c$ again!)
+      text_markdown: It collapses mathematically into an ordinary two-body pair potential $\frac{1}{2}\sum_{i\ne j} \phi_{\text{eff}}(R_{ij})$ with $\phi_{\text{eff}}(r) = \phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and $E_v = E_c$ again!)
     - id: b
       text: It becomes a 4-body dihedral potential
+      text_markdown: It becomes a 4-body dihedral potential
     - id: c
       text: It predicts $E(Z) \propto -\sqrt{Z}$
+      text_markdown: It predicts $E(Z) \propto -\sqrt{Z}$
     - id: d
       text: It violates translational invariance
+      text_markdown: It violates translational invariance
     correct: a
-    rationale_markdown: If $F(\rho_i) = c\rho_i$, then $\sum_i F(\rho_i) = \sum_i \sum_{j\ne i} c f(R_{ij}) = \frac{1}{2}\sum_{i\ne
-      j} [2c f(R_{ij}) + \phi(R_{ij})]$, which is purely a sum of two-body pair functions! The **non-linearity** of $F(\rho)$
-      ($F''(\rho) \ne 0$) is essential for EAM's many-body physics.
+    rationale_markdown: If $F(\rho_i) = c\rho_i$, then $\sum_i F(\rho_i) = \sum_i \sum_{j\ne i} c f(R_{ij}) = \frac{1}{2}\sum_{i\ne j} [2c f(R_{ij}) + \phi(R_{ij})]$, which is purely a sum of two-body pair functions! The **non-linearity** of $F(\rho)$ ($F''(\rho) \ne 0$) is essential for EAM's many-body physics.
   - id: q26_potential_taxonomy_classification
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_metals_and_eam
-    prompt_markdown: 'According to the 4-box taxonomy on Slides 18 & 24 of `05.potentials.pdf` (*Pair potentials*, *Pair functionals*,
-      *Cluster potentials*, *Cluster functionals*), how are **EAM**, **Stillinger-Weber (SW)**, and **Modified EAM (MEAM)**
-      classified?
+    prompt_markdown: 'According to the 4-box taxonomy on Slides 18 & 24 of `05.potentials.pdf` (*Pair potentials*, *Pair functionals*, *Cluster potentials*, *Cluster functionals*), how are **EAM**, **Stillinger-Weber (SW)**, and **Modified EAM (MEAM)** classified?
 
       '
-    hint_markdown: Adding non-linearity $F(\cdot)$ makes a 'functional'; adding explicit 3-body/many-body angles makes a 'cluster'
-      model.
+    hint_markdown: Adding non-linearity $F(\cdot)$ makes a 'functional'; adding explicit 3-body/many-body angles makes a 'cluster' model.
     options:
     - id: a
       text: EAM is a Pair Functional; Stillinger-Weber is a Cluster Potential; MEAM is a Cluster Functional
+      text_markdown: EAM is a Pair Functional; Stillinger-Weber is a Cluster Potential; MEAM is a Cluster Functional
     - id: b
       text: EAM is a Cluster Potential; Stillinger-Weber is a Pair Functional; MEAM is a Pair Potential
+      text_markdown: EAM is a Cluster Potential; Stillinger-Weber is a Pair Functional; MEAM is a Pair Potential
     - id: c
       text: All three are Pair Potentials
+      text_markdown: All three are Pair Potentials
     - id: d
       text: EAM and Stillinger-Weber are Pair Potentials; only MEAM is a Pair Functional
+      text_markdown: EAM and Stillinger-Weber are Pair Potentials; only MEAM is a Pair Functional
     correct: a
-    rationale_markdown: EAM applies a non-linear function $F(\rho)$ to a sum of 2-body radial terms (**Pair Functional**).
-      Stillinger-Weber sums explicit 2-body and 3-body terms without an outer non-linear embedding function (**Cluster Potential**).
-      MEAM applies a non-linear embedding function $F(\rho)$ to a density $\rho$ that includes 3-body angular terms (**Cluster
-      Functional**).
+    rationale_markdown: EAM applies a non-linear function $F(\rho)$ to a sum of 2-body radial terms (**Pair Functional**). Stillinger-Weber sums explicit 2-body and 3-body terms without an outer non-linear embedding function (**Cluster Potential**). MEAM applies a non-linear embedding function $F(\rho)$ to a density $\rho$ that includes 3-body angular terms (**Cluster Functional**).
   - id: q27_eam_best_elements_and_meam
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_metals_and_eam
-    prompt_markdown: 'Why does standard EAM work exceptionally well for late FCC transition metals like $\text{Cu, Ag, Au,
-      Ni, Pd, Pt}$ (Slides 20–23), whereas **Modified EAM (MEAM)** with angular density terms $g(\cos\theta_{ijk})$ is needed
-      for $\text{Si}$, $\text{Ti}$, and BCC refractory metals ($\text{Mo, W}$)?
+    prompt_markdown: 'Why does standard EAM work exceptionally well for late FCC transition metals like $\text{Cu, Ag, Au, Ni, Pd, Pt}$ (Slides 20–23), whereas **Modified EAM (MEAM)** with angular density terms $g(\cos\theta_{ijk})$ is needed for $\text{Si}$, $\text{Ti}$, and BCC refractory metals ($\text{Mo, W}$)?
 
       '
-    hint_markdown: Consider the symmetry of the local charge density in filled/nearly-filled $d$-shells vs. partially filled
-      $d$ or $sp^3$ covalent orbitals.
+    hint_markdown: Consider the symmetry of the local charge density in filled/nearly-filled $d$-shells vs. partially filled $d$ or $sp^3$ covalent orbitals.
     options:
     - id: a
-      text: Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled
-        $d$-band FCC metals, whereas early transition metals, $\text{Al}$ under shear, and covalent $\text{Si}$ have strong
-        directional ($d$ or $sp^3$) bonding requiring angular forces
+      text: Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled $d$-band FCC metals, whereas early transition metals, $\text{Al}$ under shear, and covalent $\text{Si}$ have strong directional ($d$ or $sp^3$) bonding requiring angular forces
+      text_markdown: Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled $d$-band FCC metals, whereas early transition metals, $\text{Al}$ under shear, and covalent $\text{Si}$ have strong directional ($d$ or $sp^3$) bonding requiring angular forces
     - id: b
       text: Standard EAM can only be formulated for lattices with 4 atoms per unit cell
+      text_markdown: Standard EAM can only be formulated for lattices with 4 atoms per unit cell
     - id: c
       text: Cu and Au have no valence electrons, whereas Si is a free-electron metal
+      text_markdown: Cu and Au have no valence electrons, whereas Si is a free-electron metal
     - id: d
       text: MEAM removes the embedding function $F(\rho)$ and uses only Coulomb terms
+      text_markdown: MEAM removes the embedding function $F(\rho)$ and uses only Coulomb terms
     correct: a
-    rationale_markdown: Slide 20 & 25 explain that standard EAM assumes spherical electron density contributions $f(R_{ij})$,
-      working best for spherically symmetric late transition metals (Cu, Ag, Au, Ni, Pd, Pt). Partially filled $d$-bands (Ti,
-      Mo, W) and covalent $sp^3$ bonds (Si) exhibit strong bond-angle dependence captured by MEAM's $f(R_{ij})f(R_{ik})g(\cos\theta_{ijk})$
-      term.
+    rationale_markdown: Slide 20 & 25 explain that standard EAM assumes spherical electron density contributions $f(R_{ij})$, working best for spherically symmetric late transition metals (Cu, Ag, Au, Ni, Pd, Pt). Partially filled $d$-bands (Ti, Mo, W) and covalent $sp^3$ bonds (Si) exhibit strong bond-angle dependence captured by MEAM's $f(R_{ij})f(R_{ik})g(\cos\theta_{ijk})$ term.
   - id: q28_phonon_dispersion_validation
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_metals_and_eam
-    prompt_markdown: 'On Slide 23 of `05.potentials.pdf`, phonon dispersion curves $\omega(\mathbf{k})$ for FCC Nickel computed
-      with two EAM potentials (NRL vs. Voter & Chen) are compared against PW91 DFT and room-temperature neutron diffraction
-      data. What general principle of potential validation does this slide illustrate?
+    prompt_markdown: 'On Slide 23 of `05.potentials.pdf`, phonon dispersion curves $\omega(\mathbf{k})$ for FCC Nickel computed with two EAM potentials (NRL vs. Voter & Chen) are compared against PW91 DFT and room-temperature neutron diffraction data. What general principle of potential validation does this slide illustrate?
 
       '
     hint_markdown: Two EAM potentials with the same functional form can have very different accuracy away from $k \to 0$!
     options:
     - id: a
-      text: Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin
-        zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons),
-        showing why potentials must be tested against independent experiments
+      text: Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons), showing why potentials must be tested against independent experiments
+      text_markdown: Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons), showing why potentials must be tested against independent experiments
     - id: b
       text: All EAM potentials predict zero phonon frequencies at the zone boundary X and L points
+      text_markdown: All EAM potentials predict zero phonon frequencies at the zone boundary X and L points
     - id: c
       text: Neutron diffraction can only measure the cohesive energy at $T = 0\text{ K}$
+      text_markdown: Neutron diffraction can only measure the cohesive energy at $T = 0\text{ K}$
     - id: d
       text: DFT always underestimates phonon frequencies by a factor of 5
+      text_markdown: DFT always underestimates phonon frequencies by a factor of 5
     correct: a
-    rationale_markdown: Both NRL and Voter-Chen match long-wavelength elastic slopes ($\mathbf{k} \to \Gamma$), but Voter-Chen
-      significantly overestimates short-wavelength zone-boundary phonon frequencies, demonstrating the necessity of validating
-      potentials against independent dynamical data like phonon dispersions.
+    rationale_markdown: Both NRL and Voter-Chen match long-wavelength elastic slopes ($\mathbf{k} \to \Gamma$), but Voter-Chen significantly overestimates short-wavelength zone-boundary phonon frequencies, demonstrating the necessity of validating potentials against independent dynamical data like phonon dispersions.
   - id: sec_covalent_organic_water_ionic
     type: markdown_section
     title: 4. Covalent Semiconductors (Stillinger-Weber), Organic Force Fields, Water & Polarizable Ions
-    body_markdown: "### Silicon & The Stillinger-Weber (1985) 3-Body Potential\nCrystalline **Silicon** adopts the open **diamond\
-      \ cubic** structure with a low coordination number of **$Z = 4$**, stabilized by directional **$sp^3$ covalent bonds**\
-      \ pointing toward the corners of a regular tetrahedron ($\\theta_{\\text{tet}} = 109.47^\\circ$, where $\\cos\\theta_{\\\
-      text{tet}} = -\\frac{1}{3}$).\n- **Why any pair potential fails for Silicon:** A radially symmetric pair potential always\
-      \ favors maximizing the number of nearest neighbors inside the attractive well, causing diamond cubic ($Z=4$) to collapse\
-      \ spontaneously into a high-density close-packed metallic structure (FCC/HCP with $Z=12$ and $60^\\circ / 90^\\circ$\
-      \ bond angles)!\n- **Stillinger-Weber (SW) Potential (`Phys. Rev. B 31, 5262 (1985)`):** Combines a 2-body radial term\
-      \ $v_2(r_{ij})$ with a **3-body angular penalty** $v_3(\\mathbf{r}_i, \\mathbf{r}_j, \\mathbf{r}_k)$ summed over all\
-      \ bond triplets $(j, i, k)$ centered at atom $i$ (for $r_{ij}, r_{ik} < a$):\n  $$v_{\\text{two body}} = \\sum_{i<j}\\\
-      left(B r_{ij}^{-4} - A\\right)\\exp\\!\\left[\\frac{1}{r_{ij} - a}\\right]$$\n  $$v_{\\text{three body}} = \\sum_{i,j,k}\
-      \ \\lambda \\exp\\!\\left[\\frac{\\gamma}{r_{ij} - a} + \\frac{\\gamma}{r_{ik} - a}\\right]\\left(\\cos\\theta_{jik}\
-      \ + \\frac{1}{3}\\right)^2$$\n  - **Tetrahedral selectivity:** Because $\\left(\\cos\\theta_{jik} + \\frac{1}{3}\\right)^2\
-      \ \\ge 0$, the 3-body term is **zero if and only if $\\cos\\theta_{jik} = -1/3$ ($\\theta_{jik} = 109.47^\\circ$)**\
-      \ and strictly positive ($\\lambda > 0$) for any non-tetrahedral angle (such as $60^\\circ$ or $90^\\circ$ in close-packed\
-      \ crystals).\n  - **Smooth cutoff at $r = a$:** As $r \\to a^-$, $\\frac{1}{r - a} \\to -\\infty$, so $\\exp\\!\\left(\\\
-      frac{1}{r-a}\\right) \\to 0$ with **all derivatives vanishing smoothly** at $r = a$!\n  - **Empirical fit targets:**\
-      \ Stillinger and Weber parameterized SW to reproduce the **lattice constant, cohesive energy, melting point, and liquid\
-      \ structure** of Silicon (remarkably capturing the fact that Silicon melts into a higher-coordination $Z \\approx 6$\
-      \ metallic liquid that is denser than the solid!).\n\n### Hydrocarbon & Biomolecular Force Fields (AMBER, CHARMM, MM3)\n\
-      For organic molecules, polymers, and proteins, covalent bonds do not break or form during standard thermal simulations.\
-      \ Force fields therefore separate **intra-molecular (bonded)** and **inter-molecular (non-bonded)** interactions:\n\
-      $$V_{\\text{AMBER}} = \\underbrace{\\sum_{\\text{bonds}} k_r (r_{ij} - r_0)^2}_{\\text{2-body bond stretch}} + \\underbrace{\\\
-      sum_{\\text{angles}} k_a (\\theta_{ijk} - \\theta_0)^2}_{\\text{3-body angle bend}} + \\underbrace{\\sum_{\\text{dihedrals}}\
-      \ v_n [1 - \\cos(n\\phi)]}_{\\text{4-body dihedral torsion}} + \\underbrace{\\sum_{i<j}\\left[4\\varepsilon_{ij}\\!\\\
-      left(\\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^{12} - \\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^6\\right) + \\frac{q_i\
-      \ q_j}{r_{ij}}\\right]}_{\\text{Non-bonded LJ + Coulomb}}$$\n- **4-Body Dihedral Torsion (e.g., Ethane $\\text{H}_3\\\
-      text{C–CH}_3$):** Rotating around the central $\\text{C–C}$ bond changes the relative orientation of the two $\\text{CH}_3$\
-      \ groups between lower-energy **staggered** conformations and higher-energy **eclipsed** conformations ($V_{\\text{torsion}}\
-      \ = K\\cos(3\\phi)$), which requires a **4-body potential** defining the angle between two planes $(1\\text{–}2\\text{–}3)$\
-      \ and $(2\\text{–}3\\text{–}4)$.\n- **Fixed hybridization limitation (Ethane vs. Ethene):** Because standard harmonic\
-      \ bonds cannot break or change bond order, a single $\\text{C–C}$ bond in ethane ($sp^3$) and a double $\\text{C=C}$\
-      \ bond in ethene ($sp^2$) require **different predefined atom types and force constants** (or a reactive bond-order\
-      \ cluster functional like Tersoff/Brenner/ReaxFF).\n\n### Water Potentials (BNS, MCY, ST2, SPC, TIP3P, TIP4P, TIP5P)\n\
-      Because water's hydrogen-bonding network and anomalous density maximum govern biology and chemistry, specialized rigid\
-      \ point-charge models are widely used:\n- **TIP3P / SPC (3 sites):** Charges on $\\text{O}$ and two $\\text{H}$ atoms,\
-      \ plus a single LJ 12-6 center on Oxygen.\n- **TIP4P (4 sites):** Moves the negative Oxygen charge onto a massless 4th\
-      \ dummy site $\\text{M}$ along the $\\text{H–O–H}$ angle bisector to improve the quadrupole moment.\n- **TIP5P (Mahoney\
-      \ & Jorgensen, 2000 — Slide 29):** A **5-site rigid molecule** with:\n  - **Oxygen at the center** interacting with\
-      \ other Oxygens via **LJ 12-6** (no charge on the O center itself!).\n  - **4 point charges ($q = \\pm 0.24\\,e$)**:\
-      \ $+0.24\\,e$ on the two $\\text{H}$ atoms ($r_{\\text{OH}} = 0.9572\\text{ Å}$, $\\theta_{\\text{HOH}} = 104.52^\\\
-      circ$) and $-0.24\\,e$ on two tetrahedral lone-pair dummy sites ($r_{\\text{OL}} = 0.70\\text{ Å}$, $\\theta_{\\text{LOL}}\
-      \ = 109.47^\\circ$).\n\n### Charged & Polarizable Ionic Systems (Buckingham + Core-Shell Model)\n- **Buckingham + Coulomb\
-      \ Potential:**\n  $$V(r) = \\underbrace{A\\exp\\!\\left(-\\frac{r}{B}\\right) - \\frac{C}{r^6}}_{\\text{Buckingham}}\
-      \ + \\underbrace{\\frac{q_1 q_2}{r}}_{\\text{Coulomb}}$$\n- **The Core-Shell Model for Electronic Polarizability (Dick\
-      \ & Overhauser):**\n  In ionic oxides and halides (e.g., $\\text{MgO}, \\text{SiO}_2, \\text{BaTiO}_3$), strong local\
-      \ electric fields $\\mathbf{E}$ from neighboring ions induce dipole moments $\\mathbf{p} = \\alpha\\mathbf{E}$ on polarizable\
-      \ anions ($\\text{O}^{2-}, \\text{Cl}^-$). The **Shell Model** splits each ion into two coupled particles:\n  1. A massive\
-      \ positively charged **ion core** ($q_{\\text{core}}$), and\n  2. A light/massless negatively charged **valence electron\
-      \ shell** ($q_{\\text{shell}}$),\n  connected by a **harmonic spring** $V_{\\text{spring}}(d) = \\frac{1}{2}k_s d^2$,\
-      \ where the spring constant $k_s$ is inversely proportional to the ion's electronic polarizability ($\\alpha = q_{\\\
-      text{shell}}^2 / k_s$).\n"
+    body_markdown: "### Silicon & The Stillinger-Weber (1985) 3-Body Potential\nCrystalline **Silicon** adopts the open **diamond cubic** structure with a low coordination number of **$Z = 4$**, stabilized by directional **$sp^3$ covalent bonds** pointing toward the corners of a regular tetrahedron ($\\theta_{\\text{tet}} = 109.47^\\circ$, where $\\cos\\theta_{\\text{tet}} = -\\frac{1}{3}$).\n- **Why any pair potential fails for Silicon:** A radially symmetric pair potential always favors maximizing the number of nearest neighbors inside the attractive well, causing diamond cubic ($Z=4$) to collapse spontaneously into a high-density close-packed metallic structure (FCC/HCP with $Z=12$ and $60^\\circ / 90^\\circ$ bond angles)!\n- **Stillinger-Weber (SW) Potential (`Phys. Rev. B 31, 5262 (1985)`):** Combines a 2-body radial term $v_2(r_{ij})$ with a **3-body angular penalty** $v_3(\\mathbf{r}_i, \\mathbf{r}_j, \\mathbf{r}_k)$ summed over all bond triplets $(j, i, k)$ centered at atom $i$ (for\
+      \ $r_{ij}, r_{ik} < a$):\n  $$v_{\\text{two body}} = \\sum_{i<j}\\left(B r_{ij}^{-4} - A\\right)\\exp\\!\\left[\\frac{1}{r_{ij} - a}\\right]$$\n  $$v_{\\text{three body}} = \\sum_{i,j,k} \\lambda \\exp\\!\\left[\\frac{\\gamma}{r_{ij} - a} + \\frac{\\gamma}{r_{ik} - a}\\right]\\left(\\cos\\theta_{jik} + \\frac{1}{3}\\right)^2$$\n  - **Tetrahedral selectivity:** Because $\\left(\\cos\\theta_{jik} + \\frac{1}{3}\\right)^2 \\ge 0$, the 3-body term is **zero if and only if $\\cos\\theta_{jik} = -1/3$ ($\\theta_{jik} = 109.47^\\circ$)** and strictly positive ($\\lambda > 0$) for any non-tetrahedral angle (such as $60^\\circ$ or $90^\\circ$ in close-packed crystals).\n  - **Smooth cutoff at $r = a$:** As $r \\to a^-$, $\\frac{1}{r - a} \\to -\\infty$, so $\\exp\\!\\left(\\frac{1}{r-a}\\right) \\to 0$ with **all derivatives vanishing smoothly** at $r = a$!\n  - **Empirical fit targets:** Stillinger and Weber parameterized SW to reproduce the **lattice constant, cohesive energy, melting point,\
+      \ and liquid structure** of Silicon (remarkably capturing the fact that Silicon melts into a higher-coordination $Z \\approx 6$ metallic liquid that is denser than the solid!).\n\n### Hydrocarbon & Biomolecular Force Fields (AMBER, CHARMM, MM3)\nFor organic molecules, polymers, and proteins, covalent bonds do not break or form during standard thermal simulations. Force fields therefore separate **intra-molecular (bonded)** and **inter-molecular (non-bonded)** interactions:\n$$V_{\\text{AMBER}} = \\underbrace{\\sum_{\\text{bonds}} k_r (r_{ij} - r_0)^2}_{\\text{2-body bond stretch}} + \\underbrace{\\sum_{\\text{angles}} k_a (\\theta_{ijk} - \\theta_0)^2}_{\\text{3-body angle bend}} + \\underbrace{\\sum_{\\text{dihedrals}} v_n [1 - \\cos(n\\phi)]}_{\\text{4-body dihedral torsion}} + \\underbrace{\\sum_{i<j}\\left[4\\varepsilon_{ij}\\!\\left(\\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^{12} - \\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^6\\right) + \\frac{q_i q_j}{r_{ij}}\\right]}_{\\text{Non-bonded\
+      \ LJ + Coulomb}}$$\n- **4-Body Dihedral Torsion (e.g., Ethane $\\text{H}_3\\text{C–CH}_3$):** Rotating around the central $\\text{C–C}$ bond changes the relative orientation of the two $\\text{CH}_3$ groups between lower-energy **staggered** conformations and higher-energy **eclipsed** conformations ($V_{\\text{torsion}} = K\\cos(3\\phi)$), which requires a **4-body potential** defining the angle between two planes $(1\\text{–}2\\text{–}3)$ and $(2\\text{–}3\\text{–}4)$.\n- **Fixed hybridization limitation (Ethane vs. Ethene):** Because standard harmonic bonds cannot break or change bond order, a single $\\text{C–C}$ bond in ethane ($sp^3$) and a double $\\text{C=C}$ bond in ethene ($sp^2$) require **different predefined atom types and force constants** (or a reactive bond-order cluster functional like Tersoff/Brenner/ReaxFF).\n\n### Water Potentials (BNS, MCY, ST2, SPC, TIP3P, TIP4P, TIP5P)\nBecause water's hydrogen-bonding network and anomalous density maximum govern biology and\
+      \ chemistry, specialized rigid point-charge models are widely used:\n- **TIP3P / SPC (3 sites):** Charges on $\\text{O}$ and two $\\text{H}$ atoms, plus a single LJ 12-6 center on Oxygen.\n- **TIP4P (4 sites):** Moves the negative Oxygen charge onto a massless 4th dummy site $\\text{M}$ along the $\\text{H–O–H}$ angle bisector to improve the quadrupole moment.\n- **TIP5P (Mahoney & Jorgensen, 2000 — Slide 29):** A **5-site rigid molecule** with:\n  - **Oxygen at the center** interacting with other Oxygens via **LJ 12-6** (no charge on the O center itself!).\n  - **4 point charges ($q = \\pm 0.24\\,e$)**: $+0.24\\,e$ on the two $\\text{H}$ atoms ($r_{\\text{OH}} = 0.9572\\text{ Å}$, $\\theta_{\\text{HOH}} = 104.52^\\circ$) and $-0.24\\,e$ on two tetrahedral lone-pair dummy sites ($r_{\\text{OL}} = 0.70\\text{ Å}$, $\\theta_{\\text{LOL}} = 109.47^\\circ$).\n\n### Charged & Polarizable Ionic Systems (Buckingham + Core-Shell Model)\n- **Buckingham + Coulomb Potential:**\n  $$V(r) = \\\
+      underbrace{A\\exp\\!\\left(-\\frac{r}{B}\\right) - \\frac{C}{r^6}}_{\\text{Buckingham}} + \\underbrace{\\frac{q_1 q_2}{r}}_{\\text{Coulomb}}$$\n- **The Core-Shell Model for Electronic Polarizability (Dick & Overhauser):**\n  In ionic oxides and halides (e.g., $\\text{MgO}, \\text{SiO}_2, \\text{BaTiO}_3$), strong local electric fields $\\mathbf{E}$ from neighboring ions induce dipole moments $\\mathbf{p} = \\alpha\\mathbf{E}$ on polarizable anions ($\\text{O}^{2-}, \\text{Cl}^-$). The **Shell Model** splits each ion into two coupled particles:\n  1. A massive positively charged **ion core** ($q_{\\text{core}}$), and\n  2. A light/massless negatively charged **valence electron shell** ($q_{\\text{shell}}$),\n  connected by a **harmonic spring** $V_{\\text{spring}}(d) = \\frac{1}{2}k_s d^2$, where the spring constant $k_s$ is inversely proportional to the ion's electronic polarizability ($\\alpha = q_{\\text{shell}}^2 / k_s$).\n"
   - id: concept_stillinger_weber
     type: concept_cell
     title: 'Interactive Explorer: Stillinger-Weber 3-Body Angular Penalty for Silicon'
-    description_markdown: Vary the 3-body strength parameter $\lambda$ and normalized bond length $r / \sigma$ to see how
-      the Stillinger-Weber angular term $h(r, r, \theta) = \lambda \exp[2\gamma/(r-a)](\cos\theta + 1/3)^2$ penalizes non-tetrahedral
-      bond angles.
+    description_markdown: Vary the 3-body strength parameter $\lambda$ and normalized bond length $r / \sigma$ to see how the Stillinger-Weber angular term $h(r, r, \theta) = \lambda \exp[2\gamma/(r-a)](\cos\theta + 1/3)^2$ penalizes non-tetrahedral bond angles.
     render_function: render_stillinger_weber_angle
     layout: figure_left
     controls:
@@ -991,14 +748,11 @@ worksheet:
         max: 1.65
         step: 0.05
         default: 1.15
-    takeaway_markdown: '**Key Takeaway:** The $(\cos\theta_{jik} + 1/3)^2$ factor creates a steep energy valley centered at
-      $\theta_{\text{tet}} = 109.47^\circ$, imposing heavy energy penalties on the $60^\circ$ and $90^\circ$ angles characteristic
-      of close-packed FCC/BCC structures.'
+    takeaway_markdown: '**Key Takeaway:** The $(\cos\theta_{jik} + 1/3)^2$ factor creates a steep energy valley centered at $\theta_{\text{tet}} = 109.47^\circ$, imposing heavy energy penalties on the $60^\circ$ and $90^\circ$ angles characteristic of close-packed FCC/BCC structures.'
   - id: concept_organic_dihedral
     type: concept_cell
     title: 'Interactive Explorer: 4-Body Dihedral Torsion Potential in Organic Force Fields'
-    description_markdown: Adjust the torsional periodicity $n$ ($n=3$ for $sp^3\text{–}sp^3$ ethane $\text{H}_3\text{C–CH}_3$,
-      $n=2$ for planar conjugated/alkene bonds) and rotational barrier height $V_n$.
+    description_markdown: Adjust the torsional periodicity $n$ ($n=3$ for $sp^3\text{–}sp^3$ ethane $\text{H}_3\text{C–CH}_3$, $n=2$ for planar conjugated/alkene bonds) and rotational barrier height $V_n$.
     render_function: render_organic_dihedral_explorer
     layout: figure_left
     controls:
@@ -1016,9 +770,7 @@ worksheet:
         max: 6.0
         step: 0.5
         default: 3.0
-    takeaway_markdown: '**Key Takeaway:** Capturing the energy difference between staggered and eclipsed conformations around
-      a $\text{C–C}$ single bond requires a **4-body dihedral potential** $V(\phi)$ because three atoms only define a single
-      plane.'
+    takeaway_markdown: '**Key Takeaway:** Capturing the energy difference between staggered and eclipsed conformations around a $\text{C–C}$ single bond requires a **4-body dihedral potential** $V(\phi)$ because three atoms only define a single plane.'
   - id: q29_why_silicon_needs_3body
     type: problem
     question_type: single_select
@@ -1026,25 +778,25 @@ worksheet:
     taught_by:
     - sec_covalent_organic_water_ionic
     - concept_stillinger_weber
-    prompt_markdown: 'Why can''t crystalline Silicon (diamond cubic structure, coordination number $Z = 4$) be stabilized
-      by any radially symmetric two-body pair potential?
+    prompt_markdown: 'Why can''t crystalline Silicon (diamond cubic structure, coordination number $Z = 4$) be stabilized by any radially symmetric two-body pair potential?
 
       '
     hint_markdown: What crystal structure maximizes the number of neighbors at the pair potential minimum $r_0$?
     options:
     - id: a
-      text: Without directional 3-body angular penalties enforcing the $109.47^\circ$ tetrahedral angle of $sp^3$ bonds, a
-        radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the
-        attractive well
+      text: Without directional 3-body angular penalties enforcing the $109.47^\circ$ tetrahedral angle of $sp^3$ bonds, a radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the attractive well
+      text_markdown: Without directional 3-body angular penalties enforcing the $109.47^\circ$ tetrahedral angle of $sp^3$ bonds, a radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the attractive well
     - id: b
       text: Silicon is an ionic crystal whose Madelung constant is negative
+      text_markdown: Silicon is an ionic crystal whose Madelung constant is negative
     - id: c
       text: Pair potentials cannot be evaluated when $Z = 4$
+      text_markdown: Pair potentials cannot be evaluated when $Z = 4$
     - id: d
       text: Silicon atoms have zero mass in atomic units
+      text_markdown: Silicon atoms have zero mass in atomic units
     correct: a
-    rationale_markdown: A purely radial pair potential $v(r)$ has no angular stiffness and lowers energy by maximizing coordination
-      $Z$, collapsing the open diamond cubic lattice ($Z=4$) into a dense close-packed structure ($Z=12$).
+    rationale_markdown: A purely radial pair potential $v(r)$ has no angular stiffness and lowers energy by maximizing coordination $Z$, collapsing the open diamond cubic lattice ($Z=4$) into a dense close-packed structure ($Z=12$).
   - id: q30_sw_tetrahedral_cosine
     type: problem
     question_type: single_select
@@ -1052,27 +804,25 @@ worksheet:
     taught_by:
     - sec_covalent_organic_water_ionic
     - concept_stillinger_weber
-    prompt_markdown: 'In the Stillinger-Weber 3-body potential $v_3 \propto \lambda \exp\!\left[\frac{\gamma}{r_{ij}-a} +
-      \frac{\gamma}{r_{ik}-a}\right]\left(\cos\theta_{jik} + \frac{1}{3}\right)^2$, why does the angular factor contain $+1/3$
-      inside the square?
+    prompt_markdown: 'In the Stillinger-Weber 3-body potential $v_3 \propto \lambda \exp\!\left[\frac{\gamma}{r_{ij}-a} + \frac{\gamma}{r_{ik}-a}\right]\left(\cos\theta_{jik} + \frac{1}{3}\right)^2$, why does the angular factor contain $+1/3$ inside the square?
 
       '
     hint_markdown: Evaluate $\cos(109.4712^\circ)$ for an ideal tetrahedron.
     options:
     - id: a
-      text: Because the ideal tetrahedral bond angle $\theta_{\text{tet}} = 109.47^\circ$ satisfies $\cos\theta_{\text{tet}}
-        = -1/3$, making the penalty $(\cos\theta_{jik} + 1/3)^2$ vanish ($=0$) at the exact tetrahedral angle and strictly
-        positive elsewhere
+      text: Because the ideal tetrahedral bond angle $\theta_{\text{tet}} = 109.47^\circ$ satisfies $\cos\theta_{\text{tet}} = -1/3$, making the penalty $(\cos\theta_{jik} + 1/3)^2$ vanish ($=0$) at the exact tetrahedral angle and strictly positive elsewhere
+      text_markdown: Because the ideal tetrahedral bond angle $\theta_{\text{tet}} = 109.47^\circ$ satisfies $\cos\theta_{\text{tet}} = -1/3$, making the penalty $(\cos\theta_{jik} + 1/3)^2$ vanish ($=0$) at the exact tetrahedral angle and strictly positive elsewhere
     - id: b
       text: Because Silicon has 3 valence electrons per atom
+      text_markdown: Because Silicon has 3 valence electrons per atom
     - id: c
       text: Because $\cos(60^\circ) = -1/3$ in an FCC lattice
+      text_markdown: Because $\cos(60^\circ) = -1/3$ in an FCC lattice
     - id: d
       text: To cancel the $1/3!$ prefactor in the many-body cluster expansion
+      text_markdown: To cancel the $1/3!$ prefactor in the many-body cluster expansion
     correct: a
-    rationale_markdown: In a regular tetrahedron, the bond vectors from the center to two vertices have dot product $\cos\theta_{\text{tet}}
-      = -1/3$ ($\theta_{\text{tet}} \approx 109.4712^\circ$). Thus $(\cos\theta + 1/3)^2$ has its unique minimum of $0$ at
-      the tetrahedral angle.
+    rationale_markdown: In a regular tetrahedron, the bond vectors from the center to two vertices have dot product $\cos\theta_{\text{tet}} = -1/3$ ($\theta_{\text{tet}} \approx 109.4712^\circ$). Thus $(\cos\theta + 1/3)^2$ has its unique minimum of $0$ at the tetrahedral angle.
   - id: q31_sw_angular_penalty_60deg
     type: problem
     question_type: numeric
@@ -1080,65 +830,62 @@ worksheet:
     taught_by:
     - sec_covalent_organic_water_ionic
     - concept_stillinger_weber
-    prompt_markdown: In the Stillinger-Weber 3-body potential, the angular penalty factor is given by $g(\theta) = \left(\cos\theta
-      + \frac{1}{3}\right)^2$, which vanishes at the tetrahedral angle $\theta \approx 109.47^\circ$. What is the value of
-      this angular factor $g(\theta)$ at an angle of $\theta = 60^\circ$, characteristic of close-packed triangular configurations?
-      (Enter a decimal to three places, e.g., `0.694`.)
+    prompt_markdown: In the Stillinger-Weber 3-body potential, the angular penalty factor is given by $g(\theta) = \left(\cos\theta + \frac{1}{3}\right)^2$, which vanishes at the tetrahedral angle $\theta \approx 109.47^\circ$. What is the value of this angular factor $g(\theta)$ at an angle of $\theta = 60^\circ$, characteristic of close-packed triangular configurations? (Enter a decimal to three places, e.g., `0.694`.)
     hint_markdown: Evaluate the angular function using the cosine of an equilateral triangular bond angle.
     correct:
       value: 0.694
       tolerance: 0.005
-    rationale_markdown: At $\theta = 60^\circ$, $\cos 60^\circ = 1/2$, so $(\cos 60^\circ + 1/3)^2 = (1/2 + 1/3)^2 = (5/6)^2
-      = 25/36 \approx 0.6944$.
+    rationale_markdown: At $\theta = 60^\circ$, $\cos 60^\circ = 1/2$, so $(\cos 60^\circ + 1/3)^2 = (1/2 + 1/3)^2 = (5/6)^2 = 25/36 \approx 0.6944$.
   - id: q32_sw_smooth_cutoff_exponential
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'In both the 2-body and 3-body terms of the Stillinger-Weber potential, the radial cutoff at $r = a$
-      is implemented via the factor $\exp\!\left(\frac{\gamma}{r - a}\right)$ for $r < a$ (and $0$ for $r \ge a$, with $\gamma
-      > 0$). What is the mathematical advantage of this exponential cutoff factor as $r \to a^-$?
+    prompt_markdown: 'In both the 2-body and 3-body terms of the Stillinger-Weber potential, the radial cutoff at $r = a$ is implemented via the factor $\exp\!\left(\frac{\gamma}{r - a}\right)$ for $r < a$ (and $0$ for $r \ge a$, with $\gamma > 0$). What is the mathematical advantage of this exponential cutoff factor as $r \to a^-$?
 
       '
     hint_markdown: As $r$ approaches $a$ from below ($r < a$), $r - a$ approaches $0^-$ so $\gamma / (r - a) \to -\infty$.
     options:
     - id: a
-      text: As $r \to a^-$, $\exp(\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \dots$) approach zero smoothly ($C^\infty$),
-        completely avoiding force or derivative discontinuities at the cutoff $r = a$
+      text: As $r \to a^-$, $\exp(\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \dots$) approach zero smoothly ($C^\infty$), completely avoiding force or derivative discontinuities at the cutoff $r = a$
+      text_markdown: As $r \to a^-$, $\exp(\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \dots$) approach zero smoothly ($C^\infty$), completely avoiding force or derivative discontinuities at the cutoff $r = a$
     - id: b
       text: It makes the potential diverge to $+\infty$ at $r = a$ to trap neighbors inside a hard shell
+      text_markdown: It makes the potential diverge to $+\infty$ at $r = a$ to trap neighbors inside a hard shell
     - id: c
       text: It extends the interaction range to $r = \infty$ like a Coulomb potential
+      text_markdown: It extends the interaction range to $r = \infty$ like a Coulomb potential
     - id: d
       text: It avoids calling the `exp()` function in computer code
+      text_markdown: It avoids calling the `exp()` function in computer code
     correct: a
-    rationale_markdown: Because $\lim_{r \to a^-} (r-a)^{-n} \exp(\gamma/(r-a)) = 0$ for every derivative order $n$, the potential,
-      force, and all higher derivatives vanish smoothly at $r = a$ without needing any external shift.
+    rationale_markdown: Because $\lim_{r \to a^-} (r-a)^{-n} \exp(\gamma/(r-a)) = 0$ for every derivative order $n$, the potential, force, and all higher derivatives vanish smoothly at $r = a$ without needing any external shift.
   - id: q33_sw_fitting_targets
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'According to Slide 26 of `05.potentials.pdf`, what set of physical properties did Stillinger and Weber
-      (1985) use to fit their Silicon potential?
+    prompt_markdown: 'According to Slide 26 of `05.potentials.pdf`, what set of physical properties did Stillinger and Weber (1985) use to fit their Silicon potential?
 
       '
     hint_markdown: Read the orange bullet point on Slide 26.
     options:
     - id: a
       text: Lattice constant, cohesive energy, melting point, and the structure of liquid Silicon
+      text_markdown: Lattice constant, cohesive energy, melting point, and the structure of liquid Silicon
     - id: b
       text: Gas-phase $\text{Si}_2$ dimer spectroscopy and ionization energy only
+      text_markdown: Gas-phase $\text{Si}_2$ dimer spectroscopy and ionization energy only
     - id: c
       text: The Cauchy elastic ratio $C_{12}/C_{44}$ of FCC Copper
+      text_markdown: The Cauchy elastic ratio $C_{12}/C_{44}$ of FCC Copper
     - id: d
       text: Ab initio Hartree-Fock forces of $\text{SiH}_4$ in vacuum only
+      text_markdown: Ab initio Hartree-Fock forces of $\text{SiH}_4$ in vacuum only
     correct: a
-    rationale_markdown: Slide 26 explicitly notes that the Stillinger-Weber potential was fitted to the **lattice constant,
-      cohesive energy, melting point, and structure of liquid Si**, enabling it to describe both tetrahedral crystalline Si
-      and higher-coordinated liquid Si.
+    rationale_markdown: Slide 26 explicitly notes that the Stillinger-Weber potential was fitted to the **lattice constant, cohesive energy, melting point, and structure of liquid Si**, enabling it to describe both tetrahedral crystalline Si and higher-coordinated liquid Si.
   - id: q34_amber_force_field_terms
     type: problem
     question_type: single_select
@@ -1146,25 +893,25 @@ worksheet:
     taught_by:
     - sec_covalent_organic_water_ionic
     - concept_organic_dihedral
-    prompt_markdown: 'In a biomolecular/hydrocarbon force field such as **AMBER** (Slide 27 of `05.potentials.pdf`), which
-      combination of terms represents the intra-molecular (bonded) and inter-molecular (non-bonded) interactions?
+    prompt_markdown: 'In a biomolecular/hydrocarbon force field such as **AMBER** (Slide 27 of `05.potentials.pdf`), which combination of terms represents the intra-molecular (bonded) and inter-molecular (non-bonded) interactions?
 
       '
     hint_markdown: Check the 4 terms listed under 'AMBER potential is:' on Slide 27.
     options:
     - id: a
-      text: 'Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\theta - \theta_0)^2$, and periodic
-        dihedral torsion $v_n[1 - \cos(n\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction'
+      text: 'Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\theta - \theta_0)^2$, and periodic dihedral torsion $v_n[1 - \cos(n\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction'
+      text_markdown: 'Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\theta - \theta_0)^2$, and periodic dihedral torsion $v_n[1 - \cos(n\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction'
     - id: b
       text: 'Bonded: EAM embedding function $F(\rho)$; Non-bonded: Stillinger-Weber 3-body potential'
+      text_markdown: 'Bonded: EAM embedding function $F(\rho)$; Non-bonded: Stillinger-Weber 3-body potential'
     - id: c
       text: 'Bonded: hard-sphere collisions only; Non-bonded: harmonic springs between all pairs in the box'
+      text_markdown: 'Bonded: hard-sphere collisions only; Non-bonded: harmonic springs between all pairs in the box'
     - id: d
       text: 'Bonded: Born-Mayer exponential repulsion only; Non-bonded: zero'
+      text_markdown: 'Bonded: Born-Mayer exponential repulsion only; Non-bonded: zero'
     correct: a
-    rationale_markdown: Class-I organic force fields like AMBER and CHARMM model covalent connectivity with harmonic bond
-      stretches $k_r(r - r_0)^2$, harmonic angle bends $k_a(\theta - \theta_0)^2$, and sinusoidal 4-body dihedrals $v_n[1
-      - \cos(n\phi)]$, while non-bonded steric and electrostatic interactions use LJ 12-6 plus Coulomb point charges.
+    rationale_markdown: Class-I organic force fields like AMBER and CHARMM model covalent connectivity with harmonic bond stretches $k_r(r - r_0)^2$, harmonic angle bends $k_a(\theta - \theta_0)^2$, and sinusoidal 4-body dihedrals $v_n[1 - \cos(n\phi)]$, while non-bonded steric and electrostatic interactions use LJ 12-6 plus Coulomb point charges.
   - id: q35_ethane_dihedral_4body
     type: problem
     question_type: single_select
@@ -1172,88 +919,82 @@ worksheet:
     taught_by:
     - sec_covalent_organic_water_ionic
     - concept_organic_dihedral
-    prompt_markdown: 'Why does distinguishing the **staggered** versus **eclipsed** conformation of Ethane ($\text{H}_3\text{C–CH}_3$,
-      rotating around the central $\text{C–C}$ bond with $V_{\text{torsion}} = K\cos(3\phi)$, Slide 28) require a **four-body
-      potential**?
+    prompt_markdown: 'Why does distinguishing the **staggered** versus **eclipsed** conformation of Ethane ($\text{H}_3\text{C–CH}_3$, rotating around the central $\text{C–C}$ bond with $V_{\text{torsion}} = K\cos(3\phi)$, Slide 28) require a **four-body potential**?
 
       '
     hint_markdown: How many atoms are needed to define a dihedral torsion angle $\phi$ between two intersecting planes?
     options:
     - id: a
-      text: Defining a torsional (dihedral) angle $\phi$ around a central bond $B\text{–}C$ requires four sequentially bonded
-        atoms $A\text{–}B\text{–}C\text{–}D$ to specify the angle between plane $(A,B,C)$ and plane $(B,C,D)$
+      text: Defining a torsional (dihedral) angle $\phi$ around a central bond $B\text{–}C$ requires four sequentially bonded atoms $A\text{–}B\text{–}C\text{–}D$ to specify the angle between plane $(A,B,C)$ and plane $(B,C,D)$
+      text_markdown: Defining a torsional (dihedral) angle $\phi$ around a central bond $B\text{–}C$ requires four sequentially bonded atoms $A\text{–}B\text{–}C\text{–}D$ to specify the angle between plane $(A,B,C)$ and plane $(B,C,D)$
     - id: b
       text: Ethane contains exactly 4 atoms in total
+      text_markdown: Ethane contains exactly 4 atoms in total
     - id: c
-      text: A 2-body bond stretch $k_r(r_{\text{CC}} - r_0)^2$ changes strongly as the methyl group rotates at fixed $\text{C–C}$
-        bond length
+      text: A 2-body bond stretch $k_r(r_{\text{CC}} - r_0)^2$ changes strongly as the methyl group rotates at fixed $\text{C–C}$ bond length
+      text_markdown: A 2-body bond stretch $k_r(r_{\text{CC}} - r_0)^2$ changes strongly as the methyl group rotates at fixed $\text{C–C}$ bond length
     - id: d
       text: The $\text{H–C–C}$ 3-body bond angle changes from $109.5^\circ$ to $180^\circ$ during rotation
+      text_markdown: The $\text{H–C–C}$ 3-body bond angle changes from $109.5^\circ$ to $180^\circ$ during rotation
     correct: a
-    rationale_markdown: During rigid rotation around the $\text{C–C}$ bond, all 2-body bond lengths ($\text{C–C}$, $\text{C–H}$)
-      and 3-body bond angles ($\text{H–C–C}$, $\text{H–C–H}$) remain constant! Only the 4-body dihedral angle $\phi$ between
-      the $\text{H}_a\text{–C}_1\text{–C}_2$ plane and the $\text{C}_1\text{–C}_2\text{–H}_b$ plane changes.
+    rationale_markdown: During rigid rotation around the $\text{C–C}$ bond, all 2-body bond lengths ($\text{C–C}$, $\text{C–H}$) and 3-body bond angles ($\text{H–C–C}$, $\text{H–C–H}$) remain constant! Only the 4-body dihedral angle $\phi$ between the $\text{H}_a\text{–C}_1\text{–C}_2$ plane and the $\text{C}_1\text{–C}_2\text{–H}_b$ plane changes.
   - id: q36_ethane_vs_ethene_hybridization
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'According to Slide 28 of `05.potentials.pdf`, why can''t a single fixed-parameter carbon potential in
-      AMBER or CHARMM simultaneously describe both Ethane ($\text{H}_3\text{C–CH}_3$, single bond) and Ethene ($\text{H}_2\text{C=CH}_2$,
-      double bond) without changing atom types or switching to a cluster functional?
+    prompt_markdown: 'According to Slide 28 of `05.potentials.pdf`, why can''t a single fixed-parameter carbon potential in AMBER or CHARMM simultaneously describe both Ethane ($\text{H}_3\text{C–CH}_3$, single bond) and Ethene ($\text{H}_2\text{C=CH}_2$, double bond) without changing atom types or switching to a cluster functional?
 
       '
     hint_markdown: Compare the hybridization and bond strength of $sp^3$ vs. $sp^2$ carbon.
     options:
     - id: a
-      text: The $\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\circ$
-        vs. $109.5^\circ$) than the $\text{C–C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom
-        types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional
+      text: The $\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\circ$ vs. $109.5^\circ$) than the $\text{C–C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional
+      text_markdown: The $\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\circ$ vs. $109.5^\circ$) than the $\text{C–C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional
     - id: b
       text: Ethene is a metal with delocalized $d$-electrons
+      text_markdown: Ethene is a metal with delocalized $d$-electrons
     - id: c
       text: Harmonic springs $k_r(r - r_0)^2$ automatically convert from single to double bonds as $r$ decreases
+      text_markdown: Harmonic springs $k_r(r - r_0)^2$ automatically convert from single to double bonds as $r$ decreases
     - id: d
       text: AMBER does not include bond angle potentials
+      text_markdown: AMBER does not include bond angle potentials
     correct: a
-    rationale_markdown: In non-reactive force fields (AMBER, CHARMM, MM3), bond topology and hybridization ($sp, sp^2, sp^3$)
-      are hard-coded via separate atom types and rules; simulating coordination/bond-order changes dynamically requires a
-      reactive cluster functional (such as Brenner/Tersoff).
+    rationale_markdown: In non-reactive force fields (AMBER, CHARMM, MM3), bond topology and hybridization ($sp, sp^2, sp^3$) are hard-coded via separate atom types and rules; simulating coordination/bond-order changes dynamically requires a reactive cluster functional (such as Brenner/Tersoff).
   - id: q37_tip5p_water_architecture
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'How does the **TIP5P** water model (Mahoney & Jorgensen, 2000; Slide 29 of `05.potentials.pdf`) represent
-      a single $\text{H}_2\text{O}$ molecule?
+    prompt_markdown: 'How does the **TIP5P** water model (Mahoney & Jorgensen, 2000; Slide 29 of `05.potentials.pdf`) represent a single $\text{H}_2\text{O}$ molecule?
 
       '
-    hint_markdown: Count the 5 interaction sites and check which sites carry Lennard-Jones vs. electrostatic charges ($\pm
-      0.24e$).
+    hint_markdown: Count the 5 interaction sites and check which sites carry Lennard-Jones vs. electrostatic charges ($\pm 0.24e$).
     options:
     - id: a
-      text: 'A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded
-        by 4 point charges ($q = \pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)'
+      text: 'A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded by 4 point charges ($q = \pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)'
+      text_markdown: 'A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded by 4 point charges ($q = \pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)'
     - id: b
       text: A flexible 3-site molecule with Morse O-H bonds and EAM embedding on the Oxygen atom
+      text_markdown: A flexible 3-site molecule with Morse O-H bonds and EAM embedding on the Oxygen atom
     - id: c
       text: 5 separate Lennard-Jones spheres with zero electrostatic charges
+      text_markdown: 5 separate Lennard-Jones spheres with zero electrostatic charges
     - id: d
       text: A 5-body Stillinger-Weber potential without Coulomb interactions
+      text_markdown: A 5-body Stillinger-Weber potential without Coulomb interactions
     correct: a
-    rationale_markdown: 'Slide 29 details TIP5P: a rigid molecule with 5 sites—the central Oxygen carries the LJ 12-6 interaction,
-      while 4 surrounding point charges ($e = \pm 0.24$) on the two hydrogens ($104.52^\circ$) and two lone-pair dummy sites
-      ($109.47^\circ$, $0.70\text{ Å}$ from O) reproduce water''s dipole and tetrahedral H-bonding geometry.'
+    rationale_markdown: 'Slide 29 details TIP5P: a rigid molecule with 5 sites—the central Oxygen carries the LJ 12-6 interaction, while 4 surrounding point charges ($e = \pm 0.24$) on the two hydrogens ($104.52^\circ$) and two lone-pair dummy sites ($109.47^\circ$, $0.70\text{ Å}$ from O) reproduce water''s dipole and tetrahedral H-bonding geometry.'
   - id: q38_buckingham_plus_coulomb
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'On Slide 30 of `05.potentials.pdf` ("Potentials for Charged Systems"), the **Buckingham + Coulomb**
-      potential is written as:
+    prompt_markdown: 'On Slide 30 of `05.potentials.pdf` ("Potentials for Charged Systems"), the **Buckingham + Coulomb** potential is written as:
 
       $$V(r) = A\exp\!\left(-\frac{r}{B}\right) - \frac{C}{r^6} + \frac{q_1 q_2}{r}$$
 
@@ -1263,117 +1004,109 @@ worksheet:
     hint_markdown: Compare the repulsive term of Buckingham with the $(\sigma/r)^{12}$ term of LJ.
     options:
     - id: a
-      text: It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core
-        repulsion $A\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction
+      text: It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core repulsion $A\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction
+      text_markdown: It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core repulsion $A\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction
     - id: b
       text: It replaces the $-r^{-6}$ dispersion term with a $+r^{+6}$ harmonic confinement
+      text_markdown: It replaces the $-r^{-6}$ dispersion term with a $+r^{+6}$ harmonic confinement
     - id: c
       text: It omits Pauli repulsion entirely
+      text_markdown: It omits Pauli repulsion entirely
     - id: d
       text: It is a 4-body dihedral potential
+      text_markdown: It is a 4-body dihedral potential
     correct: a
-    rationale_markdown: The Buckingham potential $A\exp(-r/B) - C/r^6$ uses the quantum-mechanically motivated exponential
-      Pauli repulsion $A\exp(-r/B)$ in place of the stiffer $r^{-12}$ term, combined with $-C/r^6$ van der Waals attraction
-      and $q_1 q_2 / r$ electrostatics.
+    rationale_markdown: The Buckingham potential $A\exp(-r/B) - C/r^6$ uses the quantum-mechanically motivated exponential Pauli repulsion $A\exp(-r/B)$ in place of the stiffer $r^{-12}$ term, combined with $-C/r^6$ van der Waals attraction and $q_1 q_2 / r$ electrostatics.
   - id: q39_core_shell_polarizability_model
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'In ionic crystals where local electric fields induce dipole moments on polarizable ions, how does the
-      **Shell Model** (Slide 30 of `05.potentials.pdf`) represent electronic polarizability within a classical simulation?
+    prompt_markdown: 'In ionic crystals where local electric fields induce dipole moments on polarizable ions, how does the **Shell Model** (Slide 30 of `05.potentials.pdf`) represent electronic polarizability within a classical simulation?
 
       '
     hint_markdown: 'Look at the diagram on the bottom right of Slide 30: two particles connected by a spring.'
     options:
     - id: a
-      text: Each polarizable ion is split into an ion core and an electron shell modeled as two point charges connected by
-        a harmonic spring, where the spring constant $k_s$ determines the ion's polarizability ($\alpha = q_{\text{shell}}^2
-        / k_s$)
+      text: Each polarizable ion is split into an ion core and an electron shell modeled as two point charges connected by a harmonic spring, where the spring constant $k_s$ determines the ion's polarizability ($\alpha = q_{\text{shell}}^2 / k_s$)
+      text_markdown: Each polarizable ion is split into an ion core and an electron shell modeled as two point charges connected by a harmonic spring, where the spring constant $k_s$ determines the ion's polarizability ($\alpha = q_{\text{shell}}^2 / k_s$)
     - id: b
       text: The Kohn-Sham Schrödinger equation is solved on a 3D FFT grid at every timestep
+      text_markdown: The Kohn-Sham Schrödinger equation is solved on a 3D FFT grid at every timestep
     - id: c
       text: The ionic charge $q_i$ is multiplied by the temperature $T$
+      text_markdown: The ionic charge $q_i$ is multiplied by the temperature $T$
     - id: d
       text: The cutoff radius $r_c$ is varied dynamically with the local coordination number
+      text_markdown: The cutoff radius $r_c$ is varied dynamically with the local coordination number
     correct: a
-    rationale_markdown: In the Dick-Overhauser Core-Shell model, an external electric field $E$ displaces the charged shell
-      ($q_s$) relative to the core by $d = q_s E / k_s$, creating an induced dipole $p = q_s d = (q_s^2 / k_s)E$, so the harmonic
-      spring constant $k_s$ directly encodes the polarizability $\alpha = q_s^2 / k_s$.
+    rationale_markdown: In the Dick-Overhauser Core-Shell model, an external electric field $E$ displaces the charged shell ($q_s$) relative to the core by $d = q_s E / k_s$, creating an induced dipole $p = q_s d = (q_s^2 / k_s)E$, so the harmonic spring constant $k_s$ directly encodes the polarizability $\alpha = q_s^2 / k_s$.
   - id: q40_core_shell_spring_calc
     type: problem
     question_type: numeric
     difficulty: hard
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: In a Core-Shell model for an $\text{O}^{2-}$ anion, the valence shell carries charge $q_s = -2.0\,e$
-      and is connected to the core by a harmonic spring with constant $k_s = 20.0\text{ eV/Å}^2$. If a local electric field
-      of magnitude $|\mathbf{E}| = 0.50\text{ V/Å}$ acts on the ion, by what distance $d$ (in $\text{Å}$) does the shell displace
-      relative to the core in static equilibrium?
-    hint_markdown: Balance the electrostatic force exerted on the shell charge by the local electric field against the restoring
-      harmonic spring force.
+    prompt_markdown: In a Core-Shell model for an $\text{O}^{2-}$ anion, the valence shell carries charge $q_s = -2.0\,e$ and is connected to the core by a harmonic spring with constant $k_s = 20.0\text{ eV/Å}^2$. If a local electric field of magnitude $|\mathbf{E}| = 0.50\text{ V/Å}$ acts on the ion, by what distance $d$ (in $\text{Å}$) does the shell displace relative to the core in static equilibrium?
+    hint_markdown: Balance the electrostatic force exerted on the shell charge by the local electric field against the restoring harmonic spring force.
     correct:
       value: 0.05
       tolerance: 0.002
-    rationale_markdown: 'At mechanical equilibrium, the electrostatic force balances the spring restoring force: $k_s d =
-      |q_s E| = (2.0\,e)(0.50\text{ V/Å}) = 1.0\text{ eV/Å}$. Thus $d = 1.0 / 20.0 = 0.050\text{ Å}$.'
+    rationale_markdown: 'At mechanical equilibrium, the electrostatic force balances the spring restoring force: $k_s d = |q_s E| = (2.0\,e)(0.50\text{ V/Å}) = 1.0\text{ eV/Å}$. Thus $d = 1.0 / 20.0 = 0.050\text{ Å}$.'
   - id: q41_inhomogeneous_environment_problems
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'According to Slide 31 of `05.potentials.pdf` ("Problems with potentials"), select **all** true guidelines
-      and caveats when developing or applying empirical potentials:
+    prompt_markdown: 'According to Slide 31 of `05.potentials.pdf` ("Problems with potentials"), select **all** true guidelines and caveats when developing or applying empirical potentials:
 
       '
     hint_markdown: Review Slide 31 on fitting data, testing, inhomogeneous environments, and universality.
     options:
     - id: a
-      text: Fit the potential to data relevant to the system you plan to simulate (similar densities and local atomic environments),
-        and use independent experiments to test/validate it
+      text: Fit the potential to data relevant to the system you plan to simulate (similar densities and local atomic environments), and use independent experiments to test/validate it
+      text_markdown: Fit the potential to data relevant to the system you plan to simulate (similar densities and local atomic environments), and use independent experiments to test/validate it
     - id: b
-      text: No simple empirical potential works very well across strongly inhomogeneous environments (e.g., where bonding
-        character changes from metallic bulk to covalent/ionic oxide at an interface)
+      text: No simple empirical potential works very well across strongly inhomogeneous environments (e.g., where bonding character changes from metallic bulk to covalent/ionic oxide at an interface)
+      text_markdown: No simple empirical potential works very well across strongly inhomogeneous environments (e.g., where bonding character changes from metallic bulk to covalent/ionic oxide at an interface)
     - id: c
-      text: 'Universality often helps in statistical mechanics: for generic qualitative or universal scaling phenomena, fine
-        details of the potential may not matter as much'
+      text: 'Universality often helps in statistical mechanics: for generic qualitative or universal scaling phenomena, fine details of the potential may not matter as much'
+      text_markdown: 'Universality often helps in statistical mechanics: for generic qualitative or universal scaling phenomena, fine details of the potential may not matter as much'
     - id: d
-      text: Quantum chemical (SCF or DFT) cluster calculations are guaranteed to be $100\%$ exact and never have systematic
-        errors
+      text: Quantum chemical (SCF or DFT) cluster calculations are guaranteed to be $100\%$ exact and never have systematic errors
+      text_markdown: Quantum chemical (SCF or DFT) cluster calculations are guaranteed to be $100\%$ exact and never have systematic errors
     correct:
     - a
     - b
     - c
-    rationale_markdown: Slide 31 emphasizes fitting to relevant densities/environments, testing against independent experiments,
-      recognizing that empirical potentials struggle in inhomogeneous environments, and noting that universality often saves
-      qualitative predictions—while warning that SCF/DFT cluster calculations themselves may not be accurate enough!
+    rationale_markdown: Slide 31 emphasizes fitting to relevant densities/environments, testing against independent experiments, recognizing that empirical potentials struggle in inhomogeneous environments, and noting that universality often saves qualitative predictions—while warning that SCF/DFT cluster calculations themselves may not be accurate enough!
   - id: q42_potential_material_matrix
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by:
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'Based on the summary matrix on Slide 32 of `05.potentials.pdf` ("Summary of semi-empirical potentials"),
-      which potential family is matched with its primary material class?
+    prompt_markdown: 'Based on the summary matrix on Slide 32 of `05.potentials.pdf` ("Summary of semi-empirical potentials"), which potential family is matched with its primary material class?
 
       '
     hint_markdown: Match Noble Gases, Metals, Semiconductors, Polymers/Biomaterials, and Ionic Materials.
     options:
     - id: a
-      text: Lennard-Jones -> Noble Gases; EAM -> Metals; Stillinger-Weber -> Semiconductors; AMBER/CHARMM/MM3 -> Polymers,
-        Bio- & Organic materials; Buckingham+Coulomb / Shell -> Ionic materials
+      text: Lennard-Jones $\to$ Noble Gases; EAM $\to$ Metals; Stillinger-Weber $\to$ Semiconductors; AMBER/CHARMM/MM3 $\to$ Polymers, Bio- & Organic materials; Buckingham+Coulomb / Shell $\to$ Ionic materials
+      text_markdown: Lennard-Jones $\to$ Noble Gases; EAM $\to$ Metals; Stillinger-Weber $\to$ Semiconductors; AMBER/CHARMM/MM3 $\to$ Polymers, Bio- & Organic materials; Buckingham+Coulomb / Shell $\to$ Ionic materials
     - id: b
-      text: Lennard-Jones -> Semiconductors; Stillinger-Weber -> Noble Gases; EAM -> Polymers; AMBER -> Metals
+      text: Lennard-Jones $\to$ Semiconductors; Stillinger-Weber $\to$ Noble Gases; EAM $\to$ Polymers; AMBER $\to$ Metals
+      text_markdown: Lennard-Jones $\to$ Semiconductors; Stillinger-Weber $\to$ Noble Gases; EAM $\to$ Polymers; AMBER $\to$ Metals
     - id: c
-      text: Morse -> Biomaterials only; Shell potentials -> Noble Gases only
+      text: Morse $\to$ Biomaterials only; Shell potentials $\to$ Noble Gases only
+      text_markdown: Morse $\to$ Biomaterials only; Shell potentials $\to$ Noble Gases only
     - id: d
-      text: Buckingham+Coulomb -> Pure FCC Metals; EAM -> Dimers in vacuum
+      text: Buckingham+Coulomb $\to$ Pure FCC Metals; EAM $\to$ Dimers in vacuum
+      text_markdown: Buckingham+Coulomb $\to$ Pure FCC Metals; EAM $\to$ Dimers in vacuum
     correct: a
-    rationale_markdown: 'The blue matrix on Slide 32 maps: LJ/Buckingham to Noble Gases; Morse to Dimers; EAM to Metals; MEAM
-      to Metals & Semiconductors; Stillinger-Weber to Semiconductors; AMBER/CHARMM/MM3 to Polymers, Biomaterials & Organic
-      materials; and Buckingham+Coulomb & Shell potentials to Ionic materials.'
+    rationale_markdown: 'The blue matrix on Slide 32 maps: LJ/Buckingham to Noble Gases; Morse to Dimers; EAM to Metals; MEAM to Metals & Semiconductors; Stillinger-Weber to Semiconductors; AMBER/CHARMM/MM3 to Polymers, Biomaterials & Organic materials; and Buckingham+Coulomb & Shell potentials to Ionic materials.'
   - id: q43_lammps_script_supercell_atoms
     type: problem
     question_type: numeric
@@ -1400,18 +1133,14 @@ worksheet:
 
       ```
 
-      Since a conventional FCC unit cell contains $4$ atoms and `region box block 0 6 0 6 0 6 units lattice` creates a $6
-      \times 6 \times 6$ supercell of FCC unit cells under 3D periodic boundary conditions (`p p p`), how many total atoms
-      $N$ are created by `create_atoms 1 box`?
+      Since a conventional FCC unit cell contains $4$ atoms and `region box block 0 6 0 6 0 6 units lattice` creates a $6 \times 6 \times 6$ supercell of FCC unit cells under 3D periodic boundary conditions (`p p p`), how many total atoms $N$ are created by `create_atoms 1 box`?
 
       '
-    hint_markdown: Determine the total number of unit cells defined by the bounding box block along the three coordinate axes
-      and multiply by the atom count per conventional FCC unit cell.
+    hint_markdown: Determine the total number of unit cells defined by the bounding box block along the three coordinate axes and multiply by the atom count per conventional FCC unit cell.
     correct:
       value: 864
       tolerance: 0.5
-    rationale_markdown: A $6 \times 6 \times 6$ FCC supercell contains $6^3 = 216$ conventional unit cells. With $4$ atoms
-      per FCC unit cell, `create_atoms` generates $4 \times 216 = 864$ atoms.
+    rationale_markdown: A $6 \times 6 \times 6$ FCC supercell contains $6^3 = 216$ conventional unit cells. With $4$ atoms per FCC unit cell, `create_atoms` generates $4 \times 216 = 864$ atoms.
   - id: q44_lammps_script_commands
     type: problem
     question_type: multi_select
@@ -1444,56 +1173,52 @@ worksheet:
     hint_markdown: Check the comments next to each command on Slide 34.
     options:
     - id: a
-      text: '`pair_style lj/cut 2.5` and `pair_coeff 1 1 1.0 1.0 2.5` specify a Lennard-Jones 12-6 potential with $\varepsilon
-        = 1.0$, $\sigma = 1.0$, truncated at cutoff $r_c = 2.5\,\sigma$'
+      text: '`pair_style lj/cut 2.5` and `pair_coeff 1 1 1.0 1.0 2.5` specify a Lennard-Jones 12-6 potential with $\varepsilon = 1.0$, $\sigma = 1.0$, truncated at cutoff $r_c = 2.5\,\sigma$'
+      text_markdown: '`pair_style lj/cut 2.5` and `pair_coeff 1 1 1.0 1.0 2.5` specify a Lennard-Jones 12-6 potential with $\varepsilon = 1.0$, $\sigma = 1.0$, truncated at cutoff $r_c = 2.5\,\sigma$'
     - id: b
-      text: '`velocity all create 1.2 987654 rot yes dist gaussian` initializes atomic velocities from a Gaussian (Maxwell-Boltzmann)
-        distribution at reduced temperature $T^* = 1.2$'
+      text: '`velocity all create 1.2 987654 rot yes dist gaussian` initializes atomic velocities from a Gaussian (Maxwell-Boltzmann) distribution at reduced temperature $T^* = 1.2$'
+      text_markdown: '`velocity all create 1.2 987654 rot yes dist gaussian` initializes atomic velocities from a Gaussian (Maxwell-Boltzmann) distribution at reduced temperature $T^* = 1.2$'
     - id: c
-      text: '`fix fix1 all nve` integrates the equations of motion at constant particle number $N$, volume $V$, and total
-        energy $E$ (microcanonical ensemble)'
+      text: '`fix fix1 all nve` integrates the equations of motion at constant particle number $N$, volume $V$, and total energy $E$ (microcanonical ensemble)'
+      text_markdown: '`fix fix1 all nve` integrates the equations of motion at constant particle number $N$, volume $V$, and total energy $E$ (microcanonical ensemble)'
     - id: d
-      text: '`timestep 0.005` and `run 1000` advance the simulation for $1000$ steps, corresponding to a total reduced time
-        of $t^* = 1000 \times 0.005 = 5.0$'
+      text: '`timestep 0.005` and `run 1000` advance the simulation for $1000$ steps, corresponding to a total reduced time of $t^* = 1000 \times 0.005 = 5.0$'
+      text_markdown: '`timestep 0.005` and `run 1000` advance the simulation for $1000$ steps, corresponding to a total reduced time of $t^* = 1000 \times 0.005 = 5.0$'
     correct:
     - a
     - b
     - c
     - d
-    rationale_markdown: 'All four statements accurately describe the LAMMPS setup on Slide 34: reduced LJ units with $\varepsilon=\sigma=m=1$,
-      $r_c=2.5$, Gaussian velocity initialization at $T^*=1.2$, NVE Verlet time integration, and $1000$ steps of size $\Delta
-      t^* = 0.005$ ($t_{\text{total}}^* = 5.0$).'
+    rationale_markdown: 'All four statements accurately describe the LAMMPS setup on Slide 34: reduced LJ units with $\varepsilon=\sigma=m=1$, $r_c=2.5$, Gaussian velocity initialization at $T^*=1.2$, NVE Verlet time integration, and $1000$ steps of size $\Delta t^* = 0.005$ ($t_{\text{total}}^* = 5.0$).'
   - id: q45_many_body_cluster_expansion_prefactor
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by:
     - sec_metals_and_eam
-    prompt_markdown: 'On Slide 24 of `05.potentials.pdf` ("Many-Body Potentials"), the general cluster expansion of the potential
-      energy for unrestricted sums over particle indices $i, j, k \in \{1, \dots, N\}$ is written as:
+    prompt_markdown: 'On Slide 24 of `05.potentials.pdf` ("Many-Body Potentials"), the general cluster expansion of the potential energy for unrestricted sums over particle indices $i, j, k \in \{1, \dots, N\}$ is written as:
 
-      $$E = \frac{1}{2!}\sum_{i,j=1}^N V_2(\mathbf{R}_i, \mathbf{R}_j) + \frac{1}{3!}\sum_{i,j,k=1}^N V_3(\mathbf{R}_i, \mathbf{R}_j,
-      \mathbf{R}_k) + \cdots$$
+      $$E = \frac{1}{2!}\sum_{i,j=1}^N V_2(\mathbf{R}_i, \mathbf{R}_j) + \frac{1}{3!}\sum_{i,j,k=1}^N V_3(\mathbf{R}_i, \mathbf{R}_j, \mathbf{R}_k) + \cdots$$
 
       Why do the factorial denominators $\frac{1}{2!}$ and $\frac{1}{3!}$ appear in front of the unrestricted sums?
 
       '
-    hint_markdown: How many permutations of $(i, j)$ or $(i, j, k)$ refer to the exact same pair or triplet of atoms when
-      $i, j, k$ each run from $1$ to $N$?
+    hint_markdown: How many permutations of $(i, j)$ or $(i, j, k)$ refer to the exact same pair or triplet of atoms when $i, j, k$ each run from $1$ to $N$?
     options:
     - id: a
-      text: To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\{i,j\}$) and triplets ($3!
-        = 6$ orderings of $\{i,j,k\}$) in the unrestricted sums
+      text: To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\{i,j\}$) and triplets ($3! = 6$ orderings of $\{i,j,k\}$) in the unrestricted sums
+      text_markdown: To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\{i,j\}$) and triplets ($3! = 6$ orderings of $\{i,j,k\}$) in the unrestricted sums
     - id: b
       text: Because the Taylor series of $\exp(-r)$ has $1/n!$ coefficients
+      text_markdown: Because the Taylor series of $\exp(-r)$ has $1/n!$ coefficients
     - id: c
       text: To convert from Hartrees to electron-volts
+      text_markdown: To convert from Hartrees to electron-volts
     - id: d
       text: Because 3-body forces only act on every sixth timestep
+      text_markdown: Because 3-body forces only act on every sixth timestep
     correct: a
-    rationale_markdown: When summing unrestrictedly over all $i, j, k = 1 \dots N$, each distinct pair of atoms is visited
-      $2! = 2$ times and each distinct triplet of atoms is visited $3! = 6$ times; dividing by $n!$ ensures each physical
-      $n$-body cluster is counted exactly once.
+    rationale_markdown: When summing unrestrictedly over all $i, j, k = 1 \dots N$, each distinct pair of atoms is visited $2! = 2$ times and each distinct triplet of atoms is visited $3! = 6$ times; dividing by $n!$ ensures each physical $n$-body cluster is counted exactly once.
   - id: q46_selecting_simulation_methodology
     type: problem
     question_type: single_select
@@ -1501,26 +1226,22 @@ worksheet:
     taught_by:
     - sec_bo_and_atomic_units
     - sec_covalent_organic_water_ionic
-    prompt_markdown: 'You need to simulate dislocation loop interactions and plastic deformation in a nanocrystalline Copper
-      sample containing $N = 10^7$ atoms over $t = 10\text{ ns}$ ($5 \times 10^6$ timesteps). Based on Slide 32 & 33 of `05.potentials.pdf`,
-      which potential and method is the only physically appropriate and computationally feasible choice?
+    prompt_markdown: 'You need to simulate dislocation loop interactions and plastic deformation in a nanocrystalline Copper sample containing $N = 10^7$ atoms over $t = 10\text{ ns}$ ($5 \times 10^6$ timesteps). Based on Slide 32 & 33 of `05.potentials.pdf`, which potential and method is the only physically appropriate and computationally feasible choice?
 
       '
-    hint_markdown: Copper is an FCC metal, and $N = 10^7$ atoms for $5 \times 10^6$ steps requires an $\mathcal{O}(N)$ metallic
-      potential.
+    hint_markdown: Copper is an FCC metal, and $N = 10^7$ atoms for $5 \times 10^6$ steps requires an $\mathcal{O}(N)$ metallic potential.
     options:
     - id: a
-      text: Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\mathcal{O}(N)$ scaling and accurate metallic
-        vacancy/stacking-fault/elastic properties)
+      text: Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\mathcal{O}(N)$ scaling and accurate metallic vacancy/stacking-fault/elastic properties)
+      text_markdown: Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\mathcal{O}(N)$ scaling and accurate metallic vacancy/stacking-fault/elastic properties)
     - id: b
-      text: Ab initio DFT Molecular Dynamics (scales as $\mathcal{O}(N^3)$, limited to $\sim 10^2\text{–}10^3$ atoms for $\sim
-        10\text{–}100\text{ ps}$)
+      text: Ab initio DFT Molecular Dynamics (scales as $\mathcal{O}(N^3)$, limited to $\sim 10^2\text{–}10^3$ atoms for $\sim 10\text{–}100\text{ ps}$)
+      text_markdown: Ab initio DFT Molecular Dynamics (scales as $\mathcal{O}(N^3)$, limited to $\sim 10^2\text{–}10^3$ atoms for $\sim 10\text{–}100\text{ ps}$)
     - id: c
-      text: Lennard-Jones 12-6 pair potential (wrong $C_{12}=C_{44}$ Cauchy elasticity, wrong $E_v/E_c = 1$, and wrong surface
-        relaxation for Cu)
+      text: Lennard-Jones 12-6 pair potential (wrong $C_{12}=C_{44}$ Cauchy elasticity, wrong $E_v/E_c = 1$, and wrong surface relaxation for Cu)
+      text_markdown: Lennard-Jones 12-6 pair potential (wrong $C_{12}=C_{44}$ Cauchy elasticity, wrong $E_v/E_c = 1$, and wrong surface relaxation for Cu)
     - id: d
       text: Stillinger-Weber tetrahedral diamond-cubic silicon potential ($Z=4$)
+      text_markdown: Stillinger-Weber tetrahedral diamond-cubic silicon potential ($Z=4$)
     correct: a
-    rationale_markdown: Ab initio MD is many orders of magnitude too slow for $10^7$ atoms over $10\text{ ns}$, and LJ fails
-      to capture metallic bonding ($C_{12} \ne C_{44}$, low $E_v/E_c$, stacking fault energies). EAM with $\mathcal{O}(N)$
-      neighbor lists accurately models FCC Cu at million-atom scales.
+    rationale_markdown: Ab initio MD is many orders of magnitude too slow for $10^7$ atoms over $10\text{ ns}$, and LJ fails to capture metallic bonding ($C_{12} \ne C_{44}$, low $E_v/E_c$, stacking fault energies). EAM with $\mathcal{O}(N)$ neighbor lists accurately models FCC Cu at million-atom scales.

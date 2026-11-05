@@ -72,19 +72,23 @@
       "options": [
         {
           "id": "a",
-          "text": "So that the potential and force remain continuous across the minimum-image boundary at r = L/2 and avoid self-overlapping images."
+          "text": "So that the potential and force remain continuous across the minimum-image boundary at $r = L/2$ and avoid self-overlapping images.",
+          "text_markdown": "So that the potential and force remain continuous across the minimum-image boundary at $r = L/2$ and avoid self-overlapping images."
         },
         {
           "id": "b",
-          "text": "Because the radial distribution function g(r) is identically zero for r > L/2 in all liquids."
+          "text": "Because the radial distribution function $g(r)$ is identically zero for $r > L/2$ in all liquids.",
+          "text_markdown": "Because the radial distribution function $g(r)$ is identically zero for $r > L/2$ in all liquids."
         },
         {
           "id": "c",
-          "text": "Because the Fourier transform of any function vanishes for wavelengths larger than L/2."
+          "text": "Because the Fourier transform of any function vanishes for wavelengths larger than $L/2$.",
+          "text_markdown": "Because the Fourier transform of any function vanishes for wavelengths larger than $L/2$."
         },
         {
           "id": "d",
-          "text": "Because computer floating-point numbers cannot represent distances larger than L/2."
+          "text": "Because computer floating-point numbers cannot represent distances larger than $L/2$.",
+          "text_markdown": "Because computer floating-point numbers cannot represent distances larger than $L/2$."
         }
       ],
       "correct": "a",
@@ -104,19 +108,23 @@
       "options": [
         {
           "id": "a",
-          "text": "When d\u2081 + d\u2082 \u2265 \u0394"
+          "text": "When $d_1 + d_2 \\ge \\Delta$",
+          "text_markdown": "When $d_1 + d_2 \\ge \\Delta$"
         },
         {
           "id": "b",
-          "text": "When d\u2081 - d\u2082 \u2265 r_c"
+          "text": "When $d_1 - d_2 \\ge r_c$",
+          "text_markdown": "When $d_1 - d_2 \\ge r_c$"
         },
         {
           "id": "c",
-          "text": "When d\u2081\u00b2 + d\u2082\u00b2 \u2265 L/2"
+          "text": "When $d_1^2 + d_2^2 \\ge L/2$",
+          "text_markdown": "When $d_1^2 + d_2^2 \\ge L/2$"
         },
         {
           "id": "d",
-          "text": "Only after a fixed number of 10,000 steps regardless of particle velocities"
+          "text": "Only after a fixed number of 10,000 steps regardless of particle velocities",
+          "text_markdown": "Only after a fixed number of 10,000 steps regardless of particle velocities"
         }
       ],
       "correct": "a",
@@ -136,19 +144,23 @@
       "options": [
         {
           "id": "a",
-          "text": "It reduces neighbor-table construction from O(N\u00b2) to O(N) and reduces linked-list memory storage from O(mN) to O(N)."
+          "text": "It reduces neighbor-table construction from $\\mathcal{O}(N^2)$ to $\\mathcal{O}(N)$ and reduces linked-list memory storage from $\\mathcal{O}(mN)$ to $\\mathcal{O}(N)$.",
+          "text_markdown": "It reduces neighbor-table construction from $\\mathcal{O}(N^2)$ to $\\mathcal{O}(N)$ and reduces linked-list memory storage from $\\mathcal{O}(mN)$ to $\\mathcal{O}(N)$."
         },
         {
           "id": "b",
-          "text": "It eliminates the need for periodic boundary conditions and allows r_c > 2L."
+          "text": "It eliminates the need for periodic boundary conditions and allows $r_c > 2L$.",
+          "text_markdown": "It eliminates the need for periodic boundary conditions and allows $r_c > 2L$."
         },
         {
           "id": "c",
-          "text": "It computes exact long-range 1/r Coulomb forces in O(1) time without Fourier transforms."
+          "text": "It computes exact long-range $1/r$ Coulomb forces in $\\mathcal{O}(1)$ time without Fourier transforms.",
+          "text_markdown": "It computes exact long-range $1/r$ Coulomb forces in $\\mathcal{O}(1)$ time without Fourier transforms."
         },
         {
           "id": "d",
-          "text": "It increases memory usage to O(N\u00b3) in exchange for zero force evaluations."
+          "text": "It increases memory usage to $\\mathcal{O}(N^3)$ in exchange for zero force evaluations.",
+          "text_markdown": "It increases memory usage to $\\mathcal{O}(N^3)$ in exchange for zero force evaluations."
         }
       ],
       "correct": "a",
@@ -179,19 +191,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u0394P_tail is negative (attractive tail lowers the pressure) and scales as -\u03c1\u00b2 / r_c\u00b3."
+          "text": "$\\Delta P_{\\text{tail}}$ is negative (attractive tail lowers the pressure) and scales as $-\\rho^2 / r_c^3$.",
+          "text_markdown": "$\\Delta P_{\\text{tail}}$ is negative (attractive tail lowers the pressure) and scales as $-\\rho^2 / r_c^3$."
         },
         {
           "id": "b",
-          "text": "\u0394P_tail is positive and scales as +\u03c1 / r_c\u2076."
+          "text": "$\\Delta P_{\\text{tail}}$ is positive and scales as $+\\rho / r_c^6$.",
+          "text_markdown": "$\\Delta P_{\\text{tail}}$ is positive and scales as $+\\rho / r_c^6$."
         },
         {
           "id": "c",
-          "text": "\u0394P_tail is negative and scales as -\u03c1\u00b3 / r_c\u00b2."
+          "text": "$\\Delta P_{\\text{tail}}$ is negative and scales as $-\\rho^3 / r_c^2$.",
+          "text_markdown": "$\\Delta P_{\\text{tail}}$ is negative and scales as $-\\rho^3 / r_c^2$."
         },
         {
           "id": "d",
-          "text": "\u0394P_tail is identically zero because dV/dr integrates to zero."
+          "text": "$\\Delta P_{\\text{tail}}$ is identically zero because $dV/dr$ integrates to zero.",
+          "text_markdown": "$\\Delta P_{\\text{tail}}$ is identically zero because $dV/dr$ integrates to zero."
         }
       ],
       "correct": "a",
@@ -242,19 +258,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Long-ranged if \u03bd \u2264 3 in 3D, and if \u03bd \u2264 2 in 2D."
+          "text": "Long-ranged if $\\nu \\le 3$ in 3D, and if $\\nu \\le 2$ in 2D.",
+          "text_markdown": "Long-ranged if $\\nu \\le 3$ in 3D, and if $\\nu \\le 2$ in 2D."
         },
         {
           "id": "b",
-          "text": "Long-ranged if \u03bd \u2264 6 in 3D, and if \u03bd \u2264 4 in 2D."
+          "text": "Long-ranged if $\\nu \\le 6$ in 3D, and if $\\nu \\le 4$ in 2D.",
+          "text_markdown": "Long-ranged if $\\nu \\le 6$ in 3D, and if $\\nu \\le 4$ in 2D."
         },
         {
           "id": "c",
-          "text": "Long-ranged only if \u03bd < 1 in all dimensions."
+          "text": "Long-ranged only if $\\nu < 1$ in all dimensions.",
+          "text_markdown": "Long-ranged only if $\\nu < 1$ in all dimensions."
         },
         {
           "id": "d",
-          "text": "Long-ranged if \u03bd > 3 in 3D, and if \u03bd > 2 in 2D."
+          "text": "Long-ranged if $\\nu > 3$ in 3D, and if $\\nu > 2$ in 2D.",
+          "text_markdown": "Long-ranged if $\\nu > 3$ in 3D, and if $\\nu > 2$ in 2D."
         }
       ],
       "correct": "a",
@@ -271,23 +291,28 @@
       "options": [
         {
           "id": "a",
-          "text": "Ion\u2013ion Coulomb potential V(r) \u221d 1/r (\u03bd = 1)"
+          "text": "Ion\u2013ion Coulomb potential $V(r) \\propto 1/r$ ($\\nu = 1$)",
+          "text_markdown": "Ion\u2013ion Coulomb potential $V(r) \\propto 1/r$ ($\\nu = 1$)"
         },
         {
           "id": "b",
-          "text": "Newtonian gravitational potential V(r) \u221d -1/r (\u03bd = 1)"
+          "text": "Newtonian gravitational potential $V(r) \\propto -1/r$ ($\\nu = 1$)",
+          "text_markdown": "Newtonian gravitational potential $V(r) \\propto -1/r$ ($\\nu = 1$)"
         },
         {
           "id": "c",
-          "text": "Unaveraged dipole\u2013dipole interaction V(r) \u221d 1/r\u00b3 (\u03bd = 3)"
+          "text": "Unaveraged dipole\u2013dipole interaction $V(r) \\propto 1/r^3$ ($\\nu = 3$)",
+          "text_markdown": "Unaveraged dipole\u2013dipole interaction $V(r) \\propto 1/r^3$ ($\\nu = 3$)"
         },
         {
           "id": "d",
-          "text": "London dispersion attraction V(r) \u221d -1/r\u2076 (\u03bd = 6)"
+          "text": "London dispersion attraction $V(r) \\propto -1/r^6$ ($\\nu = 6$)",
+          "text_markdown": "London dispersion attraction $V(r) \\propto -1/r^6$ ($\\nu = 6$)"
         },
         {
           "id": "e",
-          "text": "Lennard-Jones Pauli repulsion V(r) \u221d 1/r\u00b9\u00b2 (\u03bd = 12)"
+          "text": "Lennard-Jones Pauli repulsion $V(r) \\propto 1/r^{12}$ ($\\nu = 12$)",
+          "text_markdown": "Lennard-Jones Pauli repulsion $V(r) \\propto 1/r^{12}$ ($\\nu = 12$)"
         }
       ],
       "correct": [
@@ -308,19 +333,23 @@
       "options": [
         {
           "id": "a",
-          "text": "For a charged system S(k) = c k\u00b2 as k \u2192 0 (perfect screening of long-wavelength charge fluctuations), whereas for an uncharged system S(k) \u2192 c > 0."
+          "text": "For a charged system $S(k) = c k^2$ as $k \\to 0$ (perfect screening of long-wavelength charge fluctuations), whereas for an uncharged system $S(k) \\to c > 0$.",
+          "text_markdown": "For a charged system $S(k) = c k^2$ as $k \\to 0$ (perfect screening of long-wavelength charge fluctuations), whereas for an uncharged system $S(k) \\to c > 0$."
         },
         {
           "id": "b",
-          "text": "For a charged system S(k) \u2192 \u221e as 1/k\u00b2, whereas for an uncharged system S(k) = 0 identically for all k."
+          "text": "For a charged system $S(k) \\to \\infty$ as $1/k^2$, whereas for an uncharged system $S(k) = 0$ identically for all $k$.",
+          "text_markdown": "For a charged system $S(k) \\to \\infty$ as $1/k^2$, whereas for an uncharged system $S(k) = 0$ identically for all $k$."
         },
         {
           "id": "c",
-          "text": "For both charged and uncharged systems, S(k) = 1 at k = 0."
+          "text": "For both charged and uncharged systems, $S(k) = 1$ at $k = 0$.",
+          "text_markdown": "For both charged and uncharged systems, $S(k) = 1$ at $k = 0$."
         },
         {
           "id": "d",
-          "text": "For a charged system S(k) = c k\u2074, whereas for an uncharged system S(k) = c k\u00b2."
+          "text": "For a charged system $S(k) = c k^4$, whereas for an uncharged system $S(k) = c k^2$.",
+          "text_markdown": "For a charged system $S(k) = c k^4$, whereas for an uncharged system $S(k) = c k^2$."
         }
       ],
       "correct": "a",
@@ -337,19 +366,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The boundary discontinuity effect (1/r)(r\u00b2) ~ r grows with cutoff radius instead of vanishing, and truncation violates Poisson's equation and the Stillinger\u2013Lovett screening condition."
+          "text": "The boundary discontinuity effect $(1/r)(r^2) \\sim r$ grows with cutoff radius instead of vanishing, and truncation violates Poisson's equation and the Stillinger\u2013Lovett screening condition.",
+          "text_markdown": "The boundary discontinuity effect $(1/r)(r^2) \\sim r$ grows with cutoff radius instead of vanishing, and truncation violates Poisson's equation and the Stillinger\u2013Lovett screening condition."
         },
         {
           "id": "b",
-          "text": "The Coulomb potential is zero for r < L/2 and only turns on for r > L/2."
+          "text": "The Coulomb potential is zero for $r < L/2$ and only turns on for $r > L/2$.",
+          "text_markdown": "The Coulomb potential is zero for $r < L/2$ and only turns on for $r > L/2$."
         },
         {
           "id": "c",
-          "text": "Truncating 1/r causes the particle masses to become negative."
+          "text": "Truncating 1/r causes the particle masses to become negative.",
+          "text_markdown": "Truncating 1/r causes the particle masses to become negative."
         },
         {
           "id": "d",
-          "text": "Verlet neighbor lists cannot store pairs when charges have opposite signs."
+          "text": "Verlet neighbor lists cannot store pairs when charges have opposite signs.",
+          "text_markdown": "Verlet neighbor lists cannot store pairs when charges have opposite signs."
         }
       ],
       "correct": "a",
@@ -400,19 +433,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u03b1(ZnS) = 1.6381 < \u03b1(NaCl) = 1.747565 < \u03b1(CsCl) = 1.762675"
+          "text": "$\\alpha(\\text{ZnS}) = 1.6381 < \\alpha(\\text{NaCl}) = 1.747565 < \\alpha(\\text{CsCl}) = 1.762675$",
+          "text_markdown": "$\\alpha(\\text{ZnS}) = 1.6381 < \\alpha(\\text{NaCl}) = 1.747565 < \\alpha(\\text{CsCl}) = 1.762675$"
         },
         {
           "id": "b",
-          "text": "\u03b1(CsCl) < \u03b1(NaCl) < \u03b1(ZnS)"
+          "text": "$\\alpha(\\text{CsCl}) < \\alpha(\\text{NaCl}) < \\alpha(\\text{ZnS})$",
+          "text_markdown": "$\\alpha(\\text{CsCl}) < \\alpha(\\text{NaCl}) < \\alpha(\\text{ZnS})$"
         },
         {
           "id": "c",
-          "text": "\u03b1(NaCl) < \u03b1(ZnS) < \u03b1(CsCl)"
+          "text": "$\\alpha(\\text{NaCl}) < \\alpha(\\text{ZnS}) < \\alpha(\\text{CsCl})$",
+          "text_markdown": "$\\alpha(\\text{NaCl}) < \\alpha(\\text{ZnS}) < \\alpha(\\text{CsCl})$"
         },
         {
           "id": "d",
-          "text": "All three 3D structures have the exact same Madelung constant \u03b1 = 2 ln 2."
+          "text": "All three 3D structures have the exact same Madelung constant $\\alpha = 2\\ln 2$.",
+          "text_markdown": "All three 3D structures have the exact same Madelung constant $\\alpha = 2\\ln 2$."
         }
       ],
       "correct": "a",
@@ -429,19 +466,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The sum of absolute values diverges (\u2211 |q_i q_j|/r_ij = \u221e), so the series only converges if positive and negative terms are grouped to nearly cancel, and its limiting value depends on the summation order / macroscopic surface shape and boundary conditions."
+          "text": "The sum of absolute values diverges ($\\sum |q_i q_j|/r_{ij} = \\infty$), so the series only converges if positive and negative terms are grouped to nearly cancel, and its limiting value depends on the summation order / macroscopic surface shape and boundary conditions.",
+          "text_markdown": "The sum of absolute values diverges ($\\sum |q_i q_j|/r_{ij} = \\infty$), so the series only converges if positive and negative terms are grouped to nearly cancel, and its limiting value depends on the summation order / macroscopic surface shape and boundary conditions."
         },
         {
           "id": "b",
-          "text": "The sum converges only when the temperature T is below the Debye temperature."
+          "text": "The sum converges only when the temperature $T$ is below the Debye temperature.",
+          "text_markdown": "The sum converges only when the temperature $T$ is below the Debye temperature."
         },
         {
           "id": "c",
-          "text": "Every rearrangement of the terms in the series converges to the exact same number."
+          "text": "Every rearrangement of the terms in the series converges to the exact same number.",
+          "text_markdown": "Every rearrangement of the terms in the series converges to the exact same number."
         },
         {
           "id": "d",
-          "text": "The sum is finite only when all charges have the same sign (+q)."
+          "text": "The sum is finite only when all charges have the same sign ($+q$).",
+          "text_markdown": "The sum is finite only when all charges have the same sign ($+q$)."
         }
       ],
       "correct": "a",
@@ -503,19 +544,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The r-space convergence issue comes from r \u2192 \u221e (k \u2192 0), whereas the k-space convergence issue comes from k \u2192 \u221e (the sharp 1/r singularity at r \u2192 0)."
+          "text": "The real-space convergence issue comes from $r \\to \\infty$ ($k \\to 0$), whereas the reciprocal-space convergence issue comes from $k \\to \\infty$ (the sharp $1/r$ singularity at $r \\to 0$).",
+          "text_markdown": "The real-space convergence issue comes from $r \\to \\infty$ ($k \\to 0$), whereas the reciprocal-space convergence issue comes from $k \\to \\infty$ (the sharp $1/r$ singularity at $r \\to 0$)."
         },
         {
           "id": "b",
-          "text": "Both the r-space and k-space convergence issues come solely from r \u2192 \u221e."
+          "text": "Both the real-space and reciprocal-space convergence issues come solely from $r \\to \\infty$.",
+          "text_markdown": "Both the real-space and reciprocal-space convergence issues come solely from $r \\to \\infty$."
         },
         {
           "id": "c",
-          "text": "The r-space convergence issue comes from r \u2192 0, whereas the k-space convergence issue comes from k \u2192 0."
+          "text": "The real-space convergence issue comes from $r \\to 0$, whereas the reciprocal-space convergence issue comes from $k \\to 0$.",
+          "text_markdown": "The real-space convergence issue comes from $r \\to 0$, whereas the reciprocal-space convergence issue comes from $k \\to 0$."
         },
         {
           "id": "d",
-          "text": "Neither r-space nor k-space has any convergence issue in 3D."
+          "text": "Neither r-space nor k-space has any convergence issue in 3D.",
+          "text_markdown": "Neither r-space nor k-space has any convergence issue in 3D."
         }
       ],
       "correct": "a",
@@ -535,19 +580,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because Poisson's equation is linear, we add a neutralizing Gaussian charge cloud around each point charge to screen out the long-range part in real space, and subtract the same Gaussian cloud in smooth k-space."
+          "text": "Because Poisson's equation is linear, we add a neutralizing Gaussian charge cloud around each point charge to screen out the long-range part in real space, and subtract the same Gaussian cloud in smooth k-space.",
+          "text_markdown": "Because Poisson's equation is linear, we add a neutralizing Gaussian charge cloud around each point charge to screen out the long-range part in real space, and subtract the same Gaussian cloud in smooth k-space."
         },
         {
           "id": "b",
-          "text": "We replace all point charges with neutral hard spheres of diameter L/2."
+          "text": "We replace all point charges with neutral hard spheres of diameter $L/2$.",
+          "text_markdown": "We replace all point charges with neutral hard spheres of diameter $L/2$."
         },
         {
           "id": "c",
-          "text": "We set the permittivity of free space to infinity inside a radius r_c and zero outside r_c."
+          "text": "We set the permittivity of free space to infinity inside a radius $r_c$ and zero outside $r_c$.",
+          "text_markdown": "We set the permittivity of free space to infinity inside a radius $r_c$ and zero outside $r_c$."
         },
         {
           "id": "d",
-          "text": "We multiply all ionic charges by exp(-t/\u03c4) so that the system becomes uncharged at long times."
+          "text": "We multiply all ionic charges by $\\exp(-t/\\tau)$ so that the system becomes uncharged at long times.",
+          "text_markdown": "We multiply all ionic charges by $\\exp(-t/\\tau)$ so that the system becomes uncharged at long times."
         }
       ],
       "correct": "a",
@@ -567,19 +616,23 @@
       "options": [
         {
           "id": "a",
-          "text": "v_short(r) = (q\u2081q\u2082 / r) erfc(\u03bar)  and  v_long,k = (4\u03c0 q\u2081q\u2082 / (\u03a9 k\u00b2)) exp(-k\u00b2 / (4\u03ba\u00b2))"
+          "text": "$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r} \\operatorname{erfc}(\\kappa r)$ and $v_{\\text{long}}(k) = \\frac{4\\pi q_1 q_2}{\\Omega k^2} \\exp\\left(-\\frac{k^2}{4\\kappa^2}\\right)$",
+          "text_markdown": "$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r} \\operatorname{erfc}(\\kappa r)$ and $v_{\\text{long}}(k) = \\frac{4\\pi q_1 q_2}{\\Omega k^2} \\exp\\left(-\\frac{k^2}{4\\kappa^2}\\right)$"
         },
         {
           "id": "b",
-          "text": "v_short(r) = (q\u2081q\u2082 / r) erf(\u03bar)  and  v_long,k = (4\u03c0 q\u2081q\u2082 / (\u03a9 k\u00b2)) exp(-\u03ba\u00b2 k\u00b2)"
+          "text": "$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r} \\operatorname{erf}(\\kappa r)$ and $v_{\\text{long}}(k) = \\frac{4\\pi q_1 q_2}{\\Omega k^2} \\exp(-\\kappa^2 k^2)$",
+          "text_markdown": "$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r} \\operatorname{erf}(\\kappa r)$ and $v_{\\text{long}}(k) = \\frac{4\\pi q_1 q_2}{\\Omega k^2} \\exp(-\\kappa^2 k^2)$"
         },
         {
           "id": "c",
-          "text": "v_short(r) = (q\u2081q\u2082 / r\u00b2) exp(-\u03bar)  and  v_long,k = (4\u03c0 q\u2081q\u2082 / (\u03a9 k\u2074))"
+          "text": "$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r^2} \\exp(-\\kappa r)$ and $v_{\\text{long}}(k) = \\frac{4\\pi q_1 q_2}{\\Omega k^4}$",
+          "text_markdown": "$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r^2} \\exp(-\\kappa r)$ and $v_{\\text{long}}(k) = \\frac{4\\pi q_1 q_2}{\\Omega k^4}$"
         },
         {
           "id": "d",
-          "text": "v_short(r) = q\u2081q\u2082 erfc(r/\u03ba)  and  v_long,k = (q\u2081q\u2082 / \u03a9) cos(k / \u03ba)"
+          "text": "$v_{\\text{short}}(r) = q_1 q_2 \\operatorname{erfc}(r/\\kappa)$ and $v_{\\text{long}}(k) = \\frac{q_1 q_2}{\\Omega} \\cos(k/\\kappa)$",
+          "text_markdown": "$v_{\\text{short}}(r) = q_1 q_2 \\operatorname{erfc}(r/\\kappa)$ and $v_{\\text{long}}(k) = \\frac{q_1 q_2}{\\Omega} \\cos(k/\\kappa)$"
         }
       ],
       "correct": "a",
@@ -599,19 +652,23 @@
       "options": [
         {
           "id": "a",
-          "text": "v_short(r) decays faster so r_c decreases (less real-space work), while v_long,k decays slower so k_c increases (more k-space work)."
+          "text": "$v_{\\text{short}}(r)$ decays faster so $r_c$ decreases (less real-space work), while $v_{\\text{long}}(k)$ decays slower so $k_c$ increases (more $k$-space work).",
+          "text_markdown": "$v_{\\text{short}}(r)$ decays faster so $r_c$ decreases (less real-space work), while $v_{\\text{long}}(k)$ decays slower so $k_c$ increases (more $k$-space work)."
         },
         {
           "id": "b",
-          "text": "Both r_c and k_c decrease simultaneously, reducing total work to O(1)."
+          "text": "Both $r_c$ and $k_c$ decrease simultaneously, reducing total work to $\\mathcal{O}(1)$.",
+          "text_markdown": "Both $r_c$ and $k_c$ decrease simultaneously, reducing total work to $\\mathcal{O}(1)$."
         },
         {
           "id": "c",
-          "text": "v_short(r) decays slower so r_c increases, while v_long,k decays faster so k_c decreases."
+          "text": "$v_{\\text{short}}(r)$ decays slower so $r_c$ increases, while $v_{\\text{long}}(k)$ decays faster so $k_c$ decreases.",
+          "text_markdown": "$v_{\\text{short}}(r)$ decays slower so $r_c$ increases, while $v_{\\text{long}}(k)$ decays faster so $k_c$ decreases."
         },
         {
           "id": "d",
-          "text": "Neither r_c nor k_c depends on \u03ba."
+          "text": "Neither $r_c$ nor $k_c$ depends on $\\kappa$.",
+          "text_markdown": "Neither $r_c$ nor $k_c$ depends on $\\kappa$."
         }
       ],
       "correct": "a",
@@ -628,19 +685,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because factoring the k-space double sum into |\u03c1_k|\u00b2 includes the i = j interaction of each point charge with its own compensating Gaussian cloud at r = 0, where lim_{r\u21920} erf(\u03bar)/r = 2\u03ba/\u221a\u03c0."
+          "text": "Because factoring the $k$-space double sum into $|\\rho_{\\mathbf{k}}|^2$ includes the $i = j$ interaction of each point charge with its own compensating Gaussian cloud at $r = 0$, where $\\lim_{r\\to 0} \\frac{\\operatorname{erf}(\\kappa r)}{r} = \\frac{2\\kappa}{\\sqrt{\\pi}}$.",
+          "text_markdown": "Because factoring the $k$-space double sum into $|\\rho_{\\mathbf{k}}|^2$ includes the $i = j$ interaction of each point charge with its own compensating Gaussian cloud at $r = 0$, where $\\lim_{r\\to 0} \\frac{\\operatorname{erf}(\\kappa r)}{r} = \\frac{2\\kappa}{\\sqrt{\\pi}}$."
         },
         {
           "id": "b",
-          "text": "Because erfc(\u03bar)/r approaches 2\u03ba/\u221a\u03c0 at r = \u221e."
+          "text": "Because $\\frac{\\operatorname{erfc}(\\kappa r)}{r}$ approaches $\\frac{2\\kappa}{\\sqrt{\\pi}}$ at $r = \\infty$.",
+          "text_markdown": "Because $\\frac{\\operatorname{erfc}(\\kappa r)}{r}$ approaches $\\frac{2\\kappa}{\\sqrt{\\pi}}$ at $r = \\infty$."
         },
         {
           "id": "c",
-          "text": "Because the minimum image convention double-counts pairs at r = L/2."
+          "text": "Because the minimum image convention double-counts pairs at $r = L/2$.",
+          "text_markdown": "Because the minimum image convention double-counts pairs at $r = L/2$."
         },
         {
           "id": "d",
-          "text": "Because the total charge \u2211 q_i of an ionic crystal is always nonzero."
+          "text": "Because the total charge $\\sum q_i$ of an ionic crystal is always nonzero.",
+          "text_markdown": "Because the total charge $\\sum q_i$ of an ionic crystal is always nonzero."
         }
       ],
       "correct": "a",
@@ -671,19 +732,23 @@
       "options": [
         {
           "id": "a",
-          "text": "For a conducting boundary (\u03b5 \u2192 \u221e), V_dipole = 0; for vacuum boundary conditions (\u03b5 = 1), V_dipole = (2\u03c0 / 3\u03a9) |\u2211 \u03bc_i|\u00b2."
+          "text": "For a conducting boundary ($\\varepsilon \\to \\infty$), $V_{\\text{dipole}} = 0$; for vacuum boundary conditions ($\\varepsilon = 1$), $V_{\\text{dipole}} = \\frac{2\\pi}{3\\Omega} |\\sum \\boldsymbol{\\mu}_i|^2$.",
+          "text_markdown": "For a conducting boundary ($\\varepsilon \\to \\infty$), $V_{\\text{dipole}} = 0$; for vacuum boundary conditions ($\\varepsilon = 1$), $V_{\\text{dipole}} = \\frac{2\\pi}{3\\Omega} |\\sum \\boldsymbol{\\mu}_i|^2$."
         },
         {
           "id": "b",
-          "text": "For a conducting boundary (\u03b5 \u2192 \u221e), V_dipole \u2192 \u221e; for vacuum (\u03b5 = 1), V_dipole = 0."
+          "text": "For a conducting boundary ($\\varepsilon \\to \\infty$), $V_{\\text{dipole}} \\to \\infty$; for vacuum ($\\varepsilon = 1$), $V_{\\text{dipole}} = 0$.",
+          "text_markdown": "For a conducting boundary ($\\varepsilon \\to \\infty$), $V_{\\text{dipole}} \\to \\infty$; for vacuum ($\\varepsilon = 1$), $V_{\\text{dipole}} = 0$."
         },
         {
           "id": "c",
-          "text": "In both cases, V_dipole = (4\u03c0 / \u03a9) |\u2211 \u03bc_i|\u00b2."
+          "text": "In both cases, $V_{\\text{dipole}} = \\frac{4\\pi}{\\Omega} |\\sum \\boldsymbol{\\mu}_i|^2$.",
+          "text_markdown": "In both cases, $V_{\\text{dipole}} = \\frac{4\\pi}{\\Omega} |\\sum \\boldsymbol{\\mu}_i|^2$."
         },
         {
           "id": "d",
-          "text": "V_dipole is negative in vacuum and positive in a conductor."
+          "text": "$V_{\\text{dipole}}$ is negative in vacuum and positive in a conductor.",
+          "text_markdown": "$V_{\\text{dipole}}$ is negative in vacuum and positive in a conductor."
         }
       ],
       "correct": "a",
@@ -765,19 +830,23 @@
       "options": [
         {
           "id": "a",
-          "text": "It factors exp(i k\u00b7(r_i - r_j)) into the single-particle sum \u03c1_k = \u2211_i q_i exp(i k\u00b7r_i) and its complex conjugate \u03c1_{-k} = \u03c1_k*, reducing the cost per k-vector from O(N\u00b2) to O(N)."
+          "text": "It factors $\\exp(i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j))$ into the single-particle sum $\\rho_{\\mathbf{k}} = \\sum_i q_i \\exp(i\\mathbf{k}\\cdot\\mathbf{r}_i)$ and its complex conjugate $\\rho_{-\\mathbf{k}} = \\rho_{\\mathbf{k}}^*$, reducing the cost per $k$-vector from $\\mathcal{O}(N^2)$ to $\\mathcal{O}(N)$.",
+          "text_markdown": "It factors $\\exp(i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j))$ into the single-particle sum $\\rho_{\\mathbf{k}} = \\sum_i q_i \\exp(i\\mathbf{k}\\cdot\\mathbf{r}_i)$ and its complex conjugate $\\rho_{-\\mathbf{k}} = \\rho_{\\mathbf{k}}^*$, reducing the cost per $k$-vector from $\\mathcal{O}(N^2)$ to $\\mathcal{O}(N)$."
         },
         {
           "id": "b",
-          "text": "It truncates the sum over i and j after the first 10 particles in the array."
+          "text": "It truncates the sum over i and j after the first 10 particles in the array.",
+          "text_markdown": "It truncates the sum over i and j after the first 10 particles in the array."
         },
         {
           "id": "c",
-          "text": "It sets exp(i k\u00b7(r_i - r_j)) = 1 for all pairs in k-space."
+          "text": "It sets $\\exp(i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j)) = 1$ for all pairs in $k$-space.",
+          "text_markdown": "It sets $\\exp(i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j)) = 1$ for all pairs in $k$-space."
         },
         {
           "id": "d",
-          "text": "It uses a Verlet skin list in k-space so each particle only interacts with 12 k-vectors."
+          "text": "It uses a Verlet skin list in k-space so each particle only interacts with 12 k-vectors.",
+          "text_markdown": "It uses a Verlet skin list in k-space so each particle only interacts with 12 k-vectors."
         }
       ],
       "correct": "a",
@@ -794,19 +863,23 @@
       "options": [
         {
           "id": "a",
-          "text": "\u03c1_{-k} = \u03c1_k* (complex conjugate), so we only need to compute \u03c1_k over half of the reciprocal-space k-vectors."
+          "text": "$\\rho_{-\\mathbf{k}} = \\rho_{\\mathbf{k}}^*$ (complex conjugate), so we only need to compute $\\rho_{\\mathbf{k}}$ over half of the reciprocal-space $k$-vectors.",
+          "text_markdown": "$\\rho_{-\\mathbf{k}} = \\rho_{\\mathbf{k}}^*$ (complex conjugate), so we only need to compute $\\rho_{\\mathbf{k}}$ over half of the reciprocal-space $k$-vectors."
         },
         {
           "id": "b",
-          "text": "\u03c1_{-k} = -\u03c1_k, so \u03c1_k \u03c1_{-k} cancels to zero for every k."
+          "text": "$\\rho_{-\\mathbf{k}} = -\\rho_{\\mathbf{k}}$, so $\\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}}$ cancels to zero for every $\\mathbf{k}$.",
+          "text_markdown": "$\\rho_{-\\mathbf{k}} = -\\rho_{\\mathbf{k}}$, so $\\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}}$ cancels to zero for every $\\mathbf{k}$."
         },
         {
           "id": "c",
-          "text": "\u03c1_{-k} = 1 / \u03c1_k, so \u03c1_k \u03c1_{-k} = 1 identically."
+          "text": "$\\rho_{-\\mathbf{k}} = 1 / \\rho_{\\mathbf{k}}$, so $\\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}} = 1$ identically.",
+          "text_markdown": "$\\rho_{-\\mathbf{k}} = 1 / \\rho_{\\mathbf{k}}$, so $\\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}} = 1$ identically."
         },
         {
           "id": "d",
-          "text": "\u03c1_{-k} is independent of \u03c1_k and requires doubling the k-space cutoff."
+          "text": "$\\rho_{-\\mathbf{k}}$ is independent of $\\rho_{\\mathbf{k}}$ and requires doubling the $k$-space cutoff.",
+          "text_markdown": "$\\rho_{-\\mathbf{k}}$ is independent of $\\rho_{\\mathbf{k}}$ and requires doubling the $k$-space cutoff."
         }
       ],
       "correct": "a",
@@ -823,19 +896,23 @@
       "options": [
         {
           "id": "a",
-          "text": "They compute the base phases exp(i k\u2080 x_i) = (cos(k\u2080 x_i), sin(k\u2080 x_i)) once per particle in O(N) time and generate all higher harmonics m\u2081, m\u2082, m\u2083 and 3D products purely by fast complex multiplications."
+          "text": "They compute the base phases $\\exp(i k_0 x_i) = (\\cos(k_0 x_i), \\sin(k_0 x_i))$ once per particle in $\\mathcal{O}(N)$ time and generate all higher harmonics $m_1, m_2, m_3$ and 3D products purely by fast complex multiplications.",
+          "text_markdown": "They compute the base phases $\\exp(i k_0 x_i) = (\\cos(k_0 x_i), \\sin(k_0 x_i))$ once per particle in $\\mathcal{O}(N)$ time and generate all higher harmonics $m_1, m_2, m_3$ and 3D products purely by fast complex multiplications."
         },
         {
           "id": "b",
-          "text": "They replace exp(i k\u00b7r) with its first-order Taylor expansion 1 + i k\u00b7r for all k."
+          "text": "They replace $\\exp(i\\mathbf{k}\\cdot\\mathbf{r})$ with its first-order Taylor expansion $1 + i\\mathbf{k}\\cdot\\mathbf{r}$ for all $\\mathbf{k}$.",
+          "text_markdown": "They replace $\\exp(i\\mathbf{k}\\cdot\\mathbf{r})$ with its first-order Taylor expansion $1 + i\\mathbf{k}\\cdot\\mathbf{r}$ for all $\\mathbf{k}$."
         },
         {
           "id": "c",
-          "text": "They round all particle coordinates r_i to integers so exp(i k\u00b7r) is always \u00b11."
+          "text": "They round all particle coordinates $\\mathbf{r}_i$ to integers so $\\exp(i\\mathbf{k}\\cdot\\mathbf{r})$ is always $\\pm 1$.",
+          "text_markdown": "They round all particle coordinates $\\mathbf{r}_i$ to integers so $\\exp(i\\mathbf{k}\\cdot\\mathbf{r})$ is always $\\pm 1$."
         },
         {
           "id": "d",
-          "text": "They evaluate exp(i k\u00b7r) using a 100-term series of Bessel functions at each k-vector."
+          "text": "They evaluate $\\exp(i\\mathbf{k}\\cdot\\mathbf{r})$ using a 100-term series of Bessel functions at each $k$-vector.",
+          "text_markdown": "They evaluate $\\exp(i\\mathbf{k}\\cdot\\mathbf{r})$ using a 100-term series of Bessel functions at each $k$-vector."
         }
       ],
       "correct": "a",
@@ -852,19 +929,23 @@
       "options": [
         {
           "id": "a",
-          "text": "O(M_k) operations (or O(N^(1/2)) at optimal \u03ba), by updating \u03c1_k^new = \u03c1_k^old + q_i [exp(i k\u00b7r_i^new) - exp(i k\u00b7r_i^old)] for each k-vector without re-summing the other N - 1 particles."
+          "text": "$\\mathcal{O}(M_k)$ operations (or $\\mathcal{O}(N^{1/2})$ at optimal $\\kappa$), by updating $\\rho_{\\mathbf{k}}^{\\text{new}} = \\rho_{\\mathbf{k}}^{\\text{old}} + q_i [\\exp(i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{new}}) - \\exp(i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{old}})]$ for each $k$-vector without re-summing the other $N - 1$ particles.",
+          "text_markdown": "$\\mathcal{O}(M_k)$ operations (or $\\mathcal{O}(N^{1/2})$ at optimal $\\kappa$), by updating $\\rho_{\\mathbf{k}}^{\\text{new}} = \\rho_{\\mathbf{k}}^{\\text{old}} + q_i [\\exp(i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{new}}) - \\exp(i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{old}})]$ for each $k$-vector without re-summing the other $N - 1$ particles."
         },
         {
           "id": "b",
-          "text": "O(N\u00b2 M_k) operations, because every pair distance r_jk must be Fourier transformed from scratch."
+          "text": "$\\mathcal{O}(N^2 M_k)$ operations, because every pair distance $r_{jk}$ must be Fourier transformed from scratch.",
+          "text_markdown": "$\\mathcal{O}(N^2 M_k)$ operations, because every pair distance $r_{jk}$ must be Fourier transformed from scratch."
         },
         {
           "id": "c",
-          "text": "O(N\u00b3) operations via Cholesky decomposition of the k-space matrix."
+          "text": "$\\mathcal{O}(N^3)$ operations via Cholesky decomposition of the $k$-space matrix.",
+          "text_markdown": "$\\mathcal{O}(N^3)$ operations via Cholesky decomposition of the $k$-space matrix."
         },
         {
           "id": "d",
-          "text": "Zero operations, because V_long does not depend on individual particle positions."
+          "text": "Zero operations, because $V_{\\text{long}}$ does not depend on individual particle positions.",
+          "text_markdown": "Zero operations, because $V_{\\text{long}}$ does not depend on individual particle positions."
         }
       ],
       "correct": "a",
@@ -881,19 +962,23 @@
       "options": [
         {
           "id": "a",
-          "text": "It expands v_short(r) = \u2211_n c_n h_n(r) in basis functions satisfying boundary conditions at r_c = L/2 and optimizes the coefficients c_n to minimize the k-space truncation error from neglecting |k| > k_c."
+          "text": "It expands $v_{\\text{short}}(r) = \\sum_n c_n h_n(r)$ in basis functions satisfying boundary conditions at $r_c = L/2$ and optimizes the coefficients $c_n$ to minimize the $k$-space truncation error from neglecting $|\\mathbf{k}| > k_c$.",
+          "text_markdown": "It expands $v_{\\text{short}}(r) = \\sum_n c_n h_n(r)$ in basis functions satisfying boundary conditions at $r_c = L/2$ and optimizes the coefficients $c_n$ to minimize the $k$-space truncation error from neglecting $|\\mathbf{k}| > k_c$."
         },
         {
           "id": "b",
-          "text": "It replaces the Coulomb potential 1/r with a hard-sphere potential at all distances."
+          "text": "It replaces the Coulomb potential $1/r$ with a hard-sphere potential at all distances.",
+          "text_markdown": "It replaces the Coulomb potential $1/r$ with a hard-sphere potential at all distances."
         },
         {
           "id": "c",
-          "text": "It sets the k-space cutoff k_c = 0 so that no Fourier vectors are ever needed."
+          "text": "It sets the $k$-space cutoff $k_c = 0$ so that no Fourier vectors are ever needed.",
+          "text_markdown": "It sets the $k$-space cutoff $k_c = 0$ so that no Fourier vectors are ever needed."
         },
         {
           "id": "d",
-          "text": "It uses a wider Gaussian so that v_short(L/2) is maximized at the box boundary."
+          "text": "It uses a wider Gaussian so that $v_{\\text{short}}(L/2)$ is maximized at the box boundary.",
+          "text_markdown": "It uses a wider Gaussian so that $v_{\\text{short}}(L/2)$ is maximized at the box boundary."
         }
       ],
       "correct": "a",
@@ -913,19 +998,23 @@
       "options": [
         {
           "id": "a",
-          "text": "O(N\u00b2) if \u03ba is not re-optimized; O(N^(3/2)) when \u03ba is optimally tuned and neighbor lists are used."
+          "text": "$\\mathcal{O}(N^2)$ if $\\kappa$ is not re-optimized; $\\mathcal{O}(N^{3/2})$ when $\\kappa$ is optimally tuned and neighbor lists are used.",
+          "text_markdown": "$\\mathcal{O}(N^2)$ if $\\kappa$ is not re-optimized; $\\mathcal{O}(N^{3/2})$ when $\\kappa$ is optimally tuned and neighbor lists are used."
         },
         {
           "id": "b",
-          "text": "O(N\u00b3) if \u03ba is not re-optimized; O(N\u00b2) when \u03ba is optimally tuned."
+          "text": "$\\mathcal{O}(N^3)$ if $\\kappa$ is not re-optimized; $\\mathcal{O}(N^2)$ when $\\kappa$ is optimally tuned.",
+          "text_markdown": "$\\mathcal{O}(N^3)$ if $\\kappa$ is not re-optimized; $\\mathcal{O}(N^2)$ when $\\kappa$ is optimally tuned."
         },
         {
           "id": "c",
-          "text": "O(N ln N) in both cases."
+          "text": "$\\mathcal{O}(N\\ln N)$ in both cases.",
+          "text_markdown": "$\\mathcal{O}(N\\ln N)$ in both cases."
         },
         {
           "id": "d",
-          "text": "O(N) if \u03ba is not re-optimized; O(N^(3/2)) when \u03ba is optimally tuned."
+          "text": "$\\mathcal{O}(N)$ if $\\kappa$ is not re-optimized; $\\mathcal{O}(N^{3/2})$ when $\\kappa$ is optimally tuned.",
+          "text_markdown": "$\\mathcal{O}(N)$ if $\\kappa$ is not re-optimized; $\\mathcal{O}(N^{3/2})$ when $\\kappa$ is optimally tuned."
         }
       ],
       "correct": "a",
@@ -959,19 +1048,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Step (1) is O(N); Step (3) is O(N^(3/2)); Step (4) is O(N^(1/2))."
+          "text": "Step (1) is $\\mathcal{O}(N)$; Step (3) is $\\mathcal{O}(N^{3/2})$; Step (4) is $\\mathcal{O}(N^{1/2})$.",
+          "text_markdown": "Step (1) is $\\mathcal{O}(N)$; Step (3) is $\\mathcal{O}(N^{3/2})$; Step (4) is $\\mathcal{O}(N^{1/2})$."
         },
         {
           "id": "b",
-          "text": "Step (1) is O(N^(3/2)); Step (3) is O(N\u00b2); Step (4) is O(N)."
+          "text": "Step (1) is $\\mathcal{O}(N^{3/2})$; Step (3) is $\\mathcal{O}(N^2)$; Step (4) is $\\mathcal{O}(N)$.",
+          "text_markdown": "Step (1) is $\\mathcal{O}(N^{3/2})$; Step (3) is $\\mathcal{O}(N^2)$; Step (4) is $\\mathcal{O}(N)$."
         },
         {
           "id": "c",
-          "text": "Step (1) is O(1); Step (3) is O(N); Step (4) is O(N^(3/2))."
+          "text": "Step (1) is $\\mathcal{O}(1)$; Step (3) is $\\mathcal{O}(N)$; Step (4) is $\\mathcal{O}(N^{3/2})$.",
+          "text_markdown": "Step (1) is $\\mathcal{O}(1)$; Step (3) is $\\mathcal{O}(N)$; Step (4) is $\\mathcal{O}(N^{3/2})$."
         },
         {
           "id": "d",
-          "text": "All three steps scale as O(N^(3/2))."
+          "text": "All three steps scale as $\\mathcal{O}(N^{3/2})$.",
+          "text_markdown": "All three steps scale as $\\mathcal{O}(N^{3/2})$."
         }
       ],
       "correct": "a",
@@ -991,19 +1084,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Particle-Mesh / FFT methods scale as O(N ln N), and Fast Multipole Methods (FMM) scale as O(N)."
+          "text": "Particle-Mesh / FFT methods scale as $\\mathcal{O}(N\\ln N)$, and Fast Multipole Methods (FMM) scale as $\\mathcal{O}(N)$.",
+          "text_markdown": "Particle-Mesh / FFT methods scale as $\\mathcal{O}(N\\ln N)$, and Fast Multipole Methods (FMM) scale as $\\mathcal{O}(N)$."
         },
         {
           "id": "b",
-          "text": "Particle-Mesh / FFT methods scale as O(N\u00b2), and Fast Multipole Methods scale as O(N^(3/2))."
+          "text": "Particle-Mesh / FFT methods scale as $\\mathcal{O}(N^2)$, and Fast Multipole Methods scale as $\\mathcal{O}(N^{3/2})$.",
+          "text_markdown": "Particle-Mesh / FFT methods scale as $\\mathcal{O}(N^2)$, and Fast Multipole Methods scale as $\\mathcal{O}(N^{3/2})$."
         },
         {
           "id": "c",
-          "text": "Both Particle-Mesh and Fast Multipole Methods scale as O(N^(1/2))."
+          "text": "Both Particle-Mesh and Fast Multipole Methods scale as $\\mathcal{O}(N^{1/2})$.",
+          "text_markdown": "Both Particle-Mesh and Fast Multipole Methods scale as $\\mathcal{O}(N^{1/2})$."
         },
         {
           "id": "d",
-          "text": "Particle-Mesh scales as O(N), and Fast Multipole scales as O(N\u00b3)."
+          "text": "Particle-Mesh scales as $\\mathcal{O}(N)$, and Fast Multipole scales as $\\mathcal{O}(N^3)$.",
+          "text_markdown": "Particle-Mesh scales as $\\mathcal{O}(N)$, and Fast Multipole scales as $\\mathcal{O}(N^3)$."
         }
       ],
       "correct": "a",
@@ -1020,19 +1117,23 @@
       "options": [
         {
           "id": "a",
-          "text": "3D periodic images force the charge/dipole structure to repeat identically at large r (correlated replicas), whereas a real nearby fluid would be anticorrelated (screening); thus such structures are artificially penalized."
+          "text": "3D periodic images force the charge/dipole structure to repeat identically at large r (correlated replicas), whereas a real nearby fluid would be anticorrelated (screening); thus such structures are artificially penalized.",
+          "text_markdown": "3D periodic images force the charge/dipole structure to repeat identically at large r (correlated replicas), whereas a real nearby fluid would be anticorrelated (screening); thus such structures are artificially penalized."
         },
         {
           "id": "b",
-          "text": "The Ewald sum sets all forces perpendicular to the layer to zero."
+          "text": "The Ewald sum sets all forces perpendicular to the layer to zero.",
+          "text_markdown": "The Ewald sum sets all forces perpendicular to the layer to zero."
         },
         {
           "id": "c",
-          "text": "The self-interaction term V_self becomes infinite whenever a surface is present."
+          "text": "The self-interaction term $V_{\\text{self}}$ becomes infinite whenever a surface is present.",
+          "text_markdown": "The self-interaction term $V_{\\text{self}}$ becomes infinite whenever a surface is present."
         },
         {
           "id": "d",
-          "text": "Periodic boundary conditions cause all ions to evaporate into vacuum immediately."
+          "text": "Periodic boundary conditions cause all ions to evaporate into vacuum immediately.",
+          "text_markdown": "Periodic boundary conditions cause all ions to evaporate into vacuum immediately."
         }
       ],
       "correct": "a",
@@ -1097,19 +1198,23 @@
       "options": [
         {
           "id": "a",
-          "text": "A uniform neutralizing background charge density of opposite sign (jellium background), which exactly cancels the k = 0 divergence."
+          "text": "A uniform neutralizing background charge density of opposite sign (jellium background), which exactly cancels the $k = 0$ divergence.",
+          "text_markdown": "A uniform neutralizing background charge density of opposite sign (jellium background), which exactly cancels the $k = 0$ divergence."
         },
         {
           "id": "b",
-          "text": "A global Langevin friction term with \u03b6 \u2192 \u221e."
+          "text": "A global Langevin friction term with $\\zeta \\to \\infty$.",
+          "text_markdown": "A global Langevin friction term with $\\zeta \\to \\infty$."
         },
         {
           "id": "c",
-          "text": "An extra repulsive 1/r\u00b9\u00b2 Lennard-Jones core at r = 0."
+          "text": "An extra repulsive $1/r^{12}$ Lennard-Jones core at $r = 0$.",
+          "text_markdown": "An extra repulsive $1/r^{12}$ Lennard-Jones core at $r = 0$."
         },
         {
           "id": "d",
-          "text": "Nothing; the sum \u2211_{L\u22600} 1/|r - L| converges to zero on its own."
+          "text": "Nothing; the sum $\\sum_{\\mathbf{L}\\ne 0} 1/|\\mathbf{r} - \\mathbf{L}|$ converges to zero on its own.",
+          "text_markdown": "Nothing; the sum $\\sum_{\\mathbf{L}\\ne 0} 1/|\\mathbf{r} - \\mathbf{L}|$ converges to zero on its own."
         }
       ],
       "correct": "a",
@@ -1126,19 +1231,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Compute the potential energy of a perfect simple cubic lattice of unit charges in a neutralizing background and verify that V = -1.4186487 / a (independent of the choice of \u03ba)."
+          "text": "Compute the potential energy of a perfect simple cubic lattice of unit charges in a neutralizing background and verify that $V = -1.4186487 / a$ (independent of the choice of $\\kappa$).",
+          "text_markdown": "Compute the potential energy of a perfect simple cubic lattice of unit charges in a neutralizing background and verify that $V = -1.4186487 / a$ (independent of the choice of $\\kappa$)."
         },
         {
           "id": "b",
-          "text": "Verify that the total electrostatic energy is proportional to \u03ba\u00b3 when \u03ba is varied."
+          "text": "Verify that the total electrostatic energy is proportional to $\\kappa^3$ when $\\kappa$ is varied.",
+          "text_markdown": "Verify that the total electrostatic energy is proportional to $\\kappa^3$ when $\\kappa$ is varied."
         },
         {
           "id": "c",
-          "text": "Check that setting all charges q_i = +1 gives V = +\u221e."
+          "text": "Check that setting all charges $q_i = +1$ gives $V = +\\infty$.",
+          "text_markdown": "Check that setting all charges $q_i = +1$ gives $V = +\\infty$."
         },
         {
           "id": "d",
-          "text": "Verify that the real-space term alone equals zero for any \u03ba."
+          "text": "Verify that the real-space term alone equals zero for any $\\kappa$.",
+          "text_markdown": "Verify that the real-space term alone equals zero for any $\\kappa$."
         }
       ],
       "correct": "a",
@@ -1158,19 +1267,23 @@
       "options": [
         {
           "id": "a",
-          "text": "V_Ewald is completely independent of \u03ba (\u2202V_Ewald / \u2202\u03ba = 0), even though V_real, V_recip, and V_self each vary strongly with \u03ba."
+          "text": "$V_{\\text{Ewald}}$ is completely independent of $\\kappa$ ($\\partial V_{\\text{Ewald}} / \\partial\\kappa = 0$), even though $V_{\\text{real}}$, $V_{\\text{recip}}$, and $V_{\\text{self}}$ each vary strongly with $\\kappa$.",
+          "text_markdown": "$V_{\\text{Ewald}}$ is completely independent of $\\kappa$ ($\\partial V_{\\text{Ewald}} / \\partial\\kappa = 0$), even though $V_{\\text{real}}$, $V_{\\text{recip}}$, and $V_{\\text{self}}$ each vary strongly with $\\kappa$."
         },
         {
           "id": "b",
-          "text": "V_Ewald increases linearly with \u03ba because V_self \u221d -\u03ba."
+          "text": "$V_{\\text{Ewald}}$ increases linearly with $\\kappa$ because $V_{\\text{self}} \\propto -\\kappa$.",
+          "text_markdown": "$V_{\\text{Ewald}}$ increases linearly with $\\kappa$ because $V_{\\text{self}} \\propto -\\kappa$."
         },
         {
           "id": "c",
-          "text": "V_Ewald is proportional to 1/\u03ba\u00b2."
+          "text": "$V_{\\text{Ewald}}$ is proportional to $1/\\kappa^2$.",
+          "text_markdown": "$V_{\\text{Ewald}}$ is proportional to $1/\\kappa^2$."
         },
         {
           "id": "d",
-          "text": "V_Ewald oscillates sinusoidally with \u03ba."
+          "text": "$V_{\\text{Ewald}}$ oscillates sinusoidally with $\\kappa$.",
+          "text_markdown": "$V_{\\text{Ewald}}$ oscillates sinusoidally with $\\kappa$."
         }
       ],
       "correct": "a",
@@ -1187,19 +1300,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Divide space into cells recursively, compute the multipole (dipole, quadrupole, ...) moments of each small cell, and apply translation rules relating supercell moments to smaller cell moments."
+          "text": "Divide space into cells recursively, compute the multipole (dipole, quadrupole, ...) moments of each small cell, and apply translation rules relating supercell moments to smaller cell moments.",
+          "text_markdown": "Divide space into cells recursively, compute the multipole (dipole, quadrupole, ...) moments of each small cell, and apply translation rules relating supercell moments to smaller cell moments."
         },
         {
           "id": "b",
-          "text": "Truncate the Coulomb potential at nearest neighbors and add a constant density tail correction."
+          "text": "Truncate the Coulomb potential at nearest neighbors and add a constant density tail correction.",
+          "text_markdown": "Truncate the Coulomb potential at nearest neighbors and add a constant density tail correction."
         },
         {
           "id": "c",
-          "text": "Diagonalize the 3N \u00d7 3N Oseen matrix via Cholesky decomposition at every timestep."
+          "text": "Diagonalize the 3N \u00d7 3N Oseen matrix via Cholesky decomposition at every timestep.",
+          "text_markdown": "Diagonalize the 3N \u00d7 3N Oseen matrix via Cholesky decomposition at every timestep."
         },
         {
           "id": "d",
-          "text": "Transform all coordinates into 1D chains and multiply by 2 ln 2."
+          "text": "Transform all coordinates into 1D chains and multiply by 2 ln 2.",
+          "text_markdown": "Transform all coordinates into 1D chains and multiply by 2 ln 2."
         }
       ],
       "correct": "a",
@@ -1249,19 +1366,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Combining a linked-cell mesh (cell size L_cell > r_c + \u0394) with a Verlet skin list reduces both force evaluation and neighbor-table construction to O(N)."
+          "text": "Combining a linked-cell mesh (cell size $L_{\\text{cell}} > r_c + \\Delta$) with a Verlet skin list reduces both force evaluation and neighbor-table construction to $\\mathcal{O}(N)$.",
+          "text_markdown": "Combining a linked-cell mesh (cell size $L_{\\text{cell}} > r_c + \\Delta$) with a Verlet skin list reduces both force evaluation and neighbor-table construction to $\\mathcal{O}(N)$."
         },
         {
           "id": "b",
-          "text": "In 3D, any potential decaying as r^(-\u03bd) with \u03bd \u2264 3 (including Coulomb 1/r and dipole 1/r\u00b3) is long-ranged because \u222b r\u00b2 r^(-\u03bd) dr diverges."
+          "text": "In 3D, any potential decaying as $r^{-\\nu}$ with $\\nu \\le 3$ (including Coulomb $1/r$ and dipole $1/r^3$) is long-ranged because $\\int r^2 r^{-\\nu}\\,dr$ diverges.",
+          "text_markdown": "In 3D, any potential decaying as $r^{-\\nu}$ with $\\nu \\le 3$ (including Coulomb $1/r$ and dipole $1/r^3$) is long-ranged because $\\int r^2 r^{-\\nu}\\,dr$ diverges."
         },
         {
           "id": "c",
-          "text": "By factoring exp(i k\u00b7(r_i - r_j)) into single-particle sums \u03c1_k \u03c1_{-k} and tuning \u03ba \u221d N^(1/6)/L, classic Ewald summation achieves O(N^(3/2)) complexity."
+          "text": "By factoring $\\exp(i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j))$ into single-particle sums $\\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}}$ and tuning $\\kappa \\propto N^{1/6}/L$, classic Ewald summation achieves $\\mathcal{O}(N^{3/2})$ complexity.",
+          "text_markdown": "By factoring $\\exp(i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j))$ into single-particle sums $\\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}}$ and tuning $\\kappa \\propto N^{1/6}/L$, classic Ewald summation achieves $\\mathcal{O}(N^{3/2})$ complexity."
         },
         {
           "id": "d",
-          "text": "Truncating a 3D Coulomb potential sharply at r_c = L/2 satisfies Poisson's equation and preserves the Stillinger\u2013Lovett condition S(k) = c k\u00b2."
+          "text": "Truncating a 3D Coulomb potential sharply at $r_c = L/2$ satisfies Poisson's equation and preserves the Stillinger\u2013Lovett condition $S(k) = c k^2$.",
+          "text_markdown": "Truncating a 3D Coulomb potential sharply at $r_c = L/2$ satisfies Poisson's equation and preserves the Stillinger\u2013Lovett condition $S(k) = c k^2$."
         }
       ],
       "correct": [

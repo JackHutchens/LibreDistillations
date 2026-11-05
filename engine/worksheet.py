@@ -176,9 +176,9 @@ def _format_latex_and_math(text: str) -> str:
         math_blocks.append(m.group(0))
         return f"MATHBLOCKXYZ{len(math_blocks)-1}ZYX"
 
-    # Match $$...$$ first, then $...$
-    pattern = r"(\$\$.*?\$\$|\$[^$\n]+?\$)"
-    protected = re.sub(pattern, save_math, text, flags=re.DOTALL)
+    # Match $$...$$, $...$, \(...\), \[...\] (allowing inline math across wrapped newlines)
+    pattern = r"(\$\$[\s\S]*?\$\$|\$[^\$]+?\$|\\\([\s\S]*?\\\)|\s*\\\[[\s\S]*?\\\])"
+    protected = re.sub(pattern, save_math, text)
 
     # Convert markdown formatting to HTML without requiring external 'markdown' library
     try:
@@ -193,9 +193,21 @@ def _format_latex_and_math(text: str) -> str:
         html = re.sub(r"(\*|_)(.*?)\1", r"<i>\2</i>", html)
         html = html.replace("\n", "<br>")
 
-    # Restore math blocks
+    # Restore math blocks with HTML-escaped special characters (<, >, &).
+    # In browser HTML, raw '<' followed by letters is parsed by the browser DOM parser
+    # as an unclosed HTML tag (e.g., '$2 < \alpha$' becomes '<alpha>'), destroying the
+    # math delimiters. Using &lt;, &gt;, &amp; ensures the DOM text node contains literal
+    # '<', '>', '&', which MathJax then typesets without interference.
     for i, mb in enumerate(math_blocks):
-        html = html.replace(f"MATHBLOCKXYZ{i}ZYX", mb)
+        clean_mb = (
+            mb.replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&amp;", "&")
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+        )
+        html = html.replace(f"MATHBLOCKXYZ{i}ZYX", clean_mb)
 
     return html
 
@@ -440,7 +452,7 @@ class Worksheet:
             default = cspec.get("default")
 
             lbl_widget = widgets.HTMLMath(
-                f"<div style='font-weight:600; font-size:0.92em; margin-top:4px;'>{normalize_angstrom(label)}</div>"
+                f"<div style='font-weight:600; font-size:0.92em; margin-top:4px;'>{_format_latex_and_math(label)}</div>"
             )
             if kind == "dropdown":
                 options = cspec.get("options", [])
