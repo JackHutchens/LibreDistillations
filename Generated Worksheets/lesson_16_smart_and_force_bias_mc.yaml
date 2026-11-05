@@ -1,0 +1,971 @@
+worksheet:
+  id: lesson_16_smart_and_force_bias_mc
+  title: "MSE 485 · Lesson 16: Smarter Monte Carlo — Menus, Preferential, Heat-Bath, Force-Bias & Smart MC"
+  estimated_minutes: 115
+  learning_objectives:
+    - "Distinguish between detailed balance and global stationary balance when combining a menu of moves via random selection versus deterministic sequential cycling."
+    - "Formulate preferential sampling for inhomogeneous/layered systems and derive the exact asymmetric proposal ratio involving H(R) and H(R')."
+    - "Derive the Heat-Bath (Gibbs) local conditional transition rule T(s -> s') = pi(s')/C(s) and explain when its acceptance probability A = min(1, C(s)/C(s')) equals 100%."
+    - "Construct Force-Bias Monte Carlo inside a trial cube using local forces F(r) = -grad V(r) and inverse-CDF exponential mapping."
+    - "Derive the Smart Monte Carlo displaced-Gaussian proposal and acceptance exponent, prove that A = 1 identically for any linear potential, and connect Smart MC to Brownian Dynamics and Diffusion Quantum Monte Carlo."
+
+  sections:
+    - id: sec_menus_of_moves
+      type: markdown_section
+      title: "1. Menus of Moves: Random Selection vs. Deterministic Sequential Sweeps"
+      body_markdown: |
+        In Lesson 15 we established the "classic" Metropolis method using a single type of move with a uniform proposal $T(s \to s') = \text{constant}$. While convergence to $\pi(s) = e^{-\beta E(s)}/Z$ is guaranteed for any ergodic walk, **the rate of convergence is not!** Today we explore five powerful strategies to redesign $T(s \to s')$ for faster convergence:
+        1. **Menus of Moves**
+        2. **Preferential Sampling**
+        3. **Heat-Bath Monte Carlo**
+        4. **Force-Bias Monte Carlo**
+        5. **Smart Monte Carlo & Hybrid Brownian Dynamics**
+
+        ### Global Balance vs. Detailed Balance Revisited (Slide 5)
+        Recall that for $\pi(s)$ to be the unique stationary distribution of an ergodic Markov chain $P(s \to s')$, it is **not** strictly required that $P$ satisfy pairwise detailed balance $\pi(s)P(s \to s') = \pi(s')P(s' \to s)$. Rather, **global balance (stationarity)** suffices:
+        $$\pi(s) = \sum_{s'} \pi(s')\, P(s' \to s) \qquad \Longleftrightarrow \qquad \pi = \pi P$$
+
+        ### Combining a Menu of Moves $P_A$ and $P_B$ (Slide 6)
+        Suppose we have two (or more) distinct move types with transition matrices $P_A$ and $P_B$—for instance, moving particle $1$ ($P_A$) and moving particle $2$ ($P_B$), or a particle displacement ($P_A$) and a box volume change ($P_B$) in an $NPT$ simulation—each of which **individually satisfies detailed balance** for the same target distribution $\pi$:
+        $$\pi P_A = \pi \qquad \text{and} \qquad \pi P_B = \pi$$
+        We can combine $(A, B)$ in two ways:
+        1. **Random Selection (Convex Combination):** At each step, choose move $A$ with probability $\alpha_A$ and move $B$ with probability $\alpha_B = 1 - \alpha_A$. The single-step transition matrix is:
+           $$P_{\text{rand}} = \alpha_A P_A + \alpha_B P_B$$
+           Because detailed balance is linear in $P$, $P_{\text{rand}}$ **satisfies both detailed balance and global balance**:
+           $$\pi(s) P_{\text{rand}}(s \to s') = \alpha_A \pi(s)P_A(s \to s') + \alpha_B \pi(s)P_B(s \to s') = \pi(s') P_{\text{rand}}(s' \to s)$$
+        2. **Deterministic Sequential Cycling $(A, B, A, B, A, B, \dots)$:** Apply move $A$ followed deterministically by move $B$. The composite two-step transition matrix for one full cycle is the matrix product:
+           $$P_{\text{seq}} = P_A P_B$$
+           - **Does $P_{\text{seq}} = P_A P_B$ satisfy detailed balance?** **No!** Let $D_\pi = \operatorname{diag}(\pi)$. Detailed balance in matrix form is $D_\pi P = P^T D_\pi$. Taking the transpose of $D_\pi P_A P_B$ gives:
+             $$(D_\pi P_A P_B)^T = P_B^T (D_\pi P_A)^T = P_B^T D_\pi P_A = D_\pi P_B P_A \ne D_\pi P_A P_B$$
+             whenever $P_A$ and $P_B$ do not commute ($P_A P_B \ne P_B P_A$). Physically, reversing the movie of an $(A, B)$ cycle produces a $(B, A)$ cycle!
+           - **Does $P_{\text{seq}} = P_A P_B$ preserve the exact stationary state $\pi$?** **Yes!** Applying $\pi$ from the left associative-style gives:
+             $$\pi P_{\text{seq}} = (\pi P_A) P_B = \pi P_B = \pi$$
+           - **Theorem (Slide 6):** *If each menu item individually satisfies detailed balance (andhence preserves $\pi$), then $\pi$ is the unique stationary state of the deterministic cycle $P_1 P_2 \cdots P_M$ (provided the combined chain is ergodic).*
+           - **Practical Example:** In classic $N$-particle Metropolis MC, instead of calling a random number generator to pick a random particle index $i \in \{1, \dots, N\}$ at every step, you can simply **loop sequentially through $i = 1, 2, \dots, N$**. After one sweep (pass), every particle has been attempted once, saving $N$ random-integer draws per pass while converging to the exact Boltzmann distribution!
+
+    - id: q16_01_global_vs_detailed_balance_menu
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_menus_of_moves
+      prompt_markdown: "As emphasized on slides 5 and 6, why is a deterministic cycle of moves $(A, B, A, B, \\dots)$ valid in Markov Chain Monte Carlo even though the composite transition matrix $P = P_A P_B$ violates detailed balance?"
+      hint_markdown: "Evaluate $\\pi (P_A P_B)$ when $\\pi P_A = \\pi$ and $\\pi P_B = \\pi$."
+      options:
+        - id: a
+          text: "Because global stationary balance $\\pi = \\pi P$ is what guarantees the equilibrium distribution, and $\\pi(P_A P_B) = (\\pi P_A)P_B = \\pi P_B = \\pi$ holds automatically whenever each individual move preserves $\\pi$."
+        - id: b
+          text: "Because any two stochastic matrices $P_A$ and $P_B$ always commute ($P_A P_B = P_B P_A$)."
+        - id: c
+          text: "Because detailed balance is only violated during warmup and becomes exact once $n > 100$."
+        - id: d
+          text: "Because deterministic cycling sets all rejection probabilities to zero."
+      correct: a
+      rationale_markdown: "Pairwise detailed balance is sufficient but not necessary for stationarity. Global balance $\\pi P = \\pi$ is the fundamental requirement for $\\pi$ to be stationary, and $\\pi (P_A P_B) = (\\pi P_A) P_B = \\pi P_B = \\pi$ holds by matrix associativity."
+
+    - id: q16_02_why_product_violates_detailed_balance
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_menus_of_moves
+      prompt_markdown: "Suppose $P_A$ and $P_B$ each satisfy detailed balance with respect to $\\pi$ ($D_\\pi P_A = P_A^T D_\\pi$ and $D_\\pi P_B = P_B^T D_\\pi$, where $D_\\pi = \\operatorname{diag}(\\pi)$). Under what algebraic condition does the sequential product $P_{\\text{seq}} = P_A P_B$ also satisfy detailed balance?"
+      hint_markdown: "Compare $(D_\\pi P_A P_B)^T = D_\\pi P_B P_A$ with $D_\\pi P_A P_B$."
+      options:
+        - id: a
+          text: "Only if $P_A$ and $P_B$ commute ($P_A P_B = P_B P_A$), or if the sequence is palindromically symmetrized such as $P_A P_B P_A$."
+        - id: b
+          text: "Always, because the product of two symmetric matrices is always symmetric."
+        - id: c
+          text: "Never, even if $P_A = P_B$."
+        - id: d
+          text: "Only when $\\pi(s)$ is the uniform distribution."
+      correct: a
+      rationale_markdown: "Because $(D_\\pi P_A P_B)^T = P_B^T P_A^T D_\\pi = P_B^T D_\\pi P_A = D_\\pi P_B P_A$, detailed balance $D_\\pi(P_A P_B) = (D_\\pi P_A P_B)^T$ holds if and only if $P_A P_B = P_B P_A$ (or if one uses a palindromic sequence like $P_A P_B P_A$)."
+
+    - id: q16_03_random_menu_convex_combination
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_menus_of_moves
+      prompt_markdown: "In an isothermal-isobaric ($NPT$) Monte Carlo simulation, at each step you randomly select a particle translation move ($P_{\\text{trans}}$) with fixed probability $\\alpha = 0.98$ or a volume-scaling move ($P_{\\text{vol}}$) with probability $1 - \\alpha = 0.02$. If both $P_{\\text{trans}}$ and $P_{\\text{vol}}$ satisfy detailed balance for the $NPT$ ensemble, what is true of the combined single-step transition matrix $P = 0.98 P_{\\text{trans}} + 0.02 P_{\\text{vol}}$?"
+      hint_markdown: "Check whether a linear combination of equations satisfying $\\pi(s)P_k(s\\to s') = \\pi(s')P_k(s'\\to s)$ still satisfies detailed balance."
+      options:
+        - id: a
+          text: "$P$ satisfies both detailed balance and global balance for the $NPT$ distribution."
+        - id: b
+          text: "$P$ satisfies global balance but violates detailed balance unless $\\alpha = 0.50$."
+        - id: c
+          text: "$P$ is not a stochastic matrix because its rows sum to $1.98$."
+        - id: d
+          text: "$P$ biases the equilibrium volume by a factor of $0.02 / 0.98$."
+      correct: a
+      rationale_markdown: "A convex combination $P = \\sum_k \\alpha_k P_k$ with $\\alpha_k \\ge 0$ and $\\sum_k \\alpha_k = 1$ preserves row normalization and satisfies $\\pi(s)P(s\\to s') = \\sum_k \\alpha_k \\pi(s)P_k(s\\to s') = \\sum_k \\alpha_k \\pi(s')P_k(s'\\to s) = \\pi(s')P(s'\\to s)$ for any fixed choice of probabilities $\\alpha_k$."
+
+    - id: q16_04_sequential_particle_sweep
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_menus_of_moves
+      prompt_markdown: "In a canonical $NVT$ simulation of $N$ atoms, instead of choosing a particle index $i \\in \\{1, \\dots, N\\}$ at random on each trial step, a programmer loops deterministically through $i = 1, 2, \\dots, N$ in each sweep. According to the Menu of Moves theorem (slide 6), is this procedure correct?"
+      hint_markdown: "Each single-particle transition matrix $P_i$ individually satisfies detailed balance for the canonical Boltzmann distribution $\\pi(\\mathbf{R})$."
+      options:
+        - id: a
+          text: "Yes: because each single-particle transition operator $P_i$ individually satisfies detailed balance for $\\pi(\\mathbf{R})$, the composite sweep $P_{\\text{sweep}} = P_1 P_2 \\cdots P_N$ has $\\pi(\\mathbf{R})$ as its exact stationary distribution and guarantees every particle is attempted once per pass."
+        - id: b
+          text: "No: deterministic looping over particle indices introduces an $\\mathcal{O}(1/N)$ bias into the radial distribution function $g(r)$."
+        - id: c
+          text: "Yes, but only if the particles are sorted by their $x$-coordinate before every pass."
+        - id: d
+          text: "No: it violates the Markov property unless all $N$ moves are accepted simultaneously."
+      correct: a
+      rationale_markdown: "As explicitly stated on slide 6: *'EX: in classic Metropolis, instead of randomly choosing the particle to be moved, then one can go through them sequentially. After one pass, all particles are attempted once. This is correct and might be faster.'*"
+
+    - id: q16_05_non_commuting_2x2_product_calc
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_menus_of_moves
+      prompt_markdown: |
+        Suppose two move operators $P_A$ and $P_B$ on a 3-state system with uniform target distribution $\pi = (1/3, 1/3, 1/3)$ are given by the symmetric permutation-mixing matrices:
+        $$P_A = \begin{pmatrix} 0.5 & 0.5 & 0 \\ 0.5 & 0.5 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \qquad P_B = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0.5 & 0.5 \\ 0 & 0.5 & 0.5 \end{pmatrix}$$
+        Consider the composite sequential transition matrix $P_{\text{seq}} = P_A P_B$. What is the transition probability $P_{\text{seq}}(1 \to 3)$ from state $1$ to state $3$ in a single $(A, B)$ cycle?
+      hint_markdown: "Multiply the first row of $P_A$, $(0.5, 0.5, 0)$, by the third column of $P_B$, $(0, 0.5, 0.5)^T$."
+      correct:
+        value: 0.25
+        tolerance: 0.001
+      rationale_markdown: "Computing $(P_A P_B)_{13} = (0.5)(0) + (0.5)(0.5) + (0)(0.5) = 0.25$. Notice that the reverse entry is $(P_A P_B)_{31} = (0)(1) + (0)(0) + (1)(0) = 0 \\ne 0.25$, confirming that $P_A P_B$ violates detailed balance while still preserving $\\pi P_A P_B = (1/3, 1/3, 1/3)$!"
+
+    - id: q16_06_state_dependent_menu_warning
+      type: problem
+      question_type: single_select
+      difficulty: hard
+      taught_by: sec_menus_of_moves
+      prompt_markdown: "When randomly selecting move type $k$ from a menu with probability $\\alpha_k$, what happens if you make the selection probabilities $\\alpha_k(s)$ depend on the current microstate $s$ without including $\\alpha_k(s')/\\alpha_k(s)$ in the acceptance test?"
+      hint_markdown: "Check whether $\\pi(s) \\alpha_k(s) P_k(s \\to s')$ equals $\\pi(s') \\alpha_k(s') P_k(s' \\to s)$ when $\\alpha_k(s) \\ne \\alpha_k(s')$."
+      options:
+        - id: a
+          text: "Detailed balance and global balance are broken unless the state-dependent selection ratio $\\alpha_k(s')/\\alpha_k(s)$ is included inside the Metropolis–Hastings acceptance ratio (as in Preferential Sampling)."
+        - id: b
+          text: "Nothing changes; $\\alpha_k(s)$ cancels out automatically even when $\\alpha_k(s) \\ne \\alpha_k(s')$."
+        - id: c
+          text: "The acceptance probability becomes $1.0$ for all moves."
+        - id: d
+          text: "The chain becomes periodic with eigenvalue $\\varepsilon = -1$."
+      correct: a
+      rationale_markdown: "If move selection $\\alpha_k(s)$ depends on the state $s$, it is part of the forward proposal distribution $T(s \\to s')$. Leaving out $\\alpha_k(s')/\\alpha_k(s)$ from $A(s \\to s')$ violates detailed balance—which is precisely why Preferential Sampling must include $h(z_i')H(\\mathbf{R}) / [h(z_i)H(\\mathbf{R}')]$!"
+
+    - id: q16_07_Sweep_coverage_probability
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_menus_of_moves
+      prompt_markdown: "In an $N$-particle fluid ($N \\gg 1$), one 'pass' (or 'sweep') consists of $N$ single-particle trial moves. If you choose a particle index uniformly at random on each of the $N$ steps (instead of cycling sequentially $1, 2, \\dots, N$), what fraction of the $N$ particles are **not** attempted at all during a single pass in the large-$N$ limit $\\lim_{N\\to\\infty}(1 - 1/N)^N$?"
+      hint_markdown: "Evaluate $e^{-1} \\approx 0.3679$."
+      correct:
+        value: 0.3679
+        tolerance: 0.002
+      rationale_markdown: "Under random index selection, the probability that a given particle is missed in $N$ independent draws is $(1 - 1/N)^N \\to e^{-1} \\approx 0.3679$ ($36.8\\%$), whereas sequential cycling guarantees $0\\%$ missed particles after $N$ steps."
+
+    - id: sec_preferential_sampling
+      type: markdown_section
+      title: "2. Preferential Sampling for Layered, Surface & Interfacial Systems"
+      body_markdown: |
+        ### Focusing CPU Time on Interesting Degrees of Freedom (Slide 7)
+        Sometimes it is **not** the overall bulk acceptance ratio that we want to optimize! Consider a layered slab, a catalytic crystal surface, a solid-liquid interface, or a biomolecule in a large water box:
+        - The vast majority of atoms sit deep in the uninteresting bulk substrate or far-away solvent, while the physical properties we care about (adsorption, surface reconstruction, step-edge diffusion) depend on atoms near the **top surface** ($z \approx z_{\text{top}}$).
+        - If we pick particles uniformly at random ($T_i = 1/N$), $95\%$ of our CPU time is wasted moving bulk atoms!
+
+        ### Preferential Selection Probability $h(z_i) / H(\mathbf{R})$
+        To focus MC moves on the region of interest while preserving exact canonical equilibrium everywhere, we assign each particle $i$ at height $z_i$ a strictly positive weight function $h(z_i) > 0$ (e.g., large near the surface and small in the bulk) and select particle $i$ with normalized probability:
+        $$T_i(\mathbf{R}) = \frac{h(z_i)}{H(\mathbf{R})}, \qquad \text{where} \quad H(\mathbf{R}) = \sum_{j=1}^N h(z_j)$$
+        Once particle $i$ is selected, we displace it uniformly inside a symmetric cube of volume $\Delta^3$ from $\mathbf{r}_i \to \mathbf{r}_i'$ (changing its height from $z_i \to z_i'$).
+
+        ### Why the Normalization Sum $H(\mathbf{R}') \ne H(\mathbf{R})$ Changes!
+        Crucially, because particle $i$ moved from $z_i$ to $z_i'$, its weight changed from $h(z_i)$ to $h(z_i')$. Therefore, the total normalization sum in the trial configuration $\mathbf{R}'$ is slightly different from $H(\mathbf{R})$:
+        $$H(\mathbf{R}') = \sum_{j \ne i} h(z_j) + h(z_i') = H(\mathbf{R}) - h(z_i) + h(z_i')$$
+        - **$\mathcal{O}(1)$ Update Trick:** Notice that we do **not** need $\mathcal{O}(N)$ operations to recompute $H(\mathbf{R}')$ at every step; we simply subtract $h(z_i)$ and add $h(z_i')$!
+        - **Asymmetric Proposal Ratio:**
+          - Forward proposal density ($\mathbf{R} \to \mathbf{R}'$): $T(\mathbf{R} \to \mathbf{R}') = \frac{h(z_i)}{H(\mathbf{R})} \frac{1}{\Delta^3}$
+          - Reverse proposal density ($\mathbf{R}' \to \mathbf{R}$): $T(\mathbf{R}' \to \mathbf{R}) = \frac{h(z_i')}{H(\mathbf{R}')} \frac{1}{\Delta^3}$
+          Substituting into the generalized Metropolis–Hastings formula $A(\mathbf{R} \to \mathbf{R}') = \min\!\left\{1, \frac{T(\mathbf{R}' \to \mathbf{R})\pi(\mathbf{R}')}{T(\mathbf{R} \to \mathbf{R}')\pi(\mathbf{R})}\right\}$ gives:
+          $$A(\mathbf{R} \to \mathbf{R}') = \min\!\left\{1,\; \frac{h(z_i')}{h(z_i)} \frac{H(\mathbf{R})}{H(\mathbf{R}')}\, e^{-\beta[V(\mathbf{R}') - V(\mathbf{R})]}\right\}$$
+          *(Note: Slide 7 writes the prefactor schematically as $\frac{h(z_i)}{H}\frac{H'}{h(z_i')}$ by swapping forward/reverse labels, but in code `A = exp(-dV) * (T_old / T_new)` from slide 13, $T_{\text{old}} = T(\mathbf{R}' \to \mathbf{R}) = h(z_i')/H'$ is in the numerator and $T_{\text{new}} = T(\mathbf{R} \to \mathbf{R}') = h(z_i)/H$ is in the denominator!)*
+        - **Physical Consequence:** When a frequently sampled surface atom ($h(z_i)$ large) proposes a move into the rarely sampled bulk ($h(z_i')$ small), the ratio $T(\mathbf{R}' \to \mathbf{R}) / T(\mathbf{R} \to \mathbf{R}') \approx h(z_i')/h(z_i) < 1$ **lowers the acceptance probability** of surface-to-bulk moves so that particles do not artificially drain out of the surface simply because they are poked more often!
+        - **Ergodicity Requirement:** We must keep $h(z) > 0$ everywhere in the system (never strictly zero in the bulk) if bulk coordinates are meant to equilibrate with the surface.
+
+    - id: concept_preferential_surface
+      type: concept_cell
+      title: "Interactive Explorer: Preferential Surface Sampling & The $H/H'$ Jacobian Ratio"
+      description_markdown: "Adjust the surface decay length $z_0$, initial particle height $z_i$, and vertical trial displacement $\\Delta z$ to observe how preferential weighting $h(z)$ focuses trial moves near the top surface ($z_{\\mathrm{top}} = 10$) and how the reverse-to-forward proposal ratio $\\frac{h(z_i')/H'}{h(z_i)/H}$ preserves uniform equilibrium density."
+      render_function: render_preferential_surface_sampling
+      layout: figure_left
+      controls:
+        - name: z0_decay
+          label: "Surface Weight Decay Length z_0"
+          kind: slider
+          min: 0.8
+          max: 5.0
+          step: 0.2
+          default: 2.0
+          format: ".2f"
+        - name: z_old
+          label: "Initial Particle Height z_i"
+          kind: slider
+          min: 1.0
+          max: 9.8
+          step: 0.2
+          default: 8.5
+          format: ".2f"
+        - name: dz_move
+          label: "Trial Vertical Displacement dz = z_i' - z_i"
+          kind: slider
+          min: -3.0
+          max: 1.5
+          step: 0.15
+          default: -1.2
+          format: ".2f"
+      takeaway_markdown: "**Key Takeaway:** Because surface atoms are selected much more frequently than bulk atoms ($h(z_{\\mathrm{surf}}) \\gg h(z_{\\mathrm{bulk}})$), a naive symmetric acceptance test would pump atoms out of the surface into the bulk. Multiplying by $T(\\mathbf{R}'\\to\\mathbf{R})/T(\\mathbf{R}\\to\\mathbf{R}') = [h(z_i')/H']/[h(z_i)/H]$ rejects excess surface-to-bulk hops and preserves the exact Boltzmann distribution."
+
+    - id: q16_08_preferential_sampling_goal
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_preferential_sampling
+      prompt_markdown: "What is the primary physical motivation for using **Preferential Sampling** in a layered or interfacial system (slide 7)?"
+      hint_markdown: "Consider how CPU time is distributed between active surface degrees of freedom and passive bulk atoms."
+      options:
+        - id: a
+          text: "To focus CPU time on sampling the most physically interesting degrees of freedom (such as a surface or interface), increasing the statistical efficiency of surface observables even though overall move acceptance is slightly lowered."
+        - id: b
+          text: "To change the equilibrium thermodynamic ensemble from canonical ($NVT$) to microcanonical ($NVE$)."
+        - id: c
+          text: "To make the equilibrium density near the surface higher than predicted by the Boltzmann distribution."
+        - id: d
+          text: "To eliminate the need to calculate potential energy differences $\\Delta V$."
+      correct: a
+      rationale_markdown: "As stated on slide 7: *'We focus the CPU time on interesting degrees of freedom (it will lower overall acceptances but increase efficiency of what we want to calculate).'*"
+
+    - id: q16_09_preferential_H_prime_update
+      type: problem
+      question_type: numeric
+      difficulty: easy
+      taught_by:
+        - sec_preferential_sampling
+        - concept_preferential_surface
+      prompt_markdown: |
+        In a preferential sampling simulation of $N = 500$ atoms, the current normalization sum of selection weights is $H(\mathbf{R}) = \sum_{j=1}^N h(z_j) = 40.0$. Atom $i$ is selected at height $z_i$ where $h(z_i) = 0.80$, and is proposed to move to height $z_i'$ where $h(z_i') = 0.30$. What is the new normalization sum $H(\mathbf{R}')$ in the trial configuration?
+      hint_markdown: "Use the $\\mathcal{O}(1)$ update identity $H(\\mathbf{R}') = H(\\mathbf{R}) - h(z_i) + h(z_i')$."
+      correct:
+        value: 39.5
+        tolerance: 0.01
+      rationale_markdown: "Since all other $N-1$ atoms remain fixed, $H(\\mathbf{R}') = H(\\mathbf{R}) - h(z_i) + h(z_i') = 40.0 - 0.80 + 0.30 = 39.50$."
+
+    - id: q16_10_preferential_acceptance_numeric
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by:
+        - sec_preferential_sampling
+        - concept_preferential_surface
+      prompt_markdown: |
+        Using the numbers from the previous question ($H(\mathbf{R}) = 40.0$, $h(z_i) = 0.80$, $H(\mathbf{R}') = 39.5$, $h(z_i') = 0.30$), suppose the trial move from $z_i$ to $z_i'$ has zero potential energy change ($\Delta V = V(\mathbf{R}') - V(\mathbf{R}) = 0$). What is the exact Metropolis–Hastings acceptance probability
+        $$A(\mathbf{R} \to \mathbf{R}') = \min\!\left\{1,\; \frac{T(\mathbf{R}' \to \mathbf{R})}{T(\mathbf{R} \to \mathbf{R}')} e^{-\beta \Delta V}\right\} = \min\!\left\{1,\; \frac{h(z_i')/H(\mathbf{R}')}{h(z_i)/H(\mathbf{R})}\right\}$$
+        for this surface-to-bulk move?
+      hint_markdown: "Evaluate $(0.30 / 39.5) / (0.80 / 40.0) = (0.30 / 0.80) \\times (40.0 / 39.5)$."
+      correct:
+        value: 0.3797
+        tolerance: 0.002
+      rationale_markdown: "The forward selection probability is $T_{\\text{fwd}} = 0.80 / 40.0 = 0.02000$ and the reverse selection probability is $T_{\\text{rev}} = 0.30 / 39.5 \\approx 0.007595$. Their ratio gives $A = 0.007595 / 0.02000 \\approx 0.3797$."
+
+    - id: q16_11_why_preferential_lowers_acceptance
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by:
+        - sec_preferential_sampling
+        - concept_preferential_surface
+      prompt_markdown: "Consider an ideal gas ($\\Delta V = 0$ everywhere) in a slab where surface atoms ($z > 8$) are given selection weight $h_{\\text{surf}} = 10$ and bulk atoms ($z \\le 8$) are given selection weight $h_{\\text{bulk}} = 1$. Why must the Metropolis acceptance test reject $\\sim 90\\%$ of moves that carry an atom from the surface into the bulk, while accepting $100\\%$ of moves that carry an atom from the bulk into the surface?"
+      hint_markdown: "In an ideal gas at equilibrium, the average particle density must remain uniform between bulk and surface."
+      options:
+        - id: a
+          text: "Because surface atoms are selected $10\\times$ more often than bulk atoms; rejecting $90\\%$ of surface-to-bulk proposals balances the $10\\times$ higher proposal attempt frequency so the net flux between surface and bulk is equal in both directions."
+        - id: b
+          text: "Because ideal gas atoms experience a strong attractive force toward the top surface."
+        - id: c
+          text: "Because bulk atoms have a higher temperature than surface atoms."
+        - id: d
+          text: "Because the trial cube volume $\\Delta^3$ is $10\\times$ smaller in the bulk."
+      correct: a
+      rationale_markdown: "At uniform equilibrium density, a surface atom is picked $10\\times$ more often than a bulk atom ($T_{\\text{surf}\\to\\text{bulk}} = 10\\, T_{\\text{bulk}\\to\\text{surf}}$). Detailed balance $\\pi P(\\text{surf}\\to\\text{bulk}) = \\pi P(\\text{bulk}\\to\\text{surf})$ therefore requires $A(\\text{surf}\\to\\text{bulk}) = \\frac{1}{10} A(\\text{bulk}\\to\\text{surf}) = 0.10$."
+
+    - id: q16_12_preferential_ergodicity_condition
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_preferential_sampling
+      prompt_markdown: "If you want all $N$ particles in a slab (both surface and bulk) to equilibrate into the true canonical ensemble under preferential sampling $T_i(\\mathbf{R}) = h(z_i)/H(\\mathbf{R})$, what condition must the weight function $h(z)$ satisfy?"
+      hint_markdown: "Recall the irreducibility condition for ergodicity when particles can exchange between bulk and surface."
+      options:
+        - id: a
+          text: "$h(z) > 0$ strictly everywhere in the accessible volume so that every particle has a nonzero probability of being selected and reverse moves from any $z'$ to $z$ remain possible."
+        - id: b
+          text: "$h(z)$ must be negative in the bulk and positive at the surface."
+        - id: c
+          text: "$h(z)$ must equal a Dirac delta function $\\delta(z - z_{\\text{top}})$."
+        - id: d
+          text: "$h(z)$ must be an oscillatory sine wave $\\sin(kz)$."
+      correct: a
+      rationale_markdown: "If $h(z') = 0$ in the bulk, any particle that steps into $z'$ can never be selected again ($T(\\mathbf{R}' \\to \\mathbf{R}) = 0$), breaking proposal reversibility (or freezing all moves into $z'$ via $A = 0$)."
+
+    - id: q16_13_horizontal_move_in_preferential_slab
+      type: problem
+      question_type: numeric
+      difficulty: easy
+      taught_by: sec_preferential_sampling
+      prompt_markdown: "In a preferential sampling simulation where the selection weight $h(z_i)$ depends **only** on the vertical height $z_i$, suppose particle $i$ makes a purely horizontal trial displacement $(\\Delta x, \\Delta y, \\Delta z = 0)$ so that $z_i' = z_i$. What is the value of the proposal ratio $\\frac{T(\\mathbf{R}' \\to \\mathbf{R})}{T(\\mathbf{R} \\to \\mathbf{R}')} = \\frac{h(z_i')/H(\\mathbf{R}')}{h(z_i)/H(\\mathbf{R})}$?"
+      hint_markdown: "Compare $h(z_i')$ with $h(z_i)$ and $H(\\mathbf{R}')$ with $H(\\mathbf{R})$ when $z_i' = z_i$."
+      correct:
+        value: 1.0
+        tolerance: 0.0001
+      rationale_markdown: "When $\\Delta z = 0$, $z_i' = z_i$, so $h(z_i') = h(z_i)$ and $H(\\mathbf{R}') = H(\\mathbf{R})$, making the proposal ratio identically $1.0$."
+
+    - id: q16_14_why_H_cannot_be_approximated_as_constant
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_preferential_sampling
+      prompt_markdown: "Why does the preferential acceptance formula include the ratio $H(\\mathbf{R})/H(\\mathbf{R}')$ in addition to $h(z_i')/h(z_i)$?"
+      hint_markdown: "Remember that the selection probabilities across the $N$ particles must sum to $1$ in both configuration $\\mathbf{R}$ and configuration $\\mathbf{R}'$."
+      options:
+        - id: a
+          text: "Because normalizing the discrete selection distribution over the $N$ particles requires dividing by $H(\\mathbf{R}) = \\sum_{j=1}^N h(z_j)$, which changes to $H(\\mathbf{R}') = H(\\mathbf{R}) - h(z_i) + h(z_i')$ when particle $i$ changes its height."
+        - id: b
+          text: "Because $H(\\mathbf{R})$ is the total Hamiltonian energy of the system."
+        - id: c
+          text: "Because $H(\\mathbf{R})/H(\\mathbf{R}')$ is always equal to $0$."
+        - id: d
+          text: "Because the number of particles $N$ changes during a canonical translation move."
+      correct: a
+      rationale_markdown: "A valid discrete probability distribution over $i \\in \\{1, \\dots, N\\}$ must sum to $1$, which requires dividing $h(z_i)$ by $H(\\mathbf{R}) = \\sum_{j=1}^N h(z_j)$. Since $H(\\mathbf{R})$ depends on $z_i$, $H(\\mathbf{R}') \\ne H(\\mathbf{R})$ whenever $z_i' \\ne z_i$, and omitting $H/H'$ introduces an $\\mathcal{O}(1/N)$ detailed-balance error."
+
+    - id: sec_heat_bath_mc
+      type: markdown_section
+      title: "3. Heat-Bath (Gibbs) Monte Carlo: Local Equilibrium Sampling"
+      body_markdown: |
+        ### The Dream of $100\%$ Acceptance: $T(s \to s') \propto \pi(s')$ (Slide 8)
+        Look again at the generalized Metropolis–Hastings acceptance formula:
+        $$A(s \to s') = \min\!\left\{1,\; \frac{T(s' \to s)\,\pi(s')}{T(s \to s')\,\pi(s)}\right\}$$
+        Suppose we could choose the proposal distribution $T(s \to s')$ to be directly proportional to the target equilibrium probability of the destination state:
+        $$T(s \to s') = \frac{\pi(s')}{C}$$
+        where $C$ is a constant independent of $s$. Then the ratio inside $\min\{\dots\}$ would be:
+        $$\frac{[\pi(s)/C]\,\pi(s')}{[\pi(s')/C]\,\pi(s)} = 1 \quad \Longrightarrow \quad A(s \to s') = 1 \quad (100\%\text{ acceptance!})$$
+        If $\mathcal{N}(s)$ were the entire phase space, $C = \sum_{s''} \pi(s'') = 1$ would correspond to **direct independent sampling** from $\pi(s')$, which we already know is intractable for an $N$-body system.
+
+        ### Heat-Bath Method: Exact Sampling in a Limited Neighborhood $\mathcal{N}(s)$ (Slide 9)
+        While we cannot sample all $3N$ coordinates from $\pi$ at once, we **can** often sample a small **local neighborhood** $\mathcal{N}(s)$ of states (such as flipping a single lattice spin $\sigma_i \in \{-1, +1\}$, choosing among a few discrete crystal site orientations, or redrawing a single coordinate) so that the local degree of freedom is placed immediately into **"local thermal equilibrium"** with its fixed neighbors:
+        $$T(s \to s') = \frac{\pi(s')}{C(s)} \quad \text{for } s' \in \mathcal{N}(s), \qquad \text{with} \quad C(s) = \sum_{s'' \in \mathcal{N}(s)} \pi(s'')$$
+        Substituting $T(s \to s') = \pi(s')/C(s)$ and $T(s' \to s) = \pi(s)/C(s')$ (assuming $s \in \mathcal{N}(s')$) into the Metropolis–Hastings acceptance formula cancels $\pi(s)$ and $\pi(s')$, leaving **only the ratio of local normalizations**:
+        $$A(s \to s') = \min\!\left\{1,\; \frac{C(s)}{C(s')}\right\}$$
+
+        ### Two Key Operational Rules for Heat-Bath MC (Slide 9)
+        1. **Feasibility condition:** Heat-Bath MC can be used **only if it is possible to quickly compute the local normalization sum $C(s)$** (and $C(s')$) over the neighborhood $\mathcal{N}(s)$.
+        2. **Rejection-Free ($A = 1$) Condition:** **If $C(s)$ is independent of $s$ ($C(s) = C(s')$), then the acceptance ratio is identically $A(s \to s') = 1$!**
+           - *Example (Ising / Lattice Models — Gibbs Sampler):* If move $s \to s'$ consists of updating a single spin $\sigma_i \in \{-1, +1\}$ while keeping all other spins $\sigma_{j \ne i}$ fixed, the neighborhood $\mathcal{N}(s) = \{(\sigma_i = +1, \sigma_{-i}),\; (\sigma_i = -1, \sigma_{-i})\}$ is identical whether we start at $\sigma_i = +1$ or $\sigma_i = -1$! Thus:
+             $$C(s) = \pi(\sigma_i = +1) + \pi(\sigma_i = -1) = C(s') \quad \Longrightarrow \quad A(s \to s') = 1$$
+             In a local field $h_{\text{loc}} = J\sum_{j \in nn(i)} \sigma_j + H_{\text{ext}}$, Heat-Bath sets $\sigma_i' = +1$ with probability $\frac{e^{+\beta h_{\text{loc}}}}{e^{+\beta h_{\text{loc}}} + e^{-\beta h_{\text{loc}}}} = \frac{1}{1 + e^{-2\beta h_{\text{loc}}}}$ and $\sigma_i' = -1$ otherwise, with no rejection step needed!
+
+    - id: concept_heat_bath
+      type: concept_cell
+      title: "Interactive Explorer: Heat-Bath Local Equilibrium vs. Metropolis Spin Flip"
+      description_markdown: "Vary the dimensionless local molecular field $\\beta h_{\\mathrm{loc}}$ and current spin state $\\sigma_i \\in \\{-1, +1\\}$ to compare how Heat-Bath directly samples the local conditional equilibrium distribution $T(s\\to s') = \\pi(s')/C(s)$ with $A=1$, whereas Metropolis proposes a deterministic flip $\\sigma_i \\to -\\sigma_i$ and accepts with $\\min(1, e^{-\\beta\\Delta E})$."
+      render_function: render_heat_bath_vs_metropolis_local
+      layout: figure_left
+      controls:
+        - name: beta_h_loc
+          label: "Dimensionless Local Field beta * h_loc"
+          kind: slider
+          min: -2.2
+          max: 2.2
+          step: 0.1
+          default: 0.6
+          format: ".2f"
+        - name: current_spin
+          label: "Current Spin State sigma_i"
+          kind: dropdown
+          default: 1
+          options:
+            - label: "Spin Up (sigma_i = +1)"
+              value: 1
+            - label: "Spin Down (sigma_i = -1)"
+              value: -1
+      takeaway_markdown: "**Key Takeaway:** Heat-Bath places the selected degree of freedom directly into local thermal equilibrium with its neighbors in a single step ($A = 1$ when $C(s) = C(s')$). Notice that for a two-state spin, Metropolis flips state $-\\sigma_i$ more aggressively ($P_M = \\min(1, e^{-\\beta\\Delta E}) \\ge P_{HB} = (1 + e^{\\beta\\Delta E})^{-1}$ by Peskun's theorem), whereas Heat-Bath shines for multi-state Potts/lattice models or continuous conditional Gaussians where random blind proposals have tiny acceptance!"
+
+    - id: q16_15_heat_bath_proposal_definition
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_heat_bath_mc
+      prompt_markdown: "In the **Heat-Bath** Monte Carlo method (slide 9), how is the trial transition probability $T(s \\to s')$ defined for states $s'$ inside a local neighborhood $\\mathcal{N}(s)$?"
+      hint_markdown: "Normalize the target equilibrium weight $\\pi(s')$ over all states $s''$ in the neighborhood $\\mathcal{N}(s)$."
+      options:
+        - id: a
+          text: "$T(s \\to s') = \\dfrac{\\pi(s')}{C(s)}$ where $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$"
+        - id: b
+          text: "$T(s \\to s') = \\dfrac{1}{|\\mathcal{N}(s)|}$ (uniform over the neighborhood)"
+        - id: c
+          text: "$T(s \\to s') = \\dfrac{\\pi(s)}{C(s')}$"
+        - id: d
+          text: "$T(s \\to s') = \\exp(-\\beta [E(s') + E(s)])$"
+      correct: a
+      rationale_markdown: "Heat-Bath samples $s' \\in \\mathcal{N}(s)$ directly in proportion to its equilibrium weight $\\pi(s')$, normalized over the local neighborhood by $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$."
+
+    - id: q16_16_heat_bath_acceptance_ratio_formula
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_heat_bath_mc
+      prompt_markdown: "When $T(s \\to s') = \\pi(s')/C(s)$ and $T(s' \\to s) = \\pi(s)/C(s')$ are substituted into the generalized Metropolis–Hastings acceptance formula $A(s \\to s') = \\min\\!\\left\\{1, \\frac{T(s'\\to s)\\pi(s')}{T(s\\to s')\\pi(s)}\\right\\}$, what does $A(s \\to s')$ simplify to?"
+      hint_markdown: "Cancel $\\pi(s)$ and $\\pi(s')$ between numerator and denominator."
+      options:
+        - id: a
+          text: "$A(s \\to s') = \\min\\!\\left\\{1,\\; \\dfrac{C(s)}{C(s')}\\right\\}$"
+        - id: b
+          text: "$A(s \\to s') = \\min\\!\\left\\{1,\\; \\dfrac{\\pi(s')}{\\pi(s)}\\right\\}$"
+        - id: c
+          text: "$A(s \\to s') = \\min\\!\\left\\{1,\\; C(s) C(s')\\right\\}$"
+        - id: d
+          text: "$A(s \\to s') = 0$"
+      correct: a
+      rationale_markdown: "Substituting $T(s' \\to s) = \\pi(s)/C(s')$ and $T(s \\to s') = \\pi(s')/C(s)$ yields $\\frac{[\\pi(s)/C(s')]\\pi(s')}{[\\pi(s')/C(s)]\\pi(s)} = \\frac{C(s)}{C(s')}$, so $A(s \\to s') = \\min\\{1, C(s)/C(s')\\}$."
+
+    - id: q16_17_heat_bath_unit_acceptance_condition
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by:
+        - sec_heat_bath_mc
+        - concept_heat_bath
+      prompt_markdown: "Under what condition is the Heat-Bath acceptance probability $A(s \\to s')$ guaranteed to equal **$1$ ($100\\%$ acceptance)** without any rejections?"
+      hint_markdown: "Inspect $A(s \\to s') = \\min\\{1, C(s)/C(s')\\}$ on slide 9."
+      options:
+        - id: a
+          text: "When the neighborhood normalization sum $C(s)$ is independent of the state $s$ ($C(s) = C(s')$), as when updating a single lattice spin $\\sigma_i$ over its full local state set while all other spins remain fixed."
+        - id: b
+          text: "Only in the infinite-temperature limit $\\beta \\to 0$."
+        - id: c
+          text: "Only when the energy of all states in the neighborhood is zero."
+        - id: d
+          text: "When the neighborhood $\\mathcal{N}(s)$ contains no states."
+      correct: a
+      rationale_markdown: "As stated on slide 9: *'Acceptance ratio = 1 if $C(s)$ is independent of $s$.'* Whenever $s'$ is drawn from a fixed conditional subspace (so $\\mathcal{N}(s) = \\mathcal{N}(s')$), $C(s) = C(s')$ and $A = \\min(1, 1) = 1$."
+
+    - id: q16_18_heat_bath_3state_potts_numeric
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_heat_bath_mc
+      prompt_markdown: |
+        Consider a 3-state site variable $s_i \in \{1, 2, 3\}$ on a crystal lattice (with all surrounding sites held fixed). In this local environment, the three states have relative Boltzmann weights $\pi(1) = 2.0$, $\pi(2) = 3.0$, and $\pi(3) = 5.0$. Using the single-site **Heat-Bath** algorithm, what is the probability $P(s_i \to 3)$ that site $i$ is placed in state $3$ on the next step?
+      hint_markdown: "Compute $C = \\pi(1) + \\pi(2) + \\pi(3)$ and evaluate $T(s_i \\to 3) = \\pi(3) / C$ (since $C(s) = C(s')$, $A = 1$)."
+      correct:
+        value: 0.5
+        tolerance: 0.001
+      rationale_markdown: "Here $C = 2.0 + 3.0 + 5.0 = 10.0$ is independent of the current state $s_i$, so $A = 1$ and the transition probability to state $3$ is simply $\\pi(3)/C = 5.0 / 10.0 = 0.50$."
+
+    - id: q16_19_heat_bath_moving_window_C_ratio
+      type: problem
+      question_type: numeric
+      difficulty: hard
+      taught_by: sec_heat_bath_mc
+      prompt_markdown: |
+        Suppose a particle on a 1D lattice can hop to any site $s'$ within a moving window $\mathcal{N}(s) = \{s-1, s, s+1\}$ centered on its current site $s$. Because the window shifts when the particle moves from $s$ to $s' = s+1$, the local normalization sum changes from $C(s) = \pi(s-1) + \pi(s) + \pi(s+1) = 6.0$ to $C(s') = \pi(s) + \pi(s+1) + \pi(s+2) = 8.0$. What is the Heat-Bath acceptance probability $A(s \to s')$ for this move?
+      hint_markdown: "Use $A(s \\to s') = \\min\\!\\left(1,\\, C(s)/C(s')\\right)$."
+      correct:
+        value: 0.75
+        tolerance: 0.001
+      rationale_markdown: "When the neighborhood $\\mathcal{N}(s)$ is centered on $s$, $C(s') \\ne C(s)$, so we must apply the acceptance test $A(s \\to s') = \\min(1, C(s)/C(s')) = \\min(1, 6.0/8.0) = 0.75$."
+
+    - id: q16_20_heat_bath_ising_spin_calc
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by:
+        - sec_heat_bath_mc
+        - concept_heat_bath
+      prompt_markdown: |
+        In a 2D Ising model with energy $E = -J \sum_{\langle ij \rangle} \sigma_i \sigma_j$, a spin $\sigma_i$ experiences a dimensionless local field $\beta h_{\text{loc}} = \beta J \sum_{j \in nn(i)} \sigma_j = +0.50$ (so its local Boltzmann weight is $\propto e^{+0.50\,\sigma_i}$ for $\sigma_i \in \{-1, +1\}$). Under the **Heat-Bath** update rule, what is the probability of setting $\sigma_i' = +1$?
+      hint_markdown: "Compute $\\frac{e^{+0.50}}{e^{+0.50} + e^{-0.50}} = \\frac{1}{1 + e^{-1.0}}$."
+      correct:
+        value: 0.7311
+        tolerance: 0.002
+      rationale_markdown: "The local weights are $e^{+0.50}$ and $e^{-0.50}$, giving $T(\\sigma_i \\to +1) = \\frac{e^{0.5}}{e^{0.5} + e^{-0.5}} = \\frac{1}{1 + e^{-1.0}} \\approx 0.7311$, independent of the old value of $\\sigma_i$."
+
+    - id: q16_21_heat_bath_computational_limitation
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_heat_bath_mc
+      prompt_markdown: "Why can't we apply exact Heat-Bath sampling directly to a continuous 3D displacement of an atom inside a cube of side $\\Delta$ for an arbitrary Lennard-Jones fluid?"
+      hint_markdown: "Check the first yellow box at the bottom of slide 9."
+      options:
+        - id: a
+          text: "Because evaluating the continuous normalization integral $C(\\mathbf{r}) = \\int_{\\text{cube}} d\\mathbf{r}'\\, e^{-\\beta V(\\mathbf{r}')}$ exactly at every step is computationally intractable for a non-linear potential $V(\\mathbf{r}')$."
+        - id: b
+          text: "Because continuous coordinates do not obey the Boltzmann distribution."
+        - id: c
+          text: "Because Heat-Bath violates row normalization in 3 dimensions."
+        - id: d
+          text: "Because $C(\\mathbf{r})$ is always negative for Lennard-Jones potentials."
+      correct: a
+      rationale_markdown: "Slide 9 emphasizes: *'Can be used only if it is possible to quickly compute the normalization ratio.'* For a continuous anharmonic potential $V(\\mathbf{r}')$, integrating $e^{-\\beta V(\\mathbf{r}')}$ over the 3D cube cannot be done analytically—which motivates linearizing $V(\\mathbf{r}')$ using the local force $\\mathbf{F}(\\mathbf{r})$ in **Force-Bias** and **Smart MC**!"
+
+    - id: sec_force_bias_mc
+      type: markdown_section
+      title: "4. Force-Bias Monte Carlo (Pangali, Rao & Berne)"
+      body_markdown: |
+        ### Using Local Forces to Push the Walk in the Right Direction (Slide 10)
+        In a dense liquid or solid, blind uniform cube moves frequently push atoms *toward* repulsive neighbors (uphill in energy, $\Delta V \gg k_B T$), resulting in high rejection rates unless $\Delta$ is kept small. How can we approximate the local Heat-Bath distribution $T(\mathbf{r} \to \mathbf{r}') \propto e^{-\beta V(\mathbf{r}')}$ inside a cube so that it *can* be sampled and normalized analytically?
+
+        We **Taylor-expand the potential energy $V(\mathbf{r}')$ to first order** around the current position $\mathbf{r}$:
+        $$V(\mathbf{r}') \approx V(\mathbf{r}) + \nabla V(\mathbf{r})\cdot(\mathbf{r}' - \mathbf{r}) = V(\mathbf{r}) - \mathbf{F}(\mathbf{r})\cdot(\mathbf{r}' - \mathbf{r})$$
+        where $\mathbf{F}(\mathbf{r}) = -\nabla V(\mathbf{r})$ is the instantaneous mechanical force on the particle!
+
+        ### The Force-Bias Proposal Distribution Inside a Cube
+        Introduced by **Pangali, Rao, and Berne (1978)**, **Force-Bias Monte Carlo** restricts trial displacements $\delta\mathbf{r} = \mathbf{r}' - \mathbf{r}$ to a cube $\delta x, \delta y, \delta z \in [-\Delta/2, +\Delta/2]$, and chooses the proposal density:
+        $$T(\mathbf{r} \to \mathbf{r}') = \frac{1}{C(\mathbf{r})} \exp\!\big[\lambda \beta \mathbf{F}(\mathbf{r})\cdot(\mathbf{r}' - \mathbf{r})\big] \qquad \text{for } \mathbf{r}' - \mathbf{r} \in \left[-\frac{\Delta}{2}, +\frac{\Delta}{2}\right]^3$$
+        where $\lambda \in [0, 1]$ (written as $\alpha$ on slide 10) is a constant bias parameter (typically $\lambda = 1/2$ or $\lambda = 1$).
+        - **Why is this easy to sample and normalize?** Because the exponent $\lambda \beta \mathbf{F}\cdot\delta\mathbf{r} = \lambda\beta(F_x \delta x + F_y \delta y + F_z \delta z)$ **factors into three independent 1D exponentials**!
+          $$C(\mathbf{r}) = \int_{-\Delta/2}^{+\Delta/2} d(\delta x)\, e^{\lambda\beta F_x \delta x} \int_{-\Delta/2}^{+\Delta/2} d(\delta y)\, e^{\lambda\beta F_y \delta y} \int_{-\Delta/2}^{+\Delta/2} d(\delta z)\, e^{\lambda\beta F_z \delta z} = \prod_{\mu=x,y,z} \frac{2\sinh(\lambda\beta F_\mu \Delta / 2)}{\lambda\beta F_\mu}$$
+        - **Analytical Sampling via Inverse-CDF Mapping:** Because each 1D exponential $p(\delta x) \propto e^{\lambda\beta F_x \delta x}$ on $[-\Delta/2, +\Delta/2]$ has an elementary cumulative distribution function, we can draw $\delta x, \delta y, \delta z$ directly from three uniform random numbers $u_x, u_y, u_z \in (0, 1)$ using the **mapping (inverse-transform) method** from Lesson 14!
+
+        ### Force-Bias Acceptance Probability & Why $\lambda = 1/2$ Beats $\lambda = 1$
+        Substituting $T(\mathbf{r} \to \mathbf{r}')$ and the reverse proposal $T(\mathbf{r}' \to \mathbf{r}) = C(\mathbf{r}')^{-1} \exp[\lambda\beta\mathbf{F}(\mathbf{r}')\cdot(\mathbf{r} - \mathbf{r}')]$ into Metropolis–Hastings gives:
+        $$A_{\text{FB}}(\mathbf{r} \to \mathbf{r}') = \min\!\left\{1,\; \frac{C(\mathbf{r})}{C(\mathbf{r}')} \exp\!\Big(-\beta\big[V(\mathbf{r}') - V(\mathbf{r}) + \lambda\big(\mathbf{F}(\mathbf{r}) + \mathbf{F}(\mathbf{r}')\big)\cdot(\mathbf{r}' - \mathbf{r})\big]\Big)\right\}$$
+        Look closely at the exponent: by the trapezoidal rule of calculus, the energy difference along the step is:
+        $$V(\mathbf{r}') - V(\mathbf{r}) = -\frac{1}{2}\big(\mathbf{F}(\mathbf{r}) + \mathbf{F}(\mathbf{r}')\big)\cdot(\mathbf{r}' - \mathbf{r}) + \mathcal{O}(\Delta^3)$$
+        Therefore, choosing **$\lambda = 1/2$** makes the force term in the exponent **cancel $V(\mathbf{r}') - V(\mathbf{r})$ to second order in $\Delta$**, yielding a much higher acceptance rate and faster diffusion than $\lambda = 1$ (as shown in Figs. 1 and 3 on slide 11)!
+
+    - id: q16_22_force_bias_taylor_expansion
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_force_bias_mc
+      prompt_markdown: "In Force-Bias Monte Carlo (slide 10), how is the local mechanical force $\\mathbf{F}(\\mathbf{r}) = -\\nabla V(\\mathbf{r})$ introduced to bias trial moves toward regions of higher Boltzmann probability?"
+      hint_markdown: "Taylor-expand $V(\\mathbf{r}')$ to first order about the current coordinate $\\mathbf{r}$."
+      options:
+        - id: a
+          text: "By Taylor-expanding $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ inside a trial cube and setting $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})]$."
+        - id: b
+          text: "By integrating $\\mathbf{F} = m\\mathbf{a}$ for $100$ Verlet steps without any acceptance test."
+        - id: c
+          text: "By rejecting all moves where $\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r}) > 0$."
+        - id: d
+          text: "By setting the temperature $\\beta$ proportional to $|\\mathbf{F}(\\mathbf{r})|$."
+      correct: a
+      rationale_markdown: "Linearizing $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ turns the intractable local Boltzmann factor $e^{-\\beta V(\\mathbf{r}')}$ into a separable exponential $e^{\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})}$ that pushes displacements in the direction of $\\mathbf{F}(\\mathbf{r})$."
+
+    - id: q16_23_force_bias_sampling_method
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_force_bias_mc
+      prompt_markdown: "According to slide 10, how do we sample a trial displacement $\\delta\\mathbf{r} = \\mathbf{r}' - \\mathbf{r}$ from the exponential Force-Bias distribution $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})]$ inside a cube $[ -\\Delta/2, +\\Delta/2 ]^3$?"
+      hint_markdown: "Recall from Lesson 14 how a 1D exponential PDF on a finite interval is sampled from a uniform random number."
+      options:
+        - id: a
+          text: "Using the analytical inverse-CDF mapping method along each Cartesian coordinate $x, y, z$ independently."
+        - id: b
+          text: "Using the Box–Muller polar method for unbounded Gaussians."
+        - id: c
+          text: "By running a secondary sub-Markov chain of $10^4$ steps inside the cube."
+        - id: d
+          text: "By always placing $\\mathbf{r}'$ at the corner of the cube."
+      correct: a
+      rationale_markdown: "Because the domain is a cube $[ -\\Delta/2, +\\Delta/2 ]^3$ and the exponent $\\lambda\\beta(F_x \\delta x + F_y \\delta y + F_z \\delta z)$ separates into three 1D exponentials, each Cartesian coordinate can be sampled analytically in $\\mathcal{O}(1)$ time via the inverse-CDF mapping method."
+
+    - id: q16_24_force_bias_1d_normalization_calc
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_force_bias_mc
+      prompt_markdown: |
+        In a 1D Force-Bias move on $\delta x \in [-\Delta/2, +\Delta/2]$ with $\Delta = 1.0\text{ Å}$ and $\lambda \beta F_x = 2.0\text{ Å}^{-1}$, the normalization constant is:
+        $$C(x) = \int_{-0.5}^{+0.5} e^{2.0\,\delta x}\, d(\delta x) = \frac{e^{+1.0} - e^{-1.0}}{2.0} = \sinh(1.0)$$
+        What is the numerical value of $C(x)$?
+      hint_markdown: "Evaluate $\\sinh(1.0) = (e^1 - e^{-1})/2$."
+      correct:
+        value: 1.1752
+        tolerance: 0.002
+      rationale_markdown: "Evaluating the integral gives $\\frac{e^{1.0} - e^{-1.0}}{2.0} = \\sinh(1.0) \\approx 1.1752$ (which reduces to $\\Delta = 1.0$ as $F_x \\to 0$)."
+
+    - id: q16_25_force_bias_forward_reverse_ratio
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_force_bias_mc
+      prompt_markdown: |
+        In a 1D Force-Bias step from $x \to x'$ with displacement $\delta x = x' - x = +0.20\text{ Å}$, suppose $\beta = 1.0$, $\lambda = 0.5$, the initial force is $F(x) = +3.0$, the final force is $F(x') = +1.0$, and the normalization ratio is $C(x)/C(x') = 1.10$. What is the reverse-to-forward proposal ratio:
+        $$\frac{T(x' \to x)}{T(x \to x')} = \frac{C(x)}{C(x')} \exp\!\big[-\lambda\beta\big(F(x) + F(x')\big)(x' - x)\big]$$
+      hint_markdown: "Notice that in the reverse move $x' \\to x$, the displacement is $x - x' = -\\delta x$, so $T(x'\\to x) \\propto \\exp[-\\lambda\\beta F(x')\\delta x]$. Evaluate $1.10 \\times \\exp[-0.5 \\times 1.0 \\times (3.0 + 1.0) \\times 0.20]$."
+      correct:
+        value: 0.7374
+        tolerance: 0.002
+      rationale_markdown: "The exponent is $-\\lambda\\beta(F(x)+F(x'))\\delta x = -0.5(1.0)(4.0)(0.20) = -0.40$. Multiplying by $C(x)/C(x') = 1.10$ gives $1.10 \\times e^{-0.40} \\approx 1.10 \\times 0.67032 = 0.7374$."
+
+    - id: q16_26_why_lambda_half_beats_lambda_one
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_force_bias_mc
+      prompt_markdown: "In the liquid Argon benchmarks on slide 11 (Figs. 1 and 3), why does Force-Bias MC with $\\lambda = 1/2$ achieve a significantly higher acceptance probability and faster diffusion than Force-Bias MC with $\\lambda = 1$?"
+      hint_markdown: "Compare $\\Delta V = V(\\mathbf{r}') - V(\\mathbf{r})$ with $-\\lambda(\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}'))\\cdot(\\mathbf{r}' - \\mathbf{r})$."
+      options:
+        - id: a
+          text: "Because the reverse proposal uses $\\mathbf{F}(\\mathbf{r}')$ while the forward proposal uses $\\mathbf{F}(\\mathbf{r})$, their sum in the acceptance ratio forms the trapezoidal force average $\\frac{1}{2}[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ when $\\lambda = 1/2$, canceling $\\Delta V$ to second order!"
+        - id: b
+          text: "Because $\\lambda = 1$ violates detailed balance, whereas $\\lambda = 1/2$ satisfies it."
+        - id: c
+          text: "Because $\\lambda = 1/2$ does not require computing forces at the new position $\\mathbf{r}'$."
+        - id: d
+          text: "Because $\\lambda = 1$ makes the proposal distribution uniform."
+      correct: a
+      rationale_markdown: "Both $\\lambda = 1/2$ and $\\lambda = 1$ satisfy exact detailed balance, but because $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$ contributes $-\\lambda\\beta[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ to the log-acceptance ratio, setting $\\lambda = 1/2$ matches the average of initial and final forces, whereas $\\lambda = 1$ double-counts the linear force work!"
+
+    - id: q16_27_force_bias_zero_force_limit
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_force_bias_mc
+      prompt_markdown: "What does the Force-Bias Monte Carlo algorithm reduce to when $\\lambda \\to 0$ (or when the forces vanish, $\\mathbf{F}(\\mathbf{r}) = \\mathbf{0}$)?"
+      hint_markdown: "Evaluate $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}\\cdot(\\mathbf{r}' - \\mathbf{r})]$ on the cube $[ -\\Delta/2, +\\Delta/2 ]^3$ at $\\lambda = 0$."
+      options:
+        - id: a
+          text: "It reduces identically to the classic Metropolis algorithm with a uniform proposal inside the cube of side $\\Delta$."
+        - id: b
+          text: "It reduces to deterministic Newton–Verlet Molecular Dynamics."
+        - id: c
+          text: "The acceptance probability drops to zero for all moves."
+        - id: d
+          text: "The trial step size $\\Delta$ becomes infinite."
+      correct: a
+      rationale_markdown: "When $\\lambda = 0$, $\\exp(0) = 1$, $C(\\mathbf{r}) = \\Delta^3$, and $T(\\mathbf{r} \\to \\mathbf{r}') = 1/\\Delta^3$ is the uniform cube proposal of classic Metropolis MC."
+
+    - id: sec_smart_mc_and_brownian
+      type: markdown_section
+      title: "5. Smart Monte Carlo (Rossky, Doll & Friedman) & Brownian Dynamics"
+      body_markdown: |
+        ### Smart Monte Carlo: Displaced Gaussian Proposals (Slide 13)
+        In Force-Bias MC, restricting moves to a hard cube requires computing the state-dependent normalization constant $C(\mathbf{r}) = \prod_\mu \frac{2\sinh(\lambda\beta F_\mu \Delta/2)}{\lambda\beta F_\mu}$. **Rossky, Doll, and Friedman (1978)** realized that if we replace the hard cube with a **displaced Gaussian probability density** over $(-\infty, +\infty)^3$, the normalization constant becomes **completely independent of the force $\mathbf{F}(\mathbf{r})$**!
+
+        In **Smart Monte Carlo**, a particle at $\mathbf{r}$ proposes a trial displacement $\Delta\mathbf{r} = \mathbf{r}' - \mathbf{r}$ composed of a deterministic drift along the force plus isotropic Gaussian white noise $\boldsymbol{\delta}$:
+        $$\Delta\mathbf{r} = \mathbf{r}' - \mathbf{r} = \tau \beta \mathbf{F}(\mathbf{r}) + \boldsymbol{\delta}, \qquad \langle \boldsymbol{\delta} \rangle = \mathbf{0}, \quad \langle \delta_\mu^2 \rangle = 2\tau$$
+        This generates the forward Gaussian transition probability density:
+        $$T(\mathbf{r} \to \mathbf{r}') = \frac{1}{(4\pi\tau)^{3/2}} \exp\!\left[-\frac{\big(\mathbf{r}' - \mathbf{r} - \tau\beta\mathbf{F}(\mathbf{r})\big)^2}{4\tau}\right]$$
+        and the corresponding reverse Gaussian transition density starting from $\mathbf{r}'$:
+        $$T(\mathbf{r}' \to \mathbf{r}) = \frac{1}{(4\pi\tau)^{3/2}} \exp\!\left[-\frac{\big(\mathbf{r} - \mathbf{r}' - \tau\beta\mathbf{F}(\mathbf{r}')\big)^2}{4\tau}\right]$$
+
+        ### Exact Derivation of the Smart MC Acceptance Probability (Slide 13)
+        Let us form the ratio $\frac{T(\mathbf{r}' \to \mathbf{r})\,\pi(\mathbf{r}')}{T(\mathbf{r} \to \mathbf{r}')\,\pi(\mathbf{r})}$. First, the prefactors $(4\pi\tau)^{-3/2}$ cancel out! Expanding the difference of the two Gaussian exponents gives:
+        $$\ln\!\left[\frac{T(\mathbf{r}' \to \mathbf{r})}{T(\mathbf{r} \to \mathbf{r}')}\right] = \frac{\big(\Delta\mathbf{r} - \tau\beta\mathbf{F}(\mathbf{r})\big)^2 - \big(-\Delta\mathbf{r} - \tau\beta\mathbf{F}(\mathbf{r}')\big)^2}{4\tau}$$
+        $$= -\frac{1}{2}\beta\big(\mathbf{F}(\mathbf{r}) + \mathbf{F}(\mathbf{r}')\big)\cdot(\mathbf{r}' - \mathbf{r}) - \frac{\tau\beta^2}{4}\Big(|\mathbf{F}(\mathbf{r}')|^2 - |\mathbf{F}(\mathbf{r})|^2\Big)$$
+        Multiplying by $\pi(\mathbf{r}')/\pi(\mathbf{r}) = e^{-\beta[V(\mathbf{r}') - V(\mathbf{r})]}$ and factoring $\frac{1}{2}(\mathbf{F}(\mathbf{r}') + \mathbf{F}(\mathbf{r}))$ yields the exact Smart MC acceptance formula on slide 13:
+        $$A(\mathbf{r} \to \mathbf{r}') = \min\!\left\{1,\; \exp\!\left(-\beta\left[V(\mathbf{r}') - V(\mathbf{r}) + \frac{\mathbf{F}(\mathbf{r}') + \mathbf{F}(\mathbf{r})}{2}\cdot\left(\mathbf{r}' - \mathbf{r} + \frac{\tau\beta}{2}\big(\mathbf{F}(\mathbf{r}') - \mathbf{F}(\mathbf{r})\big)\right)\right]\right)\right\}$$
+
+        ### Key Mathematical & Physical Properties of Smart MC
+        1. **Identically $A = 1$ for Any Linear Potential!** Suppose the potential is linear across the region sampled: $V(\mathbf{r}) = V_0 - \mathbf{F}_0\cdot\mathbf{r}$, so the force is constant: $\mathbf{F}(\mathbf{r}') = \mathbf{F}(\mathbf{r}) = \mathbf{F}_0$. Then:
+           - $\mathbf{F}(\mathbf{r}') - \mathbf{F}(\mathbf{r}) = \mathbf{0}$,
+           - $\frac{\mathbf{F}(\mathbf{r}') + \mathbf{F}(\mathbf{r})}{2}\cdot(\mathbf{r}' - \mathbf{r}) = \mathbf{F}_0\cdot(\mathbf{r}' - \mathbf{r})$, and
+           - $V(\mathbf{r}') - V(\mathbf{r}) = -\mathbf{F}_0\cdot(\mathbf{r}' - \mathbf{r})$.
+           The bracket inside the exponent sums to $-\mathbf{F}_0\cdot\Delta\mathbf{r} + \mathbf{F}_0\cdot\Delta\mathbf{r} = 0$, giving **$A(\mathbf{r} \to \mathbf{r}') = e^0 = 1$ for any step size $\tau$!**
+        2. **Rejection Scales Only with Potential Curvature $\mathcal{O}(\tau^{3/2})$:** Because $|\Delta\mathbf{r}| = \mathcal{O}(\tau^{1/2})$, Taylor-expanding $V(\mathbf{r}')$ and $\mathbf{F}(\mathbf{r}')$ around $\mathbf{r}$ shows that both the $\mathcal{O}(\tau^{1/2})$ linear slope and $\mathcal{O}(\tau)$ terms cancel, leaving the log-acceptance error proportional to third derivatives and force gradients $\nabla\mathbf{F} = -\nabla\nabla V$ at $\mathcal{O}(\tau^{3/2})$.
+        3. **Infinite Sampling Domain:** Because a Gaussian has tails extending to $\pm\infty$, the sampling domain is infinite in principle (making ergodicity immediate!).
+
+        ### Connection to Brownian Dynamics & Diffusion Quantum Monte Carlo (Slide 14)
+        Consider a large molecule in a viscous solvent. In the high-viscosity (overdamped) limit, its probability density $\rho(R, t)$ evolves according to the **Smoluchowski (Fokker–Planck) master equation**:
+        $$\frac{\partial \rho(R, t)}{\partial t} = D \nabla^2 \rho(R, t) - \beta D \nabla \cdot \big(\mathbf{F}(R)\rho(R, t)\big)$$
+        Integrating this stochastic differential equation over a short time step $\tau$ gives **Brownian Dynamics**:
+        $$R(t + \tau) = R(t) + \tau \beta D \mathbf{F}(R(t)) + \boldsymbol{\eta}(t), \qquad \langle \boldsymbol{\eta}(t) \rangle = \mathbf{0}, \quad \langle \eta_\mu^2(t) \rangle = 2 D \tau$$
+        - Look at the transition probability density of one Brownian Dynamics step (setting $D = 1$ or absorbing $D$ into $\tau$):
+          $$T(R \to R') \propto \exp\!\left[-\frac{\big(R' - R - \beta D \tau \mathbf{F}(R)\big)^2}{4 D \tau}\right]$$
+          *(Note: Slide 14 writes $2D\tau$ in the denominator for $\langle\eta^2\rangle = D\tau$ or $4D\tau$ for $\langle\eta^2\rangle = 2D\tau$.)*
+        - **Hybrid Method:** Uncorrected Brownian Dynamics has a finite time-step error $\mathcal{O}(\tau)$ because $\mathbf{F}(R)$ is held constant across $\tau$. **Smart Monte Carlo is simply Brownian Dynamics with a Metropolis rejection step tacked on to enforce exact detailed balance at any $\tau$!**
+        - **Diffusion Quantum Monte Carlo (DMC):** Under a Wick rotation to imaginary time ($t \to -i\hbar\tau$), the Schrödinger equation for a many-body wavefunction becomes an identical drift-diffusion equation (where the "quantum force" $\mathbf{F}_Q = 2\nabla\ln\Psi_T$ guides walkers toward regions of high trial wavefunction amplitude), and DMC uses the exact same Smart MC Metropolis acceptance test to eliminate finite time-step bias!
+
+    - id: concept_smart_mc_asymmetry
+      type: concept_cell
+      title: "Interactive Explorer: Smart MC Displaced Gaussians & Linear-Potential Exactness"
+      description_markdown: "Vary the Smart MC step parameter $\\tau$, trial displacement $\\Delta x$, and potential curvature $V''(x)$ to visualize the forward proposal Gaussian $T(x \\to x')$ (shifted by $+\\tau\\beta F(x)$) and reverse proposal Gaussian $T(x' \\to x)$ (shifted by $+\\tau\\beta F(x')$). Set curvature $V'' = 0$ to verify that $A_{\\mathrm{Smart}} = 1.0000$ identically on a linear slope!"
+      render_function: render_smart_mc_proposal_asymmetry
+      layout: figure_left
+      controls:
+        - name: tau
+          label: "Smart MC Step Variance Parameter tau"
+          kind: slider
+          min: 0.04
+          max: 0.30
+          step: 0.02
+          default: 0.12
+          format: ".2f"
+        - name: dx_trial
+          label: "Trial Displacement dx = x' - x"
+          kind: slider
+          min: -0.40
+          max: 0.90
+          step: 0.05
+          default: 0.45
+          format: ".2f"
+        - name: curvature
+          label: "Potential Curvature V''(x) = -F'(x)"
+          kind: slider
+          min: 0.0
+          max: 2.0
+          step: 0.2
+          default: 0.8
+          format: ".2f"
+      takeaway_markdown: "**Key Takeaway:** In Smart MC, forward and reverse Gaussian proposals are shifted by $+\\tau\\beta F(x)$ and $+\\tau\\beta F(x')$. When the potential is locally linear ($V'' = 0 \\implies F(x') = F(x)$), the ratio $T(x'\\to x)/T(x\\to x') = e^{+\\beta F_0 \\Delta x}$ cancels the Boltzmann factor $e^{-\\beta \\Delta V} = e^{-\\beta F_0 \\Delta x}$ **identically**, giving $100\\%$ acceptance ($A = 1$) for any $\\tau$!"
+
+    - id: concept_smart_vs_metropolis_efficiency
+      type: concept_cell
+      title: "Interactive Benchmark: Metropolis vs. Force-Bias & Smart MC in Liquid Argon"
+      description_markdown: "Switch between the acceptance probability curve (Fig. 1 of slide 11) and the 100-step mean-squared displacement $\\langle \\Delta r^2(100) \\rangle$ (Fig. 3 of slide 11) across step sizes $\\Delta/\\sigma$ to examine when Force-Bias ($\\lambda = 0.5, 1.0$) and Smart MC outperform classic Metropolis—and why classic Metropolis remains competitive!"
+      render_function: render_metropolis_vs_smart_mc_efficiency
+      layout: figure_left
+      controls:
+        - name: metric
+          label: "Benchmark Metric (Slide 11)"
+          kind: dropdown
+          default: msd
+          options:
+            - label: "Fig. 3: 100-Step Diffusion <Delta r^2(100)>"
+              value: msd
+            - label: "Fig. 1: Average Acceptance Probability P(Delta/sigma)"
+              value: acceptance
+        - name: delta_over_sigma
+          label: "Step Size Delta / sigma"
+          kind: slider
+          min: 0.04
+          max: 0.46
+          step: 0.02
+          default: 0.24
+          format: ".2f"
+      takeaway_markdown: "**Key Takeaway:** Force-Bias ($\\lambda=0.5$) and Smart MC achieve substantially higher acceptance ratios than classic Metropolis at a fixed step size $\\Delta/\\sigma$ and reduce energy autocorrelation $C(50)$ near $\\Delta/\\sigma \\approx 0.20$. However, if you increase the classic Metropolis step size to $\\Delta/\\sigma \\approx 0.34$ ($A \\approx 0.20$), classic Metropolis achieves comparable or higher raw diffusion without the extra CPU cost of computing forces!"
+
+    - id: q16_28_smart_mc_trial_displacement_mean_variance
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_smart_mc_and_brownian
+      prompt_markdown: "In Smart Monte Carlo (slide 13), the trial displacement of a particle is generated as $\\Delta\\mathbf{r} = \\mathbf{r}' - \\mathbf{r} = \\tau\\beta\\mathbf{F}(\\mathbf{r}) + \\boldsymbol{\\delta}$, where each Cartesian component of $\\boldsymbol{\\delta}$ is drawn from a zero-mean Gaussian with $\\langle \\delta_\\mu^2 \\rangle = 2\\tau$. What are the mean $\\langle \\Delta x \\rangle$ and variance $\\operatorname{Var}(\\Delta x) = \\langle (\\Delta x - \\langle \\Delta x \\rangle)^2 \\rangle$ of the proposed $x$-displacement?"
+      hint_markdown: "Add the deterministic drift $\\tau\\beta F_x(\\mathbf{r})$ to the zero-mean noise $\\delta_x$."
+      options:
+        - id: a
+          text: "Mean $\\langle \\Delta x \\rangle = \\tau\\beta F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 2\\tau$."
+        - id: b
+          text: "Mean $\\langle \\Delta x \\rangle = 0$ and variance $\\operatorname{Var}(\\Delta x) = \\tau\\beta F_x(\\mathbf{r})$."
+        - id: c
+          text: "Mean $\\langle \\Delta x \\rangle = 2\\tau$ and variance $\\operatorname{Var}(\\Delta x) = 4\\pi\\tau$."
+        - id: d
+          text: "Mean $\\langle \\Delta x \\rangle = -F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 0$."
+      correct: a
+      rationale_markdown: "Since $\\langle \\delta_x \\rangle = 0$ and $\\langle \\delta_x^2 \\rangle = 2\\tau$, the shifted Gaussian variable $\\Delta x = \\tau\\beta F_x(\\mathbf{r}) + \\delta_x$ has mean $\\tau\\beta F_x(\\mathbf{r})$ and variance $2\\tau$."
+
+    - id: q16_29_smart_mc_gaussian_normalization_advantage
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_smart_mc_and_brownian
+      prompt_markdown: "What is the key mathematical simplification of **Smart Monte Carlo's** unbounded displaced-Gaussian proposal $T(\\mathbf{r} \\to \\mathbf{r}') = (4\\pi\\tau)^{-3/2}\\exp\\!\\left[-\\frac{(\\mathbf{r}' - \\mathbf{r} - \\tau\\beta\\mathbf{F}(\\mathbf{r}))^2}{4\\tau}\\right]$ compared to **Force-Bias Monte Carlo's** truncated cube proposal?"
+      hint_markdown: "Compare the normalization factor $(4\\pi\\tau)^{-3/2}$ of a shifted Gaussian over $(-\\infty, \\infty)^3$ with the cube normalization $C(\\mathbf{r}) = \\prod_\\mu \\frac{2\\sinh(\\lambda\\beta F_\\mu \\Delta/2)}{\\lambda\\beta F_\\mu}$."
+      options:
+        - id: a
+          text: "Because shifting the mean of a Gaussian over $(-\\infty, +\\infty)^3$ does not change its integral, the normalization factor $(4\\pi\\tau)^{-3/2}$ is completely independent of $\\mathbf{F}(\\mathbf{r})$ and cancels out of $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$!"
+        - id: b
+          text: "Smart MC does not require evaluating the force $\\mathbf{F}(\\mathbf{r}')$ at the trial position $\\mathbf{r}'$."
+        - id: c
+          text: "Smart MC makes $T(\\mathbf{r} \\to \\mathbf{r}') = T(\\mathbf{r}' \\to \\mathbf{r})$ symmetric even when $\\mathbf{F}(\\mathbf{r}) \\ne \\mathbf{0}$."
+        - id: d
+          text: "Smart MC restricts displacements to a sphere of radius $\\tau$."
+      correct: a
+      rationale_markdown: "In Force-Bias MC, truncating the exponential to a finite cube $[ -\\Delta/2, +\\Delta/2 ]^3$ produces a force-dependent normalization $C(\\mathbf{r})$. In Smart MC, integrating the Gaussian over all $\\mathbb{R}^3$ gives $(4\\pi\\tau)^{3/2}$ regardless of the shift $\\tau\\beta\\mathbf{F}(\\mathbf{r})$, so the prefactors cancel identically!"
+
+    - id: q16_30_smart_mc_linear_potential_exact_acceptance
+      type: problem
+      question_type: numeric
+      difficulty: easy
+      taught_by:
+        - sec_smart_mc_and_brownian
+        - concept_smart_mc_asymmetry
+      prompt_markdown: |
+        A particle moves in a 3D linear potential $V(\mathbf{r}) = V_0 - \mathbf{F}_0 \cdot \mathbf{r}$ with a constant force $\mathbf{F}(\mathbf{r}) = \mathbf{F}_0 \ne \mathbf{0}$ everywhere. In a Smart Monte Carlo simulation with step parameter $\tau = 0.50\text{ Å}^2$ at $\beta = 2.0\text{ eV}^{-1}$, a large trial move $\Delta\mathbf{r} = \mathbf{r}' - \mathbf{r}$ increases the potential energy by $\Delta V = +3.0\text{ eV}$. What is the exact Smart MC acceptance probability $A(\mathbf{r} \to \mathbf{r}')$ for this move?
+      hint_markdown: "Substitute $\\mathbf{F}(\\mathbf{r}') = \\mathbf{F}(\\mathbf{r}) = \\mathbf{F}_0$ and $\\Delta V = -\\mathbf{F}_0\\cdot(\\mathbf{r}' - \\mathbf{r})$ into the Smart MC acceptance formula on slide 13."
+      correct:
+        value: 1.0
+        tolerance: 0.0001
+      rationale_markdown: "When the potential is linear ($\\mathbf{F}(\\mathbf{r}') = \\mathbf{F}(\\mathbf{r}) = \\mathbf{F}_0$), $\\mathbf{F}(\\mathbf{r}') - \\mathbf{F}(\\mathbf{r}) = \\mathbf{0}$ and $\\frac{1}{2}(\\mathbf{F}(\\mathbf{r}') + \\mathbf{F}(\\mathbf{r}))\\cdot\\Delta\\mathbf{r} = \\mathbf{F}_0\\cdot\\Delta\\mathbf{r} = -\\Delta V$. Thus the exponent is $-\\beta[\\Delta V - \\Delta V + 0] = 0$, giving $A(\\mathbf{r} \\to \\mathbf{r}') = e^0 = 1.0$ identically for *any* displacement and *any* $\\tau$!"
+
+    - id: q16_31_smart_mc_harmonic_acceptance_numeric
+      type: problem
+      question_type: numeric
+      difficulty: hard
+      taught_by:
+        - sec_smart_mc_and_brownian
+        - concept_smart_mc_asymmetry
+      prompt_markdown: |
+        Consider a 1D particle at $x = 0$ in a harmonic potential $V(x) = \frac{1}{2}k x^2$ with spring constant $k = 2.0$ (so $V(x) = x^2$ and force $F(x) = -V'(x) = -2x$) at $\beta = 1.0$ and Smart MC parameter $\tau = 0.25$. Suppose the particle proposes a step from $x = 0$ to $x' = 1.0$:
+        - $V(x) = 0$, $V(x') = 1.0 \implies \Delta V = +1.0$
+        - $F(x) = 0$, $F(x') = -2.0$
+        - $\Delta x = x' - x = +1.0$
+
+        Using the Smart MC acceptance formula from slide 13:
+        $$A(x \to x') = \min\!\left\{1,\; \exp\!\left(-\beta\left[\Delta V + \frac{F(x') + F(x)}{2}\left(\Delta x + \frac{\tau\beta}{2}\big(F(x') - F(x)\big)\right)\right]\right)\right\}$$
+        what is the Smart MC acceptance probability $A(0 \to 1.0)$?
+      hint_markdown: "Compute $\\frac{F(x')+F(x)}{2} = -1.0$, $\\frac{\\tau\\beta}{2}(F(x')-F(x)) = 0.125(-2.0) = -0.25$, so the bracket is $1.0 + (-1.0)(1.0 - 0.25) = 0.25$. Then evaluate $\\exp(-0.25)$."
+      correct:
+        value: 0.7788
+        tolerance: 0.002
+      rationale_markdown: "In the exponent bracket: $\\Delta V = 1.0$, $\\frac{F(x')+F(x)}{2} = \\frac{-2+0}{2} = -1.0$, and $\\Delta x + \\frac{\\tau\\beta}{2}(F(x')-F(x)) = 1.0 + 0.125(-2.0) = 0.75$. Thus the bracket equals $1.0 + (-1.0)(0.75) = +0.25$, giving $A = e^{-0.25} \\approx 0.7788$ (much higher than classic Metropolis $e^{-\\beta\\Delta V} = e^{-1.0} \\approx 0.3679$!)."
+
+    - id: q16_32_smart_mc_rejection_curvature_order
+      type: problem
+      question_type: single_select
+      difficulty: hard
+      taught_by: sec_smart_mc_and_brownian
+      prompt_markdown: "For a smooth anharmonic potential $V(\\mathbf{r})$ where typical Smart MC trial displacements scale as $|\\Delta\\mathbf{r}| = \\mathcal{O}(\\tau^{1/2})$, what physical derivative of $V(\\mathbf{r})$ causes the Smart MC acceptance probability to deviate from $1$, and at what order in $\\tau$?"
+      hint_markdown: "Since $A = 1$ for any linear potential ($\\nabla\\nabla V = 0$), check the lowest non-vanishing term when $V(\\mathbf{r}')$ and $\\mathbf{F}(\\mathbf{r}')$ are Taylor-expanded around $\\mathbf{r}$."
+      options:
+        - id: a
+          text: "Potential curvature (the Hessian $\\nabla\\nabla V = -\\nabla\\mathbf{F}$) and higher derivatives, entering the log-acceptance exponent at order $\\mathcal{O}(\\tau^{3/2})$ (from the $\\frac{\\tau\\beta^2}{4}(|\\mathbf{F}'|^2 - |\\mathbf{F}|^2)$ and cubic $\\mathcal{O}(\\Delta r^3)$ terms)."
+        - id: b
+          text: "The linear force $-\\nabla V$, entering at order $\\mathcal{O}(\\tau^{1/2})$ just like classic Metropolis."
+        - id: c
+          text: "The constant reference energy $V(\\mathbf{r}_0)$, entering at order $\\mathcal{O}(1)$."
+        - id: d
+          text: "The particle mass $m$, entering at order $\\mathcal{O}(\\tau^2)$."
+      correct: a
+      rationale_markdown: "In Classic Metropolis, $\\Delta V = -\\mathbf{F}\\cdot\\Delta\\mathbf{r} + \\mathcal{O}(\\Delta r^2) = \\mathcal{O}(\\tau^{1/2})$. Smart MC cancels the entire linear force contribution, so rejections only arise when the force changes across the step ($\\mathbf{F}(\\mathbf{r}') - \\mathbf{F}(\\mathbf{r}) \\approx -(\\nabla\\nabla V)\\Delta\\mathbf{r} = \\mathcal{O}(\\tau^{1/2})$), which enters $\\ln A$ at order $\\mathcal{O}(\\tau^{3/2})$!"
+
+    - id: q16_33_smoluchowski_equation_terms
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_smart_mc_and_brownian
+      prompt_markdown: |
+        On slide 14, the high-viscosity (overdamped) master equation for a molecule in a solvent is the **Smoluchowski equation**:
+        $$\frac{\partial \rho(R, t)}{\partial t} = D \nabla^2 \rho(R, t) - \beta D \nabla \cdot \big(\mathbf{F}(R) \rho(R, t)\big)$$
+        What are the physical meanings of the two terms on the right-hand side, and why does the same coefficient $D$ appear in both?
+      hint_markdown: "Connect $D\\nabla^2\\rho$ to Fickian thermal diffusion and $-\\beta D\\nabla\\cdot(\\mathbf{F}\\rho)$ to force-driven drift via the Einstein fluctuation-dissipation relation."
+      options:
+        - id: a
+          text: "$D\\nabla^2\\rho$ is isotropic thermal diffusion driven by random solvent collisions, $-\\beta D\\nabla\\cdot(\\mathbf{F}\\rho)$ is deterministic drift along the mechanical force $\\mathbf{F}$, and their shared coefficient $D$ (Einstein relation $\\mu = \\beta D$) ensures that $\\rho_{\\text{eq}}(R) \\propto e^{-\\beta V(R)}$ is the stationary solution ($\\partial\\rho/\\partial t = 0$)."
+        - id: b
+          text: "Both terms represent inertial kinetic energy conservation in a vacuum."
+        - id: c
+          text: "$D\\nabla^2\\rho$ is the quantum kinetic energy and $-\\beta D\\nabla\\cdot(\\mathbf{F}\\rho)$ is the Pauli exclusion principle."
+        - id: d
+          text: "The two terms cancel only when $T = 0\\text{ K}$."
+      correct: a
+      rationale_markdown: "Substituting $\\rho(R) \\propto e^{-\\beta V(R)}$ gives $\\nabla\\rho = -\\beta(\\nabla V)\\rho = +\\beta\\mathbf{F}\\rho$, so the diffusive flux $D\\nabla\\rho$ and drift flux $\\beta D\\mathbf{F}\\rho$ cancel point-by-point ($D\\nabla^2\\rho - \\beta D\\nabla\\cdot(\\mathbf{F}\\rho) = 0$) by virtue of the Einstein fluctuation-dissipation relation."
+
+    - id: q16_34_brownian_dynamics_to_smart_mc
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_smart_mc_and_brownian
+      prompt_markdown: "How does **Smart Monte Carlo** relate to a discrete time step $R(t + \\tau) = R(t) + \\tau\\beta D\\mathbf{F}(R(t)) + \\boldsymbol{\\eta}(t)$ of **Brownian Dynamics** (slide 14)?"
+      hint_markdown: "Consider what happens to the finite-time-step error of Euler–Maruyama Brownian Dynamics when a Metropolis rejection step is added."
+      options:
+        - id: a
+          text: "One step of Brownian Dynamics is identical to the Smart MC trial proposal $T(R \\to R')$; adding the Smart MC Metropolis rejection test eliminates the finite-$\\tau$ discretization error of Brownian Dynamics and enforces exact detailed balance!"
+        - id: b
+          text: "Brownian Dynamics is already exact for any finite time step $\\tau$ without rejections."
+        - id: c
+          text: "Smart MC is the zero-viscosity ($D \\to \\infty$) limit of Newtonian Molecular Dynamics."
+        - id: d
+          text: "Brownian Dynamics moves particles opposite to the force $\\mathbf{F}(R)$."
+      correct: a
+      rationale_markdown: "Slide 14 highlights that the discretized Brownian Dynamics step generates the exact displaced-Gaussian transition density $T(R \\to R')$ of Smart MC. Enforcing detailed balance via Metropolis rejections turns approximate Brownian Dynamics into an exact hybrid MCMC method."
+
+    - id: q16_35_diffusion_qmc_connection
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_smart_mc_and_brownian
+      prompt_markdown: "As noted at the bottom of slides 13 and 14, which quantum simulation method uses the exact same drift-diffusion equation and Smart MC Metropolis acceptance step to sample many-body ground states?"
+      hint_markdown: "Read the orange box at the bottom of slide 14."
+      options:
+        - id: a
+          text: "Diffusion Quantum Monte Carlo (DMC), where imaginary-time Schrödinger evolution combines diffusion with drift along the quantum force $\\mathbf{F}_Q = 2\\nabla\\ln\\Psi_T$."
+        - id: b
+          text: "Hartree–Fock self-consistent field theory."
+        - id: c
+          text: "Density Functional Perturbation Theory (DFPT)."
+        - id: d
+          text: "Tight-binding molecular dynamics."
+      correct: a
+      rationale_markdown: "Slide 14 explicitly notes: *'Also the equation for Diffusion Quantum Monte Carlo!'* In importance-sampled DMC, walkers undergo Gaussian diffusion plus drift along the quantum drift velocity $\\nabla\\ln|\\Psi_T|^2$, followed by a Smart MC acceptance step to remove finite-$\\tau$ time-step bias."
+
+    - id: q16_36_cube_vs_gaussian_variance_matching
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by:
+        - sec_smart_mc_and_brownian
+        - concept_smart_vs_metropolis_efficiency
+      prompt_markdown: |
+        To fairly compare a 1D uniform cube move $\delta x \in [-\Delta/2, +\Delta/2]$ (which has variance $\langle \delta x^2 \rangle_{\text{cube}} = \Delta^2 / 12$) against a 1D Smart MC Gaussian noise step $\delta_x$ (which has variance $\langle \delta_x^2 \rangle_{\text{Smart}} = 2\tau$) in the liquid Argon benchmarks (slides 11–12), we match their bare step variances:
+        $$\frac{\Delta^2}{12} = 2\tau \quad \Longrightarrow \quad \Delta = \sqrt{24\tau}$$
+        If $\tau / \sigma^2 = 0.0024$, what is the equivalent dimensionless cube width $\Delta / \sigma$?
+      hint_markdown: "Compute $\\sqrt{24 \\times 0.0024} = \\sqrt{0.0576}$."
+      correct:
+        value: 0.24
+        tolerance: 0.001
+      rationale_markdown: "Matching bare proposal variances $\\Delta^2 / 12 = 2\\tau$ gives $\\Delta/\\sigma = \\sqrt{24 \\times 0.0024} = \\sqrt{0.0576} = 0.24$."
+
+    - id: q16_37_does_force_bias_always_win_cpu
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by:
+        - sec_force_bias_mc
+        - sec_smart_mc_and_brownian
+        - concept_smart_vs_metropolis_efficiency
+      prompt_markdown: "Look at the question posed on slide 11: *'Force bias has higher acceptance ratio than classic Metropolis. Does it lead to faster convergence?'* Based on Figs. 1–4 (slides 11–12), what is the nuanced practical conclusion for simple Lennard-Jones liquids like Argon?"
+      hint_markdown: "Compare the peak height of Fig. 3 ($\\langle \\Delta r^2(100) \\rangle$) and the plateau of Fig. 4 ($\\sigma_V$), keeping in mind that Force-Bias/Smart MC must also compute $\\mathbf{F}(\\mathbf{r}')$ at every step."
+      options:
+        - id: a
+          text: "While Force-Bias ($\\lambda=0.5$) and Smart MC have higher acceptance ratios at a given $\\Delta$ and lower energy correlation $C(50)$ at moderate $\\Delta$, classic Metropolis at a larger step size ($\\Delta/\\sigma \\approx 0.36$, $A \\approx 20\\%$) achieves comparable or higher 100-step diffusion and similar energy variance without the extra CPU cost of computing forces!"
+        - id: b
+          text: "Force-Bias MC is $1000\\times$ faster per CPU second than classic Metropolis for every observable at every step size."
+        - id: c
+          text: "Force-Bias and Smart MC always have a lower acceptance ratio than classic Metropolis."
+        - id: d
+          text: "Classic Metropolis cannot converge for liquid Argon at any step size."
+      correct: a
+      rationale_markdown: "In Figs. 1–4, Force-Bias ($\\lambda=0.5$) and Smart MC clearly boost acceptance $P$ (Fig. 1) and reduce 50-step energy autocorrelation $C(50)$ (Fig. 2), but classic Metropolis tuned to $\\Delta/\\sigma \\approx 0.36$ reaches the highest 100-step MSD (Fig. 3) and virtually the same energy variance $\\sigma_V$ (Fig. 4) without evaluating forces. Smart/Force-Bias MC becomes most advantageous in strongly coupled, stiff, or Associating/Coulombic fluids where blind moves are almost always rejected."
+
+    - id: q16_38_summary_smarter_mc_methods
+      type: problem
+      question_type: multi_select
+      difficulty: medium
+      taught_by:
+        - sec_menus_of_moves
+        - sec_preferential_sampling
+        - sec_heat_bath_mc
+        - sec_force_bias_mc
+        - sec_smart_mc_and_brownian
+      prompt_markdown: "Select **all** true statements summarizing the five 'Smarter Monte Carlo' techniques covered in Lesson 16:"
+      hint_markdown: "Verify each statement against the derivations in Sections 1–5."
+      options:
+        - id: a
+          text: "A deterministic cycle of moves $(A, B, A, B, \\dots)$ violates detailed balance in general ($P_A P_B \\ne P_B P_A$), yet still converges to the exact equilibrium distribution $\\pi$ via global balance $\\pi P_A P_B = \\pi$."
+        - id: b
+          text: "Preferential sampling selects particle $i$ with probability $h(z_i)/H(\\mathbf{R})$ and requires the asymmetric factor $[h(z_i')/H(\\mathbf{R}')]/[h(z_i)/H(\\mathbf{R})]$ in the Metropolis test."
+        - id: c
+          text: "Heat-Bath MC samples a local neighborhood from $T(s\\to s') = \\pi(s')/C(s)$ and achieves $100\\%$ acceptance ($A = 1$) whenever the local normalization $C(s) = C(s')$ is state-independent."
+        - id: d
+          text: "Smart MC proposes a force-drifted Gaussian step $\\Delta\\mathbf{r} = \\tau\\beta\\mathbf{F}(\\mathbf{r}) + \\boldsymbol{\\delta}$ that achieves $A = 1$ identically for any linear potential and provides a time-step-error-free hybrid version of Brownian Dynamics."
+      correct:
+        - a
+        - b
+        - c
+        - d
+      rationale_markdown: "All four statements accurately synthesize the mathematical foundations and practical rules of Menus of Moves, Preferential Sampling, Heat-Bath MC, Force-Bias MC, and Smart MC / Hybrid Brownian Dynamics."

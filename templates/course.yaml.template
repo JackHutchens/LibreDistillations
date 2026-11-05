@@ -1,0 +1,22 @@
+course:
+  id: "course_id_slug"
+  name: "Department Code: Full Course Title"
+  code: "DEPT 101"
+  institution: "University Name"
+  instructor: "Instructor Name"
+  description: "High-level summary of the course topics and objectives."
+
+curriculum:
+  target_duration_minutes: 120
+  min_questions_per_lesson: 35
+  max_questions_per_lesson: 50
+  total_lessons: 10
+
+style:
+  theme: "default"
+  primary_color: "#2B5C8F"
+  secondary_color: "#388E7F"
+  accent_color: "#D95F02"
+  success_color: "#2E7D32"
+  warning_color: "#E65100"
+  danger_color: "#C62828"

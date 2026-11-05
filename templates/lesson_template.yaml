@@ -1,0 +1,59 @@
+worksheet:
+  id: "lesson_01_sample_topic"
+  title: "Lesson 01: Core Foundations and Governing Equations"
+  duration_minutes: 120
+  learning_objectives:
+    - "Master fundamental equations and their underlying statistical/physical assumptions."
+    - "Differentiate between analytical models and discrete computational implementations."
+    - "Evaluate algorithmic error scaling, variance reduction, and convergence behaviors."
+
+  sections:
+    - id: sec_01_theoretical_background
+      type: markdown_section
+      title: "Theoretical Background & Governing Equations"
+      body_markdown: |
+        ### Core Principles
+
+        Enter detailed pedagogical narrative with rigorous derivations and physical principles.
+        Every concept tested in subsequent problems must first be taught here.
+
+    - id: concept_01_live_simulator
+      type: concept_cell
+      title: "Interactive Physical / Algorithmic Visualizer"
+      render_function: render_sample_visualizer
+      layout: figure_left
+      description_markdown: |
+        Adjust the parameters below to explore behavior across physical regimes.
+      controls:
+        - name: parameter_alpha
+          label: "Alpha Parameter"
+          kind: slider
+          min: 0.1
+          max: 5.0
+          step: 0.1
+          default: 1.0
+      takeaway_markdown: |
+        **Key Takeaway:** Summarize the critical intuition gained from this visualization.
+
+    - id: q01_foundational_concept
+      type: problem
+      difficulty: easy
+      question_type: single_select
+      taught_by: sec_01_theoretical_background
+      prompt_markdown: "State the core question or prompt clearly with full LaTeX math support."
+      hint_markdown: "Provide a progressive hint to guide the student toward the solution."
+      options:
+        - id: a
+          text: "Correct option with thorough mathematical description."
+        - id: b
+          text: "First plausible distractor representing common student misconception."
+        - id: c
+          text: "Second plausible distractor failing physical boundary conditions."
+        - id: d
+          text: "Third plausible distractor with wrong dimensional scaling."
+      correct: a
+      rationale_markdown: |
+        **Option (A) is correct:** Exhaustive explanation of the mechanism.
+        **Option (B) is incorrect:** Specific reason why this fails.
+        **Option (C) is incorrect:** Dimensional or boundary violation.
+        **Option (D) is incorrect:** Error in scaling exponent.

@@ -1,0 +1,1179 @@
+worksheet:
+  id: lesson_24_kinetic_monte_carlo
+  title: 'Lesson 24: Kinetic Monte Carlo: Master Equation, BKL Algorithm, Poisson Clocks & Superbasins'
+  estimated_minutes: 120
+  learning_objectives:
+  - Explain the fundamental timescale separation between atomic vibrations ($10^{-14}\text{ s}$) and activated state transitions ($10^{-6}\text{--}10^3\text{ s}$) that motivates Kinetic Monte Carlo (KMC).
+  - Derive transition rates using Harmonic Transition State Theory (hTST) and the Arrhenius law $k = \nu_0 e^{-E_a / k_B T}$.
+  - Formulate the continuous-time discrete-state Master Equation and apply Trotter factorization to establish event independence.
+  - Implement the Bortz-Kalos-Lebowitz (BKL) / $N$-fold way / Gillespie algorithm with rejection-free event selection.
+  - Advance physical time using the Poisson random waiting-time distribution $\Delta t = -\ln(u) / R_{\text{total}}$.
+  - Solve the surface adsorption-desorption master equation analytically and verify convergence to the Langmuir isotherm.
+  - Diagnose the superbasin flickering trap problem and implement accelerated coarse-graining solutions.
+  sections:
+  - id: sec_kmc_motivation_and_tst
+    type: markdown_section
+    title: '1. Bridging the MD Timescale Gap: Harmonic Transition State Theory'
+    body_markdown: '### The Timescale Bottleneck of Molecular Dynamics
+
+
+      In classical Molecular Dynamics (MD), the numerical integration timestep is constrained by the highest-frequency vibrational modes (e.g., C-H stretches or Debye phonon frequencies) to $\Delta t \approx 10^{-15}\text{ s}$ (1 femtosecond). A simulation running for $10^7$ steps covers only $10\text{ ns}$ of physical time.
+
+
+      Yet many critical materials processes—including atomic surface diffusion, crystal epitaxial growth, grain boundary migration, void nucleation, and catalytic chemical reactions—involve **activated rare events** with energy barriers $E_a \approx 0.5\text{--}1.5\text{ eV}$. In MD, atoms spend $99.999999\%$ of CPU time executing uninteresting thermal oscillations around energy basin minima.
+
+
+      ### Harmonic Transition State Theory (hTST)
+
+
+      By averaging out the fast vibrational oscillations, the system can be modeled as jumping between discrete potential energy basins. According to Vineyard''s Harmonic Transition State Theory (hTST), the transition rate $k_{A \to B}$ from basin $A$ over a saddle point to basin $B$ is:
+
+
+      $$k_{A \to B} = \nu_0 \exp\left( -\frac{E_a}{k_B T} \right), \qquad \nu_0 = \frac{\prod_{i=1}^{3N} \nu_i^{(A)}}{\prod_{j=1}^{3N-1} \nu_j^{(\text{saddle})}}$$
+
+
+      where $E_a = E_{\text{saddle}} - E_A$ is the activation barrier, and $\nu_0$ is the **attempt frequency** (typically $\sim 10^{12}\text{--}10^{13}\text{ s}^{-1}$), given by the ratio of normal-mode vibrational frequencies at the basin minimum to those at the dividing saddle surface.
+
+
+      If $E_a = 0.6\text{ eV}$ at $T = 300\text{ K}$ ($k_B T \approx 0.02585\text{ eV}$):
+
+
+      $$k = 10^{13} \times e^{-0.6 / 0.02585} \approx 10^{13} \times 8.3 \times 10^{-11} \approx 830\text{ s}^{-1}$$
+
+
+      The average waiting time before a hop occurs is $\tau = 1/k \approx 1.2\text{ ms}$—requiring $10^{12}$ MD timesteps! Kinetic Monte Carlo (KMC) simulates these state-to-state hops directly, jumping across physical time milliseconds at a step.'
+  - id: sec_master_equation_and_bkl
+    type: markdown_section
+    title: 2. The Master Equation and the Bortz-Kalos-Lebowitz (BKL) Algorithm
+    body_markdown: '### The Continuous-Time Master Equation
+
+
+      Let $P(s; t)$ be the probability that the system occupies discrete state $s$ at physical time $t$. Assuming a memoryless Markov process, the time evolution is governed by the **Master Equation**:
+
+
+      $$\frac{dP(s; t)}{dt} = \sum_{s''} \left[ W(s'' \to s) P(s''; t) - W(s \to s'') P(s; t) \right]$$
+
+
+      where $W(s \to s'')$ is the transition rate (probability per unit time) from state $s$ to state $s''$. The first term represents probability flux *into* state $s$ (gain), while the second term represents flux *out of* state $s$ (loss).
+
+
+      ### The BKL / $N$-Fold Way / Gillespie Algorithm
+
+
+      In 1975, Bortz, Kalos, and Lebowitz (BKL) introduced the $N$-fold way (independently developed for chemical reactions by Dan Gillespie in 1976). Rather than proposing trial moves and rejecting them (as in standard Metropolis MC), the BKL algorithm is **rejection-free**:
+
+
+      1. **Event Catalog:** From the current state $s$, identify all $M$ possible outbound transitions, each with rate $r_k = W(s \to s_k)$ for $k = 1, \dots, M$.
+
+      2. **Total Escape Rate:** Calculate the total escape rate from state $s$:
+
+
+      $$R_{\text{total}} = \sum_{k=1}^M r_k$$
+
+
+      3. **Event Selection:** Choose which event $i$ occurs with probability proportional to its rate:
+
+
+      $$P_i = \frac{r_i}{R_{\text{total}}}$$
+
+
+      Draw a uniform random number $u_1 \in (0, 1)$ and select event $i$ satisfying:
+
+
+      $$\sum_{k=1}^{i-1} r_k \le u_1 R_{\text{total}} < \sum_{k=1}^i r_k$$
+
+
+      4. **Advance State:** Execute event $i$ unconditionally: $s \leftarrow s_i$.'
+  - id: sec_poisson_clock_and_sampling
+    type: markdown_section
+    title: 3. The Poisson Waiting-Time Clock and Time Progression
+    body_markdown: '### The Poisson Waiting-Time Distribution
+
+
+      In a memoryless Markov process with constant total escape rate $R$, the probability $P_{\text{survival}}(t)$ that NO transition occurs during time interval $[0, t]$ satisfies:
+
+
+      $$\frac{dP_{\text{survival}}}{dt} = -R \, P_{\text{survival}}(t) \implies P_{\text{survival}}(t) = e^{-R t}$$
+
+
+      The probability density $p(\Delta t)$ that the first event occurs in the time interval $[\Delta t, \Delta t + d(\Delta t)]$ is:
+
+
+      $$p(\Delta t) = -\frac{dP_{\text{survival}}}{d(\Delta t)} = R e^{-R \Delta t}$$
+
+
+      This is an **exponential (Poisson) waiting-time distribution** with mean waiting time:
+
+
+      $$\langle \Delta t \rangle = \int_0^\infty \Delta t \, R e^{-R \Delta t} d(\Delta t) = \frac{1}{R}$$
+
+
+      ### Inversion Method for Time Step Generation
+
+
+      To sample $\Delta t$ correctly from $p(\Delta t) = R e^{-R \Delta t}$, we equate the cumulative distribution function (CDF) to a uniform random deviate $u_2 \in (0, 1]$:
+
+
+      $$F(\Delta t) = \int_0^{\Delta t} R e^{-R t''} dt'' = 1 - e^{-R \Delta t} = 1 - u_2$$
+
+
+      Solving for $\Delta t$ gives the stochastic time advance equation:
+
+
+      $$\Delta t = -\frac{\ln(u_2)}{R_{\text{total}}}$$
+
+
+      After every step, the global simulation clock advances by:
+
+
+      $$t_{\text{sim}} \leftarrow t_{\text{sim}} + \Delta t$$
+
+
+      Notice that when $R_{\text{total}}$ is small (high barriers), $\Delta t$ is huge, allowing KMC to bridge seconds or hours of physical time in seconds of CPU time!'
+  - id: concept_bkl_event_selector_and_clock
+    type: concept_cell
+    title: 'Interactive Concept: BKL Event Selector and Poisson Clock'
+    description_markdown: 'Explore the BKL event selection roulette and Poisson waiting-time clock.
+
+      Adjust activation energies ($E_1, E_2, E_3$), temperature $T$, and uniform random draw $u_1$ to see how the cumulative roulette selects transitions and how total rate $R$ governs time step $\Delta t$.'
+    render_function: render_bkl_event_selector_and_clock
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      E1_eV:
+        kind: slider
+        label: Barrier E_1 (eV)
+        min: 0.2
+        max: 0.8
+        step: 0.05
+        default: 0.45
+      E2_eV:
+        kind: slider
+        label: Barrier E_2 (eV)
+        min: 0.2
+        max: 0.8
+        step: 0.05
+        default: 0.52
+      E3_eV:
+        kind: slider
+        label: Barrier E_3 (eV)
+        min: 0.2
+        max: 0.8
+        step: 0.05
+        default: 0.6
+      T_K:
+        kind: slider
+        label: Temperature T (K)
+        min: 300.0
+        max: 1000.0
+        step: 50.0
+        default: 500.0
+      u1_draw:
+        kind: slider
+        label: Random Number u_1
+        min: 0.01
+        max: 0.99
+        step: 0.02
+        default: 0.62
+      view_mode:
+        kind: dropdown
+        label: Display View
+        options:
+        - label: Rate Catalog & Rates r_k
+          value: catalog
+        - label: Cumulative Roulette Wheel
+          value: cumulative_roulette
+        default: catalog
+    takeaway_markdown: '**Key Insight:** Lower barrier events exponentially dominate the total escape rate $R$. In the cumulative roulette wheel, each event occupies a segment proportional to $r_i / R$. A single random number $u_1$ deterministically selects the event, while a second independent random number $u_2$ sets the Poisson waiting time $\Delta t = -\ln(u_2)/R$.'
+  - id: q24_01
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: Why cannot standard Molecular Dynamics (MD) be used directly to simulate long-time kinetic processes like crystal growth or slow surface diffusion?
+    options:
+    - id: a
+      text_markdown: MD cannot simulate systems with more than 2 atoms.
+      text: MD cannot simulate systems with more than 2 atoms.
+    - id: b
+      text_markdown: High-frequency atomic vibrations constrain the MD timestep to ~1 femtosecond ($10^{-15}\text{ s}$), requiring billions of CPU steps to observe rare activated hops ($10^{-6}\text{--}10^3\text{ s}$).
+      text: High-frequency atomic vibrations constrain the MD timestep to ~1 femtosecond ($10^{-15}\text{ s}$), requiring billions of CPU steps to observe rare activated hops ($10^{-6}\text{--}10^3\text{ s}$).
+    - id: c
+      text_markdown: Newton's laws of motion are fundamentally invalid for diffusion.
+      text: Newton's laws of motion are fundamentally invalid for diffusion.
+    - id: d
+      text_markdown: MD only works at $T = 0\text{ K}$.
+      text: MD only works at $T = 0\text{ K}$.
+    correct: b
+    hint_markdown: Consider the ratio between vibrational periods ($10^{-14}\text{ s}$) and activation barrier crossing times ($10^{-3}\text{ s}$).
+    rationale_markdown: In MD, stability requires resolving fast atomic vibrations ($\Delta t \sim 1\text{ fs}$). For processes with barriers $E_a > 0.5\text{ eV}$, transition events occur after millions of vibrational periods, making MD trapped in local minima and unable to reach macroscopic timescales.
+  - id: q24_02
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: In Vineyard's Harmonic Transition State Theory (hTST), what determines the attempt frequency prefactor $\nu_0$?
+    options:
+    - id: a
+      text_markdown: The ratio of the product of all $3N$ vibrational normal-mode frequencies at the initial basin minimum to the product of the $3N-1$ stable vibrational frequencies at the transition saddle point.
+      text: The ratio of the product of all $3N$ vibrational normal-mode frequencies at the initial basin minimum to the product of the $3N-1$ stable vibrational frequencies at the transition saddle point.
+    - id: b
+      text_markdown: The speed of light divided by the lattice constant.
+      text: The speed of light divided by the lattice constant.
+    - id: c
+      text_markdown: The temperature divided by Planck's constant.
+      text: The temperature divided by Planck's constant.
+    - id: d
+      text_markdown: The mass of the electron.
+      text: The mass of the electron.
+    correct: a
+    hint_markdown: 'Recall Vineyard''s 1957 formula: $\nu_0 = \prod_{i=1}^{3N} \nu_i^{\text{min}} / \prod_{j=1}^{3N-1} \nu_j^{\text{saddle}}$.'
+    rationale_markdown: George Vineyard derived in 1957 that in the harmonic approximation, the attempt frequency $\nu_0 = \frac{\prod_{i=1}^{3N} \nu_i^{\text{min}}}{\prod_{j=1}^{3N-1} \nu_j^{\text{saddle}}}$ represents the ratio of partition function vibrational curvatures at the minimum vs the saddle point (where one imaginary mode along the reaction coordinate is removed).
+  - id: q24_03
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: An atom hops across a surface with activation barrier $E_a = 0.50\text{ eV}$ and attempt frequency $\nu_0 = 10^{13}\text{ s}^{-1}$ at temperature $T = 500\text{ K}$ ($k_B T = 0.043087\text{ eV}$). Calculate the transition rate $k = \nu_0 e^{-E_a / k_B T}$ in hops per second ($\text{s}^{-1}$) in scientific notation (enter the mantissa $M$ where $k = M \times 10^7$).
+    correct: 9.07
+    tolerance: 0.2
+    hint_markdown: Compute $\beta E_a = 0.50 / 0.043087 \approx 11.604$. Then evaluate $10^{13} \times e^{-11.604}$.
+    rationale_markdown: $E_a / k_B T = 0.50 / 0.043087 = 11.6044$. $e^{-11.6044} \approx 9.074 \times 10^{-6}$. Then $k = 10^{13} \times (9.074 \times 10^{-6}) = 9.074 \times 10^7\text{ s}^{-1}$.
+  - id: q24_04
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: Why is the BKL ($N$-fold way / Gillespie) algorithm called 'rejection-free'?
+    options:
+    - id: a
+      text_markdown: Because it ignores energy conservation.
+      text: Because it ignores energy conservation.
+    - id: b
+      text_markdown: Because every simulation step selects and executes a valid event chosen from the rate catalog, so no proposed moves are ever rejected.
+      text: Because every simulation step selects and executes a valid event chosen from the rate catalog, so no proposed moves are ever rejected.
+    - id: c
+      text_markdown: Because it accepts all moves with probability 0.5.
+      text: Because it accepts all moves with probability 0.5.
+    - id: d
+      text_markdown: Because it only simulates exothermic reactions.
+      text: Because it only simulates exothermic reactions.
+    correct: b
+    hint_markdown: Contrast BKL with standard Metropolis Monte Carlo where moves with $\Delta E > 0$ can be rejected.
+    rationale_markdown: In standard Metropolis MC, moves are randomly proposed and often rejected with probability $1 - e^{-\beta \Delta E}$. BKL compiles all possible transitions and chooses among them with probability $r_i / R_{\text{total}}$, executing an event on *every single step*.
+  - id: q24_05
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: In the Poisson waiting-time formula $\Delta t = -\frac{\ln u}{R_{\text{total}}}$, what does $u$ represent?
+    options:
+    - id: a
+      text_markdown: The internal energy of the system
+      text: The internal energy of the system
+    - id: b
+      text_markdown: A uniform random number drawn on the interval $(0, 1]$
+      text: A uniform random number drawn on the interval $(0, 1]$
+    - id: c
+      text_markdown: The velocity of the particle
+      text: The velocity of the particle
+    - id: d
+      text_markdown: The Planck constant
+      text: The Planck constant
+    correct: b
+    hint_markdown: Recall the transformation method for generating exponential random variables from uniform deviates.
+    rationale_markdown: The transformation $t = -\frac{\ln u}{R}$ maps a uniformly distributed random variable $u \in (0, 1]$ directly into an exponentially distributed waiting time with probability density $p(t) = R e^{-R t}$.
+  - id: q24_06
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: From a current state, the total escape rate is $R_{\text{total}} = 5000\text{ s}^{-1}$. A uniform random number $u_2 = 0.367879$ (which is $1/e$) is drawn. Calculate the time step increment $\Delta t$ in seconds.
+    correct: 0.0002
+    tolerance: 1.0e-05
+    unit: s
+    hint_markdown: Notice that $\ln(1/e) = -1.0$. Calculate $-(-1.0) / 5000$.
+    rationale_markdown: $\Delta t = -\ln(0.367879) / 5000 = -(-1.0) / 5000 = 1 / 5000 = 0.0002\text{ s}$ ($0.2\text{ ms}$).
+  - id: q24_07
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: concept_bkl_event_selector_and_clock
+    prompt_markdown: In the concept cell 'BKL Event Selector', three competing pathways have barriers $E_1 = 0.45\text{ eV}$, $E_2 = 0.52\text{ eV}$, and $E_3 = 0.60\text{ eV}$ at $T = 500\text{ K}$. Which pathway will have the LARGEST probability of being selected?
+    options:
+    - id: a
+      text_markdown: Pathway 1 (lowest barrier $E_1 = 0.45\text{ eV}$)
+      text: Pathway 1 (lowest barrier $E_1 = 0.45\text{ eV}$)
+    - id: b
+      text_markdown: Pathway 2 ($E_2 = 0.52\text{ eV}$)
+      text: Pathway 2 ($E_2 = 0.52\text{ eV}$)
+    - id: c
+      text_markdown: Pathway 3 (highest barrier $E_3 = 0.60\text{ eV}$)
+      text: Pathway 3 (highest barrier $E_3 = 0.60\text{ eV}$)
+    - id: d
+      text_markdown: All three pathways have identical probability
+      text: All three pathways have identical probability
+    correct: a
+    hint_markdown: 'Remember the Arrhenius dependence: $r \propto e^{-E_a / k_B T}$.'
+    rationale_markdown: Because the rate depends exponentially on $-E_a / k_B T$, the pathway with the lowest activation barrier ($E_1 = 0.45\text{ eV}$) has the highest rate $r_1$, and therefore occupies the largest slice of the cumulative roulette wheel.
+  - id: q24_08
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: What fundamental physical assumption underlies the Master Equation in Kinetic Monte Carlo?
+    options:
+    - id: a
+      text_markdown: Quantum entanglement between all particles
+      text: Quantum entanglement between all particles
+    - id: b
+      text_markdown: 'The Markovian assumption: transitions between states depend only on the current state, because vibrational relaxation within a basin occurs much faster than the time between hops.'
+      text: 'The Markovian assumption: transitions between states depend only on the current state, because vibrational relaxation within a basin occurs much faster than the time between hops.'
+    - id: c
+      text_markdown: The assumption that all atoms move at the speed of sound
+      text: The assumption that all atoms move at the speed of sound
+    - id: d
+      text_markdown: The requirement that potential energy must be zero everywhere
+      text: The requirement that potential energy must be zero everywhere
+    correct: b
+    hint_markdown: Why does a particle 'forget' how it arrived in a potential energy basin before it hops again?
+    rationale_markdown: Because thermal vibrations equilibrate momentum and position within an energy basin within $\sim 1\text{ ps}$ (much faster than the hop waiting time of $\mu\text{s}$ or $\text{ms}$), the system loses all memory of its past history, making transitions rigorously Markovian.
+  - id: q24_09
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: Which of the following computational steps are executed in EACH iteration of a BKL KMC simulation? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: Compute the total escape rate $R = \sum_k r_k$ from the current state.
+      text: Compute the total escape rate $R = \sum_k r_k$ from the current state.
+    - id: b
+      text_markdown: Select an event $i$ using a uniform random number $u_1$ weighted by $r_i / R$.
+      text: Select an event $i$ using a uniform random number $u_1$ weighted by $r_i / R$.
+    - id: c
+      text_markdown: Advance simulation time by $\Delta t = -\ln(u_2) / R$ using a second independent random number $u_2$.
+      text: Advance simulation time by $\Delta t = -\ln(u_2) / R$ using a second independent random number $u_2$.
+    - id: d
+      text_markdown: Update the local environment and rate catalog for the affected sites.
+      text: Update the local environment and rate catalog for the affected sites.
+    - id: e
+      text_markdown: Integrate Newton's equations of motion with a 1 fs Verlet timestep.
+      text: Integrate Newton's equations of motion with a 1 fs Verlet timestep.
+    correct:
+    - a
+    - b
+    - c
+    - d
+    hint_markdown: Recall the 4 steps of the BKL algorithm. Does KMC integrate Newton's equations?
+    rationale_markdown: BKL computes total rate $R$, selects an event weighted by $r_i/R$, advances time by $-\ln(u_2)/R$, and updates local rates. It does *not* integrate Newton's equations (which is MD).
+  - id: q24_10
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: A state has two outbound transitions with rates $r_1 = 300\text{ s}^{-1}$ and $r_2 = 700\text{ s}^{-1}$. What is the probability $P_1$ that transition 1 occurs?
+    correct: 0.3
+    tolerance: 0.01
+    hint_markdown: Divide $r_1$ by the total rate $R = r_1 + r_2$.
+    rationale_markdown: $R = 300 + 700 = 1000\text{ s}^{-1}$. Then $P_1 = 300 / 1000 = 0.30$ (30%).
+  - id: sec_adsorption_desorption_kinetics
+    type: markdown_section
+    title: 4. Surface Adsorption-Desorption Kinetics and the Langmuir Isotherm
+    body_markdown: '### Surface Kinetics Model
+
+
+      Consider a surface with $N_{\text{sites}}$ identical adsorption sites exposed to a gas phase. Let $\theta(t) = N_{\text{occupied}}(t) / N_{\text{sites}}$ be the fractional surface coverage ($0 \le \theta \le 1$).
+
+
+      Two elementary processes compete:
+
+
+      1. **Adsorption:** Gas atoms hit empty sites at rate $r_A$ per site. The total adsorption rate is:
+
+
+      $$R_{\text{ads}} = r_A N_{\text{empty}} = r_A N_{\text{sites}} (1 - \theta)$$
+
+
+      2. **Desorption:** Adsorbed atoms overcome the binding energy and desorb at rate $r_D$ per occupied site. The total desorption rate is:
+
+
+      $$R_{\text{des}} = r_D N_{\text{occupied}} = r_D N_{\text{sites}} \theta$$
+
+
+      ### The Mean-Field Master Equation
+
+
+      The deterministic macroscopic rate equation is:
+
+
+      $$\frac{d\theta(t)}{dt} = r_A [1 - \theta(t)] - r_D \theta(t) = r_A - (r_A + r_D)\theta(t)$$
+
+
+      Integrating from initial coverage $\theta(0) = \theta_0$ yields the exact relaxation trajectory:
+
+
+      $$\theta(t) = \theta_{\text{eq}} + (\theta_0 - \theta_{\text{eq}}) e^{-(r_A + r_D) t}$$
+
+
+      where the steady-state equilibrium coverage is the celebrated **Langmuir Isotherm**:
+
+
+      $$\theta_{\text{eq}} = \frac{r_A}{r_A + r_D} = \frac{K P}{1 + K P}$$
+
+
+      ### Stochastic Fluctuations
+
+
+      In a finite system of $N_{\text{sites}}$, the instantaneous coverage fluctuates around $\theta_{\text{eq}}$. By the Central Limit Theorem, the variance of the steady-state coverage is:
+
+
+      $$\sigma_\theta^2 = \langle \theta^2 \rangle - \langle \theta \rangle^2 = \frac{\theta_{\text{eq}}(1 - \theta_{\text{eq}})}{N_{\text{sites}}}$$
+
+
+      KMC simulates the exact discrete birth-death master equation, reproducing both the mean relaxation curve and Poissonian fluctuations.'
+  - id: concept_adsorption_desorption_kmc
+    type: concept_cell
+    title: 'Interactive Concept: Adsorption-Desorption KMC vs. Master Equation'
+    description_markdown: 'Simulate surface adsorption-desorption kinetics using the BKL algorithm.
+
+      Adjust adsorption rate $r_A$, desorption rate $r_D$, number of lattice sites $N_{\text{sites}}$, and initial coverage $\theta_0$ to observe stochastic coverage trajectories approaching the Langmuir equilibrium.'
+    render_function: render_adsorption_desorption_kmc
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      r_A:
+        kind: slider
+        label: Adsorption Rate r_A (s^-1)
+        min: 0.2
+        max: 4.0
+        step: 0.2
+        default: 1.5
+      r_D:
+        kind: slider
+        label: Desorption Rate r_D (s^-1)
+        min: 0.1
+        max: 2.0
+        step: 0.1
+        default: 0.5
+      N_sites:
+        kind: slider
+        label: Number of Sites N
+        min: 20
+        max: 100
+        step: 10
+        default: 50
+      theta_0:
+        kind: slider
+        label: Initial Coverage theta_0
+        min: 0.0
+        max: 1.0
+        step: 0.05
+        default: 0.1
+    takeaway_markdown: '**Key Insight:** The discrete stochastic KMC trajectory faithfully tracks the continuous analytical Master Equation solution $\theta(t) = \theta_{\text{eq}} + (\theta_0 - \theta_{\text{eq}})e^{-(r_A + r_D)t}$. As $N_{\text{sites}} \to \infty$, the relative amplitude of stochastic fluctuations vanishes as $1/\sqrt{N_{\text{sites}}}$, proving the convergence of KMC to deterministic continuum kinetics.'
+  - id: q24_11
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_adsorption_desorption_kinetics
+    prompt_markdown: In surface kinetics with adsorption rate $r_A = 1.5\text{ s}^{-1}$ and desorption rate $r_D = 0.5\text{ s}^{-1}$, calculate the steady-state equilibrium coverage $\theta_{\text{eq}} = \frac{r_A}{r_A + r_D}$.
+    correct: 0.75
+    tolerance: 0.01
+    hint_markdown: Evaluate $1.5 / (1.5 + 0.5)$.
+    rationale_markdown: $\theta_{\text{eq}} = 1.5 / (1.5 + 0.5) = 1.5 / 2.0 = 0.75$ (75% coverage).
+  - id: q24_12
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_adsorption_desorption_kinetics
+    prompt_markdown: For the same system ($r_A = 1.5\text{ s}^{-1}, r_D = 0.5\text{ s}^{-1}$), what is the characteristic relaxation time constant $\tau_{\text{relax}} = \frac{1}{r_A + r_D}$ in seconds?
+    correct: 0.5
+    tolerance: 0.01
+    unit: s
+    hint_markdown: Compute $1 / (1.5 + 0.5)$.
+    rationale_markdown: $\tau_{\text{relax}} = 1 / (1.5 + 0.5) = 1 / 2.0 = 0.50\text{ s}$.
+  - id: q24_13
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: concept_adsorption_desorption_kmc
+    prompt_markdown: In the concept cell, how does increasing the number of surface sites $N_{\text{sites}}$ from 20 to 100 affect the coverage trajectory?
+    options:
+    - id: a
+      text_markdown: The equilibrium coverage $\theta_{\text{eq}}$ increases by a factor of 5.
+      text: The equilibrium coverage $\theta_{\text{eq}}$ increases by a factor of 5.
+    - id: b
+      text_markdown: The magnitude of stochastic fluctuations around the analytical curve decreases as $1/\sqrt{N_{\text{sites}}}$, making the trajectory smoother.
+      text: The magnitude of stochastic fluctuations around the analytical curve decreases as $1/\sqrt{N_{\text{sites}}}$, making the trajectory smoother.
+    - id: c
+      text_markdown: Desorption stops occurring completely.
+      text: Desorption stops occurring completely.
+    - id: d
+      text_markdown: The time constant $\tau_{\text{relax}}$ drops to zero.
+      text: The time constant $\tau_{\text{relax}}$ drops to zero.
+    correct: b
+    hint_markdown: Recall how Central Limit Theorem fluctuations scale with system size $N$.
+    rationale_markdown: By the Central Limit Theorem, the standard deviation of fractional coverage fluctuations scales as $\sigma_\theta = \sqrt{\theta(1-\theta)/N_{\text{sites}}} \propto 1/\sqrt{N_{\text{sites}}}$. Increasing $N$ reduces relative noise, bringing the stochastic KMC simulation closer to the deterministic master equation.
+  - id: q24_14
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_adsorption_desorption_kinetics
+    prompt_markdown: If the initial surface coverage is $\theta(0) = 0.10$ and the equilibrium coverage is $\theta_{\text{eq}} = 0.75$ with rate sum $r_A + r_D = 2.0\text{ s}^{-1}$, what is the coverage $\theta(t)$ at $t = 0.5\text{ s}$? (Recall $e^{-1} \approx 0.368$).
+    options:
+    - id: a
+      text_markdown: $0.51$
+      text: $0.51$
+    - id: b
+      text_markdown: $0.75$
+      text: $0.75$
+    - id: c
+      text_markdown: $0.10$
+      text: $0.10$
+    - id: d
+      text_markdown: $0.95$
+      text: $0.95$
+    correct: a
+    hint_markdown: Compute $\theta(0.5) = 0.75 + (0.10 - 0.75)e^{-(2.0)(0.5)} = 0.75 - 0.65 e^{-1}$.
+    rationale_markdown: $\theta(0.5) = 0.75 - 0.65 \times 0.367879 = 0.75 - 0.239 = 0.511 \approx 0.51$.
+  - id: q24_15
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: How is Trotter factorization used in the formal derivation of KMC from the continuous-time Markov operator?
+    options:
+    - id: a
+      text_markdown: It decomposes the time evolution operator $e^{\mathcal{L} \Delta t} = \prod_k e^{\mathcal{L}_k \Delta t} + \mathcal{O}(\Delta t^2)$, proving that for small enough time increments, independent Poisson events can be executed sequentially without mutual interference.
+      text: It decomposes the time evolution operator $e^{\mathcal{L} \Delta t} = \prod_k e^{\mathcal{L}_k \Delta t} + \mathcal{O}(\Delta t^2)$, proving that for small enough time increments, independent Poisson events can be executed sequentially without mutual interference.
+    - id: b
+      text_markdown: It proves that KMC is identical to quantum electrodynamics.
+      text: It proves that KMC is identical to quantum electrodynamics.
+    - id: c
+      text_markdown: It forces all transition rates to be equal.
+      text: It forces all transition rates to be equal.
+    - id: d
+      text_markdown: It eliminates the need for random numbers.
+      text: It eliminates the need for random numbers.
+    correct: a
+    hint_markdown: See slide 7 of 21.KMC.pdf on Trotter's formula.
+    rationale_markdown: As shown in the lecture notes, Trotter's formula allows the global transition generator $\mathcal{L} = \sum_k \mathcal{L}_k$ to be factored into independent sub-generators over small time slices $\Delta t$, justifying treating competing Poisson processes as independent channels.
+  - id: q24_16
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: Which of the following data structures can be used to achieve $\mathcal{O}(\log M)$ or $\mathcal{O}(1)$ event selection in KMC with $M$ possible transitions? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: Binary search tree / cumulative sum tree ($\\mathcal{O}(\\log M)$ search and update)
+      text: Binary search tree / cumulative sum tree ($\\mathcal{O}(\\log M)$ search and update)
+    - id: b
+      text_markdown: Walker's Alias Method ($\\mathcal{O}(1)$ event selection)
+      text: Walker's Alias Method ($\\mathcal{O}(1)$ event selection)
+    - id: c
+      text_markdown: Binned rate groups / 24-tree (constant time per rate class)
+      text: Binned rate groups / 24-tree (constant time per rate class)
+    - id: d
+      text_markdown: Bubble sort after every step
+      text: Bubble sort after every step
+    correct:
+    - a
+    - b
+    - c
+    hint_markdown: Linear search across $M$ events takes $\mathcal{O}(M)$. How do advanced KMC codes accelerate roulette searches?
+    rationale_markdown: Binary sum trees allow $\mathcal{O}(\log M)$ search and update; Walker's alias method achieves $\mathcal{O}(1)$ selection; and binned rate lists group identical rates for $\mathcal{O}(1)$ sampling. (Bubble sort is $\mathcal{O}(M^2)$ and completely inefficient).
+  - id: q24_17
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_adsorption_desorption_kinetics
+    prompt_markdown: In the Langmuir adsorption model, what happens to the equilibrium coverage $\theta_{\text{eq}}$ if the gas pressure (and hence adsorption rate $r_A$) increases toward infinity while $r_D$ remains finite?
+    options:
+    - id: a
+      text_markdown: $\theta_{\text{eq}} \to 0$
+      text: $\theta_{\text{eq}} \to 0$
+    - id: b
+      text_markdown: $\theta_{\text{eq}} \to 1$ (monolayer saturation)
+      text: $\theta_{\text{eq}} \to 1$ (monolayer saturation)
+    - id: c
+      text_markdown: $\theta_{\text{eq}} \to 0.5$
+      text: $\theta_{\text{eq}} \to 0.5$
+    - id: d
+      text_markdown: $\theta_{\text{eq}}$ oscillates wildly
+      text: $\theta_{\text{eq}}$ oscillates wildly
+    correct: b
+    hint_markdown: Take the limit of $\frac{r_A}{r_A + r_D}$ as $r_A \to \infty$.
+    rationale_markdown: As $r_A \to \infty$, $\theta_{\text{eq}} = \frac{r_A}{r_A + r_D} = \frac{1}{1 + r_D/r_A} \to 1.0$. All available surface sites become occupied, forming a complete saturated monolayer.
+  - id: q24_18
+    type: problem
+    question_type: numeric
+    difficulty: hard
+    taught_by: sec_adsorption_desorption_kinetics
+    prompt_markdown: On a surface of $N_{\text{sites}} = 100$, the equilibrium coverage is $\theta_{\text{eq}} = 0.50$. Calculate the expected standard deviation of coverage fluctuations $\sigma_\theta = \sqrt{\frac{\theta_{\text{eq}}(1 - \theta_{\text{eq}})}{N_{\text{sites}}}}$ to 3 decimal places.
+    correct: 0.05
+    tolerance: 0.002
+    hint_markdown: Evaluate $\sqrt{(0.50 \times 0.50) / 100}$.
+    rationale_markdown: $\sigma_\theta = \sqrt{\frac{0.25}{100}} = \sqrt{0.0025} = 0.050$ (5% coverage fluctuation).
+  - id: q24_19
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: How does the transition rate $k$ change if the temperature $T$ is doubled from $300\text{ K}$ to $600\text{ K}$ for an activation barrier $E_a = 0.60\text{ eV}$? (Recall $k_B T_{300} \approx 0.02585\text{ eV}, k_B T_{600} \approx 0.0517\text{ eV}$).
+    options:
+    - id: a
+      text_markdown: It increases by exactly a factor of 2.
+      text: It increases by exactly a factor of 2.
+    - id: b
+      text_markdown: It increases by an enormous factor of $\sim 10^5$, because the Arrhenius factor changes from $e^{-23.2} \approx 8.3 \times 10^{-11}$ to $e^{-11.6} \approx 9.1 \times 10^{-6}$.
+      text: It increases by an enormous factor of $\sim 10^5$, because the Arrhenius factor changes from $e^{-23.2} \approx 8.3 \times 10^{-11}$ to $e^{-11.6} \approx 9.1 \times 10^{-6}$.
+    - id: c
+      text_markdown: It decreases by a factor of 2.
+      text: It decreases by a factor of 2.
+    - id: d
+      text_markdown: It remains strictly constant.
+      text: It remains strictly constant.
+    correct: b
+    hint_markdown: Compute the ratio $e^{-E_a / k_B T_2} / e^{-E_a / k_B T_1}$.
+    rationale_markdown: The ratio is $e^{-0.60/0.0517} / e^{-0.60/0.02585} = e^{-11.605} / e^{-23.21} = e^{+11.605} \approx 1.1 \times 10^5$. Doubling temperature accelerates the rate by over five orders of magnitude!
+  - id: q24_20
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: If the total escape rate from a state is $R = 10^6\text{ s}^{-1}$, what is the average waiting time $\langle \Delta t \rangle$ before an event occurs?
+    options:
+    - id: a
+      text_markdown: $1\text{ microsecond } (10^{-6}\text{ s})$
+      text: $1\text{ microsecond } (10^{-6}\text{ s})$
+    - id: b
+      text_markdown: $1\text{ millisecond } (10^{-3}\text{ s})$
+      text: $1\text{ millisecond } (10^{-3}\text{ s})$
+    - id: c
+      text_markdown: $1\text{ second}$
+      text: $1\text{ second}$
+    - id: d
+      text_markdown: $1\text{ femtosecond } (10^{-15}\text{ s})$
+      text: $1\text{ femtosecond } (10^{-15}\text{ s})$
+    correct: a
+    hint_markdown: Recall $\langle \Delta t \rangle = 1/R$.
+    rationale_markdown: $\langle \Delta t \rangle = 1 / R = 1 / 10^6 = 10^{-6}\text{ s} = 1\,\mu\text{s}$.
+  - id: sec_superbasin_and_flickering_bottleneck
+    type: markdown_section
+    title: 5. The Low-Barrier Flickering Problem and Superbasin Solutions
+    body_markdown: '### The Low-Barrier / Flickering Trap Problem
+
+
+      The standard BKL algorithm works brilliantly when all accessible barriers are of comparable height. However, materials systems often feature a **hierarchy of energy barriers**.
+
+
+      Consider an adatom hopping between two adjacent surface sites $A$ and $B$ separated by a very low barrier $E_{\text{flicker}} = 0.15\text{ eV}$, while all escape pathways to the rest of the surface require crossing a high barrier $E_{\text{escape}} = 0.70\text{ eV}$:
+
+
+      - The fast hopping rate between $A$ and $B$ is:
+
+
+      $$r_{\text{fast}} = \nu_0 e^{-0.15 / k_B T} \approx 10^{13} e^{-3.48} \approx 3.1 \times 10^{11}\text{ s}^{-1}$$
+
+
+      - The slow escape rate is:
+
+
+      $$r_{\text{slow}} = \nu_0 e^{-0.70 / k_B T} \approx 10^{13} e^{-16.24} \approx 8.8 \times 10^5\text{ s}^{-1}$$
+
+
+      The ratio of rates is $r_{\text{fast}} / r_{\text{slow}} \approx 350,000$! In standard KMC, the system will jump back and forth between $A$ and $B$ (flicker) roughly $350,000$ times before escaping. Each flickering step advances the physical clock by only:
+
+
+      $$\Delta t \sim \frac{1}{r_{\text{fast}}} \approx 3.2\times 10^{-12}\text{ s}$$
+
+
+      The simulation is trapped in a **superbasin**: it burns millions of CPU cycles executing trivial back-and-forth oscillations, and physical time progression grinds to a complete standstill!
+
+
+      ### Solutions: Coarse-Graining and Absorbing Markov Chains
+
+
+      Several sophisticated methods overcome this bottleneck:
+
+
+      1. **Basin-Hopping & Superbasin KMC:** Detect fast-equilibrating sets of states (superbasins). Treat the entire superbasin as a single coarse-grained macro-state with internal Boltzmann equilibrium $P(i) = e^{-\beta E_i} / Z_{\text{basin}}$. The effective escape rate from the superbasin to state $C$ is:
+
+
+      $$R_{\text{basin} \to C} = \sum_{i \in \text{basin}} P(i) r_{i \to C}$$
+
+
+      2. **First-Passage Time Distribution / Absorbing Markov Chains:** Mathematically integrate out the fast internal transitions by computing the exact first-passage probability distribution for escaping the basin, leaping out of the superbasin in a single step with a correctly sampled large time increment $\Delta t_{\text{escape}}$.'
+  - id: concept_superbasin_flickering_trap
+    type: concept_cell
+    title: 'Interactive Concept: The Superbasin Flickering Trap'
+    description_markdown: 'Diagnose the KMC low-barrier trap and compare flickering vs. escape rates.
+
+      Adjust the flickering barrier $E_{\text{flicker}}$, escape barrier $E_{\text{escape}}$, and temperature $T$ to observe the energy landscape and the distribution of escape times.'
+    render_function: render_superbasin_flickering_trap
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      E_flicker_eV:
+        kind: slider
+        label: Flicker Barrier E_flicker (eV)
+        min: 0.05
+        max: 0.4
+        step: 0.05
+        default: 0.2
+      E_escape_eV:
+        kind: slider
+        label: Escape Barrier E_escape (eV)
+        min: 0.45
+        max: 1.2
+        step: 0.05
+        default: 0.7
+      T_K:
+        kind: slider
+        label: Temperature T (K)
+        min: 300.0
+        max: 800.0
+        step: 50.0
+        default: 500.0
+      plot_view:
+        kind: dropdown
+        label: Display View
+        options:
+        - label: Potential Energy Landscape
+          value: landscape
+        - label: Escape Time Distribution & Efficiency
+          value: escape_time_distribution
+        default: landscape
+    takeaway_markdown: '**Key Insight:** When $E_{\text{flicker}} \ll E_{\text{escape}}$, the number of wasted flickering hops scales exponentially as $N_{\text{flicker}} \sim e^{(E_{\text{escape}} - E_{\text{flicker}})/k_B T}$. Detecting superbasins and coarse-graining fast internal transitions restores KMC time progression without sacrificing kinetic accuracy.'
+  - id: q24_21
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_superbasin_and_flickering_bottleneck
+    prompt_markdown: What causes the 'flickering trap' or 'superbasin problem' in standard Kinetic Monte Carlo?
+    options:
+    - id: a
+      text_markdown: The computer runs out of random numbers.
+      text: The computer runs out of random numbers.
+    - id: b
+      text_markdown: A few states are separated by very low energy barriers ($E_{\text{low}} \ll E_{\text{escape}}$), causing the simulation to execute millions of rapid back-and-forth hops with tiny time increments $\Delta t \sim 1/r_{\text{fast}}$, stalling physical time advance.
+      text: A few states are separated by very low energy barriers ($E_{\text{low}} \ll E_{\text{escape}}$), causing the simulation to execute millions of rapid back-and-forth hops with tiny time increments $\Delta t \sim 1/r_{\text{fast}}$, stalling physical time advance.
+    - id: c
+      text_markdown: The temperature reaches absolute zero.
+      text: The temperature reaches absolute zero.
+    - id: d
+      text_markdown: The master equation fails to conserve total probability.
+      text: The master equation fails to conserve total probability.
+    correct: b
+    hint_markdown: Think about what happens to $R_{\text{total}}$ and $\Delta t = 1/R_{\text{total}}$ when one rate is $10^6$ times faster than all other escape routes.
+    rationale_markdown: When two states have a very low barrier between them, the fast hopping rate dominates $R_{\text{total}}$. KMC selects these fast moves almost 100% of the time, each advancing physical time by an infinitesimally small $\Delta t$, stalling the simulation in a localized superbasin.
+  - id: q24_22
+    type: problem
+    question_type: numeric
+    difficulty: hard
+    taught_by: sec_superbasin_and_flickering_bottleneck
+    prompt_markdown: At $T = 500\text{ K}$ ($k_B T = 0.043087\text{ eV}$), a dimer has a flickering barrier $E_{\text{flicker}} = 0.20\text{ eV}$ and an escape barrier $E_{\text{escape}} = 0.70\text{ eV}$. What is the expected number of flickering hops $N_{\text{flicker}} \approx e^{(E_{\text{escape}} - E_{\text{flicker}})/k_B T}$ before escaping the trap? (Enter to nearest 1000).
+    correct: 109000.0
+    tolerance: 5000.0
+    hint_markdown: Compute $\Delta E = 0.70 - 0.20 = 0.50\text{ eV}$. Evaluate $e^{0.50 / 0.043087}$.
+    rationale_markdown: $\Delta E / k_B T = 0.50 / 0.043087 \approx 11.6044$. $e^{11.6044} \approx 109,578 \approx 109,000$ hops.
+  - id: q24_23
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_superbasin_and_flickering_bottleneck
+    prompt_markdown: How does coarse-grained superbasin KMC solve the flickering bottleneck?
+    options:
+    - id: a
+      text_markdown: By setting the fast rate to zero.
+      text: By setting the fast rate to zero.
+    - id: b
+      text_markdown: By grouping fast-equilibrating states into a single macro-state, assuming internal quasi-equilibrium, and computing an effective escape rate from the macro-state to outer states.
+      text: By grouping fast-equilibrating states into a single macro-state, assuming internal quasi-equilibrium, and computing an effective escape rate from the macro-state to outer states.
+    - id: c
+      text_markdown: By lowering the temperature to freeze the system.
+      text: By lowering the temperature to freeze the system.
+    - id: d
+      text_markdown: By converting the simulation to molecular dynamics.
+      text: By converting the simulation to molecular dynamics.
+    correct: b
+    hint_markdown: How can states connected by fast reversible transitions be treated collectively?
+    rationale_markdown: Superbasin KMC identifies fast connected subgraphs, computes the internal Boltzmann equilibrium distribution within the basin, and evaluates a single effective exit rate $R_{\text{exit}} = \sum_{i \in \text{basin}} P_{\text{eq}}(i) r_{i \to \text{out}}$, bypassing all internal flickering moves.
+  - id: q24_24
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: concept_superbasin_flickering_trap
+    prompt_markdown: In the concept cell, in the 'landscape' view, what happens to the ratio $r_{\text{flicker}} / r_{\text{escape}}$ as the temperature $T$ is decreased from 800 K to 300 K?
+    options:
+    - id: a
+      text_markdown: The ratio drops to 1.
+      text: The ratio drops to 1.
+    - id: b
+      text_markdown: The ratio grows exponentially, making the flickering trap vastly worse at lower temperatures.
+      text: The ratio grows exponentially, making the flickering trap vastly worse at lower temperatures.
+    - id: c
+      text_markdown: The ratio becomes negative.
+      text: The ratio becomes negative.
+    - id: d
+      text_markdown: Both rates become identical.
+      text: Both rates become identical.
+    correct: b
+    hint_markdown: Recall $r_{\text{flicker}} / r_{\text{escape}} = e^{\Delta E / k_B T}$. What happens as $T$ drops?
+    rationale_markdown: Because $e^{\Delta E / k_B T}$ has $T$ in the denominator of the exponent, lowering temperature exponentially amplifies the rate ratio. At low temperatures, the trap becomes extremely severe, requiring millions of hops per escape.
+  - id: q24_25
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: Which of the following physical applications are well suited for simulation by Kinetic Monte Carlo? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: Thin-film epitaxial growth (deposition, surface diffusion, island nucleation)
+      text: Thin-film epitaxial growth (deposition, surface diffusion, island nucleation)
+    - id: b
+      text_markdown: Heterogeneous catalysis and surface reaction networks (e.g. CO oxidation on Pt)
+      text: Heterogeneous catalysis and surface reaction networks (e.g. CO oxidation on Pt)
+    - id: c
+      text_markdown: Defect diffusion and radiation damage annealing in nuclear reactor cladding
+      text: Defect diffusion and radiation damage annealing in nuclear reactor cladding
+    - id: d
+      text_markdown: High-frequency femtosecond vibrational spectroscopy of water molecules
+      text: High-frequency femtosecond vibrational spectroscopy of water molecules
+    correct:
+    - a
+    - b
+    - c
+    hint_markdown: 'Remember: KMC coarse-grains out fast vibrations to model rare-event state-to-state hops.'
+    rationale_markdown: Epitaxial growth, catalytic reaction networks, and long-term defect annealing occur over seconds to hours and are classic domains of KMC. High-frequency vibrational spectroscopy requires resolving sub-picosecond bond vibrations directly, which requires MD or quantum dynamics.
+  - id: q24_26
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: What is an 'off-lattice' or 'adaptive' Kinetic Monte Carlo (AKMC) simulation?
+    options:
+    - id: a
+      text_markdown: A simulation where particles are restricted to rigid cubic lattice points.
+      text: A simulation where particles are restricted to rigid cubic lattice points.
+    - id: b
+      text_markdown: A simulation where atomic coordinates are continuous in space, and transition pathways and saddle points are discovered on-the-fly using saddle-search methods (like the Dimer method or NEB) without pre-defined lattice catalogs.
+      text: A simulation where atomic coordinates are continuous in space, and transition pathways and saddle points are discovered on-the-fly using saddle-search methods (like the Dimer method or NEB) without pre-defined lattice catalogs.
+    - id: c
+      text_markdown: A simulation that does not use a computer.
+      text: A simulation that does not use a computer.
+    - id: d
+      text_markdown: A Monte Carlo simulation that runs backward in time.
+      text: A Monte Carlo simulation that runs backward in time.
+    correct: b
+    hint_markdown: How do you apply KMC to amorphous solids or complex defect geometries where no fixed crystal lattice exists?
+    rationale_markdown: Adaptive/off-lattice KMC does not assume a rigid lattice. For each newly visited basin, it uses automated minimum-mode following algorithms (like the Henkelman-Jónsson Dimer method) to search the potential energy surface on-the-fly, discovering all relevant saddle points and rates dynamically.
+  - id: q24_27
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: In calculating activation barriers $E_a$ for KMC rate catalogs using density functional theory (DFT) or empirical potentials, what algorithm is most widely used to find the minimum energy path (MEP) and saddle point between two known states?
+    options:
+    - id: a
+      text_markdown: Nudged Elastic Band (NEB)
+      text: Nudged Elastic Band (NEB)
+    - id: b
+      text_markdown: Simulated Annealing
+      text: Simulated Annealing
+    - id: c
+      text_markdown: Metropolis spin flip
+      text: Metropolis spin flip
+    - id: d
+      text_markdown: Steepest descent energy minimization
+      text: Steepest descent energy minimization
+    correct: a
+    hint_markdown: What method connects initial and final states with a chain of images tethered by spring forces?
+    rationale_markdown: The Nudged Elastic Band (NEB) method connects initial and final configurations with an elastic chain of replicas, projecting out parallel spring forces and perpendicular potential forces to converge cleanly onto the Minimum Energy Path (MEP) and exact saddle point.
+  - id: q24_28
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: In a KMC simulation, 100,000 steps were executed. If the average escape rate across all steps was $\langle R \rangle = 200\text{ s}^{-1}$, what is the total simulated physical time in seconds?
+    correct: 500.0
+    tolerance: 5.0
+    unit: s
+    hint_markdown: Multiply the number of steps by the mean time step $\langle \Delta t \rangle = 1/\langle R \rangle$.
+    rationale_markdown: $\langle \Delta t \rangle = 1 / 200\text{ s}^{-1} = 0.005\text{ s}$. Total time is $100,000 \times 0.005\text{ s} = 500.0\text{ s}$ (over 8 minutes of physical time!).
+  - id: q24_29
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: Why is it mathematically INCORRECT to simply advance the simulation clock by the deterministic mean $\Delta t = 1/R_{\text{total}}$ at every step instead of drawing from the exponential distribution $\Delta t = -\ln(u)/R$?
+    options:
+    - id: a
+      text_markdown: Using a fixed $\Delta t = 1/R$ correctly models the first moment, but eliminates all temporal variance and higher moments of the Poisson point process, distorting correlation functions and fluctuations in multi-step kinetics.
+      text: Using a fixed $\Delta t = 1/R$ correctly models the first moment, but eliminates all temporal variance and higher moments of the Poisson point process, distorting correlation functions and fluctuations in multi-step kinetics.
+    - id: b
+      text_markdown: Because $1/R$ is always negative.
+      text: Because $1/R$ is always negative.
+    - id: c
+      text_markdown: Because $\Delta t$ must always be zero in Monte Carlo.
+      text: Because $\Delta t$ must always be zero in Monte Carlo.
+    - id: d
+      text_markdown: Because the computer cannot divide by $R$.
+      text: Because the computer cannot divide by $R$.
+    correct: a
+    hint_markdown: Consider whether waiting times in real Poisson decay processes are deterministic or stochastic.
+    rationale_markdown: While $\Delta t = 1/R$ gives the correct average time over large numbers of independent steps, substituting a deterministic interval destroys the stochastic Poisson nature of rare event arrivals, introducing artifacts into non-stationary kinetics and time correlation functions.
+  - id: q24_30
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_superbasin_and_flickering_bottleneck
+    prompt_markdown: In an absorbing Markov chain formulation of superbasin escape, let $\mathbf{Q}$ be the substochastic transition matrix between transient states within the basin. What mathematical matrix $\mathbf{N}$ yields the expected number of times each state is visited before escape?
+    options:
+    - id: a
+      text_markdown: The fundamental matrix $\mathbf{N} = (\mathbf{I} - \mathbf{Q})^{-1}$
+      text: The fundamental matrix $\mathbf{N} = (\mathbf{I} - \mathbf{Q})^{-1}$
+    - id: b
+      text_markdown: $\mathbf{N} = \mathbf{Q}^2$
+      text: $\mathbf{N} = \mathbf{Q}^2$
+    - id: c
+      text_markdown: $\mathbf{N} = \mathbf{I} + \mathbf{Q}$
+      text: $\mathbf{N} = \mathbf{I} + \mathbf{Q}$
+    - id: d
+      text_markdown: $\mathbf{N} = \det(\mathbf{Q}) \mathbf{I}$
+      text: $\mathbf{N} = \det(\mathbf{Q}) \mathbf{I}$
+    correct: a
+    hint_markdown: Recall the geometric series $\sum_{k=0}^\infty \mathbf{Q}^k = (\mathbf{I} - \mathbf{Q})^{-1}$ for transient Markov chains.
+    rationale_markdown: In absorbing Markov chain theory, the expected number of visits to transient states before absorption into an exit state is given by the geometric series $\sum_{k=0}^\infty \mathbf{Q}^k = (\mathbf{I} - \mathbf{Q})^{-1} = \mathbf{N}$, known as the fundamental matrix.
+  - id: q24_31
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: In a lattice KMC simulation of vacancy diffusion in a crystal, when a vacancy swaps with a neighboring atom, which transition rates need to be updated in the catalog?
+    options:
+    - id: a
+      text_markdown: Only the rates of the local sites in the immediate coordination neighborhood of the moving atom and vacancy.
+      text: Only the rates of the local sites in the immediate coordination neighborhood of the moving atom and vacancy.
+    - id: b
+      text_markdown: All $10^6$ rates across the entire crystal must be completely recomputed.
+      text: All $10^6$ rates across the entire crystal must be completely recomputed.
+    - id: c
+      text_markdown: No rates ever need to be updated.
+      text: No rates ever need to be updated.
+    - id: d
+      text_markdown: Only the rates of the boundary atoms.
+      text: Only the rates of the boundary atoms.
+    correct: a
+    hint_markdown: Are short-range interatomic potentials affected by moves that occur far away?
+    rationale_markdown: Because atomic interactions are short-ranged, moving an atom only alters the local energy landscape and hop barriers of its immediate neighbors. Updating only the local neighborhood allows KMC steps to execute in $\mathcal{O}(1)$ time regardless of system size.
+  - id: q24_32
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_adsorption_desorption_kinetics
+    prompt_markdown: If a surface starts fully empty ($\theta_0 = 0$), $r_A = 2.0\text{ s}^{-1}$, and $r_D = 0.0\text{ s}^{-1}$ (irreversible adsorption), what is the coverage $\theta(t)$ at $t = 0.5\text{ s}$? (Recall $\theta(t) = 1 - e^{-r_A t}$ and $e^{-1} \approx 0.368$).
+    correct: 0.632
+    tolerance: 0.01
+    hint_markdown: Evaluate $1 - e^{-(2.0)(0.5)} = 1 - e^{-1}$.
+    rationale_markdown: $\theta(0.5) = 1 - e^{-1.0} = 1 - 0.367879 = 0.6321 \approx 0.632$ (63.2%).
+  - id: q24_33
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: In Dan Gillespie's formulation of the Stochastic Simulation Algorithm (SSA) for chemical reaction networks, what is the 'propensity function' $a_j(\mathbf{x})$ of reaction $j$?
+    options:
+    - id: a
+      text_markdown: The probability per unit time that reaction $j$ occurs, given the current population state $\mathbf{x}$.
+      text: The probability per unit time that reaction $j$ occurs, given the current population state $\mathbf{x}$.
+    - id: b
+      text_markdown: The equilibrium constant of reaction $j$.
+      text: The equilibrium constant of reaction $j$.
+    - id: c
+      text_markdown: The enthalpy change of reaction $j$.
+      text: The enthalpy change of reaction $j$.
+    - id: d
+      text_markdown: The activation energy in Joules.
+      text: The activation energy in Joules.
+    correct: a
+    hint_markdown: Notice that Gillespie's propensity $a_j$ is the chemical kinetics equivalent of the KMC transition rate $r_k$.
+    rationale_markdown: In Gillespie's stochastic simulation algorithm, the propensity $a_j(\mathbf{x}) dt$ is defined as the probability that reaction $j$ occurs in infinitesimal time interval $dt$ given current species populations $\mathbf{x}$. It is the exact chemical analog of transition rate $r_k$ in physical KMC.
+  - id: q24_34
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: How does detailed balance relate forward and reverse transition rates $W(A \to B)$ and $W(B \to A)$ in an equilibrium KMC simulation?
+    options:
+    - id: a
+      text_markdown: $\frac{W(A \to B)}{W(B \to A)} = \frac{e^{-\beta E_B}}{e^{-\beta E_A}} = e^{-\beta(E_B - E_A)}$
+      text: $\frac{W(A \to B)}{W(B \to A)} = \frac{e^{-\beta E_B}}{e^{-\beta E_A}} = e^{-\beta(E_B - E_A)}$
+    - id: b
+      text_markdown: $W(A \to B) = W(B \to A)$ always
+      text: $W(A \to B) = W(B \to A)$ always
+    - id: c
+      text_markdown: $W(A \to B) + W(B \to A) = 1$
+      text: $W(A \to B) + W(B \to A) = 1$
+    - id: d
+      text_markdown: $\frac{W(A \to B)}{W(B \to A)} = 0$
+      text: $\frac{W(A \to B)}{W(B \to A)} = 0$
+    correct: a
+    hint_markdown: Detailed balance requires $\pi(A) W(A \to B) = \pi(B) W(B \to A)$, where $\pi(s) \propto e^{-\beta E_s}$.
+    rationale_markdown: 'Detailed balance states that at thermodynamic equilibrium, the probability flux between any two states must balance exactly: $\pi(A) W(A \to B) = \pi(B) W(B \to A)$. Substituting the Boltzmann distribution $\pi(s) = e^{-\beta E_s} / Z$ yields $W(A \to B) / W(B \to A) = e^{-\beta(E_B - E_A)}$.'
+  - id: q24_35
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: Two states $A$ and $B$ have energies $E_A = 0.0\text{ eV}$ and $E_B = 0.10\text{ eV}$ at $T = 300\text{ K}$ ($k_B T = 0.02585\text{ eV}$). If the forward transition rate is $W(A \to B) = 100\text{ s}^{-1}$, calculate the reverse transition rate $W(B \to A) = W(A \to B) e^{\beta(E_B - E_A)}$ in $\text{s}^{-1}$ to the nearest integer.
+    correct: 4790.0
+    tolerance: 50.0
+    unit: s^-1
+    hint_markdown: Compute $100 \times e^{0.10 / 0.02585} = 100 \times e^{3.8685}$.
+    rationale_markdown: $e^{0.10 / 0.02585} = e^{3.86847} \approx 47.87$. Then $W(B \to A) = 100 \times 47.87 \approx 4787 \approx 4790\text{ s}^{-1}$.
+  - id: q24_36
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: Why do adatoms diffusing on close-packed metal surfaces (like FCC (111)) often hop via 'exchange' mechanisms rather than simple over-the-bridge hopping?
+    options:
+    - id: a
+      text_markdown: Because on many metals (e.g. Al, Pt), pushing a substrate atom out while the adatom takes its place has a lower activation barrier than climbing over the top of substrate atoms.
+      text: Because on many metals (e.g. Al, Pt), pushing a substrate atom out while the adatom takes its place has a lower activation barrier than climbing over the top of substrate atoms.
+    - id: b
+      text_markdown: Because the bridge site has infinite potential energy.
+      text: Because the bridge site has infinite potential energy.
+    - id: c
+      text_markdown: Because the exchange mechanism violates Newton's laws.
+      text: Because the exchange mechanism violates Newton's laws.
+    - id: d
+      text_markdown: Because adatoms can only move in diagonal directions.
+      text: Because adatoms can only move in diagonal directions.
+    correct: a
+    hint_markdown: Recall concerted exchange diffusion on metal surfaces discovered by Feibelman (1990).
+    rationale_markdown: P. J. Feibelman discovered via DFT that on surfaces like Al(001) and Pt(001), concerted exchange—where the adatom dives into the surface layer while displacing a substrate atom outward—has a significantly lower barrier than hopping over the bridge, demonstrating why unexpected pathways must be included in KMC catalogs.
+  - id: q24_37
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: What happens if a rate catalog in a KMC simulation inadvertently omits a physically accessible low-barrier transition pathway?
+    options:
+    - id: a
+      text_markdown: The simulation produces physically incorrect kinetics and may become artificially trapped in metastable structures that would naturally decay via the omitted pathway.
+      text: The simulation produces physically incorrect kinetics and may become artificially trapped in metastable structures that would naturally decay via the omitted pathway.
+    - id: b
+      text_markdown: The simulation automatically finds the missing pathway using quantum tunneling.
+      text: The simulation automatically finds the missing pathway using quantum tunneling.
+    - id: c
+      text_markdown: The total probability exceeds 1.
+      text: The total probability exceeds 1.
+    - id: d
+      text_markdown: The timestep $\Delta t$ becomes negative.
+      text: The timestep $\Delta t$ becomes negative.
+    correct: a
+    hint_markdown: Can a rejection-free KMC simulation choose an event that is not in its catalog?
+    rationale_markdown: KMC can only execute events that are explicitly present in its transition catalog. If an important low-barrier pathway (e.g., concerted exchange, cluster rotation) is missing, the simulation completely fails to model that kinetic channel, producing unphysical mechanisms and incorrect morphologies.
+  - id: q24_38
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_kmc_motivation_and_tst
+    prompt_markdown: In transition state theory, if the attempt frequency is $\nu_0 = 5.0 \times 10^{12}\text{ s}^{-1}$ and the activation barrier is $E_a = 0.30\text{ eV}$ at $T = 300\text{ K}$ ($k_B T = 0.02585\text{ eV}$), what is the mean waiting time $\tau = 1/k$ in microseconds ($\mu\text{s}$)?
+    correct: 0.022
+    tolerance: 0.5
+    unit: microseconds
+    hint_markdown: Compute $k = \nu_0 e^{-E_a / k_B T}$ in s^-1, then invert to get $\tau$ and convert to $\mu\text{s}$ ($1\text{ s} = 10^6\,\mu\text{s}$).
+    rationale_markdown: $E_a / k_B T = 0.30 / 0.02585 = 11.6054$. $e^{-11.6054} \approx 9.117 \times 10^{-6}$. Then $k = 5 \times 10^{12} \times (9.117 \times 10^{-6}) = 4.558 \times 10^7\text{ s}^{-1}$. The mean waiting time is $\tau = 1/k = 2.194 \times 10^{-8}\text{ s} = 0.0219\,\mu\text{s} \approx 0.022\,\mu\text{s}$.
+  - id: q24_39
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_superbasin_and_flickering_bottleneck
+    prompt_markdown: Which of the following methods are effective strategies to accelerate KMC when confronted with low-barrier superbasins? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: Coarse-graining the superbasin into a single macro-state with effective exit rates
+      text: Coarse-graining the superbasin into a single macro-state with effective exit rates
+    - id: b
+      text_markdown: Absorbing Markov Chain / First-Passage Time algorithms that leap out of the basin in a single step
+      text: Absorbing Markov Chain / First-Passage Time algorithms that leap out of the basin in a single step
+    - id: c
+      text_markdown: Increasing the barrier height of the fast transition artificially (with appropriate rate rescaling)
+      text: Increasing the barrier height of the fast transition artificially (with appropriate rate rescaling)
+    - id: d
+      text_markdown: Replacing random numbers with the constant 0.5
+      text: Replacing random numbers with the constant 0.5
+    correct:
+    - a
+    - b
+    - c
+    hint_markdown: Look for algorithms that eliminate fast internal hops while preserving relative exit probabilities.
+    rationale_markdown: Superbasin coarse-graining, absorbing Markov chain reduction, and artificial barrier raising (e.g. in the mean-rate method or tau-leaping) all eliminate fast flickering while preserving true exit kinetics. Replacing random numbers with 0.5 is invalid.
+  - id: q24_40
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: In a KMC simulation with 10 competing processes, why can a single random number $u_1 \in (0, 1)$ select the event regardless of how many processes exist?
+    options:
+    - id: a
+      text_markdown: Because the cumulative rate array $\sum_{k=1}^i r_k$ maps the entire interval $[0, R_{\text{total}})$ into $M$ non-overlapping contiguous bins, each of length $r_i$.
+      text: Because the cumulative rate array $\sum_{k=1}^i r_k$ maps the entire interval $[0, R_{\text{total}})$ into $M$ non-overlapping contiguous bins, each of length $r_i$.
+    - id: b
+      text_markdown: Because only one process can have a non-zero rate.
+      text: Because only one process can have a non-zero rate.
+    - id: c
+      text_markdown: Because all processes have equal probability.
+      text: Because all processes have equal probability.
+    - id: d
+      text_markdown: Because random numbers are 64-bit integers.
+      text: Because random numbers are 64-bit integers.
+    correct: a
+    hint_markdown: Think of partitioning a line of length $R_{\text{total}}$ into segments of length $r_k$ and throwing a dart at location $u_1 R_{\text{total}}$.
+    rationale_markdown: The cumulative distribution partitions $[0, R_{\text{total}})$ into $M$ contiguous subintervals whose lengths equal $r_i$. Multiplying a uniform random number $u_1 \in (0, 1)$ by $R_{\text{total}}$ lands in subinterval $i$ with probability exactly $r_i / R_{\text{total}}$.
+  - id: q24_41
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_master_equation_and_bkl
+    prompt_markdown: In Dan Gillespie's Tau-Leaping method (an approximate accelerated KMC algorithm), how are multiple fast events handled?
+    options:
+    - id: a
+      text_markdown: The simulation leaps forward by a pre-selected time step $\tau$, and the number of firings of each reaction channel during $\tau$ is sampled as an independent Poisson random variable $\mathcal{P}(r_k \tau)$, assuming propensities remain approximately constant during $\tau$.
+      text: The simulation leaps forward by a pre-selected time step $\tau$, and the number of firings of each reaction channel during $\tau$ is sampled as an independent Poisson random variable $\mathcal{P}(r_k \tau)$, assuming propensities remain approximately constant during $\tau$.
+    - id: b
+      text_markdown: All reactions are stopped completely.
+      text: All reactions are stopped completely.
+    - id: c
+      text_markdown: The system switches to quantum Monte Carlo.
+      text: The system switches to quantum Monte Carlo.
+    - id: d
+      text_markdown: Only the slowest reaction is allowed to fire.
+      text: Only the slowest reaction is allowed to fire.
+    correct: a
+    hint_markdown: Review the concept of Tau-Leaping as a bridge between exact discrete KMC and continuous chemical Langevin equations.
+    rationale_markdown: Gillespie's tau-leaping accelerates simulation by choosing a time step $\tau$ during which state changes are small enough that reaction propensities remain nearly constant. The number of occurrences of each channel $k$ is drawn from a Poisson distribution $\text{Poisson}(r_k \tau)$, leaping over thousands of individual events in one step.
+  - id: q24_42
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_poisson_clock_and_sampling
+    prompt_markdown: A radioactive decay or atomic desorption process has a single transition channel with rate $r = 10.0\text{ s}^{-1}$ ($R_{\text{total}} = 10.0\text{ s}^{-1}$). If $u = 0.50$, calculate the sampled Poisson waiting time $\Delta t = -\frac{\ln(0.50)}{10.0}$ in seconds to 3 decimal places.
+    correct: 0.069
+    tolerance: 0.002
+    unit: s
+    hint_markdown: Recall $\ln(0.50) = -\ln(2) \approx -0.69315$.
+    rationale_markdown: $\Delta t = -(-0.69315) / 10.0 = 0.69315 / 10.0 = 0.0693 \approx 0.069\text{ s}$.

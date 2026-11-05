@@ -1,0 +1,1199 @@
+worksheet:
+  id: lesson_20_free_energy_and_phase_equilibria
+  title: 'Lesson 20: Free Energy Calculations, Phase Equilibria & Flat-Histogram Methods'
+  estimated_minutes: 120
+  learning_objectives:
+  - Explain why free energy is an entropic phase-space volume property ($F = -k_B T \ln Z$) rather than a simple mechanical ensemble average.
+  - Derive the Kirkwood coupling-constant Thermodynamic Integration (TI) formula and evaluate path-dependent hysteresis across first-order phase transitions.
+  - Analyze Zwanzig Free Energy Perturbation (FEP) and diagnose the unidirectional phase-space overlap catastrophe.
+  - Implement Widom test-particle insertion for excess chemical potential and identify its exponential breakdown at dense liquid and solid packing.
+  - Formulate the Gibbs Ensemble Monte Carlo (GEMC) technique for direct phase coexistence without explicit physical interfaces.
+  - Derive the Bennett Acceptance Ratio (BAR) minimum-variance estimator from the Crooks fluctuation theorem.
+  - Understand the Wang-Landau flat-histogram algorithm for microcanonical density of states $g(E)$ and microcanonical entropy $S(E)$.
+  sections:
+  - id: sec_free_energy_foundations
+    type: markdown_section
+    title: '1. Why Free Energy is Hard: Phase Space Volume and Zwanzig Perturbation'
+    body_markdown: '### The Free Energy Bottleneck
+
+
+      Mechanical observables such as internal energy $E = \langle \mathcal{H} \rangle$, pressure $P = \rho k_B T + \frac{1}{3V}\langle \sum \mathbf{r}_{ij}\cdot\mathbf{f}_{ij} \rangle$, or pair correlation $g(r)$ can be computed directly as arithmetic averages along a simulation trajectory. In contrast, Helmholtz free energy $F$ is defined by:
+
+
+      $$F = -k_B T \ln Q(N, V, T), \qquad Q = \frac{1}{N! \Lambda^{3N}} \int d\mathbf{r}^N e^{-\beta V(\mathbf{r}^N)}$$
+
+
+      Free energy is proportional to the **logarithm of the partition function** $Q$, which measures the total hypervolume of accessible phase space. Standard Monte Carlo and MD trajectories sample states according to the Boltzmann probability $P(\mathbf{r}^N) \propto e^{-\beta V(\mathbf{r}^N)}$; they never explore the absolute normalisation factor $Q$.
+
+
+      ### Zwanzig Free Energy Perturbation (FEP)
+
+
+      To measure the free energy difference $\Delta F = F_1 - F_0$ between two systems with potential energies $V_0$ and $V_1 = V_0 + \Delta V$, Zwanzig (1954) formulated the exact identity:
+
+
+      $$e^{-\beta \Delta F} = \frac{Q_1}{Q_0} = \frac{\int d\mathbf{r}^N e^{-\beta V_1}}{\int d\mathbf{r}^N e^{-\beta V_0}} = \frac{\int d\mathbf{r}^N e^{-\beta \Delta V} e^{-\beta V_0}}{\int d\mathbf{r}^N e^{-\beta V_0}} = \left\langle e^{-\beta \Delta V} \right\rangle_0$$
+
+
+      While mathematically exact, FEP suffers from a severe **phase-space overlap problem**: if states with low energy in system 1 correspond to rare, high-energy configurations in system 0, the ensemble average $\langle e^{-\beta \Delta V} \rangle_0$ is dominated by extreme, rarely sampled tail events where $\Delta V \ll 0$, leading to enormous statistical errors and systematic bias.'
+  - id: sec_thermodynamic_integration_kirkwood
+    type: markdown_section
+    title: 2. Kirkwood Thermodynamic Integration and Path Hysteresis
+    body_markdown: '### Coupling-Constant Thermodynamic Integration
+
+
+      Rather than attempting a large single perturbation, Kirkwood (1935) introduced an alchemical coupling parameter $\lambda \in [0, 1]$ connecting system 0 ($V_0$) to system 1 ($V_1$):
+
+
+      $$V_\lambda(\mathbf{r}^N) = (1 - \lambda) V_0(\mathbf{r}^N) + \lambda V_1(\mathbf{r}^N)$$
+
+
+      Differentiating the free energy $F_\lambda = -k_B T \ln Q_\lambda$ with respect to $\lambda$ yields:
+
+
+      $$\frac{\partial F_\lambda}{\partial \lambda} = -\frac{k_B T}{Q_\lambda} \frac{\partial Q_\lambda}{\partial \lambda} = \frac{\int d\mathbf{r}^N \left( \frac{\partial V_\lambda}{\partial \lambda} \right) e^{-\beta V_\lambda}}{\int d\mathbf{r}^N e^{-\beta V_\lambda}} = \left\langle \frac{\partial V_\lambda}{\partial \lambda} \right\rangle_\lambda$$
+
+
+      For linear coupling, $\partial V_\lambda / \partial \lambda = V_1 - V_0 = \Delta V$. Integrating along $\lambda$ from 0 to 1 gives the exact free energy difference:
+
+
+      $$\Delta F = F_1 - F_0 = \int_0^1 \left\langle \frac{\partial V_\lambda}{\partial \lambda} \right\rangle_\lambda d\lambda = \int_0^1 \langle V_1 - V_0 \rangle_\lambda d\lambda$$
+
+
+      ### Convexity and Path-Crossing Hysteresis
+
+
+      Differentiating a second time reveals that the free energy is strictly concave with respect to $\lambda$:
+
+
+      $$\frac{\partial^2 F_\lambda}{\partial \lambda^2} = -\beta \left[ \left\langle \left( \frac{\partial V_\lambda}{\partial \lambda} \right)^2 \right\rangle_\lambda - \left\langle \frac{\partial V_\lambda}{\partial \lambda} \right\rangle_\lambda^2 \right] = -\beta \,\mathrm{Var}_\lambda\left(\frac{\partial V_\lambda}{\partial \lambda}\right) \le 0$$
+
+
+      Therefore, the integrand $\langle \Delta V \rangle_\lambda$ is a monotonically decreasing function of $\lambda$.
+
+
+      If the alchemical path accidentally crosses a **first-order phase transition** (e.g. solid-liquid coexistence), the system superheats or supercools, producing strong **hysteresis loops** between forward ($0 \to 1$) and reverse ($1 \to 0$) sweeps. To obtain accurate free energies across phases, one must avoid phase boundaries by integrating along reversible paths (such as the Frenkel-Ladd Einstein crystal path).'
+  - id: concept_kirkwood_thermodynamic_integration
+    type: concept_cell
+    title: 'Interactive Concept: Kirkwood Thermodynamic Integration & Hysteresis'
+    description_markdown: 'Explore Kirkwood coupling-parameter integration $\Delta F = \int_0^1 \langle \Delta V \rangle_\lambda d\lambda$.
+
+      Adjust quadrature points, anharmonic strength, and switch between a smooth single-phase path and a path crossing a first-order phase transition.'
+    render_function: render_kirkwood_thermodynamic_integration
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      quadrature_points:
+        kind: slider
+        label: Quadrature Nodes
+        min: 3
+        max: 16
+        step: 1
+        default: 6
+      anharmonic_strength:
+        kind: slider
+        label: Anharmonicity Strength
+        min: 0.0
+        max: 3.0
+        step: 0.2
+        default: 1.2
+      path_regime:
+        kind: dropdown
+        label: Path Regime
+        options:
+        - label: Reversible Single-Phase Path
+          value: reversible
+        - label: First-Order Transition Crossing (Hysteresis)
+          value: first_order_crossing
+        default: reversible
+    takeaway_markdown: '**Key Insight:** Along a reversible path, $\langle \Delta V \rangle_\lambda$ varies smoothly and a 6-to-8 point Gauss-Legendre quadrature yields high accuracy. When crossing a first-order phase boundary, nucleation barriers trap the system in metastable states, causing forward and backward sweeps to diverge and dissipate irreversible hysteresis work.'
+  - id: q20_01
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_free_energy_foundations
+    prompt_markdown: Why cannot the Helmholtz free energy $F = -k_B T \ln Q$ be evaluated simply by averaging a microscopic mechanical variable $\langle A(\mathbf{r}^N) \rangle$ in standard Monte Carlo or Molecular Dynamics?
+    options:
+    - id: a
+      text_markdown: Free energy depends on quantum spin operators that are neglected in classical MD.
+      text: Free energy depends on quantum spin operators that are neglected in classical MD.
+    - id: b
+      text_markdown: Free energy is an entropic, phase-space volume property determined by the normalization integral $Q$, whereas importance sampling only explores relative probabilities $P \propto e^{-\beta V}$ without computing $Q$.
+      text: Free energy is an entropic, phase-space volume property determined by the normalization integral $Q$, whereas importance sampling only explores relative probabilities $P \propto e^{-\beta V}$ without computing $Q$.
+    - id: c
+      text_markdown: Free energy is only defined for ideal gases.
+      text: Free energy is only defined for ideal gases.
+    - id: d
+      text_markdown: The virial theorem proves that free energy is identical to kinetic energy.
+      text: The virial theorem proves that free energy is identical to kinetic energy.
+    correct: b
+    hint_markdown: Consider what the partition function $Q$ represents mathematically in phase space.
+    rationale_markdown: Free energy $F = -k_B T \ln Q$ is directly proportional to the total volume of accessible phase space $Q$. Importance sampling algorithms evaluate ratios of probabilities $e^{-\beta \Delta V}$ and never visit the vast empty volume of unpopulated phase space needed to compute the denominator $Q$ directly.
+  - id: q20_02
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_free_energy_foundations
+    prompt_markdown: In the Zwanzig Free Energy Perturbation (FEP) formula $e^{-\beta \Delta F} = \langle e^{-\beta \Delta V} \rangle_0$, which ensemble is used to generate configurations?
+    options:
+    - id: a
+      text_markdown: The target ensemble 1 (with potential $V_1$)
+      text: The target ensemble 1 (with potential $V_1$)
+    - id: b
+      text_markdown: The reference ensemble 0 (with potential $V_0$)
+      text: The reference ensemble 0 (with potential $V_0$)
+    - id: c
+      text_markdown: An unweighted microcanonical ensemble where all energies are equal
+      text: An unweighted microcanonical ensemble where all energies are equal
+    - id: d
+      text_markdown: A grand canonical ensemble with chemical potential $\mu = 0$
+      text: A grand canonical ensemble with chemical potential $\mu = 0$
+    correct: b
+    hint_markdown: Notice the subscript 0 on the expectation brackets $\langle \dots \rangle_0$.
+    rationale_markdown: In the standard forward Zwanzig relation, configurations are generated by sampling the reference state 0 according to $P_0 \propto e^{-\beta V_0}$, and the Boltzmann factor $e^{-\beta (V_1 - V_0)}$ is evaluated on those configurations.
+  - id: q20_03
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_free_energy_foundations
+    prompt_markdown: Why does forward FEP systematically fail when the target state 1 has a significantly smaller phase-space volume than reference state 0 (e.g., creating a hard sphere cavity in a dense fluid)?
+    options:
+    - id: a
+      text_markdown: Because the kinetic energy in state 1 is negative.
+      text: Because the kinetic energy in state 1 is negative.
+    - id: b
+      text_markdown: Because the configurations that contribute most heavily to $\langle e^{-\beta \Delta V} \rangle_0$ (where $\Delta V \ll 0$) are virtually never sampled in ensemble 0.
+      text: Because the configurations that contribute most heavily to $\langle e^{-\beta \Delta V} \rangle_0$ (where $\Delta V \ll 0$) are virtually never sampled in ensemble 0.
+    - id: c
+      text_markdown: Because $e^{-\beta \Delta V}$ diverges to infinity for all configurations.
+      text: Because $e^{-\beta \Delta V}$ diverges to infinity for all configurations.
+    - id: d
+      text_markdown: Because Newton's third law is violated.
+      text: Because Newton's third law is violated.
+    correct: b
+    hint_markdown: Where do the most important configurations for state 1 lie in the probability distribution of state 0?
+    rationale_markdown: The exponential $e^{-\beta \Delta V}$ gives overwhelming weight to rare configurations where $\Delta V$ is negative and large. If state 0 rarely or never visits these regions, the sample average severely underestimates the true exponential average, leading to large systematic error.
+  - id: q20_04
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_thermodynamic_integration_kirkwood
+    prompt_markdown: What is the integrand in Kirkwood's alchemical thermodynamic integration $\Delta F = \int_0^1 I(\lambda) d\lambda$ for a linearly coupled potential $V_\lambda = (1-\lambda)V_0 + \lambda V_1$?
+    options:
+    - id: a
+      text_markdown: $I(\lambda) = \langle e^{-\beta (V_1 - V_0)} \rangle_\lambda$
+      text: $I(\lambda) = \langle e^{-\beta (V_1 - V_0)} \rangle_\lambda$
+    - id: b
+      text_markdown: $I(\lambda) = \langle V_1 - V_0 \rangle_\lambda$
+      text: $I(\lambda) = \langle V_1 - V_0 \rangle_\lambda$
+    - id: c
+      text_markdown: $I(\lambda) = \langle V_0 \rangle_\lambda \cdot \langle V_1 \rangle_\lambda$
+      text: $I(\lambda) = \langle V_0 \rangle_\lambda \cdot \langle V_1 \rangle_\lambda$
+    - id: d
+      text_markdown: $I(\lambda) = \beta \langle V_1 + V_0 \rangle_\lambda$
+      text: $I(\lambda) = \beta \langle V_1 + V_0 \rangle_\lambda$
+    correct: b
+    hint_markdown: 'Differentiate $V_\lambda$ with respect to $\lambda$: $\partial V_\lambda / \partial \lambda = V_1 - V_0$.'
+    rationale_markdown: By definition, $\partial F_\lambda / \partial \lambda = \langle \partial V_\lambda / \partial \lambda \rangle_\lambda$. For linear coupling, $\partial V_\lambda / \partial \lambda = V_1 - V_0 = \Delta V$, so the integrand is simply the ensemble average $\langle V_1 - V_0 \rangle_\lambda$ evaluated at coupling parameter $\lambda$.
+  - id: q20_05
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_thermodynamic_integration_kirkwood
+    prompt_markdown: 'Prove the slope of the Kirkwood integrand: why must $\frac{d}{d\lambda}\langle V_1 - V_0 \rangle_\lambda \le 0$ for any physical system?'
+    options:
+    - id: a
+      text_markdown: Because the derivative equals $-\beta \,\mathrm{Var}_\lambda(V_1 - V_0)$, and variance is strictly non-negative.
+      text: Because the derivative equals $-\beta \,\mathrm{Var}_\lambda(V_1 - V_0)$, and variance is strictly non-negative.
+    - id: b
+      text_markdown: Because entropy always increases in an isolated system.
+      text: Because entropy always increases in an isolated system.
+    - id: c
+      text_markdown: Because the coupling parameter $\lambda$ is bounded between 0 and 1.
+      text: Because the coupling parameter $\lambda$ is bounded between 0 and 1.
+    - id: d
+      text_markdown: Because the partition function $Q_\lambda$ is a linear function of $\lambda$.
+      text: Because the partition function $Q_\lambda$ is a linear function of $\lambda$.
+    correct: a
+    hint_markdown: Compute $\frac{\partial^2 F_\lambda}{\partial \lambda^2}$ by differentiating the Boltzmann-weighted expectation value.
+    rationale_markdown: Differentiating $\langle \Delta V \rangle_\lambda = \frac{1}{Q_\lambda}\int \Delta V e^{-\beta V_\lambda} d\mathbf{r}^N$ with respect to $\lambda$ yields $-\beta [\langle (\Delta V)^2 \rangle_\lambda - \langle \Delta V \rangle_\lambda^2] = -\beta \mathrm{Var}_\lambda(\Delta V)$. Since $\beta > 0$ and variance is $\ge 0$, the slope is always $\le 0$ (free energy is concave in $\lambda$).
+  - id: q20_06
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_thermodynamic_integration_kirkwood
+    prompt_markdown: 'A 3-point Simpson''s rule is used for Kirkwood TI: $\Delta F \approx \frac{1}{6}[I(0) + 4 I(0.5) + I(1.0)]$. If the measured values are $I(0) = 12.0\text{ kcal/mol}$, $I(0.5) = 7.5\text{ kcal/mol}$, and $I(1.0) = 4.0\text{ kcal/mol}$, calculate $\Delta F$ in kcal/mol.'
+    correct: 7.67
+    tolerance: 0.05
+    unit: kcal/mol
+    hint_markdown: Compute $\frac{1}{6}[12.0 + 4(7.5) + 4.0]$.
+    rationale_markdown: $\Delta F = \frac{1}{6}[12.0 + 30.0 + 4.0] = \frac{46.0}{6} = 7.6667 \approx 7.67\text{ kcal/mol}$.
+  - id: q20_07
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: concept_kirkwood_thermodynamic_integration
+    prompt_markdown: 'In the concept cell, when switching to ''First-Order Transition Crossing'', what causes the forward sweep ($\\lambda: 0 \\to 1$) and reverse sweep ($\\lambda: 1 \\to 0$) to form a hysteresis loop?'
+    options:
+    - id: a
+      text_markdown: The computer uses single precision instead of double precision.
+      text: The computer uses single precision instead of double precision.
+    - id: b
+      text_markdown: A first-order transition features a free energy barrier between distinct phases, trapping the system in metastable states (superheating and supercooling) during finite-rate sweeps.
+      text: A first-order transition features a free energy barrier between distinct phases, trapping the system in metastable states (superheating and supercooling) during finite-rate sweeps.
+    - id: c
+      text_markdown: The Kirkwood formula is mathematically invalid for any system with interactions.
+      text: The Kirkwood formula is mathematically invalid for any system with interactions.
+    - id: d
+      text_markdown: The coupling parameter $\lambda$ becomes imaginary.
+      text: The coupling parameter $\lambda$ becomes imaginary.
+    correct: b
+    hint_markdown: Recall what happens when water is rapidly cooled below 0 °C without ice nuclei.
+    rationale_markdown: First-order phase transitions have a free energy barrier separating the two states. During a finite-time sweep, the system remains trapped in the metastable phase (superheating when $\lambda$ increases, supercooling when $\lambda$ decreases) before abruptly nucleating, creating a hysteresis loop whose enclosed area represents irreversible dissipated work.
+  - id: q20_08
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_thermodynamic_integration_kirkwood
+    prompt_markdown: How did Frenkel and Ladd solve the problem of phase-crossing hysteresis when calculating the absolute free energy of a crystalline solid?
+    options:
+    - id: a
+      text_markdown: They melted the crystal into a liquid and integrated along the boiling curve.
+      text: They melted the crystal into a liquid and integrated along the boiling curve.
+    - id: b
+      text_markdown: They constructed a reversible thermodynamic path connecting the interacting solid to an 'Einstein crystal' (independent harmonic oscillators anchored to lattice sites), whose absolute free energy is known analytically.
+      text: They constructed a reversible thermodynamic path connecting the interacting solid to an 'Einstein crystal' (independent harmonic oscillators anchored to lattice sites), whose absolute free energy is known analytically.
+    - id: c
+      text_markdown: They set the temperature of the crystal to absolute zero ($T = 0\text{ K}$).
+      text: They set the temperature of the crystal to absolute zero ($T = 0\text{ K}$).
+    - id: d
+      text_markdown: They replaced all atoms with ideal gas particles in a single step.
+      text: They replaced all atoms with ideal gas particles in a single step.
+    correct: b
+    hint_markdown: What reference system has an analytically solvable partition function for localized particles?
+    rationale_markdown: An Einstein crystal consists of non-interacting particles tethered to lattice positions by harmonic springs, for which $Q_{\text{Ein}}$ and $F_{\text{Ein}}$ are known exactly in closed form. By coupling the real interatomic potential to harmonic springs without crossing any phase boundary, Frenkel and Ladd obtained reversible, hysteresis-free absolute free energies.
+  - id: q20_09
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_thermodynamic_integration_kirkwood
+    prompt_markdown: Can thermodynamic integration be performed using physical state variables like temperature $T$ or volume $V$ instead of an alchemical parameter $\lambda$?
+    options:
+    - id: a
+      text_markdown: No, TI is strictly defined only for fictitious coupling parameters $\lambda$.
+      text: No, TI is strictly defined only for fictitious coupling parameters $\lambda$.
+    - id: b
+      text_markdown: 'Yes: integrating pressure gives $\Delta F = -\int_{V_0}^{V_1} P(V) dV$ at constant $T$, and integrating energy gives $\Delta(F/T) = -\int_{T_0}^{T_1} \frac{E(T)}{T^2} dT$ at constant $V$.'
+      text: 'Yes: integrating pressure gives $\Delta F = -\int_{V_0}^{V_1} P(V) dV$ at constant $T$, and integrating energy gives $\Delta(F/T) = -\int_{T_0}^{T_1} \frac{E(T)}{T^2} dT$ at constant $V$.'
+    - id: c
+      text_markdown: Yes, but only if the temperature is negative.
+      text: Yes, but only if the temperature is negative.
+    - id: d
+      text_markdown: No, because $P$ and $E$ are not thermodynamic state functions.
+      text: No, because $P$ and $E$ are not thermodynamic state functions.
+    correct: b
+    hint_markdown: Recall the fundamental thermodynamic relation $dF = -S dT - P dV$ and the Gibbs-Helmholtz equation.
+    rationale_markdown: Standard thermodynamics dictates $(\partial F/\partial V)_T = -P$ and $\partial(F/T)/\partial T = -E/T^2$. Hence one can integrate measured equation-of-state data $P(V, T)$ and $E(V, T)$ along reversible physical paths to find free energy differences.
+  - id: q20_10
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_thermodynamic_integration_kirkwood
+    prompt_markdown: Which of the following practices ensure accurate numerical evaluation of $\int_0^1 \langle \Delta V \rangle_\lambda d\lambda$? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: Use Gauss-Legendre quadrature nodes rather than equally spaced trapezoidal points to maximize polynomial accuracy.
+      text: Use Gauss-Legendre quadrature nodes rather than equally spaced trapezoidal points to maximize polynomial accuracy.
+    - id: b
+      text_markdown: Equilibrate the system thoroughly at each $\lambda$ node before accumulating the ensemble average $\langle \Delta V \rangle_\lambda$.
+      text: Equilibrate the system thoroughly at each $\lambda$ node before accumulating the ensemble average $\langle \Delta V \rangle_\lambda$.
+    - id: c
+      text_markdown: Place a single integration point at $\lambda = 0.5$ and assume linearity.
+      text: Place a single integration point at $\lambda = 0.5$ and assume linearity.
+    - id: d
+      text_markdown: Use 'soft-core' potentials when turning on repulsive atom centers to prevent the $r^{-12}$ singularity at $\lambda \to 0$.
+      text: Use 'soft-core' potentials when turning on repulsive atom centers to prevent the $r^{-12}$ singularity at $\lambda \to 0$.
+    correct:
+    - a
+    - b
+    - d
+    hint_markdown: Think about quadrature theory, equilibration, and what happens when an atom appears on top of another atom at small $\lambda$.
+    rationale_markdown: Gauss-Legendre quadrature minimizes discretization error; proper equilibration avoids starting bias; and soft-core potentials eliminate the end-point singularity ($r \to 0$ as $\lambda \to 0$) in alchemical transformations. A single point at $\lambda=0.5$ fails for nonlinear/anharmonic curves.
+  - id: sec_widom_and_phase_equilibria
+    type: markdown_section
+    title: 3. Chemical Potential, Widom Ghost Insertion, and Gibbs Ensemble
+    body_markdown: '### Chemical Potential and Widom Ghost Insertion
+
+
+      The chemical potential $\mu = (\partial F / \partial N)_{V, T}$ consists of an ideal gas contribution and an excess contribution:
+
+
+      $$\mu = \mu_{\text{id}} + \mu_{\text{ex}}, \qquad \mu_{\text{id}} = k_B T \ln(\rho \Lambda^3)$$
+
+
+      Widom (1963) showed that the excess chemical potential $\mu_{\text{ex}}$ is given by inserting a fictitious **ghost particle** at a random uniform position $\mathbf{s}$ in an $N$-particle fluid:
+
+
+      $$\mu_{\text{ex}} = -k_B T \ln \left\langle \int d\mathbf{s} \, e^{-\beta \Delta U_{\text{test}}(\mathbf{s})} \right\rangle_N = -k_B T \ln \left\langle e^{-\beta \Delta U_{\text{test}}} \right\rangle_N$$
+
+
+      where $\Delta U_{\text{test}}$ is the interaction energy between the test particle and the existing $N$ particles. Crucially, the test particle does not disturb the trajectory—it is purely a virtual probe.
+
+
+      ### Breakdown at High Density
+
+
+      In dilute gases and low-density liquids, test particles frequently find empty cavities, giving non-zero Boltzmann factors $e^{-\beta \Delta U} > 0$. However, as density increases toward the liquid-solid boundary (packing fraction $\eta = \frac{\pi}{6}\rho\sigma^3 > 0.45$), the probability of inserting a sphere without overlapping an existing hard core drops exponentially: $P_{\text{cavity}} \sim e^{-c \eta / (1-\eta)^3}$. Virtually every insertion encounters hard core overlap ($\Delta U \gg 0 \implies e^{-\beta \Delta U} = 0$), causing Widom insertion to collapse completely.
+
+
+      ### Gibbs Ensemble Monte Carlo (GEMC)
+
+
+      Determining vapor-liquid coexistence historically required simulating a massive slab containing an explicit liquid-gas interface. Panagiotopoulos (1987) devised the **Gibbs Ensemble**, which simulates two separate macroscopic boxes (Box 1 and Box 2) without any interface, governed by three coupled trial moves:
+
+
+      1. **Displacement moves:** Standard Metropolis particle translations inside each box to maintain internal thermal equilibrium ($T_1 = T_2 = T$).
+
+      2. **Volume exchange moves:** $\Delta V_1 = -\Delta V_2$ at constant total volume $V = V_1 + V_2$, driving pressure equality ($P_1 = P_2$).
+
+      3. **Particle transfer moves:** Deleting a particle from Box 1 and inserting into Box 2, driving chemical potential equality ($\mu_1 = \mu_2$).
+
+
+      The two boxes spontaneously separate into pure saturated vapor and pure saturated liquid!'
+  - id: concept_widom_and_gibbs_coexistence
+    type: concept_cell
+    title: 'Interactive Concept: Widom Ghost Insertion vs. Gibbs Ensemble Coexistence'
+    description_markdown: 'Investigate the breakdown of Widom test-particle insertion at dense packing and observe Gibbs Ensemble coexistence.
+
+      Switch between the `widom` insertion efficiency plot and the `gibbs` two-box coexistence simulation.'
+    render_function: render_widom_and_gibbs_coexistence
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      reduced_density:
+        kind: slider
+        label: Reduced Density rho*
+        min: 0.1
+        max: 0.9
+        step: 0.05
+        default: 0.55
+      reduced_temp:
+        kind: slider
+        label: Reduced Temperature T*
+        min: 0.7
+        max: 1.8
+        step: 0.05
+        default: 1.05
+      method_view:
+        kind: dropdown
+        label: Display View
+        options:
+        - label: Widom Ghost Particle Insertion
+          value: widom
+        - label: Gibbs Ensemble Coexistence
+          value: gibbs
+        default: widom
+    takeaway_markdown: '**Key Insight:** Widom insertion works exceptionally well in gas and low-density fluid phases, but its insertion acceptance rate drops by 6 to 10 orders of magnitude in dense liquids due to core overlaps. The Gibbs Ensemble avoids this bottleneck by transferring volume and particles between two coupled, interface-free boxes to achieve thermodynamic phase coexistence.'
+  - id: q20_11
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: In Widom's test particle method, does the inserted test particle exert forces on the surrounding real particles and alter their trajectories?
+    options:
+    - id: a
+      text_markdown: Yes, it causes surrounding particles to recoil violently.
+      text: Yes, it causes surrounding particles to recoil violently.
+    - id: b
+      text_markdown: No, it is a purely virtual 'ghost' probe that evaluates the potential energy of interaction without affecting the actual system trajectory or coordinates.
+      text: No, it is a purely virtual 'ghost' probe that evaluates the potential energy of interaction without affecting the actual system trajectory or coordinates.
+    - id: c
+      text_markdown: Yes, but only if the temperature is above the critical temperature.
+      text: Yes, but only if the temperature is above the critical temperature.
+    - id: d
+      text_markdown: It permanently changes the total number of particles from $N$ to $N+1$.
+      text: It permanently changes the total number of particles from $N$ to $N+1$.
+    correct: b
+    hint_markdown: Notice why Widom insertion is also called 'ghost particle insertion'.
+    rationale_markdown: 'The test particle in Widom insertion is a ghost: it is placed randomly at coordinates $\mathbf{s}$, its interaction energy $\Delta U_{\text{test}}$ with the existing $N$ particles is recorded, and it is immediately removed without ever affecting the positions or forces of the real particles.'
+  - id: q20_12
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: What happens to the insertion acceptance rate and statistical accuracy of the Widom method as the density of a hard-sphere fluid approaches dense liquid packing ($\rho \sigma^3 \approx 0.85$)?
+    options:
+    - id: a
+      text_markdown: The acceptance rate approaches 100% and accuracy reaches machine precision.
+      text: The acceptance rate approaches 100% and accuracy reaches machine precision.
+    - id: b
+      text_markdown: The cavity insertion probability drops exponentially close to zero ($P_{\text{insert}} < 10^{-6}$), because almost all random insertion points overlap existing particle cores, causing the estimator to fail completely.
+      text: The cavity insertion probability drops exponentially close to zero ($P_{\text{insert}} < 10^{-6}$), because almost all random insertion points overlap existing particle cores, causing the estimator to fail completely.
+    - id: c
+      text_markdown: The chemical potential becomes negative infinity.
+      text: The chemical potential becomes negative infinity.
+    - id: d
+      text_markdown: Widom insertion converts automatically into an MD simulation.
+      text: Widom insertion converts automatically into an MD simulation.
+    correct: b
+    hint_markdown: What is the volume of empty cavities large enough to accommodate a whole sphere in a dense packing?
+    rationale_markdown: In dense liquids and solids, free volume consists of narrow crevices rather than open cavities of diameter $\sigma$. Consequently, virtually every random insertion overlaps an existing atom, yielding $e^{-\beta \infty} = 0$. Finding an insertion with non-zero Boltzmann factor becomes an astronomical rarity, rendering Widom insertion ineffective.
+  - id: q20_13
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: In a Widom insertion simulation at $T = 300\text{ K}$ ($k_B T = 2.479\text{ kJ/mol}$), the ensemble average of the test-particle Boltzmann factor is measured to be $\langle e^{-\beta \Delta U} \rangle = 0.0183$. Calculate the excess chemical potential $\mu_{\text{ex}}$ in kJ/mol.
+    correct: 9.92
+    tolerance: 0.1
+    unit: kJ/mol
+    hint_markdown: Use $\mu_{\text{ex}} = -k_B T \ln \langle e^{-\beta \Delta U} \rangle$.
+    rationale_markdown: $\mu_{\text{ex}} = -2.479 \times \ln(0.0183) = -2.479 \times (-4.0009) \approx 9.918 \approx 9.92\text{ kJ/mol}$.
+  - id: q20_14
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: Which of the following conditions must be satisfied simultaneously for two phases (1 and 2) to be in thermodynamic equilibrium? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: 'Thermal equilibrium: $T_1 = T_2$'
+      text: 'Thermal equilibrium: $T_1 = T_2$'
+    - id: b
+      text_markdown: 'Mechanical equilibrium: $P_1 = P_2$'
+      text: 'Mechanical equilibrium: $P_1 = P_2$'
+    - id: c
+      text_markdown: 'Chemical equilibrium: $\mu_1 = \mu_2$ for each component'
+      text: 'Chemical equilibrium: $\mu_1 = \mu_2$ for each component'
+    - id: d
+      text_markdown: 'Volume equality: $V_1 = V_2$'
+      text: 'Volume equality: $V_1 = V_2$'
+    - id: e
+      text_markdown: 'Particle number equality: $N_1 = N_2$'
+      text: 'Particle number equality: $N_1 = N_2$'
+    correct:
+    - a
+    - b
+    - c
+    hint_markdown: Review classical thermodynamics criteria for phase equilibrium between two open, flexible subsystems.
+    rationale_markdown: 'Coexistence requires equality of the intensive state variables: temperature ($T_1 = T_2$), pressure ($P_1 = P_2$), and chemical potential ($\mu_1 = \mu_2$). The extensive variables $V_1, V_2$ and $N_1, N_2$ are typically unequal across vapor and liquid phases.'
+  - id: q20_15
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: In Gibbs Ensemble Monte Carlo (GEMC), how is mechanical equilibrium ($P_1 = P_2$) achieved between the two boxes?
+    options:
+    - id: a
+      text_markdown: By moving particles through a physical membrane between the boxes.
+      text: By moving particles through a physical membrane between the boxes.
+    - id: b
+      text_markdown: By trial volume exchanges $\Delta V_1 = -\Delta V_2$ with total volume $V_1 + V_2$ held constant, accepted according to the Metropolis rule involving pressure and volume ratios.
+      text: By trial volume exchanges $\Delta V_1 = -\Delta V_2$ with total volume $V_1 + V_2$ held constant, accepted according to the Metropolis rule involving pressure and volume ratios.
+    - id: c
+      text_markdown: By adjusting the temperature of Box 1 while keeping Box 2 fixed.
+      text: By adjusting the temperature of Box 1 while keeping Box 2 fixed.
+    - id: d
+      text_markdown: By setting the external force on all atoms to zero.
+      text: By setting the external force on all atoms to zero.
+    correct: b
+    hint_markdown: How do subsystems exchange volume to equalize pressure in Gibbs ensemble?
+    rationale_markdown: Volume exchange moves change the volume of Box 1 by $\Delta V$ while simultaneously changing Box 2 by $-\Delta V$, keeping total volume $V = V_1 + V_2$ constant. The acceptance probability depends on the internal energy changes and the term $(V_1'/V_1)^{N_1}(V_2'/V_2)^{N_2}$, driving the system toward equal pressures $P_1 = P_2$.
+  - id: q20_16
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: What major practical advantage does the Gibbs Ensemble offer over traditional direct-coexistence simulations of a vapor-liquid interface?
+    options:
+    - id: a
+      text_markdown: It eliminates the need for computing interatomic forces.
+      text: It eliminates the need for computing interatomic forces.
+    - id: b
+      text_markdown: It avoids simulating the physical liquid-gas interface and its associated interfacial free energy, allowing small bulk systems ($N \sim 500$) to yield precise bulk coexistence densities without finite-size interfacial distortion.
+      text: It avoids simulating the physical liquid-gas interface and its associated interfacial free energy, allowing small bulk systems ($N \sim 500$) to yield precise bulk coexistence densities without finite-size interfacial distortion.
+    - id: c
+      text_markdown: It works at absolute zero temperature.
+      text: It works at absolute zero temperature.
+    - id: d
+      text_markdown: It guarantees that no particles ever change position.
+      text: It guarantees that no particles ever change position.
+    correct: b
+    hint_markdown: Why is an explicit interface computationally expensive in a small periodic box?
+    rationale_markdown: An explicit interface requires large simulation boxes (thousands of atoms) to minimize boundary artifacts, and capillary waves create severe finite-size rounding. GEMC isolates the two bulk phases in separate boxes with no interfacial area, drastically reducing finite-size effects and simulation cost.
+  - id: q20_17
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: Why cannot the standard Gibbs Ensemble method be readily applied to study solid-liquid coexistence (e.g. melting of ice)?
+    options:
+    - id: a
+      text_markdown: Because solids have zero entropy.
+      text: Because solids have zero entropy.
+    - id: b
+      text_markdown: Because inserting or deleting whole atoms into a dense crystalline lattice without creating severe vacancy/interstitial defects has an astronomically low acceptance probability.
+      text: Because inserting or deleting whole atoms into a dense crystalline lattice without creating severe vacancy/interstitial defects has an astronomically low acceptance probability.
+    - id: c
+      text_markdown: Because solids cannot be simulated with Monte Carlo.
+      text: Because solids cannot be simulated with Monte Carlo.
+    - id: d
+      text_markdown: Because the pressure in a solid is always negative.
+      text: Because the pressure in a solid is always negative.
+    correct: b
+    hint_markdown: Consider the particle transfer step of GEMC in an ordered crystalline lattice.
+    rationale_markdown: Particle transfer moves require deleting an atom from one box and randomly inserting it into the other. In a dense crystalline solid, randomly inserting an atom almost certainly produces severe atomic overlap, while deleting an atom creates an unphysical point defect. GEMC particle transfer fails completely in solids.
+  - id: q20_18
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: concept_widom_and_gibbs_coexistence
+    prompt_markdown: In the concept cell, in the 'widom' view, how does the insertion efficiency $P_{\text{accept}}$ behave as reduced density $\rho^*$ increases from 0.1 to 0.85?
+    options:
+    - id: a
+      text_markdown: It increases linearly.
+      text: It increases linearly.
+    - id: b
+      text_markdown: It remains strictly constant at 50%.
+      text: It remains strictly constant at 50%.
+    - id: c
+      text_markdown: It decays precipitously by several orders of magnitude (from $\sim 0.7$ down to $< 10^{-4}$), mirroring the vanishing fraction of available cavity space.
+      text: It decays precipitously by several orders of magnitude (from $\sim 0.7$ down to $< 10^{-4}$), mirroring the vanishing fraction of available cavity space.
+    - id: d
+      text_markdown: It oscillates periodically.
+      text: It oscillates periodically.
+    correct: c
+    hint_markdown: Observe the logarithmic scale on the insertion probability curve in the Concept Cell.
+    rationale_markdown: As density increases, the free volume per particle shrinks rapidly and cavity formation probability scales exponentially as $e^{-\beta P V_{\text{cavity}}}$, causing the acceptance probability to plummet by many orders of magnitude.
+  - id: q20_19
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: In Grand Canonical Monte Carlo (GCMC), what state variables are held fixed?
+    options:
+    - id: a
+      text_markdown: Chemical potential $\mu$, Volume $V$, and Temperature $T$
+      text: Chemical potential $\mu$, Volume $V$, and Temperature $T$
+    - id: b
+      text_markdown: Particle number $N$, Pressure $P$, and Enthalpy $H$
+      text: Particle number $N$, Pressure $P$, and Enthalpy $H$
+    - id: c
+      text_markdown: Energy $E$, Volume $V$, and Number $N$
+      text: Energy $E$, Volume $V$, and Number $N$
+    - id: d
+      text_markdown: Temperature $T$, Pressure $P$, and Entropy $S$
+      text: Temperature $T$, Pressure $P$, and Entropy $S$
+    correct: a
+    hint_markdown: Recall the definition of the grand canonical ensemble $(\mu, V, T)$ from statistical mechanics.
+    rationale_markdown: The Grand Canonical ensemble holds chemical potential $\mu$, volume $V$, and temperature $T$ constant, while the number of particles $N$ and internal energy $E$ fluctuate via particle insertion and deletion moves.
+  - id: q20_20
+    type: problem
+    question_type: numeric
+    difficulty: hard
+    taught_by: sec_widom_and_phase_equilibria
+    prompt_markdown: For an ideal gas at density $\rho = 0.05\text{ nm}^{-3}$, what is the exact excess chemical potential $\mu_{\text{ex}}$ in units of $k_B T$?
+    correct: 0.0
+    tolerance: 0.001
+    hint_markdown: In an ideal gas, particles do not interact, so $\Delta U_{\text{test}} = 0$ everywhere.
+    rationale_markdown: For an ideal gas, $V(\mathbf{r}^N) = 0$, so $\Delta U_{\text{test}} = 0$. Thus $\langle e^{-\beta \Delta U} \rangle = \langle e^0 \rangle = 1$. The excess chemical potential is $\mu_{\text{ex}} = -k_B T \ln(1) = 0.0$.
+  - id: sec_bennett_acceptance_ratio
+    type: markdown_section
+    title: 4. The Bennett Acceptance Ratio (BAR) and Fluctuation Theorems
+    body_markdown: '### Optimal Bidirectional Sampling
+
+
+      Zwanzig FEP uses either forward sampling ($0 \to 1$) or backward sampling ($1 \to 0$). Bennett (1976) proved that the statistically optimal estimator that minimizes the asymptotic variance of $\Delta F$ combines independent samples from *both* ensembles:
+
+
+      Let $n_0$ configurations be sampled from ensemble 0 ($V_0$) and $n_1$ configurations from ensemble 1 ($V_1$). The Bennett Acceptance Ratio (BAR) self-consistent equation is:
+
+
+      $$\sum_{i=1}^{n_0} f(V_1^{(i)} - V_0^{(i)} - C) = \sum_{j=1}^{n_1} f(V_0^{(j)} - V_1^{(j)} + C)$$
+
+
+      where $f(x) = \frac{1}{1 + e^{\beta x}}$ is the **Fermi function**, and the optimal constant is:
+
+
+      $$C = \Delta F + \frac{1}{\beta} \ln\left( \frac{n_0}{n_1} \right)$$
+
+
+      Solving this equation iteratively for $\Delta F$ yields the minimum possible statistical error among all unbiased estimators.
+
+
+      ### Fluctuation Theorems and Crooks Relation
+
+
+      Let $\rho_0(\Delta V)$ be the probability distribution of energy difference $\Delta V = V_1 - V_0$ in ensemble 0, and $\rho_1(\Delta V)$ be the corresponding distribution in ensemble 1. By exact Boltzmann reweighting:
+
+
+      $$\frac{\rho_0(\Delta V)}{\rho_1(\Delta V)} = \frac{Q_1}{Q_0} e^{\beta \Delta V} = e^{\beta (\Delta V - \Delta F)}$$
+
+
+      Taking the logarithm gives the famous **Crooks Fluctuation Relation**:
+
+
+      $$\ln \left[ \frac{\rho_0(\Delta V)}{\rho_1(\Delta V)} \right] = \beta (\Delta V - \Delta F)$$
+
+
+      Notice that at the exact crossing point where the two distributions intersect ($\rho_0(\Delta V) = \rho_1(\Delta V)$), the energy difference is identically equal to the free energy difference: $\Delta V^* = \Delta F$!'
+  - id: concept_bennett_acceptance_overlap
+    type: concept_cell
+    title: 'Interactive Concept: Bennett Acceptance Ratio & Distribution Overlap'
+    description_markdown: 'Visualize the forward $\rho_0(\Delta V)$ and reverse $\rho_1(\Delta V)$ energy difference distributions.
+
+      Adjust the perturbation shift, sample ratio $\ln(n_1/n_0)$, and switch between the distribution overlap and Fermi weighting function.'
+    render_function: render_bennett_acceptance_overlap
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      perturbation_shift:
+        kind: slider
+        label: Distribution Separation Delta V
+        min: 0.5
+        max: 6.0
+        step: 0.5
+        default: 3.0
+      log_t1_over_t0:
+        kind: slider
+        label: Log Sample Ratio ln(n1/n0)
+        min: -2.0
+        max: 2.0
+        step: 0.5
+        default: 0.0
+      bar_view:
+        kind: dropdown
+        label: View Mode
+        options:
+        - label: Energy Difference Histograms rho_0 & rho_1
+          value: histograms
+        - label: Fermi Weighting Function f(x)
+          value: fermi_weights
+        default: histograms
+    takeaway_markdown: '**Key Insight:** As long as $\rho_0$ and $\rho_1$ have non-zero overlap, the Bennett estimator bridges the two states with minimal variance. The crossing point where $\rho_0(\Delta V) = \rho_1(\Delta V)$ identifies the free energy difference $\Delta F$ directly. If the perturbation shift is too large, the distributions separate, overlap vanishes, and intermediate alchemical stratification states must be inserted.'
+  - id: q20_21
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: What mathematical function serves as the optimal weighting function $f(x)$ in the Bennett Acceptance Ratio (BAR) method?
+    options:
+    - id: a
+      text_markdown: Gaussian function $f(x) = e^{-x^2}$
+      text: Gaussian function $f(x) = e^{-x^2}$
+    - id: b
+      text_markdown: Fermi-Dirac function $f(x) = \frac{1}{1 + e^{\beta x}}$
+      text: Fermi-Dirac function $f(x) = \frac{1}{1 + e^{\beta x}}$
+    - id: c
+      text_markdown: Dirac delta function $f(x) = \delta(x)$
+      text: Dirac delta function $f(x) = \delta(x)$
+    - id: d
+      text_markdown: Heaviside step function $f(x) = \Theta(x)$
+      text: Heaviside step function $f(x) = \Theta(x)$
+    correct: b
+    hint_markdown: Recall the solution to the calculus of variations problem minimizing the variance of the free energy estimator.
+    rationale_markdown: Charles Bennett proved using calculus of variations that the weighting function minimizing the expected statistical variance of $\Delta F$ from two finite datasets is the Fermi-Dirac function $f(x) = \frac{1}{1 + e^{\beta x}}$.
+  - id: q20_22
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: According to the Crooks Fluctuation Theorem $\frac{\rho_0(\Delta V)}{\rho_1(\Delta V)} = e^{\beta(\Delta V - \Delta F)}$, at what value of $\Delta V$ do the forward and backward distributions intersect ($\rho_0 = \rho_1$)?
+    options:
+    - id: a
+      text_markdown: At $\Delta V = 0$
+      text: At $\Delta V = 0$
+    - id: b
+      text_markdown: At $\Delta V = \Delta F$ (the exact free energy difference)
+      text: At $\Delta V = \Delta F$ (the exact free energy difference)
+    - id: c
+      text_markdown: At $\Delta V = \infty$
+      text: At $\Delta V = \infty$
+    - id: d
+      text_markdown: At $\Delta V = -k_B T$
+      text: At $\Delta V = -k_B T$
+    correct: b
+    hint_markdown: Set $\rho_0(\Delta V) = \rho_1(\Delta V)$ so that the ratio equals 1.
+    rationale_markdown: When $\rho_0(\Delta V) = \rho_1(\Delta V)$, the ratio is 1, so $\ln(1) = 0 = \beta(\Delta V - \Delta F) \implies \Delta V = \Delta F$. The intersection point of the forward and reverse probability density functions directly gives the free energy difference.
+  - id: q20_23
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: Why is BAR vastly superior to running two separate unidirectional FEP calculations?
+    options:
+    - id: a
+      text_markdown: BAR is non-iterative and requires zero floating-point operations.
+      text: BAR is non-iterative and requires zero floating-point operations.
+    - id: b
+      text_markdown: BAR achieves the minimum theoretical variance by combining forward and reverse transition data, self-consistently canceling unilateral sampling biases.
+      text: BAR achieves the minimum theoretical variance by combining forward and reverse transition data, self-consistently canceling unilateral sampling biases.
+    - id: c
+      text_markdown: BAR does not require evaluating energy differences.
+      text: BAR does not require evaluating energy differences.
+    - id: d
+      text_markdown: BAR only works when no configurations overlap.
+      text: BAR only works when no configurations overlap.
+    correct: b
+    hint_markdown: Think about variance reduction and utilizing all available simulation data from both end states.
+    rationale_markdown: Unidirectional FEP relies on rare tail events and suffers from unilateral bias. BAR optimally combines data from both ensembles using the Fermi weight, provably achieving the lowest possible variance among all asymptotically unbiased estimators.
+  - id: q20_24
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: In a BAR calculation with equal samples ($n_0 = n_1$), a single energy difference observation in ensemble 0 gives $\beta(V_1 - V_0 - \Delta F) = 0.0$. What is the Fermi weight $f(0) = \frac{1}{1 + e^0}$ assigned to this configuration?
+    correct: 0.5
+    tolerance: 0.01
+    hint_markdown: Evaluate $1 / (1 + 1)$.
+    rationale_markdown: $f(0) = \frac{1}{1 + e^0} = \frac{1}{1 + 1} = 0.5$.
+  - id: q20_25
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: The Multistate Bennett Acceptance Ratio (MBAR / Shirts & Chodera, 2008) generalizes BAR to $K$ distinct thermodynamic states. What is the fundamental advantage of MBAR over standard pairwise BAR across a chain of $\lambda$ states?
+    options:
+    - id: a
+      text_markdown: MBAR uses configurations from all $K$ simulated states simultaneously to compute the free energy of every state, utilizing all sampled data globally and achieving lower variance than pairwise BAR.
+      text: MBAR uses configurations from all $K$ simulated states simultaneously to compute the free energy of every state, utilizing all sampled data globally and achieving lower variance than pairwise BAR.
+    - id: b
+      text_markdown: MBAR eliminates the need to sample intermediate states altogether.
+      text: MBAR eliminates the need to sample intermediate states altogether.
+    - id: c
+      text_markdown: MBAR does not require Boltzmann weights.
+      text: MBAR does not require Boltzmann weights.
+    - id: d
+      text_markdown: MBAR only works for ideal gases.
+      text: MBAR only works for ideal gases.
+    correct: a
+    hint_markdown: Consider how MBAR reweights samples from every simulated $\lambda_k$ window to all other windows.
+    rationale_markdown: While pairwise BAR only combines adjacent pairs $(\lambda_k, \lambda_{k+1})$, MBAR pools the configurations from all $K$ states into a single global likelihood estimator, extracting information from non-adjacent overlap and providing the globally optimal, minimum-variance solution.
+  - id: q20_26
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: concept_bennett_acceptance_overlap
+    prompt_markdown: In the concept cell 'Bennett Acceptance Ratio & Overlap', what happens to the overlap integral when the perturbation separation $\Delta V$ increases from 1.0 to 6.0 $k_B T$?
+    options:
+    - id: a
+      text_markdown: The overlap increases to 100%.
+      text: The overlap increases to 100%.
+    - id: b
+      text_markdown: The overlap drops towards zero, and the statistical uncertainty in $\Delta F$ diverges because neither ensemble samples configurations near the crossing point.
+      text: The overlap drops towards zero, and the statistical uncertainty in $\Delta F$ diverges because neither ensemble samples configurations near the crossing point.
+    - id: c
+      text_markdown: The Fermi function becomes negative.
+      text: The Fermi function becomes negative.
+    - id: d
+      text_markdown: The two distributions merge into a single delta peak.
+      text: The two distributions merge into a single delta peak.
+    correct: b
+    hint_markdown: Look at the shaded purple region between the two distributions as you drag the separation slider.
+    rationale_markdown: When the energy distributions $\rho_0$ and $\rho_1$ are pulled apart, the overlap region in the middle shrinks exponentially. Without overlapping samples, neither state can inform the other, requiring intermediate bridging windows (stratification) to restore overlap.
+  - id: q20_27
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: What condition must be satisfied between two thermodynamic states for BAR to yield an accurate free energy difference without intermediate windows?
+    options:
+    - id: a
+      text_markdown: They must have identical volumes.
+      text: They must have identical volumes.
+    - id: b
+      text_markdown: 'There must be significant phase-space overlap: configurations sampled in state 0 must have reasonable probability of occurring in state 1, and vice versa.'
+      text: 'There must be significant phase-space overlap: configurations sampled in state 0 must have reasonable probability of occurring in state 1, and vice versa.'
+    - id: c
+      text_markdown: The temperature must be above 10,000 K.
+      text: The temperature must be above 10,000 K.
+    - id: d
+      text_markdown: All atoms must have zero momentum.
+      text: All atoms must have zero momentum.
+    correct: b
+    hint_markdown: Can an estimator bridge two states if neither state ever visits configurations accessible to the other?
+    rationale_markdown: Like all perturbation estimators, BAR requires mutual phase-space overlap between the two ensembles. If $\rho_0$ and $\rho_1$ have zero overlap, the variance diverges, necessitating intermediate stratification states.
+  - id: q20_28
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: If $n_0 = 10,000$ configurations are collected in state 0 and $n_1 = 1,000$ configurations in state 1, what is the shift term $\ln(n_0 / n_1)$ in the BAR equation? (Enter to 2 decimal places).
+    correct: 2.3
+    tolerance: 0.05
+    hint_markdown: Compute $\ln(10,000 / 1,000) = \ln(10)$.
+    rationale_markdown: $\ln(10,000 / 1,000) = \ln(10) \approx 2.3026 \approx 2.30$.
+  - id: q20_29
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: How is the non-equilibrium Jarzynski equality $\langle e^{-\beta W} \rangle = e^{-\beta \Delta F}$ related to the equilibrium free energy difference?
+    options:
+    - id: a
+      text_markdown: It states that the average work $\langle W \rangle$ always equals $\Delta F$ regardless of pulling speed.
+      text: It states that the average work $\langle W \rangle$ always equals $\Delta F$ regardless of pulling speed.
+    - id: b
+      text_markdown: It relates the exponential average of non-equilibrium work $W$ performed during finite-time irreversible processes to the equilibrium free energy difference $\Delta F$.
+      text: It relates the exponential average of non-equilibrium work $W$ performed during finite-time irreversible processes to the equilibrium free energy difference $\Delta F$.
+    - id: c
+      text_markdown: It only holds for infinitely slow, quasi-static processes where $W = \Delta F$.
+      text: It only holds for infinitely slow, quasi-static processes where $W = \Delta F$.
+    - id: d
+      text_markdown: It is an approximation valid only for linear harmonic springs.
+      text: It is an approximation valid only for linear harmonic springs.
+    correct: b
+    hint_markdown: Recall Jarzynski's remarkable 1997 equality for non-equilibrium pulling trajectories.
+    rationale_markdown: Jarzynski proved that by averaging $e^{-\beta W}$ over an ensemble of non-equilibrium trajectories driven at finite speed, one recovers the exact equilibrium $\Delta F$. By Jensen's inequality, $\langle W \rangle \ge \Delta F$, with equality only in the reversible limit.
+  - id: q20_30
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_bennett_acceptance_ratio
+    prompt_markdown: Which of the following statements about Crooks Fluctuation Theorem are TRUE? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: 'It applies to microscopic work distributions $P_F(W)$ in forward driving and $P_R(-W)$ in reverse driving: $P_F(W)/P_R(-W) = e^{\beta(W - \Delta F)}$.'
+      text: 'It applies to microscopic work distributions $P_F(W)$ in forward driving and $P_R(-W)$ in reverse driving: $P_F(W)/P_R(-W) = e^{\beta(W - \Delta F)}$.'
+    - id: b
+      text_markdown: Integrating Crooks relation over all work values directly yields the Jarzynski equality.
+      text: Integrating Crooks relation over all work values directly yields the Jarzynski equality.
+    - id: c
+      text_markdown: It requires the system to remain in equilibrium at every intermediate instant of the protocol.
+      text: It requires the system to remain in equilibrium at every intermediate instant of the protocol.
+    - id: d
+      text_markdown: The forward and reverse work distributions intersect at $W = \Delta F$.
+      text: The forward and reverse work distributions intersect at $W = \Delta F$.
+    correct:
+    - a
+    - b
+    - d
+    hint_markdown: Remember that Crooks theorem is a non-equilibrium relation for forward and time-reversed protocols.
+    rationale_markdown: Crooks theorem relates forward and reverse non-equilibrium work distributions $P_F(W)/P_R(-W) = e^{\beta(W-\Delta F)}$. Integrating over $W$ gives Jarzynski's relation $\langle e^{-\beta W} \rangle = e^{-\beta \Delta F}$, and $P_F(W) = P_R(-W)$ at $W = \Delta F$. The driving does *not* need to be quasi-static.
+  - id: sec_umbrella_and_wang_landau
+    type: markdown_section
+    title: 5. Umbrella Sampling, WHAM, and the Wang-Landau Flat-Histogram Method
+    body_markdown: '### Overcoming Free Energy Barriers: Umbrella Sampling
+
+
+      When physical processes (such as chemical reactions, conformational transitions, or nucleation) involve large free energy barriers $\Delta F^* \gg k_B T$, standard simulations remain trapped in local free energy minima. Torrie and Valleau (1977) introduced **Umbrella Sampling**, where an artificial biasing potential $W(\xi)$ is added along a reaction coordinate $\xi$:
+
+
+      $$V_{\text{biased}}(\mathbf{r}^N) = V(\mathbf{r}^N) + W(\xi(\mathbf{r}^N))$$
+
+
+      Typically, a series of harmonic windows $W_i(\xi) = \frac{1}{2}k(\xi - \xi_i)^2$ restrain the system across the entire reaction coordinate. The unbiased probability distribution $P_i(\xi)$ in window $i$ is recovered by unbiasing the observed histogram $P_i^{\text{biased}}(\xi)$:
+
+
+      $$P_i(\xi) = P_i^{\text{biased}}(\xi) e^{\beta W_i(\xi)} e^{-\beta F_i}$$
+
+
+      The **Weighted Histogram Analysis Method (WHAM)** combines all overlapping biased histograms into a single optimal potential of mean force (PMF) $A(\xi) = -k_B T \ln P(\xi)$.
+
+
+      ### The Wang-Landau Algorithm
+
+
+      Rather than sampling according to Boltzmann weights, Wang and Landau (2001) designed an algorithm that samples configuration space with probability inversely proportional to the **density of states** $g(E)$:
+
+
+      $$P_{\text{target}}(E) \propto \frac{1}{g(E)}$$
+
+
+      If this target distribution is sampled, the resulting energy histogram $H(E) \propto g(E) P(E) \propto 1$ is completely **flat**, allowing the simulation to perform a random walk across all energy levels and cross arbitrary energy barriers freely!
+
+
+      **Wang-Landau Algorithm Steps:**
+
+      1. Initialize density of states $g(E) = 1$ (or $\ln g(E) = 0$), histogram $H(E) = 0$, and modification factor $f = f_0 = e^1 \approx 2.71828$.
+
+      2. Propose a move from state $A$ with energy $E_A$ to state $B$ with energy $E_B$. Accept with probability:
+
+      $$P(A \to B) = \min\left( 1, \frac{g(E_A)}{g(E_B)} \right)$$
+
+      3. Whichever state $E$ is current (accepted or rejected), update the density of states and histogram:
+
+      $$\ln g(E) \leftarrow \ln g(E) + \ln f, \qquad H(E) \leftarrow H(E) + 1$$
+
+      4. Check for histogram flatness (e.g. all $H(E) \ge 0.80 \langle H \rangle$). When flat, refine $f$:
+
+      $$\ln f_{k+1} = \frac{1}{2}\ln f_k \iff f_{k+1} = \sqrt{f_k}$$
+
+      Reset $H(E) = 0$ for all $E$, and continue until $\ln f < 10^{-8}$.'
+  - id: concept_wang_landau_flat_histogram
+    type: concept_cell
+    title: 'Interactive Concept: Wang-Landau Density of States & Flat Histogram'
+    description_markdown: 'Explore the iterative convergence of the Wang-Landau algorithm.
+
+      Step through the refinement stages (`wl_stage` from 1 to 15), adjust the flatness criterion, and toggle between the microcanonical entropy $S(E)/k_B = \ln g(E)$ and the energy histogram $H(E)$.'
+    render_function: render_wang_landau_flat_histogram
+    layout:
+      kind: matplotlib
+      figsize:
+      - 9
+      - 5
+    controls:
+      wl_stage:
+        kind: slider
+        label: Refinement Stage k
+        min: 1
+        max: 15
+        step: 1
+        default: 4
+      flatness_criterion:
+        kind: slider
+        label: Flatness Criterion
+        min: 0.7
+        max: 0.95
+        step: 0.05
+        default: 0.85
+      wl_panel:
+        kind: dropdown
+        label: Plotted Curve
+        options:
+        - label: Microcanonical Entropy S(E)/k_B = ln g(E)
+          value: entropy
+        - label: Energy Histogram H(E)
+          value: histogram
+        default: entropy
+    takeaway_markdown: '**Key Insight:** By penalizing frequently visited energies through $\ln g(E) \leftarrow \ln g(E) + \ln f$, Wang-Landau drives the walker into rarely explored high-barrier regions until the energy histogram is flat. Halving $\ln f$ at each stage ensures rigorous asymptotic convergence to the true density of states $g(E)$, from which canonical thermodynamics at all temperatures can be computed with a single run!'
+  - id: q20_31
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: What is the primary purpose of applying a biasing potential $W(\xi)$ in Umbrella Sampling?
+    options:
+    - id: a
+      text_markdown: To cool the system down to absolute zero.
+      text: To cool the system down to absolute zero.
+    - id: b
+      text_markdown: To overcome high free energy barriers along a reaction coordinate $\xi$ and force uniform sampling of transition states and rare configurations.
+      text: To overcome high free energy barriers along a reaction coordinate $\xi$ and force uniform sampling of transition states and rare configurations.
+    - id: c
+      text_markdown: To remove the kinetic energy from Newton's equations.
+      text: To remove the kinetic energy from Newton's equations.
+    - id: d
+      text_markdown: To convert molecular dynamics into quantum mechanics.
+      text: To convert molecular dynamics into quantum mechanics.
+    correct: b
+    hint_markdown: Think about why standard Boltzmann sampling fails when barriers exceed several $k_B T$.
+    rationale_markdown: High free energy barriers prevent standard Boltzmann simulations from crossing transition states in reasonable time. Umbrella sampling adds restraining potentials (e.g. harmonic springs) to force the system to thoroughly sample high-energy barrier regions.
+  - id: q20_32
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: In Umbrella Sampling, once a biased histogram $P_i^{\text{biased}}(\xi)$ is measured in window $i$ with harmonic bias $W_i(\xi) = \frac{1}{2}k(\xi - \xi_i)^2$, how is the unbiased probability $P_i(\xi)$ reconstructed?
+    options:
+    - id: a
+      text_markdown: $P_i(\xi) = P_i^{\text{biased}}(\xi) e^{-\beta W_i(\xi)}$
+      text: $P_i(\xi) = P_i^{\text{biased}}(\xi) e^{-\beta W_i(\xi)}$
+    - id: b
+      text_markdown: $P_i(\xi) = P_i^{\text{biased}}(\xi) e^{+\beta W_i(\xi)} e^{-\beta F_i}$
+      text: $P_i(\xi) = P_i^{\text{biased}}(\xi) e^{+\beta W_i(\xi)} e^{-\beta F_i}$
+    - id: c
+      text_markdown: $P_i(\xi) = [P_i^{\text{biased}}(\xi)]^2$
+      text: $P_i(\xi) = [P_i^{\text{biased}}(\xi)]^2$
+    - id: d
+      text_markdown: $P_i(\xi) = \frac{d}{d\xi} P_i^{\text{biased}}(\xi)$
+      text: $P_i(\xi) = \frac{d}{d\xi} P_i^{\text{biased}}(\xi)$
+    correct: b
+    hint_markdown: Since the biased distribution is $P_i^{\text{biased}}(\xi) \propto P_i(\xi) e^{-\beta W_i(\xi)}$, invert this relation.
+    rationale_markdown: Because the biased probability contains an extra factor of $e^{-\beta W_i(\xi)}$, multiplying by $e^{+\beta W_i(\xi)}$ removes the bias. The constant factor $e^{-\beta F_i}$ accounts for the unknown free energy offset of window $i$ (determined self-consistently by WHAM).
+  - id: q20_33
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: What is the acceptance probability $P(A \to B)$ in the Wang-Landau algorithm for a proposed trial move from energy $E_A$ to energy $E_B$?
+    options:
+    - id: a
+      text_markdown: $\min\left( 1, e^{-\beta(E_B - E_A)} \right)$ (Metropolis)
+      text: $\min\left( 1, e^{-\beta(E_B - E_A)} \right)$ (Metropolis)
+    - id: b
+      text_markdown: $\min\left( 1, \frac{g(E_A)}{g(E_B)} \right)$
+      text: $\min\left( 1, \frac{g(E_A)}{g(E_B)} \right)$
+    - id: c
+      text_markdown: $\min\left( 1, \frac{g(E_B)}{g(E_A)} \right)$
+      text: $\min\left( 1, \frac{g(E_B)}{g(E_A)} \right)$
+    - id: d
+      text_markdown: $1.0$ unconditionally
+      text: $1.0$ unconditionally
+    correct: b
+    hint_markdown: 'The target distribution is $1/g(E)$. Apply detailed balance: $\pi(A) P(A \to B) = \pi(B) P(B \to A)$.'
+    rationale_markdown: To sample configurations with probability proportional to $1/g(E)$, detailed balance requires $P(A \to B)/P(B \to A) = [1/g(E_B)] / [1/g(E_A)] = g(E_A)/g(E_B)$. The Metropolis-Hastings acceptance probability is therefore $\min(1, g(E_A)/g(E_B))$.
+  - id: q20_34
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: In the Wang-Landau update rule $\ln g(E) \leftarrow \ln g(E) + \ln f$, what happens to the modification factor $f$ when the energy histogram $H(E)$ satisfies the flatness criterion?
+    options:
+    - id: a
+      text_markdown: $f$ is doubled ($f_{k+1} = 2 f_k$)
+      text: $f$ is doubled ($f_{k+1} = 2 f_k$)
+    - id: b
+      text_markdown: 'The log modification factor is halved: $\ln f_{k+1} = \frac{1}{2}\ln f_k \implies f_{k+1} = \sqrt{f_k}$, and $H(E)$ is reset to zero'
+      text: 'The log modification factor is halved: $\ln f_{k+1} = \frac{1}{2}\ln f_k \implies f_{k+1} = \sqrt{f_k}$, and $H(E)$ is reset to zero'
+    - id: c
+      text_markdown: $f$ is set to zero immediately and the simulation terminates
+      text: $f$ is set to zero immediately and the simulation terminates
+    - id: d
+      text_markdown: $f$ remains unchanged forever
+      text: $f$ remains unchanged forever
+    correct: b
+    hint_markdown: How is $f$ refined in each stage of Wang-Landau?
+    rationale_markdown: When the histogram is sufficiently flat (e.g. all bins within 80% of the mean), the modification factor is refined by setting $\ln f_{k+1} = \frac{1}{2}\ln f_k$ ($f \to \sqrt{f}$), and the histogram is reset to zero for the next iteration.
+  - id: q20_35
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: Starting with an initial Wang-Landau modification factor $f_0 = e^1$ (so $\ln f_0 = 1.0$), what is the value of $\ln f$ after $k = 4$ successful flatness refinement stages?
+    correct: 0.0625
+    tolerance: 0.001
+    hint_markdown: 'Each stage divides $\ln f$ by 2: evaluate $(1/2)^4$.'
+    rationale_markdown: $\ln f_k = \ln f_0 \times (1/2)^k = 1.0 \times (1/2)^4 = 1/16 = 0.0625$.
+  - id: q20_36
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: How many refinement stages $k$ are required to reduce $\ln f$ from $1.0$ to below $10^{-6}$ (i.e. $(1/2)^k < 10^{-6}$)?
+    correct: 20.0
+    tolerance: 0.01
+    hint_markdown: 'Solve $2^k > 10^6$: $k > 6 \times \log_2(10) \approx 6 \times 3.322$.'
+    rationale_markdown: $2^{19} = 524,288 < 10^6$, whereas $2^{20} = 1,048,576 > 10^6$. Therefore, exactly $k = 20$ stages are required.
+  - id: q20_37
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: Once the density of states $g(E)$ has been accurately determined by Wang-Landau, how can the canonical partition function $Z(T)$ and average energy $\langle E \rangle_T$ be computed at ANY temperature $T$?
+    options:
+    - id: a
+      text_markdown: A new Wang-Landau simulation must be run for every temperature.
+      text: A new Wang-Landau simulation must be run for every temperature.
+    - id: b
+      text_markdown: 'They can be evaluated immediately by numerical quadrature: $Z(T) = \sum_E g(E) e^{-E / k_B T}$ and $\langle E \rangle_T = \frac{1}{Z(T)} \sum_E E g(E) e^{-E / k_B T}$ without any additional simulations!'
+      text: 'They can be evaluated immediately by numerical quadrature: $Z(T) = \sum_E g(E) e^{-E / k_B T}$ and $\langle E \rangle_T = \frac{1}{Z(T)} \sum_E E g(E) e^{-E / k_B T}$ without any additional simulations!'
+    - id: c
+      text_markdown: By differentiating $g(E)$ with respect to pressure.
+      text: By differentiating $g(E)$ with respect to pressure.
+    - id: d
+      text_markdown: The density of states cannot be used to compute canonical averages.
+      text: The density of states cannot be used to compute canonical averages.
+    correct: b
+    hint_markdown: Recall the microcanonical-to-canonical transformation $Z(\beta) = \int g(E) e^{-\beta E} dE$.
+    rationale_markdown: Because $g(E)$ is a purely temperature-independent property of the Hamiltonian, once $g(E)$ is known, canonical thermodynamics (free energy, heat capacity, average energy) across all temperatures can be evaluated in seconds by simple 1D summation over energy bins.
+  - id: q20_38
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: In the microcanonical ensemble, the microcanonical entropy is defined as $S(E) = k_B \ln g(E)$. How is the microcanonical temperature $T(E)$ defined from $S(E)$?
+    options:
+    - id: a
+      text_markdown: $T(E) = \frac{E}{k_B}$
+      text: $T(E) = \frac{E}{k_B}$
+    - id: b
+      text_markdown: $\frac{1}{T(E)} = \frac{\partial S(E)}{\partial E} = k_B \frac{\partial \ln g(E)}{\partial E}$
+      text: $\frac{1}{T(E)} = \frac{\partial S(E)}{\partial E} = k_B \frac{\partial \ln g(E)}{\partial E}$
+    - id: c
+      text_markdown: $T(E) = \frac{\partial^2 S}{\partial E^2}$
+      text: $T(E) = \frac{\partial^2 S}{\partial E^2}$
+    - id: d
+      text_markdown: $T(E) = \sqrt{S(E)}$
+      text: $T(E) = \sqrt{S(E)}$
+    correct: b
+    hint_markdown: Recall the fundamental thermodynamic definition of temperature $1/T = (\partial S / \partial E)_{V, N}$.
+    rationale_markdown: From fundamental thermodynamics $dE = T dS - P dV + \mu dN$, the inverse temperature is $1/T = (\partial S / \partial E)_{V, N} = k_B \frac{\partial \ln g(E)}{\partial E}$. In Wang-Landau simulations, the slope of $\ln g(E)$ directly yields $1/T$.
+  - id: q20_39
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: Which of the following flat-histogram and enhanced sampling methods belong to the generalized-ensemble family? (Select all that apply)
+    options:
+    - id: a
+      text_markdown: Wang-Landau sampling
+      text: Wang-Landau sampling
+    - id: b
+      text_markdown: Multicanonical Monte Carlo (MUCA / Berg & Neuhaus)
+      text: Multicanonical Monte Carlo (MUCA / Berg & Neuhaus)
+    - id: c
+      text_markdown: Metadynamics (Laio & Parrinello)
+      text: Metadynamics (Laio & Parrinello)
+    - id: d
+      text_markdown: Standard microcanonical NVE Molecular Dynamics
+      text: Standard microcanonical NVE Molecular Dynamics
+    correct:
+    - a
+    - b
+    - c
+    hint_markdown: Look for methods that adaptively construct a non-Boltzmann bias to flatten energy or collective variable distributions.
+    rationale_markdown: Wang-Landau, Multicanonical Monte Carlo (MUCA), and Metadynamics all employ adaptive non-Boltzmann biasing to achieve uniform (flat) exploration across energy or collective variables. Standard $NVE$ MD is a constant-energy microcanonical trajectory.
+  - id: q20_40
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: concept_wang_landau_flat_histogram
+    prompt_markdown: In the concept cell, at early refinement stages ($k=1$), what does the energy histogram $H(E)$ look like before the modification factor is reduced?
+    options:
+    - id: a
+      text_markdown: It is perfectly flat across all energies.
+      text: It is perfectly flat across all energies.
+    - id: b
+      text_markdown: It shows significant statistical fluctuations and uneven coverage until the flatness criterion is met and $f$ is decreased.
+      text: It shows significant statistical fluctuations and uneven coverage until the flatness criterion is met and $f$ is decreased.
+    - id: c
+      text_markdown: It is zero everywhere.
+      text: It is zero everywhere.
+    - id: d
+      text_markdown: It is an inverted parabola.
+      text: It is an inverted parabola.
+    correct: b
+    hint_markdown: Observe the histogram plot in the early stages when $f$ is large.
+    rationale_markdown: In early stages with a large modification factor ($f = e^1$), the estimate of $g(E)$ changes rapidly, leading to coarse adjustments and uneven histogram heights until sufficient visits smooth it into a flat distribution.
+  - id: q20_41
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_umbrella_and_wang_landau
+    prompt_markdown: If a system exhibits a strong first-order phase transition, what distinctive signature appears in the microcanonical entropy $S(E) = k_B \ln g(E)$ curve?
+    options:
+    - id: a
+      text_markdown: $S(E)$ is strictly linear with slope 0.
+      text: $S(E)$ is strictly linear with slope 0.
+    - id: b
+      text_markdown: $S(E)$ has a region of positive curvature ($d^2 S / dE^2 > 0$), producing a convex 'dip' that corresponds to a negative microcanonical heat capacity ($C_V < 0$) in finite systems.
+      text: $S(E)$ has a region of positive curvature ($d^2 S / dE^2 > 0$), producing a convex 'dip' that corresponds to a negative microcanonical heat capacity ($C_V < 0$) in finite systems.
+    - id: c
+      text_markdown: $S(E)$ drops to negative infinity.
+      text: $S(E)$ drops to negative infinity.
+    - id: d
+      text_markdown: $S(E)$ becomes discontinuous.
+      text: $S(E)$ becomes discontinuous.
+    correct: b
+    hint_markdown: What does a barrier between two coexistence phases imply for the concavity of $S(E)$ in a finite system?
+    rationale_markdown: In finite systems with first-order transitions, the interfacial free energy penalty between coexistence phases makes intermediate energies less probable, producing a convex intruder ($d^2 S/dE^2 > 0$) in $S(E)$, which corresponds to negative heat capacity $C_V = -(d^2 S/dE^2)^{-1} / T^2 < 0$ in the microcanonical ensemble.
+  - id: q20_42
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_free_energy_foundations
+    prompt_markdown: A reaction has a free energy barrier of $\Delta F^* = 10.0\text{ kcal/mol}$ at $T = 300\text{ K}$ ($k_B T = 0.596\text{ kcal/mol}$). By what factor is the transition state probability reduced relative to the reactant minimum ($e^{-\Delta F^* / k_B T}$)? Enter the order of magnitude exponent $m$ where the factor is $10^{-m}$ (i.e. $m = \frac{\Delta F^*}{k_B T \ln 10}$).
+    correct: 7.29
+    tolerance: 0.1
+    hint_markdown: Calculate $10.0 / (0.596 \times 2.3026)$.
+    rationale_markdown: '$\Delta F^* / k_B T = 10.0 / 0.596 = 16.7785$. In base 10: $m = 16.7785 / \ln(10) = 16.7785 / 2.302585 \approx 7.287 \approx 7.29$. The probability is suppressed by a factor of $\sim 10^{-7.3}$.'

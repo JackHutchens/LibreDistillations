@@ -1,0 +1,2535 @@
+# Worksheet 10.1 — Community discovery I: betweenness and the Girvan-Newman method.
+#
+# SOURCES AND THEIR AUTHORITY, stated because this lesson's hierarchy is unusual.
+#
+# ⚠ THE CHAPTER IS E&K SECTION 3.6, NOT 3.7. §3.7 is the chapter's EXERCISES —
+# measured, c3.pdf page 32 (book p. 74). Girvan-Newman lives in §3.6, "Advanced
+# Material: Betweenness Measures and Graph Partitioning", book pp. 62-74.
+# ⚠ AND `claude_code/AUTHORING.md` IS STALE WHERE IT SAYS COMMUNITY DISCOVERY HAS
+# NO CHAPTER — it does, and §3.6 carries the whole algorithm.
+#
+# ⚠ FROM-PDF vs FROM-TXT, tagged because the equation-loss risk is live (this is
+# the L9 §18.7 failure, where OCR dropped every equation and three artifacts were
+# built on the loss):
+#   FROM-TXT  — §3.6's PROSE is intact in c3.txt: the betweenness definition, the
+#               three-step method, the divide-by-2 argument, the "edge OR EDGES of
+#               highest betweenness" wording. All verified by reading it.
+#   FROM-PDF  — every FIGURE. c3.txt renders Figures 3.18/3.19/3.20 as loose
+#               scattered label tokens with NO edges and NO numbers, so the sample
+#               network, the shortest-path counts and the flow values exist ONLY in
+#               the PDF read as page images. `agraph`/`bfs_tree_a` are FROM-PDF.
+#   ⚠ E&K IS SILENT ON MODULARITY. §3.6 never defines Q. Every modularity claim
+#               here is NO-BOOK: derived from Hari's lecture notes + worksheet and
+#               flagged in WORKSHEET_REVIEW.md.
+#
+# ⚠ 16 EDGES IN E&K FIG 3.18(a), NOT 17 — there is no C-D edge. C sits directly
+# above D and the C-A DIAGONAL reads as a C-D vertical at 150 dpi; settled at 420
+# dpi, and corroborated by the book's own Fig 3.18(b), which draws B-C as a
+# same-layer non-tree edge and draws no C-D. The mistake would have been INVISIBLE
+# to the Fig 3.19/3.20 cross-check (a same-layer edge changes neither the
+# shortest-path counts nor the flows out of A), so no item is posed on this
+# graph's full betweenness.
+#
+# ⚠ THE MODULARITY BOUND IS THE TIGHT ONE, [-1/2, 1), EVERYWHERE IN THIS LESSON —
+# AND THE SOURCES NOW AGREE. ws1 Prob 9 originally keyed the bipartite example at
+# Q = -1; MEASURED, it scores exactly -1/2, and so does EVERY bipartite graph
+# split along its two sides (K_{2,3}, the alternating 6-cycle, Hari's own figure
+# — all -1/2). The reason is one line: with no edge inside either side, each
+# side's degree total is exactly m, so Q = -(m^2+m^2)/(4m^2) = -1/2. That is the
+# true minimum (Brandes et al. 2008); -1 comes from bounding Q's two terms
+# SEPARATELY and is never attained.
+# ⚠ HARI RULED TIGHT, AND THE SOURCES MOVED WITH THE WORKSHEET (2026-08-10): ws1
+# Prob 9's prompt, key and figure caption, ws1.tex:187, and lecture1.tex:106 all
+# now teach [-1/2, 1). Nothing in this lesson may reintroduce -1 as a bound — it
+# survives ONLY as q_28's distractor, where its wrongness is the point.
+# See WORKSHEET_REVIEW.md L10 §3-bis and §4, OVERRODE-HARI-SOLUTION.
+#
+# ⚠ NO ITEM TURNS ON A TIE. After the bridge B-D falls, FOUR edges tie at 3/2
+# (D-E, D-G, E-F, F-G) and "the next edge" is not well defined. The tie is TAUGHT
+# in `concept_gn_cascade`; it is never keyed.
+#
+# GIVE-AWAY DISCIPLINE. The concept cells compute and PRINT a lot of numbers: all
+# of the 7-node graph's betweenness values, all of the E&K graph's flows from A,
+# Q for five named partitions. A numeric item may therefore not be posed on any of
+# those. Every keyed number below is either on a figure the cells never draw
+# (`two_triangles`, `bfs_tree_r`, `five_node_graph`, `bipartite_pairs`), on a
+# MODIFIED version of the 7-node graph, on a partition no cell names, or symbolic
+# in n. Swept item by item at every widget state.
+#
+# Every key is derived by `scripts/derive_l10_keys.py` — three independent
+# implementations (networkx, a hand-written layer/sigma/flow accumulation, and
+# brute-force enumeration of every shortest path), majority-voted, ZERO splits.
+# The book's OWN Figures 3.19 and 3.20 are the red case and both MATCH.
+
+worksheet:
+  id: lesson_10_1_betweenness_girvan_newman
+  title: "Community Discovery I: Betweenness and the Girvan–Newman Method"
+  topic: "Edge betweenness; computing it by breadth-first search; the Girvan–Newman divisive method; the configuration model (a degree-preserving rewiring) and the definition of modularity; clique percolation and communities that share nodes"
+  chapter_reference: "Easley & Kleinberg, Chapter 3, Section 3.6 (Advanced Material: Betweenness Measures and Graph Partitioning); modularity from the Lesson 10 lecture notes"
+  duration_minutes: 75
+  expected_problem_count: 42
+  # Declared, not drifted into (validate.py's exact-match override).
+  # 10 / 20 / 12 = 24% / 48% / 29%. The hard share is the point of the
+  # pass: 10.1 sat at 5 of 30 = 16.7%, the LOWEST hard share of all 29
+  # sheets, and q_16 was over-declared on top of that (its key is a
+  # direction plus a reason, with nothing to compute), so the true
+  # starting point was 4 of 30 = 13.3%. The sheets that have had a
+  # chapter-gap pass run 23.8%-34.9% hard; this lands at 28.6%.
+  expected_difficulty_mix: {easy: 10, medium: 20, hard: 12}
+
+  scoring:
+    attempt_credits: [1.0, 0.66, 0.33, 0.0]
+    pass_threshold: 0.5
+
+  time_gates_seconds:
+    easy: 1
+    medium: 3
+    hard: 6
+
+  shared_figures:
+
+    # Hari's `pics/girvan-new.pdf`, read edge-by-edge off the rendered PDF.
+    # ⚠ node_size, figsize AND the layout MIRROR THE CONCEPT MODULE
+    # (`_COMM_POS`, `_COMM_NODE_SIZE`) — the L9.2 defect was a YAML spec that
+    # passed NO node_size and silently took the engine default while the module
+    # drew the same graph at its own value. `scripts/check_10_figures.py`
+    # re-derives the mirror and BLOCKS on a mismatch.
+    community_graph:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "A", pos: [0.00, 0.00]}
+        - {id: "B", pos: [0.95, 1.25]}
+        - {id: "C", pos: [1.90, 0.00]}
+        - {id: "D", pos: [4.30, 1.25]}
+        - {id: "E", pos: [6.30, 1.25]}
+        - {id: "F", pos: [6.30, -0.35]}
+        - {id: "G", pos: [4.30, -0.35]}
+      edges:
+        - ["A", "B"]
+        - ["A", "C"]
+        - ["B", "C"]
+        - ["B", "D"]
+        - ["D", "E"]
+        - ["D", "F"]
+        - ["D", "G"]
+        - ["E", "F"]
+        - ["F", "G"]
+
+    # The same network with a SECOND bridge C-G added. Used for the transfer
+    # items: adding one route across roughly halves the first one's betweenness
+    # (12 -> 41/6) and drops the split's modularity (59/162 -> 7/25). Neither
+    # number is printed by any concept cell, so neither is a give-away.
+    community_two_bridges:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      highlight_edges: [["B", "D"], ["C", "G"]]
+      nodes:
+        - {id: "A", pos: [0.00, 0.00]}
+        - {id: "B", pos: [0.95, 1.25]}
+        - {id: "C", pos: [1.90, 0.00]}
+        - {id: "D", pos: [4.30, 1.25]}
+        - {id: "E", pos: [6.30, 1.25]}
+        - {id: "F", pos: [6.30, -0.35]}
+        - {id: "G", pos: [4.30, -0.35]}
+      edges:
+        - ["A", "B"]
+        - ["A", "C"]
+        - ["B", "C"]
+        - ["B", "D"]
+        - ["C", "G"]
+        - ["D", "E"]
+        - ["D", "F"]
+        - ["D", "G"]
+        - ["E", "F"]
+        - ["F", "G"]
+
+    # Two triangles joined by one edge. The betweenness values here are drawn by
+    # NO concept cell, so items may be keyed on them: R-S carries 9 (= 3 nodes x
+    # 3 nodes), the four triangle-to-bridge edges carry 4, the two far edges 1.
+    two_triangles:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "P", pos: [0.00, 1.05]}
+        - {id: "Q", pos: [0.00, -0.35]}
+        - {id: "R", pos: [1.25, 0.35]}
+        - {id: "S", pos: [3.05, 0.35]}
+        - {id: "T", pos: [4.30, 1.05]}
+        - {id: "U", pos: [4.30, -0.35]}
+      edges:
+        - ["P", "Q"]
+        - ["P", "R"]
+        - ["Q", "R"]
+        - ["R", "S"]
+        - ["S", "T"]
+        - ["S", "U"]
+        - ["T", "U"]
+
+    # The same figure with the betweenness written on every edge — the engine's
+    # `edge_values` layer (added for this lesson; opt-in, default off, and the
+    # deployed corpus proven byte-identical). Values DERIVED, then written here,
+    # and `check_10_figures.py` re-derives them against the graph.
+    two_triangles_betweenness:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "P", pos: [0.00, 1.05]}
+        - {id: "Q", pos: [0.00, -0.35]}
+        - {id: "R", pos: [1.25, 0.35]}
+        - {id: "S", pos: [3.05, 0.35]}
+        - {id: "T", pos: [4.30, 1.05]}
+        - {id: "U", pos: [4.30, -0.35]}
+      edges:
+        - ["P", "Q"]
+        - ["P", "R"]
+        - ["Q", "R"]
+        - ["R", "S"]
+        - ["S", "T"]
+        - ["S", "U"]
+        - ["T", "U"]
+      # Labels read HORIZONTALLY and are pushed clear of the shaft by their own
+      # measured extent (engine, opt-in). The rotated default reads bottom-to-top
+      # on this figure's near-vertical T-U edge; a betweenness number a student
+      # has to tilt their head for is a number they mis-read.
+      edge_values_upright: true
+      edge_values_stacked_fractions: true
+      edge_values:
+        - ["P", "Q", 1]
+        - ["P", "R", 4]
+        - ["Q", "R", 4]
+        - ["R", "S", 9]
+        - ["S", "T", 4]
+        - ["S", "U", 4]
+        - ["T", "U", 1]
+
+    # A breadth-first search laid out in layers from root r. Every edge here is a
+    # tree edge (no two nodes in the same layer are joined), which keeps the
+    # sigma arithmetic clean for the items that use it. sigma: a=1, b=1, c=2,
+    # d=1, e=3, f=3 — none of these appears in any concept cell.
+    bfs_tree_r:
+      kind: graph
+      node_size: 560
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "r", pos: [1.50, 3.0]}
+        - {id: "a", pos: [0.40, 2.0]}
+        - {id: "b", pos: [2.60, 2.0]}
+        - {id: "c", pos: [0.95, 1.0]}
+        - {id: "d", pos: [2.60, 1.0]}
+        - {id: "e", pos: [1.75, 0.0]}
+        - {id: "f", pos: [1.75, -1.0]}
+      highlight_nodes: ["r"]
+      edges:
+        - ["r", "a"]
+        - ["r", "b"]
+        - ["a", "c"]
+        - ["b", "c"]
+        - ["b", "d"]
+        - ["c", "e"]
+        - ["d", "e"]
+        - ["e", "f"]
+
+    # A five-node network for the modularity computation items. Degrees
+    # V=2, W=2, X=4, Y=2, Z=2; m = 6. Not drawn by any concept cell.
+    five_node_graph:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "V", pos: [0.00, 1.00]}
+        - {id: "W", pos: [0.00, -0.50]}
+        - {id: "X", pos: [1.45, 0.25]}
+        - {id: "Y", pos: [2.90, 1.00]}
+        - {id: "Z", pos: [2.90, -0.50]}
+      edges:
+        - ["V", "W"]
+        - ["V", "X"]
+        - ["W", "X"]
+        - ["X", "Y"]
+        - ["Y", "Z"]
+        - ["X", "Z"]
+
+    # Hari's ws1 Prob 9 figure: two disjoint edges, split so that BOTH edges run
+    # ACROSS the division. Q = -1/2 exactly — which is now also what ws1's own
+    # key and caption say (see the header).
+    bipartite_pairs:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      node_groups: {"A": "S1", "B": "S1", "C": "S2", "D": "S2"}
+      group_colors: {"S1": "#7CB9E8", "S2": "#1A9641"}
+      group_legend: false
+      nodes:
+        - {id: "A", pos: [0.00, 0.00]}
+        - {id: "B", pos: [0.00, 1.30]}
+        - {id: "C", pos: [2.20, 0.00]}
+        - {id: "D", pos: [2.20, 1.30]}
+      edges:
+        - ["A", "C"]
+        - ["B", "D"]
+
+    # ⚠ THE CLIQUE-PERCOLATION ITEM FIGURE, and it is drawn by NO concept cell
+    # (rule 24's structural discipline: key items on a picture the prose never
+    # computes). Three triangles: HJK and JKL share TWO nodes and therefore roll
+    # together; JKL and LMN share only L and do not. So the answer is
+    # {H,J,K,L} and {L,M,N}, L sits in both, and neither "one group per
+    # triangle" (three) nor "the connected component" (one) is right.
+    # ⚠ NODE NAMES ARE DISJOINT FROM EVERY OTHER FIGURE ON THIS SHEET (which use
+    # A-G, P-U, V-Z and r/a-f), so nothing a student carries over collides.
+    # ⚠ NO `node_groups` HERE, DELIBERATELY: at this sheet's pinned engine the
+    # undirected YAML resolver accepts that key and never forwards it, so the
+    # division would silently not be drawn. `highlight_nodes` IS forwarded and
+    # is what marks the shared node. See WORKSHEET_REVIEW L10 section 10e.
+    clique_roll:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "H", pos: [0.00, 1.35]}
+        - {id: "J", pos: [0.00, -0.15]}
+        - {id: "K", pos: [1.30, 0.60]}
+        - {id: "L", pos: [2.75, 0.60]}
+        - {id: "M", pos: [4.05, 1.35]}
+        - {id: "N", pos: [4.05, -0.15]}
+      edges:
+        - ["H", "J"]
+        - ["H", "K"]
+        - ["J", "K"]
+        - ["J", "L"]
+        - ["K", "L"]
+        - ["L", "M"]
+        - ["L", "N"]
+        - ["M", "N"]
+
+    # ⚠ 2026-10-22 FIX PASS (Hari's ruling 5, RT101-13): q_37's NEW figure. Two
+    # complete groups of four, {1,2,3,4} and {5,6,7,8}, linked by the triangles
+    # 3-4-5 and 4-5-6, plus a triangle {9,10,11} hung off node 8. At k = 3 the
+    # triangles roll {1..8} into one community of 8 against {9,10,11} (8 > 2 x 3:
+    # a giant); at k = 4 the two complete groups are two communities of 4 and
+    # 9, 10, 11 drop out (4/4: no giant). So the rule of Palla et al. stops at
+    # k = 4 and returns {1,2,3,4} and {5,6,7,8}. Drawn by NO concept cell, and
+    # its numbers (8, 3; 4, 4) differ from the knob cell's (7, 3; 5, 4).
+    # Derived: scripts/derive_101_fixpass_keys.py (q_37).
+    # Node names are numerals: every letter range is taken on this sheet.
+    two_blocks_and_triangle:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "1", pos: [0.00, 1.25]}
+        - {id: "2", pos: [0.00, 0.00]}
+        - {id: "3", pos: [1.25, 1.25]}
+        - {id: "4", pos: [1.25, 0.00]}
+        - {id: "5", pos: [2.60, 1.25]}
+        - {id: "6", pos: [2.60, 0.00]}
+        - {id: "7", pos: [3.85, 1.25]}
+        - {id: "8", pos: [3.85, 0.00]}
+        - {id: "9", pos: [5.10, 0.00]}
+        - {id: "10", pos: [6.20, 0.65]}
+        - {id: "11", pos: [6.20, -0.65]}
+      edges:
+        - ["1", "2"]
+        - ["1", "3"]
+        - ["1", "4"]
+        - ["2", "3"]
+        - ["2", "4"]
+        - ["3", "4"]
+        - ["5", "6"]
+        - ["5", "7"]
+        - ["5", "8"]
+        - ["6", "7"]
+        - ["6", "8"]
+        - ["7", "8"]
+        - ["3", "5"]
+        - ["4", "5"]
+        - ["4", "6"]
+        - ["8", "9"]
+        - ["9", "10"]
+        - ["9", "11"]
+        - ["10", "11"]
+
+    # ⚠ 2026-10-22 FIX PASS (Hari's ruling 5, RT101-13): q_39's NEW figure. The
+    # bow-tie of q_26 and q_31 with a node U joined to V, W and X, so {U,V,W,X}
+    # is complete. At k = 3, X is in both {U,V,W,X} and {X,Y,Z}. Forcing X into
+    # one group: with Y and Z, Q = 1/6; with U, V, W, Q = 10/81; alone, 11/162.
+    # The best puts X with the SMALLER side although three of X's five edges run
+    # the other way (a heavy group pays a squared penalty). Drawn by no concept
+    # cell; derived in scripts/derive_101_fixpass_keys.py (q_39).
+    bowtie_plus_u:
+      kind: graph
+      node_size: 620
+      figsize: [6, 3.8]
+      frame_nodes: true
+      nodes:
+        - {id: "U", pos: [-1.45, 0.25]}
+        - {id: "V", pos: [0.00, 1.00]}
+        - {id: "W", pos: [0.00, -0.50]}
+        - {id: "X", pos: [1.45, 0.25]}
+        - {id: "Y", pos: [2.90, 1.00]}
+        - {id: "Z", pos: [2.90, -0.50]}
+      edges:
+        - ["U", "V"]
+        - ["U", "W"]
+        - ["U", "X"]
+        - ["V", "W"]
+        - ["V", "X"]
+        - ["W", "X"]
+        - ["X", "Y"]
+        - ["X", "Z"]
+        - ["Y", "Z"]
+
+  sections:
+
+    - type: intro
+      id: intro
+      markdown: |
+        ## Finding the groups nobody labeled
+
+        Let's start with three ideas from earlier in the course, since all three
+        point the same way. **Homophily** says we tend to be similar to our
+        friends. **Triadic closure** says two people with a friend in common are
+        more likely to become friends. **Weak ties** (acquaintances, in the sense
+        of Chapter 3) are the links that tend to reach *outside* your immediate
+        circle, because a link that bridges two close-knit circles is rarely a
+        close friendship.
+
+        Now put the three together, and we get a prediction about the shape of a
+        whole network: dense pockets of people who all know each other, joined to
+        one another by a much smaller number of links. Consider the friendships
+        among the students in a large dorm. We would expect a pocket for each floor or
+        each team, and only a few friendships running between the pockets. In this
+        worksheet we turn that picture into an algorithm, one that takes a network
+        nobody has labeled and hands back the pockets.
+
+        ### The strategy: find the links *between* groups, and cut them
+
+        Let's look for the edges that join the groups, instead of for the groups
+        themselves. When a single edge joins two pockets, it carries every journey
+        between them; when several do, they share that traffic. An edge inside a
+        pocket, in contrast, has plenty of routes around it. Thus we measure, for
+        each edge, how much traffic it carries (its *betweenness*), and we delete
+        the busiest edges until the network falls apart into pieces; the pieces
+        are the communities. Girvan and Newman (2002) proposed this method, and
+        Easley and Kleinberg teach it in Section 3.6 as the **Girvan–Newman
+        method**.
+
+        ### Notation, stated once and used throughout
+
+        - $n$ is the number of nodes, and $m$ is the number of edges.
+        - $k_i$ is the **degree** of node $i$: how many edges touch it.
+        - $\sigma(v)$ is the number of **different shortest paths** from whichever
+          node we are currently starting from (the *root*) to node $v$.
+        - The **flow** on an edge is the share of one root's traffic that the edge
+          carries, where the root sends one unit to each other node it can reach
+          (a node in another piece of the network gets nothing).
+        - The **betweenness** of an edge is those flows added up over all the
+          roots, then halved.
+        - $Q$ is **modularity**, a score for how good a proposed division into
+          communities is; we define it in the second half of this worksheet.
+          $Q$ runs from $-\frac{1}{2}$ to just under $1$. A score near $0$ means
+          the division is no better than a random baseline that keeps each
+          node's degree, a negative score means worse, and the Lesson 10 notes
+          put networks with strong community structure at about $0.3$ to $0.7$.
+
+        In the second worksheet we take $Q$ apart and maximize it directly, with
+        linear algebra instead of cutting.
+
+        Source: Michelle Girvan and M. E. J. Newman (2002). Community structure in
+        social and biological networks. *Proceedings of the National Academy of
+        Sciences* 99(12): 7821–7826.
+        DOI: [10.1073/pnas.122653799](https://doi.org/10.1073/pnas.122653799)
+
+    # ---- CONCEPT 1: the motivation, made quantitative ------------------------
+    # 2026-10-22 fix pass: RT101-16 (the takeaway's claim is scoped to this
+    # network and carries a counterexample), RT101-7 (C–E's label, in the
+    # module), rule 40 (provenance first), rule 41 (voice).
+    - type: concept
+      id: concept_why_communities
+      title: "Why we expect communities, and what makes them findable"
+      description_markdown: |
+        Let's start from the picture the three ideas predict: two dense pockets
+        joined by a thin waist. Girvan and Newman (2002) built their method on one
+        observation about this picture, that the few edges between the pockets carry
+        the traffic between them. Why should a few edges carry so much? Every trip
+        from one pocket to the other has to cross the waist somewhere.
+
+        In the figure we color the nodes by group, label each edge that runs between
+        the pockets with the shortest-path traffic it carries, and score the
+        two-group division with $Q$ (defined later on this sheet). Drag the control
+        to add routes between the pockets and watch both numbers. Notice that the
+        groups stay as dense as they were; what changes is how easy they are to tell
+        apart.
+      controls:
+        - kind: slider
+          name: bridges
+          label: "routes between the groups"
+          min: 1
+          max: 4
+          step: 1
+          default: 1
+      render_function: render_why_communities
+      layout: figure_left
+      takeaway_markdown: |
+        A community boundary is easiest to see when there are few ways across it.
+        With one crossing, that edge carries each trip between the two sides, and
+        its number stands far above the rest. Add crossings and, on this network,
+        the trips divide among them; no single edge stands out, and the two-group
+        split scores lower as well.
+
+        Does the number on a crossing always fall when we add another one? On
+        this network both signals fall, but on other networks the betweenness
+        need not. Consider a left group of three nodes joined in a path,
+        $u$–$w$–$v$, and a right group $x$–$z$–$y$, with crossings $v$–$x$ and
+        $w$–$x$. Adding a third crossing, $u$–$x$, raises the number on $v$–$x$
+        from $3$ to $7/2$, because the pair $u$ and $v$ gains a second shortest
+        path, $u$–$x$–$v$, that runs out through the new crossing and back
+        through $v$–$x$.
+      follow_up_problem_ids: [q_1, q_2, q_5]
+
+    - type: problem
+      id: q_1
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_why_communities
+          supplies: >-
+            the picture of dense pockets joined by a few crossings, which is the shape the item asks the student to recognize
+      prompt_markdown: |
+        What structural shape are community-detection methods looking for in a
+        network?
+      options:
+        - id: o1
+          text: "Groups of nodes densely connected to each other, with few edges running between the groups."
+        - id: o2
+          text: "Groups of nodes that all have the same degree, regardless of who they are connected to."
+        - id: o3
+          text: "Groups of nodes arranged so that every group has exactly the same number of members."
+        - id: o4
+          text: "Groups of nodes that are far apart in the network, with no path between them at all."
+      correct: [o1]
+      rationale_markdown: |
+        We define a community by where the edges are, dense inside and sparse
+        between. A group's size and its members' degrees don't enter. For example,
+        equal degrees describe a regular network, which can have no community
+        structure at all, and real communities come in very different sizes. If the
+        groups have no path between them, they are separate components, and we need
+        no algorithm to find them. The hard and interesting case is the one where
+        the groups are connected, just not densely.
+
+    - type: problem
+      id: q_2
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_why_communities
+          supplies: >-
+            the link from homophily, triadic closure and weak ties to the expectation that a network has dense regions with thin joins between them
+      variant: which_is_incorrect
+      prompt_markdown: |
+        Three of these statements correctly connect earlier ideas from the course
+        to the expectation that networks contain communities. **One is not.**
+        Which statement is incorrect?
+      options:
+        - id: o1
+          text: "Homophily, our tendency to be similar to our friends, builds up pockets of similar people."
+        - id: o2
+          text: "Triadic closure adds edges between people who already share a friend, which thickens a pocket from the inside."
+        - id: o3
+          text: "A link that reaches outside a pocket tends to be a weak tie; thus the links running between groups are mostly weak ties."
+        - id: o4
+          text: "Deleting the weak ties changes almost nothing about how the network is connected, since they carry so little conversation."
+      correct: [o4]
+      rationale_markdown: |
+        The statement about deleting weak ties has the consequence backwards. A weak
+        tie may carry little conversation, but a link that reaches outside your
+        pocket can carry a great deal of shortest-path traffic. If it is one of only
+        a few links between two pockets, all the journeys between them have to share
+        those few links. Thus deleting the weak ties can split a network into
+        pieces, and the algorithm in this worksheet hunts for such links first. As
+        for the other three statements, they are the standard picture. Similarity
+        builds pockets, closure thickens them, and the links that reach outward,
+        which tend to be weak ties (Easley and Kleinberg, Section 3.2), join them
+        up.
+
+    - type: problem
+      id: q_3
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_why_communities
+          supplies: >-
+            the definition of an edge's betweenness as the shortest-path traffic it carries, one unit per pair of nodes
+      prompt_markdown: |
+        The **betweenness of an edge** measures which of the following?
+      options:
+        - id: o1
+          text: "The total shortest-path traffic the edge carries, when each pair of nodes exchanges one unit along its shortest paths."
+        - id: o2
+          text: "The number of other edges that touch either of its two ends, a measure of how busy its neighborhood is."
+        - id: o3
+          text: "The length of the longest path in the network that includes the edge, a measure of how far it reaches."
+        - id: o4
+          text: "How many triangles the edge is part of, on the reasoning that an edge inside a dense pocket sits in many of them and a bridge sits in none."
+      correct: [o1]
+      rationale_markdown: |
+        Betweenness measures traffic, and shortest paths define the traffic. That
+        is, each pair of nodes exchanges one unit, split evenly when several
+        shortest paths tie, and an edge's betweenness is the total it ends up
+        carrying. If we count the edges at its two ends instead, we get a
+        degree-like number that says nothing about routes. A longest path through an
+        edge can be very long in a large network, and its length has nothing to do
+        with how heavily the edge is used. Counting triangles measures nearly the
+        opposite property. An edge in many triangles sits deep inside a dense
+        pocket, and that is the kind of edge betweenness scores low.
+
+    - type: problem
+      id: q_4
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_why_communities
+          supplies: >-
+            the betweenness of every edge of this network, computed live, so the student can see which edge the traffic concentrates on and why
+      figure: {ref: two_triangles}
+      prompt_markdown: |
+        In the network shown, which edge carries the most shortest-path traffic,
+        and why?
+      options:
+        - id: o1
+          text: "The edge joining R and S, since each journey between the three left nodes and the three right nodes has to use it."
+        - id: o2
+          text: "The edge joining P and Q, since its two ends have degree 2 and thus few other edges to share the traffic with."
+        - id: o3
+          text: "The edge joining P and R, since R has the highest degree on the left side and so draws the most traffic."
+        - id: o4
+          text: "All seven edges carry the same amount, since the network is symmetric about its middle."
+      correct: [o1]
+      hint_markdown: |
+        For each edge, think about which pairs of nodes have a shortest path that
+        runs through it.
+      rationale_markdown: |
+        Let's try removing the edge between R and S. The network falls into two
+        halves, and thus R–S is the only route between them; each left-to-right
+        journey has to use it. In contrast, the edge joining P and Q is the least
+        used. P and Q are neighbors of each other and of R, and the only pair
+        whose shortest path needs P–Q is P and Q themselves. Degree is not the
+        criterion either, since an edge at a high-degree node inside a dense
+        pocket has routes around it. Symmetry does not make the edges equal
+        either. The network is symmetric left to right, which makes matching
+        edges on the two sides equal to each other, not equal to the bridge
+        between them.
+
+    - type: problem
+      id: q_5
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_why_communities
+          supplies: >-
+            the rule that a single crossing carries every journey between the two sides, which turns the count into a product of the two side sizes
+      figure: {ref: two_triangles}
+      prompt_markdown: |
+        In the network shown, exactly one edge separates the three left-hand nodes
+        from the three right-hand nodes. What is that edge's betweenness, the total
+        shortest-path traffic it carries when each pair of nodes exchanges one unit?
+      options:
+        - id: o1
+          text: "9"
+        - id: o2
+          text: "6"
+        - id: o3
+          text: "15"
+        - id: o4
+          text: "3"
+      correct: [o1]
+      hint_markdown: |
+        Write down the pairs of nodes that have a shortest path through that edge.
+      rationale_markdown: |
+        Let's count the pairs that use that edge. Each of the three nodes on the
+        left needs to reach each of the three on the right, and each of those
+        journeys has a single route, through that edge. That is, there are $3 \times
+        3 = 9$ such pairs, each contributing one unit, and the betweenness is $9$.
+        If you picked $6$, you added the two sides instead of multiplying them,
+        which counts nodes instead of pairs. The value $15$ counts every pair of
+        nodes in the six-node network, $\frac{6 \times 5}{2}$, but most of those
+        pairs sit on one side and never cross. If you counted only the three nodes
+        on one side, you forgot that each of them has three destinations.
+
+    # ---- CONCEPT 2: steps 1 and 2 -------------------------------------------
+    # 2026-10-22 fix pass: RT101-20 (same-layer edges add nothing to A's counts,
+    # and from other roots they do carry traffic), the step numbering (A-m1,
+    # D-m5, W-m5), rule 40, rule 41.
+    - type: concept
+      id: concept_bfs_counts
+      title: "Steps 1 and 2: layers, then counting shortest paths without listing them"
+      description_markdown: |
+        How can we find the betweenness of all the edges without listing all the
+        shortest paths in the network? Let's follow the eight steps of the Lesson
+        10 notes on the network Easley and Kleinberg work through in Section 3.6
+        (their Figure 3.18): Steps 1 and 2 here, Steps 3 to 6 (the upward pass)
+        in the next cell, and Steps 7 and 8 after that.
+
+        We pick node A as the root and run a breadth-first search from it,
+        drawing the layers downward as the book does. Then, beside each node, we
+        write $\sigma(v)$, the number of different shortest paths from A to that
+        node. Step the control to reveal one layer at a time, and watch how each
+        count is built: never by listing paths, always by adding up the counts of
+        the nodes directly above.
+
+        Dashed edges join two nodes in the same layer. Such an edge lies on no
+        shortest path from A, and thus it adds nothing to A's counts or flows.
+        From other roots such an edge does carry traffic.
+      controls:
+        - kind: dropdown
+          name: reveal
+          label: "reveal"
+          options:
+            - "layer 1 only"
+            - "through layer 2"
+            - "through layer 3"
+            - "the whole search"
+          default: "layer 1 only"
+      render_function: render_bfs_counts
+      layout: figure_left
+      takeaway_markdown: |
+        As we have seen, the number of shortest paths to a node obeys a rule that
+        looks only one layer up. Thus a question about whole paths, which can be
+        very many, becomes one addition per node, done in a single downward sweep.
+        We never list the six shortest paths to K; we count them as $3 + 3$, and
+        those 3s were counted the same way.
+
+        However, the rule rests on each edge being one step long. Consider a road
+        network whose edges have different lengths (travel times, say). There,
+        layers by step count no longer sort the nodes by distance, and counting
+        shortest paths needs a different search.
+      follow_up_problem_ids: [q_6, q_7, q_8, q_9]
+
+    - type: problem
+      id: q_6
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_bfs_counts
+          supplies: >-
+            what a breadth-first search from a root produces, namely nodes sorted into layers by their distance from that root
+      prompt_markdown: |
+        The efficient way to compute betweenness starts by running a breadth-first
+        search from a chosen starting node, called the **root**. What does
+        breadth-first search give us that we need?
+      options:
+        - id: o1
+          text: "Layers: each node in layer $d$ is $d$ steps from the root, and shortest paths run downward one layer at a time."
+        - id: o2
+          text: "The single shortest path from the root to each other node, with any equally short alternatives discarded."
+        - id: o3
+          text: "An order of the nodes by degree, so that the busiest nodes, which carry the most traffic, are processed first."
+        - id: o4
+          text: "A tree, made by removing each edge that lies on no shortest path from the root, on which the rest of the work is done."
+      correct: [o1]
+      rationale_markdown: |
+        Since a node in layer $d$ is $d$ steps from the root, and any shortest path
+        to it descends one layer per step, the layering is what the next steps need;
+        they rely on that fact to look only one layer up. Breadth-first search does
+        not discard equally short paths, and it must not, because betweenness splits
+        the traffic evenly among them. Degree order plays no part in the search.
+        Breadth-first search deletes no edges either. An edge joining two nodes in
+        the same layer stays in the network, since it lies on no shortest path from
+        this root but can lie on shortest paths from others.
+
+    - type: problem
+      id: q_7
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_bfs_counts
+          supplies: >-
+            the rule that the number of shortest paths to a node is the total over the nodes directly above it in the layering
+      figure: {ref: bfs_tree_r}
+      prompt_markdown: |
+        The figure shows a breadth-first search from the highlighted root $r$,
+        with the layers running downward. Using the rule that a node's count of
+        shortest paths is the **sum of the counts of the nodes directly above
+        it**, how many different shortest paths run from $r$ to node $e$?
+      options:
+        - id: o1
+          text: "3"
+        - id: o2
+          text: "2"
+        - id: o3
+          text: "4"
+        - id: o4
+          text: "1"
+      correct: [o1]
+      hint_markdown: |
+        Work downward from the root, one layer at a time, and find $c$ and $d$
+        before you try $e$.
+      rationale_markdown: |
+        Let's work downward. Nodes $a$ and $b$ each sit next to the root, and
+        each is reached by one shortest path. Node $c$ has both $a$ and $b$
+        above it and collects $1 + 1 = 2$; node $d$ has only $b$ above it and
+        collects $1$. Then node $e$ has $c$ and $d$ above it, which gives $2 + 1
+        = 3$. If you picked $2$, you counted the nodes above $e$ instead of the
+        paths that run through them. Picking $4$ adds an extra $1$ for $e$
+        itself, but the rule counts paths arriving, and a node adds nothing to
+        its own count. If we kept one incoming count and dropped the other, we would
+        get $1$, as if only one route could be used.
+
+    - type: problem
+      id: q_8
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_bfs_counts
+          supplies: >-
+            the running path counts for this same search, so the student can trace how a count at one node is assembled from the layer above
+      figure: {ref: bfs_tree_r}
+      prompt_markdown: |
+        In the same breadth-first search from root $r$, how many different
+        shortest paths run from $r$ to node $d$, and why?
+      options:
+        - id: o1
+          text: "One, since $d$ has a single node above it, and that node has one shortest path from the root."
+        - id: o2
+          text: "Two, since $d$ sits in the second layer, and a node in the second layer is reached two ways."
+        - id: o3
+          text: "Three, since $r$ reaches $d$ through $b$, and $b$ has three neighbors."
+        - id: o4
+          text: "Zero, since $d$ lies on no shortest path from $r$ to the bottom node $f$."
+      correct: [o1]
+      hint_markdown: |
+        Find the nodes in the layer directly above $d$ that are joined to it.
+      rationale_markdown: |
+        Node $d$ has a single node above it, $b$, and $b$ is a neighbor of the root
+        with a count of one. Thus $d$ inherits a count of one. Does being in the
+        second layer decide the count? Consider $c$, the other node in that layer,
+        which has two nodes above it and a count of two; that contrast is what the
+        rule captures. How many neighbors $b$ has plays no part, since the rule adds
+        the counts of the nodes above, not their edges. Also, $d$ does lie on
+        shortest paths to the lower nodes. Even if it didn't, its own count would
+        not be zero, because each node the root can reach has at least one shortest
+        path to it.
+
+    - type: problem
+      id: q_9
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_bfs_counts
+          supplies: >-
+            the layer structure a breadth-first search imposes, including what an edge inside a single layer means for shortest paths
+      variant: which_is_incorrect
+      prompt_markdown: |
+        Three of these statements about the layers of a breadth-first search are
+        correct. **One is not.** Which statement is incorrect?
+      options:
+        - id: o1
+          text: "Each node in layer $d$ is $d$ steps from the root, whichever of its shortest paths we use to reach it."
+        - id: o2
+          text: "A shortest path from the root moves down one layer at each step, never sideways or up."
+        - id: o3
+          text: "An edge joining two nodes in the same layer lies on no shortest path from the root."
+        - id: o4
+          text: "An edge joining two nodes in the same layer can be deleted without changing any betweenness value."
+      correct: [o4]
+      rationale_markdown: |
+        Which root we start from decides which edges are used, and the betweenness
+        of an edge is a sum over all the roots. An edge whose ends land in the same
+        layer from one root sits on shortest paths from other roots. Thus deleting
+        it changes betweenness values, and it can change distances in the network
+        too. However, the other three statements describe the layering property that
+        makes the method work. Indeed, we draw a same-layer edge dashed while the
+        search from that root is under way because it lies on no shortest path from
+        the root.
+
+    # ---- CONCEPT 3: steps 3 to 6 --------------------------------------------
+    # 2026-10-22 fix pass: RT101-4 (σ is not drawn here; the description and
+    # each caption point to Step 2 and list the counts), RT101-18 (one unit to
+    # each node the root can reach), the step numbering (title), rule 41.
+    - type: concept
+      id: concept_flow_up
+      title: "Steps 3 to 6: pushing the traffic back up, split by the path counts"
+      description_markdown: |
+        Now we route the traffic. We let the root send one unit to each other node
+        it can reach, and we work out how that traffic spreads over the edges, this
+        time climbing upward from the deepest layer (Steps 3 to 6 of the Lesson 10
+        notes).
+
+        Let's follow a single node as the flow climbs. Each node's total is one unit
+        for itself plus everything arriving from below, and the node divides that
+        total over the edges leading upward in proportion to the shortest-path
+        counts $\sigma$ from Step 2. That is, a node above that is reached by twice
+        as many shortest paths receives twice as much. Why should the split follow
+        the counts? Each shortest path from the root to the node carries an equal
+        share of its traffic, and a node above with twice the count has twice as
+        many of those paths running through it.
+
+        This figure shows the flows on the edges; the counts $\sigma$ are in the
+        figure of the cell above, and each caption lists them. Step the control to
+        climb one layer at a time.
+      controls:
+        - kind: dropdown
+          name: climb
+          label: "climb"
+          options:
+            - "start at the bottom"
+            - "one layer up"
+            - "two layers up"
+            - "all the way to A"
+          default: "start at the bottom"
+      render_function: render_flow_up
+      layout: figure_left
+      takeaway_markdown: |
+        Notice that the two sweeps are mirror images, and they need each other.
+        While the downward sweep counts how many ways the traffic could have come,
+        the upward sweep uses those counts as the proportions for sending it back.
+        Thus one root costs a single pass down and a single pass up, and that is
+        what makes betweenness affordable.
+
+        However, the check at the root, $n - 1$ units in all, holds for a connected
+        network only. If the network is cut into pieces, the edges at the root carry
+        one unit for each node the root can reach, as we will see in the cascade
+        below once the network has been cut.
+      follow_up_problem_ids: [q_10, q_11, q_12, q_13]
+
+    - type: problem
+      id: q_10
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_flow_up
+          supplies: >-
+            the walkthrough of a single root's computation, in which the total traffic to be accounted for is fixed before any edge is divided
+      prompt_markdown: |
+        When we compute the flows from one root, how much traffic is sent, and to
+        where?
+      options:
+        - id: o1
+          text: "The root sends one unit to each other node it can reach."
+        - id: o2
+          text: "The root sends one unit in total, divided among the other nodes."
+        - id: o3
+          text: "Each node sends one unit to each of its neighbors."
+        - id: o4
+          text: "The root sends one unit along each edge that touches it."
+      correct: [o1]
+      rationale_markdown: |
+        We send one unit per destination. Thus a root in a connected network of
+        $n$ nodes sends $n - 1$ units in all, and the flows on the edges
+        leaving the root add up to $n - 1$, the arithmetic check on the whole
+        pass. If the root sent one unit in total, each root's contribution would
+        be the same size whatever the network's size, and we would lose that check.
+        A unit to each neighbor is a purely local quantity that just recovers
+        degree. If we sent one unit down each edge at the root, we would ignore the
+        destinations, and the destinations are what the proportional splitting
+        further down is about.
+
+    - type: problem
+      id: q_11
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_flow_up
+          supplies: >-
+            the rule that a node's total is divided upward in proportion to the shortest-path counts of the nodes above it
+      figure: {ref: bfs_tree_r}
+      prompt_markdown: |
+        In the search from root $r$, node $e$ has two nodes above it: $c$, which is
+        reached by 2 shortest paths from $r$, and $d$, which is reached by 1. Node
+        $e$'s total flow (one unit for itself plus everything arriving from below)
+        is $2$. How does that $2$ divide over the two edges leading up from $e$?
+      options:
+        - id: o1
+          text: "$4/3$ up to $c$ and $2/3$ up to $d$"
+        - id: o2
+          text: "$1$ up to $c$ and $1$ up to $d$"
+        - id: o3
+          text: "$2/3$ up to $c$ and $4/3$ up to $d$"
+        - id: o4
+          text: "$2$ up to $c$ and $2$ up to $d$"
+      correct: [o1]
+      hint_markdown: |
+        Split in the ratio of the two shortest-path counts, and check that the two
+        shares add back up to the total.
+      rationale_markdown: |
+        Since the counts are 2 for $c$ against 1 for $d$, the total of $2$
+        splits in the ratio $2 : 1$, and twice as much goes the way that twice
+        as many shortest paths came. That is, $\frac{2}{3} \times 2 =
+        \frac{4}{3}$ goes up to $c$ and $\frac{1}{3} \times 2 = \frac{2}{3}$ up
+        to $d$, and the two add back to $2$. An even split ignores the counts,
+        and it would be right only if the two upper nodes were reached equally
+        often. Sending the larger share to $d$ inverts the ratio. If we put the
+        full $2$ on both edges, we would duplicate the traffic instead of dividing
+        it, and the flow would grow each time it climbed a layer.
+
+    - type: problem
+      id: q_12
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_flow_up
+          supplies: >-
+            the rule that each node adds its own unit to whatever arrives from below before dividing the total upward
+      prompt_markdown: |
+        Working upward, we reach a node $X$ that already has $\frac{5}{2}$ units of
+        flow arriving on the edges below it. What total does $X$ divide over the
+        edges leading upward from it?
+      options:
+        - id: o1
+          text: "$\\frac{7}{2}$, the $\\frac{5}{2}$ passing through plus $1$ unit destined for $X$ itself"
+        - id: o2
+          text: "$\\frac{5}{2}$, exactly what arrived, since flow is conserved at each node"
+        - id: o3
+          text: "$\\frac{3}{2}$, the $\\frac{5}{2}$ that arrived minus the $1$ unit that stops at $X$"
+        - id: o4
+          text: "$1$, since each node passes one unit upward, whatever arrives from below"
+      correct: [o1]
+      hint_markdown: |
+        List the destinations of the units that travel on the edges just above $X$.
+      rationale_markdown: |
+        Traffic is added at each node, not conserved through it, since the root
+        sends a unit to $X$ as well as to each node beyond $X$. Where does
+        $X$'s own unit travel? On its way from the root it rides the edges above
+        $X$, and it travels on no edge below $X$, since it stops there. Hence
+        $\frac{5}{2} + 1 = \frac{7}{2}$. If we treated flow as conserved, we would
+        forget $X$'s own unit, and the edges at the root would fall short of the
+        $n - 1$ units the root sends. Subtracting a unit has the sign backwards.
+        A fixed $1$ per node discards the pass-through traffic, and the
+        pass-through traffic is how deeper parts of the network affect an edge
+        near the root.
+
+    - type: problem
+      id: q_13
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_flow_up
+          supplies: >-
+            the accounting for how much traffic one root sends in total, which the item asks the student to express in terms of the node count
+      prompt_markdown: |
+        In a **connected** network of $n$ nodes, we run the flow computation from
+        one root. What do the flows on the edges touching that root add up to, and
+        why?
+      options:
+        - id: o1
+          text: "$n - 1$, one unit for each node other than the root, each leaving along one of those edges."
+        - id: o2
+          text: "$n$, one unit for each node in the network, since the count includes each node."
+        - id: o3
+          text: "The degree of the root, since that is how many edges the traffic can leave along, one unit per edge."
+        - id: o4
+          text: "$m$, the number of edges, since each edge in the network carries one unit."
+      correct: [o1]
+      hint_markdown: |
+        Count the units the root sends, and ask which edges each unit has to cross
+        first.
+      rationale_markdown: |
+        Consider the units the root sends. Each one has to leave along one of the
+        edges that touch the root, and there is one unit per destination. Thus the
+        total is the number of destinations, $n - 1$. We run this check each time,
+        since it catches an arithmetic slip anywhere in the upward pass. Using $n$
+        counts the root as a destination for itself, and it is not one. A root's
+        degree counts the edges available instead of the traffic on them, and those
+        edges carry very different amounts. As for $m$, the edge count is a property
+        of the whole network with no reason to match one root's traffic.
+
+    # ---- CONCEPT 4: steps 7-8 ------------------------------------------------
+    # 2026-10-22 fix pass: RT101-19 (X and Y are a pair of nodes, in the module),
+    # RT101-2 (q_15's option A), rule 40 (the takeaway says where halving does
+    # not apply), rule 41.
+    - type: concept
+      id: concept_sum_over_roots
+      title: "Steps 7 and 8: every node takes a turn, then halve"
+      description_markdown: |
+        One root gives us one node's view of the network, but betweenness adds
+        up the traffic between all pairs of nodes. Let's repeat the flow
+        computation with each node in turn as the root and add the results on
+        each edge. Step the control through the roots to watch the totals build
+        up, then take the last setting to see the halving. Orange nodes are the
+        roots used so far, the orange edge is the current leader, and an edge
+        with no number has collected nothing yet. The last setting shows the
+        halved totals, and it marks no roots.
+      controls:
+        - kind: dropdown
+          name: roots
+          label: "roots used"
+          options: ["A", "B", "C", "D", "E", "F", "G", "all seven, then halve"]
+          default: "A"
+      render_function: render_sum_over_roots
+      layout: figure_left
+      takeaway_markdown: |
+        Notice that the halving corrects a double count. In an undirected network
+        the trip from $X$ to $Y$ and the trip from $Y$ to $X$ are the same trip, but
+        we count it twice when we sum over the roots, once from each end. An edge's
+        importance can't depend on which end of a trip we call the start, and thus
+        we collapse the two counts into one. In a directed network the two trips are
+        different trips, and there we would not halve.
+      follow_up_problem_ids: [q_14, q_15, q_16]
+
+    - type: problem
+      id: q_14
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_sum_over_roots
+          supplies: >-
+            the step that runs the whole flow computation once per root and adds the results edge by edge
+      prompt_markdown: |
+        After running the flow computation with every node in turn as the root and
+        adding the results on each edge, the final step divides every total by 2.
+        What is being corrected?
+      options:
+        - id: o1
+          text: "Each pair's traffic was counted twice, once with each of its two nodes as root, and in an undirected network those are one journey."
+        - id: o2
+          text: "Each edge has two ends, and its flow was recorded twice, once while working upward from each of the two nodes it joins."
+        - id: o3
+          text: "Half of the shortest paths in an undirected network run backwards, from a later node to an earlier one, and should not be counted."
+        - id: o4
+          text: "The root receives no traffic of its own; thus half of the units sent are never delivered, and the totals overstate what moved."
+      correct: [o1]
+      hint_markdown: |
+        Pick one pair of nodes and follow its unit of traffic through the sum over
+        roots.
+      rationale_markdown: |
+        Let's follow one pair, $X$ and $Y$. Since the sum runs over roots, the
+        pair contributes once when $X$ is the root and again when $Y$ is, and in
+        an undirected network the shortest paths between them are the same set
+        both times. An edge's importance should not depend on which end of a trip
+        we call the start, and thus the two contributions are one fact recorded
+        twice. An edge's two ends have nothing to do with it, since we collect
+        the flow per edge, from each root's traffic. An undirected network has
+        no backwards shortest paths. Each unit the root sends is delivered; the
+        root is not one of its own destinations, and the count $n - 1$ already
+        accounts for that.
+
+    - type: problem
+      id: q_15
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_sum_over_roots
+          supplies: >-
+            the finished betweenness of every edge of the lesson network, so the student has a worked instance of what a low value means
+      figure: {ref: two_triangles_betweenness}
+      prompt_markdown: |
+        The figure shows the finished betweenness value on each edge. The two
+        edges labeled $1$ are the ones joining the two degree-2 nodes on each
+        side. Why is $1$ the smallest value any edge in a connected network can
+        have?
+      options:
+        - id: o1
+          text: "An edge always carries the traffic between its own two endpoints, and that pair alone contributes one unit."
+        - id: o2
+          text: "Each edge lies on the shortest paths of exactly one pair of nodes; thus each edge scores at least 1."
+        - id: o3
+          text: "Betweenness values are rounded up to the nearest whole number, and the smallest whole number is 1."
+        - id: o4
+          text: "An edge inside a triangle always carries one unit, since its ends have a third node to route other traffic through."
+      correct: [o1]
+      hint_markdown: |
+        Ask which pairs of nodes could have a shortest path through a given edge.
+      rationale_markdown: |
+        Any two adjacent nodes are one step apart, and one step is as short as a
+        path can be. Thus the edge between them is the unique shortest path for that
+        pair and collects its full unit. Everything else an edge carries comes on
+        top of that floor. However, the claim that each edge lies on the shortest
+        paths of exactly one pair gets the right number for the wrong reason, since
+        most edges serve many pairs; look at the value $9$ on the bridge in this
+        same figure. Betweenness is not rounded at all. For example, it takes
+        fractional values whenever shortest paths tie, as several values in this
+        lesson do. An edge in a triangle has no fixed betweenness either: P–R sits
+        in a triangle and carries $4$.
+
+    - type: problem
+      id: q_16
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_sum_over_roots
+          supplies: >-
+            the way traffic concentrates on a crossing when there is no alternative route, which is the fact the second crossing disturbs
+      figure: {ref: community_two_bridges}
+      prompt_markdown: |
+        The network shown is the one from the concept cells with a **second**
+        crossing added, joining $C$ and $G$ (both crossings are highlighted).
+        Before the second crossing existed, the edge joining $B$ and $D$ had
+        betweenness $12$. What has happened to that edge's betweenness now, and
+        why?
+      options:
+        - id: o1
+          text: "B–D's betweenness has fallen well below 12, since journeys that had no alternative now have one and share the two crossings."
+        - id: o2
+          text: "B–D's betweenness is unchanged at 12, since betweenness counts pairs of nodes and the network still has seven nodes."
+        - id: o3
+          text: "B–D's betweenness has risen above 12, since the network now has more edges and thus more shortest paths overall."
+        - id: o4
+          text: "B–D's betweenness has fallen to exactly 6, since two crossings must split the twelve left-to-right journeys evenly between them."
+      correct: [o1]
+      hint_markdown: |
+        Betweenness is not a property of an edge on its own; adding an edge
+        anywhere can change it.
+      rationale_markdown: |
+        Consider the twelve left-to-right pairs. With one crossing, all of them were
+        forced onto that single edge, and a second crossing gives many of those
+        pairs a route that is as short or shorter. Thus the traffic divides, and the
+        original edge's share drops sharply (to $41/6$). Deleting an edge moves
+        traffic around in the same way, and we recompute each betweenness after each
+        deletion for this reason, instead of reusing the first pass. Counting pairs
+        is not enough, since the value depends on the routes between them, and the
+        routes are what changed. In a connected network, adding an edge always
+        lowers the average betweenness per edge, since the total over all edges is
+        the sum of all the pairwise distances, which cannot grow, while the number
+        of edges grows by one; a single edge's number can still rise. Also, the
+        split is not even, since the two crossings sit at different places in the
+        network and serve different pairs, and no symmetry forces them to be equal.
+
+    # ---- CONCEPT 5: the cascade ---------------------------------------------
+    # 2026-10-22 fix pass: RT101-3 (state 2 names the edges that kept their
+    # numbers, in the module), RT101-18 (a root reaches only its own piece),
+    # W-m7 (the "good match for real groupings" claim dropped), rule 41.
+    - type: concept
+      id: concept_gn_cascade
+      title: "The Girvan–Newman cascade, and where to stop it"
+      description_markdown: |
+        Now let's run the method itself. We find the busiest edge, delete it,
+        recompute each betweenness from scratch, and repeat; the communities at any
+        moment are the connected pieces that remain. Once the network is in pieces,
+        a root sends traffic only to the nodes in its own piece (for example, after
+        the first cut A's traffic reaches only B and C). While there are two to four
+        pieces, the node colors mark them, and a removed edge stays in the figure in
+        light gray.
+
+        Step the control to watch the network come apart. How much do the numbers on
+        the surviving edges move after each deletion, and what does the score $Q$
+        (defined later on this sheet) do along the way? Notice that the method never stops on its own, and we will have to decide when to stop it.
+      controls:
+        - kind: dropdown
+          name: stage
+          label: "cascade"
+          options:
+            - "the whole graph"
+            - "cut the busiest edge"
+            - "recompute, then cut again"
+            - "keep going"
+          default: "the whole graph"
+      render_function: render_gn_cascade
+      layout: figure_left
+      takeaway_markdown: |
+        A deletion can only break a piece apart; it never joins two. Thus the
+        divisions the cascade produces sit inside one another, and each stage
+        refines the one before it. We are left with a whole family of answers, and
+        to choose among them we need something the cascade does not contain. Nesting
+        has a second cost, since at each stage a node lies in one piece only, a
+        limit we take up in the clique cells at the end of this sheet.
+      # ⚠ The earlier draft of this takeaway said the method "produces a whole
+      # nested family of them — one for every number of cuts", which is q_18's key
+      # in the takeaway directly above it. The nesting PROPERTY is kept, because
+      # q_17 needs it supplied; the enumeration of what running to completion
+      # yields is now the student's inference.
+      follow_up_problem_ids: [q_17, q_18, q_19, q_20]
+
+    - type: problem
+      id: q_17
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_gn_cascade
+          supplies: >-
+            the cascade, in which the busiest edge is cut and every betweenness is recomputed before the next cut
+      variant: which_is_incorrect
+      prompt_markdown: |
+        Three of these statements about the Girvan–Newman method are correct.
+        **One is not.** Which statement is incorrect?
+      options:
+        - id: o1
+          text: "After each deletion, the method computes every betweenness again from scratch before the next cut."
+        - id: o2
+          text: "If several edges tie for the highest betweenness, all of them are removed together."
+        - id: o3
+          text: "The pieces the network falls into at each stage are nested: every later piece sits inside an earlier one, since deletions only split pieces."
+        - id: o4
+          text: "Once the busiest edge has been deleted, the next busiest edge is the one that was second-busiest in the original network."
+      correct: [o4]
+      rationale_markdown: |
+        Deleting an edge reroutes each journey that used it. Thus the
+        betweenness of the surviving edges can change sharply, and an edge
+        ranked low can jump to the top, because it now carries traffic that used
+        to go another way. We recompute after each deletion for this reason, and
+        recomputing is what makes the method expensive. Each of the other three
+        statements holds. Recomputing all the values is Easley and
+        Kleinberg's rule (p. 68); ties are broken by removing all the tied
+        edges at once instead of picking one; and since deletions only ever
+        break pieces apart, the sequence of divisions is nested.
+
+    - type: problem
+      id: q_18
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_gn_cascade
+          supplies: >-
+            the fact that the cascade keeps cutting past any single answer, producing a whole sequence of finer and finer divisions
+      prompt_markdown: |
+        Run the Girvan–Newman method to completion, deleting edges until none are
+        left. What does it produce?
+      options:
+        - id: o1
+          text: "A nested sequence of divisions, from the whole network down to each node on its own, one division for each stage."
+        - id: o2
+          text: "A single best division of the network into communities, chosen at the point where removing one more edge would start breaking a real group apart."
+        - id: o3
+          text: "The two communities separated by the busiest edge, and nothing more."
+        - id: o4
+          text: "A list of the edges sorted by their betweenness in the original network."
+      correct: [o1]
+      rationale_markdown: |
+        Each deletion either breaks a piece in two or leaves the pieces as they
+        were. Thus running the method to the end walks the network from one piece
+        down to $n$ pieces, a whole hierarchy of divisions instead of one answer.
+        Which of them should we keep? We need something outside the method to answer
+        that, and modularity fills the gap. If we stopped after the first split, we
+        would throw away each finer division. Also, the output is not a ranking of
+        the original edges. Since betweenness is recomputed after each deletion, the
+        order in which edges are removed can differ a great deal from their ranking
+        at the start.
+
+    - type: problem
+      id: q_19
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_gn_cascade
+          supplies: >-
+            the recomputation step, which reruns a network-wide sweep after every single deletion
+      prompt_markdown: |
+        Why is the Girvan–Newman method expensive to run on a large network?
+      options:
+        - id: o1
+          text: "Each deletion calls for a fresh betweenness computation, and each computation already sweeps the whole network from every node."
+        - id: o2
+          text: "The method lists every shortest path between every pair of nodes, and the number of such paths can grow far faster than the network."
+        - id: o3
+          text: "The method tries each possible way of dividing the nodes into groups and scores each one, and the number of ways explodes."
+        - id: o4
+          text: "Breadth-first search is slow compared with other ways of finding shortest paths, and the method relies on it."
+      correct: [o1]
+      hint_markdown: |
+        Estimate the work in one betweenness computation, then think about what the
+        method does between cuts.
+      rationale_markdown: |
+        Consider the work in one betweenness computation, a sweep down and up from
+        each node as root. We need a fresh one after each of the method's many
+        deletions, and that product of the two costs limits the method to networks
+        of moderate size. Listing shortest paths explicitly is what the
+        layer-counting trick avoids, and avoiding it is the point of the second half
+        of Section 3.6. Trying each possible division is a different and far worse
+        approach that this method never takes. As for breadth-first search, it is
+        the fast option here; what hurts is the number of times it runs.
+
+    - type: problem
+      id: q_20
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_gn_cascade
+          supplies: >-
+            the fact that the cascade itself never halts, so the choice among its stages has to be made by something outside it
+      prompt_markdown: |
+        Since the Girvan–Newman method keeps cutting until nothing is left,
+        something outside the method has to decide which of its divisions to keep.
+        What is the sensible criterion?
+      options:
+        - id: o1
+          text: "Score each division the cascade produces and keep the best-scoring one, wherever it falls in the sequence."
+        - id: o2
+          text: "Keep the division produced by the very first cut, since that cut removed the busiest edge in the whole network."
+        - id: o3
+          text: "Keep cutting until each piece has roughly the same number of nodes, as real communities tend to."
+        - id: o4
+          text: "Keep the last division before the network becomes disconnected, the one with the most edges in place."
+      correct: [o1]
+      hint_markdown: |
+        Think about what makes one division better than another.
+      rationale_markdown: |
+        Since the cascade produces a whole family of divisions, choosing among them
+        needs a score that we can compute for any division and compare across them,
+        and modularity is one. The first cut is often the right answer, but nothing
+        guarantees it; a network with three genuine groups needs at least two
+        splits, and only a score can tell you so. Equal group sizes are not a
+        property real communities have. If we kept the last division before the
+        network becomes disconnected, we would keep the whole network in one piece,
+        the division the method started from.
+
+    # ---- CONCEPT 6: the null model -------------------------------------------
+    # 2026-10-22 fix pass: RT101-5 (the m slider starts at 8, so 2m >= k_i + k_j
+    # at every state; repeated edges named), RT101-6 and Hari's ruling 6 (the
+    # stub probability is k_j/(2m - 1); k_j/2m is the approximation modularity
+    # uses), D-N3 and D-m4 (8.2's pairing construction; the configuration model
+    # named), figures F13 (the pool of other stubs, in the module), rule 41.
+    - type: concept
+      id: concept_expected_edges
+      title: "The null model: how many edges *should* join two nodes?"
+      description_markdown: |
+        Before we can score a division, we need to say what "more connected than you
+        would expect" means. But expected under what model of the network? We need a
+        baseline, and we build it by destroying the network and rebuilding it at
+        random.
+
+        Let's cut each edge in half. Node $i$ is left holding $k_i$ loose
+        half-edges, called **stubs**, and the whole network has $2m$ of them, since
+        each of the $m$ edges contributed two. Now we pair the stubs up blindly,
+        each stub with one of the others chosen at random. Worksheet 8.2 built
+        random networks the same way, with its pairing construction; used as a
+        baseline, this random rewiring is called the **configuration model**. We use it as a null model, which makes no prediction; it shows what a network with these same degrees and no community structure
+        would do on average.
+
+        Move the controls and watch how many $i$–$j$ edges the rewiring produces on
+        average, and compare the exact chance that a stub lands on $j$ with the
+        simpler one modularity uses.
+      controls:
+        - kind: slider
+          name: k_i
+          label: "degree of node i"
+          min: 1
+          max: 8
+          step: 1
+          default: 4
+        - kind: slider
+          name: k_j
+          label: "degree of node j"
+          min: 1
+          max: 8
+          step: 1
+          default: 3
+        # 2026-10-22 (RT101-5): min 8, so 2m >= 16 >= k_i + k_j at every state.
+        - kind: slider
+          name: m
+          label: "edges in the whole network"
+          min: 8
+          max: 30
+          step: 1
+          default: 9
+      render_function: render_expected_edges
+      layout: figure_left
+      takeaway_markdown: |
+        As we built it, the baseline keeps each node's degree and throws away
+        everything else. Why keep the degrees fixed? A hub has many edges in the
+        real network and many in the baseline, and thus it gets no credit merely for
+        being a hub. What is left after the subtraction is structure that degree
+        alone cannot explain, and a community is one kind of it.
+
+        However, the baseline's $k_i k_j / 2m$ is the large-network form. On a small
+        network it sits a little below the exact $k_i k_j / (2m - 1)$ (for example,
+        $2/3$ against $12/17$ at the opening setting), and for a pair of hubs it can
+        exceed 1, a count of repeated edges that no simple network allows (blind
+        pairing can join two nodes more than once).
+      follow_up_problem_ids: [q_21, q_22, q_23, q_24]
+
+    - type: problem
+      id: q_21
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_expected_edges
+          supplies: >-
+            the stub picture, in which every edge is cut in half and the halves are counted
+      prompt_markdown: |
+        In the stub picture, a network with $m$ edges is cut apart into loose
+        half-edges. How many half-edges are there in total, and why?
+      options:
+        - id: o1
+          text: "$2m$, because every edge has two ends."
+        - id: o2
+          text: "$m$, because there is one half-edge per edge."
+        - id: o3
+          text: "$n$, because there is one half-edge per node."
+        - id: o4
+          text: "$m/2$, because two half-edges make one edge."
+      correct: [o1]
+      rationale_markdown: |
+        Cutting one edge produces two loose ends, and thus $m$ edges produce $2m$ of
+        them. Since each node's degree is how many stubs it holds, the same count is
+        the sum of all the degrees; we will use that fact again and again in the
+        rest of the lesson. If we counted one per edge, we would halve the true
+        number and put the wrong denominator into each expected-edge calculation. A
+        count of nodes is unrelated. Dividing by two goes the wrong way, since two
+        half-edges make one edge; there are more half-edges than edges, not fewer.
+
+    - type: problem
+      id: q_22
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_expected_edges
+          supplies: >-
+            the stub-pairing argument that gives the chance one loose half-edge of one node lands on a particular other node, and the simpler form of it that modularity uses
+      prompt_markdown: |
+        Node $i$ has degree $k_i$ and node $j$ has degree $k_j$, in a network with
+        $m$ edges, and we pair up all the half-edges at random. Using the
+        approximation that modularity uses for the chance that one of $i$'s
+        half-edges lands on $j$, what is the expected number of edges between $i$
+        and $j$?
+      options:
+        - id: o1
+          text: "$\\dfrac{k_i k_j}{2m}$"
+        - id: o2
+          text: "$\\dfrac{k_i k_j}{m}$"
+        - id: o3
+          text: "$\\dfrac{k_i + k_j}{2m}$"
+        - id: o4
+          text: "$\\dfrac{k_i k_j}{2m^2}$"
+      correct: [o1]
+      hint_markdown: |
+        Take one of $i$'s half-edges. In the approximation, what fraction of the
+        network's loose ends belong to $j$?
+      rationale_markdown: |
+        Let's pick one of node $i$'s $k_i$ half-edges. Node $j$ owns $k_j$ of
+        the other $2m - 1$ loose ends, and thus the chance that this one lands
+        on $j$ is $\frac{k_j}{2m - 1}$; modularity uses the simpler
+        $\frac{k_j}{2m}$, which is very close once the network is large. Since
+        node $i$ has $k_i$ half-edges to place, on average $k_i \cdot
+        \frac{k_j}{2m}$ of them reach $j$. If we used $m$ in the denominator,
+        we would forget that each edge supplies two ends and double each expected
+        value. Adding the degrees instead of multiplying them tells us how many
+        ends the two nodes hold between them, not how likely they are to meet.
+        Dividing by $2m^2$ divides by the total a second time, and it gives a
+        quantity that shrinks as the network grows even when the degrees
+        do not.
+
+    - type: problem
+      id: q_23
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_expected_edges
+          supplies: >-
+            the expression for the expected edges between a pair, together with the fact that the degrees of all nodes add to twice the edge count
+      prompt_markdown: |
+        Add the expected number of edges $\frac{k_i k_j}{2m}$ over **all ordered
+        pairs** of nodes $i$ and $j$, each node paired with itself included, and
+        halve the result, so that each edge is counted once. What do you get?
+      options:
+        - id: o1
+          text: "$m$, since the baseline puts back as many edges as the network started with."
+        - id: o2
+          text: "$2m$, twice the number of edges, since each edge has two ends."
+        - id: o3
+          text: "$n$, one edge per node on average, since each node appears once as $i$."
+        - id: o4
+          text: "$m^2$, since each of the $m$ edges can pair with each of the $m$ edges, itself included."
+      correct: [o1]
+      hint_markdown: |
+        Do the inner sum first: $\sum_j k_j$ is a quantity you already know.
+      rationale_markdown: |
+        Let's pull node $i$'s degree out of the inner sum: $\frac{1}{2}\sum_i
+        k_i \sum_j \frac{k_j}{2m}$. Now the inner sum is $\frac{1}{2m}\sum_j
+        k_j = \frac{2m}{2m} = 1$, which leaves $\frac{1}{2}\sum_i k_i =
+        \frac{1}{2}(2m) = m$. This result is the consistency check the null
+        model rests on. The baseline is a genuine rearrangement, holding the
+        number of edges fixed as well as each degree, and we compare two
+        networks of the same size. If we forgot the halving, we would get $2m$.
+        Getting $n$ would need each node to contribute one edge whatever its
+        degree, and the degrees do not cancel that way. Getting $m^2$ would need
+        a product of two edge counts, and the sum has only one factor of $2m$ to
+        cancel. If we left out the pairs of a node with itself, we would get
+        $m - \sum_i k_i^2 / 4m$ instead; the stem includes those pairs for that
+        reason.
+
+    - type: problem
+      id: q_24
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_expected_edges
+          supplies: >-
+            what the rewiring baseline holds fixed and what it destroys, which is the distinction each statement in the item turns on
+      variant: which_is_incorrect
+      prompt_markdown: |
+        Three of these statements about the random-rewiring baseline are correct.
+        **One is not.** Which statement is incorrect?
+      options:
+        - id: o1
+          text: "The baseline keeps each node's degree as it is in the real network."
+        - id: o2
+          text: "The baseline puts back the same total number of edges as the real network has."
+        - id: o3
+          text: "A high-degree node has many stubs, and the baseline expects it to be well connected too; thus being a hub earns no credit on its own."
+        - id: o4
+          text: "The baseline describes how real social networks actually form, and that realism is what makes it a good comparison."
+      correct: [o4]
+      rationale_markdown: |
+        Nobody thinks friendships are made by shuffling half-edges in a bag. The
+        baseline is deliberately unrealistic; it shows what the network would
+        look like if degree were the only thing that mattered. Its value lies in
+        being unrealistic, since whatever the real network does that the
+        baseline cannot explain is the structure worth naming. Let's check the
+        other three statements against the cell. All three are its defining
+        properties, and the one about hubs earning no credit is the reason we
+        hold degrees fixed instead of something simpler, since a baseline that
+        ignored degree would hand each hub an undeserved score.
+
+    # ---- CONCEPT 7: modularity ----------------------------------------------
+    # 2026-10-22 fix pass: RT101-6 (the baseline's share is "on average", and the
+    # takeaway scopes the k_i k_j/2m form), RT101-15 (edge density defined here,
+    # before its first use in q_25), Hari's ruling 12 (Newman and Girvan 2004),
+    # figures F8 (orange marks the edges between groups, in the module), rule 41.
+    - type: concept
+      id: concept_modularity_score
+      title: "Modularity: observed minus expected, in one number"
+      description_markdown: |
+        Since the cascade hands us a whole family of divisions, we need a way to
+        choose among them. Newman and Girvan (2004) introduced a score for this,
+        and it is the score this sheet has been quoting. Let's build it in two
+        steps. We count the fraction of the network's edges that fall inside a
+        group, then subtract the fraction the baseline of the previous cell
+        expects there. That difference is **modularity**, written $Q$.
+
+        Notice that $Q$ isn't a density. The **edge density** of a network, or of
+        a group, is the fraction of its pairs of distinct nodes that are joined by
+        an edge, that is, its number of edges divided by $n(n-1)/2$ for $n$
+        nodes. A dense group earns little under $Q$ if its members' degrees
+        already predict its edges.
+
+        Choose a division from the control and read the two fractions and their
+        difference. When the division has two to four groups, the node colors
+        mark them; orange edges run between groups, and the rest lie inside one.
+        We include the extremes (everyone in one group, and everyone alone) on
+        purpose, since what $Q$ does with them shows why we build it as a
+        difference.
+
+        Source: M. E. J. Newman and M. Girvan (2004). Finding and evaluating
+        community structure in networks. *Physical Review E* 69(2): 026113.
+        DOI: [10.1103/PhysRevE.69.026113](https://doi.org/10.1103/PhysRevE.69.026113)
+      controls:
+        - kind: dropdown
+          name: partition
+          label: "division"
+          options:
+            - "the two obvious groups"
+            - "move D across"
+            - "the two bridge ends together"
+            - "everyone in one group"
+            - "everyone alone"
+          default: "the two obvious groups"
+      render_function: render_modularity_score
+      layout: figure_left
+      takeaway_markdown: |
+        Modularity is a difference, and both ends of it matter. We could push the
+        observed term to its maximum by putting everyone in one group, since
+        then each edge is inside; however, the baseline term rises to meet it,
+        and the two cancel to zero. Splitting everyone apart drives the
+        observed term to zero and leaves only the baseline's share, with a
+        minus sign. Thus a high $Q$ has to come from a division in between, one
+        whose groups hold many more edges than their degrees predict.
+
+        We use the baseline's large-network form, $k_i k_j / 2m$, throughout.
+        On a network as small as this one, the exact pairing would expect a
+        little less inside each group (for the two obvious groups, $76/153
+        \approx 0.497$ of the edges, against the baseline's $85/162 \approx
+        0.525$). Thus $Q$ reads a little low here, and on large networks the
+        two agree.
+      follow_up_problem_ids: [q_25, q_26, q_27, q_28, q_29, q_30]
+
+    - type: problem
+      id: q_25
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_modularity_score
+          supplies: >-
+            modularity as a difference between an observed share and a baseline share of the edges
+      prompt_markdown: |
+        Modularity $Q$ compares two quantities. Which two?
+      options:
+        - id: o1
+          text: "The fraction of edges inside the proposed groups, against the fraction a degree-preserving random rewiring puts inside them on average."
+        - id: o2
+          text: "The number of edges inside the groups, against the number running between them, with no baseline needed."
+        - id: o3
+          text: "The number of groups proposed, against the number of nodes, so that a division into very many tiny groups is penalized for its own fineness."
+        - id: o4
+          text: "The edge density of the densest group, against the edge density of the sparsest group in the division."
+      correct: [o1]
+      rationale_markdown: |
+        We always compare observed against expected, and the expectation comes from
+        the degree-preserving baseline of the previous cell. The baseline term is
+        what stops a hub-heavy group from scoring well merely because its members
+        have many edges. Comparing inside edges with edges between groups sounds
+        similar, but it has no baseline at all, and thus it would reward any
+        division of a dense network, whatever its structure. As for the number of
+        groups, it is not part of the formula. Comparing the densest group with the
+        sparsest reduces the whole division to two of its groups and ignores the
+        rest.
+
+    - type: problem
+      id: q_26
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_modularity_score
+          supplies: >-
+            the recipe for scoring a named division: count the inside edges, then subtract what the degrees alone would have predicted
+      figure: {ref: five_node_graph}
+      prompt_markdown: |
+        For the network shown, take the division that puts $V$ and $W$ in one
+        group and $X$, $Y$ and $Z$ in the other. The network has $m = 6$ edges,
+        and the degrees are $k_V = 2$, $k_W = 2$, $k_X = 4$, $k_Y = 2$,
+        $k_Z = 2$. What is $Q$ for this division?
+      options:
+        - id: o1
+          text: "$1/9$"
+        - id: o2
+          text: "$2/3$"
+        - id: o3
+          text: "$1/3$"
+        - id: o4
+          text: "$0$"
+      correct: [o1]
+      hint_markdown: |
+        Count the edges lying inside each group first. Then, for each group,
+        compute $\frac{1}{2m}\sum_{i,j}\frac{k_i k_j}{2m}$ over that group's
+        members, which is $\left(\frac{\text{group's degree total}}{2m}\right)^2$.
+      rationale_markdown: |
+        Let's count the edges inside a group first, the one joining $V$ and $W$
+        and the three among $X$, $Y$ and $Z$, four in all. That is, the observed
+        fraction is $\frac{4}{6} = \frac{2}{3}$. The first group's degrees total
+        $4$ and the second's total $8$, out of $2m = 12$. Thus the baseline
+        expects $\left(\frac{4}{12}\right)^2 +
+        \left(\frac{8}{12}\right)^2 = \frac{1}{9} + \frac{4}{9} = \frac{5}{9}$
+        of the edges inside, and the difference is $\frac{2}{3} - \frac{5}{9} =
+        \frac{1}{9}$. If you picked $\frac{2}{3}$, you took the observed
+        fraction and forgot the baseline. Choosing $\frac{1}{3}$ means you found the fraction of edges running *between* the groups, a different
+        quantity, with no baseline subtracted from it either. Getting $0$ means
+        the two terms cancel, which happens for the one-big-group division and
+        not for this one.
+
+    - type: problem
+      id: q_27
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_modularity_score
+          supplies: >-
+            the worked setting in which everyone is placed in one group, and what happens to both terms of the score there
+      prompt_markdown: |
+        Put **every** node of a network into a single group. What is $Q$?
+      options:
+        - id: o1
+          text: "Exactly $0$, since every edge is inside the group, and the baseline also puts every edge inside it."
+        - id: o2
+          text: "Exactly $1$, since every edge lies inside a group, which is the best possible outcome."
+        - id: o3
+          text: "The value depends on the network, since a denser network keeps more edges inside its one group."
+        - id: o4
+          text: "Exactly $-1$, since with no edges between groups the division has nothing to separate."
+      correct: [o1]
+      hint_markdown: |
+        Work out both terms. What fraction of edges is inside the group, and what
+        fraction does the baseline put inside it?
+      rationale_markdown: |
+        Since each edge is inside, the observed fraction is $1$. However, the
+        baseline has nowhere else to put its edges either, and thus the expected
+        fraction is also $1$; the two cancel. This property is built into $Q$:
+        putting every node in one group scores exactly $0$, whatever the
+        network. Thus lumping everything together never makes a network look
+        structured, and $0$ becomes the natural reading of "no community
+        structure worth reporting". A score of $1$ ignores the second term.
+        Density does not enter, since both terms are $1$ whatever the network. If
+        you picked $-1$, you confused this case with the opposite one, where
+        edges avoid the groups.
+
+    - type: problem
+      id: q_28
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_modularity_score
+          supplies: >-
+            the recipe for scoring a division, which the student applies here to a case where no edge lies inside any group
+      figure: {ref: bipartite_pairs}
+      prompt_markdown: |
+        This network has four nodes and two edges, and the division shown puts
+        $A$ and $B$ in one group and $C$ and $D$ in the other; thus **both** edges
+        run between the groups and neither lies inside one. What is $Q$?
+      options:
+        - id: o1
+          text: "$-1/2$"
+        - id: o2
+          text: "$-1$"
+        - id: o3
+          text: "$0$"
+        - id: o4
+          text: "$-1/4$"
+      correct: [o1]
+      hint_markdown: |
+        Since the observed term is zero, only the baseline term is left. For it,
+        work out each group's total degree as a fraction of $2m$, and remember it
+        gets squared.
+      rationale_markdown: |
+        Since no edge lies inside a group, the observed term is $0$, and only
+        the penalty is left. Each node here has degree $1$, and thus each
+        group's degrees total $2$ out of $2m = 4$; the baseline term is
+        $\left(\frac{2}{4}\right)^2 + \left(\frac{2}{4}\right)^2 =
+        \frac{1}{2}$, which gives $Q = -\frac{1}{2}$. We get the same answer
+        for each network split into two groups so that all its edges cross the
+        divide. With no edge inside either group, each group's degree total is
+        exactly $m$, and the penalty is $\frac{m^2 + m^2}{4m^2} = \frac{1}{2}$.
+        The Lesson 10 notes state that $-\frac{1}{2}$ is the lowest score any
+        division can reach; the range is thus $-\frac{1}{2} \leq Q < 1$. You
+        may see the looser bound $-1$ quoted elsewhere. That bound comes from
+        bounding $Q$'s two terms separately, and no network reaches it. If you
+        picked $0$, you forgot the penalty, and $-\frac{1}{4}$ keeps only one of
+        the two squared terms.
+
+    - type: problem
+      id: q_29
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_modularity_score
+          supplies: >-
+            the fact that the baseline term is always strictly positive, so it can never be subtracted away entirely
+      prompt_markdown: |
+        Why can $Q$ never actually reach the value $1$?
+      options:
+        - id: o1
+          text: "Even when every edge lies inside a group, the baseline's expected fraction inside is above 0, and it is subtracted."
+        - id: o2
+          text: "$Q$ is rounded down to two decimal places before it is reported, and thus a score of 1 always shows as 0.99."
+        - id: o3
+          text: "In any real network at least one edge runs between the groups, and that one edge keeps the observed fraction below 1."
+        - id: o4
+          text: "$Q$ is a fraction with $2m$ in its denominator, and fractions of that form cannot equal 1."
+      correct: [o1]
+      hint_markdown: |
+        Write $Q$ as its two terms, and find the largest and the smallest value
+        each one can take.
+      rationale_markdown: |
+        We can push the observed term to its maximum of $1$ (put every edge inside a
+        group), but the baseline term is a sum of squared positive quantities, and
+        thus it is strictly greater than zero for any network with edges.
+        Subtracting something positive from $1$ lands strictly below $1$. Nothing
+        gets rounded along the way. Can a network have no edges between groups?
+        Consider a network made of several separate pieces, divided along its
+        pieces; it has no edges between groups, and its score still falls short of
+        $1$. As for the denominator, it places no such restriction on the values a
+        fraction can take.
+
+    - type: problem
+      id: q_30
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_modularity_score
+          supplies: >-
+            how the score behaves across several named divisions, including the ones at the two extremes of lumping and splitting
+      variant: which_is_incorrect
+      prompt_markdown: |
+        Three of these statements about modularity are correct. **One is not.**
+        Which statement is incorrect?
+      options:
+        - id: o1
+          text: "$Q$ can be computed for any proposed division, whether or not it came from the Girvan–Newman method."
+        - id: o2
+          text: "A division that scores $Q = 0$ is no better than what degree alone would have produced."
+        - id: o3
+          text: "Running the cascade and keeping the division with the highest $Q$ turns Girvan–Newman into a method that returns one answer."
+        - id: o4
+          text: "The division with the highest $Q$ is the one the cascade produces last, since $Q$ rises as the pieces get finer."
+      correct: [o4]
+      rationale_markdown: |
+        Consider the cascade's last division, each node on its own, which puts no
+        edge inside any group and scores below zero, worse than not dividing the
+        network at all. In the network used throughout this worksheet, $Q$ peaks
+        after the first cut and falls after it. The other three statements are correct: $Q$ takes a division as its input and does not care where
+        the division came from; a score of zero means the division explains nothing
+        that degree does not already explain; and scoring each stage of the cascade
+        is how the method becomes one that gives a single answer.
+
+    # ======================================================================
+    # THE CLIQUE-PERCOLATION BLOCK (q_31-q_42) — Palla, Derenyi, Farkas &
+    # Vicsek, "Uncovering the overlapping community structure of complex
+    # networks in nature and society", Nature 435:814-818, 2005.
+    #
+    # WHY IT IS HERE AND NOT ON 10.2. The lecture notes' own Concluding
+    # Thoughts names overlapping communities as the first simplification the
+    # cascade makes, and names this paper for it. 10.1 is the sheet where a
+    # method is something you RUN; clique percolation is combinatorial, needs
+    # no algebra, and its contrast with the cascade only lands once the
+    # student holds a score that is defined on partitions and nothing else.
+    # So it APPENDS after the modularity block. Nothing above moves, every
+    # existing id keeps its meaning, and no walk note is invalidated.
+    #
+    # ⚠ EVERY KEY BELOW IS DERIVED, NEVER TYPED:
+    #   python3.12 scripts/derive_l10_papers_keys.py
+    # Three independent routes (networkx, the paper's own clique-clique
+    # overlap matrix, and a brute-force k-subset enumeration that calls no
+    # clique finder), compared; a split is a blocking finding. --selftest
+    # runs the red cases, including a deliberately falsified third route.
+    # ======================================================================
+
+    - type: concept
+      id: concept_clique_communities
+      title: "A community you can be in two of at once"
+      # 2026-10-22 fix pass: RT101-1 (adjacency is k - 1 shared nodes, stated for
+      # general k; at k = 3 that is two), RT101-14 (membership number defined
+      # here, before the default state uses it), RT101-15 and Hari's ruling 12
+      # (Palla et al. named, with the full reference; k-clique percolation
+      # named), rule 40 (the k / k_i convention named and settled), rule 41.
+      # 2026-10-28 (Hari's walk, W101-1): the description is the text Hari
+      # approved on 2026-10-22 ("much better!", with his "allows for this" and his
+      # ruling "Keep 'the rolling rule'"), verbatim; the reference line after it
+      # is unchanged. walk/L10_walk_notes.md, W101-1.
+      description_markdown: |
+        So far, every method in this lesson has given each node exactly one
+        community; that is, it returns a **partition**. But people belong to
+        several groups at once: a family, a workplace, a hobby group. Palla,
+        Derényi, Farkas and Vicsek (2005) proposed a method that allows for this.
+        Instead of cutting the network apart, we build communities up out of
+        small, fully connected pieces.
+
+        Let's start with the pieces. A **clique** is a set of nodes in which every
+        pair is joined, and a **$k$-clique** is a clique with $k$ nodes; for
+        example, a $3$-clique is a triangle. (This $k$ counts the nodes in a
+        clique; it isn't the degree $k_i$ from the modularity formula.) We say two
+        $k$-cliques are **adjacent** if they share $k-1$ nodes. For triangles,
+        that means sharing an edge.
+
+        Now we grow a community with what we'll call the rolling rule. Start from
+        any $k$-clique and roll to every clique adjacent to it, then to every
+        clique adjacent to those, until no new clique can be reached. The nodes we
+        have visited form one **$k$-clique community**, and Palla and his
+        coauthors call the whole method **$k$-clique percolation**. Since one node
+        can sit in two cliques that aren't adjacent, it can end up in two
+        communities. A node's **membership number** is the number of communities
+        it belongs to.
+
+        Switch between the three networks at $k = 3$. On which of them does a node
+        get a membership number of 2, and why?
+
+        Source: Gergely Palla, Imre Derényi, Illés Farkas and Tamás Vicsek (2005).
+        Uncovering the overlapping community structure of complex networks in
+        nature and society. *Nature* 435(7043): 814–818.
+        DOI: [10.1038/nature03607](https://doi.org/10.1038/nature03607)
+      controls:
+        - kind: dropdown
+          name: network
+          label: "network"
+          options:
+            - "the lesson network"
+            - "two triangles joined by an edge"
+            - "two triangles joined at a node"
+          default: "the lesson network"
+      render_function: render_clique_communities
+      layout: figure_left
+      takeaway_markdown: |
+        The cascade and the rolling rule differ in what answers they can give, as
+        well as in what they happen to find. When we remove edges from one shared
+        network, we can never put a node in two places, since at each stage the
+        network has been cut into disjoint pieces and a node lies in exactly one
+        of them. When we build communities out of overlapping complete pieces, we
+        can put a node in two places, and we can also leave a node out; the
+        answer need not be a partition.
+
+        However, the rolling rule works with complete pieces only. A close group
+        with no $k$-clique in it is invisible to the rule at that $k$. Consider
+        five friends sitting in a ring, each joined to the two beside them. The
+        ring holds no triangle at all.
+      follow_up_problem_ids: [q_31, q_32, q_33, q_34]
+
+    - type: problem
+      id: q_31
+      difficulty: easy
+      question_type: single_select
+      taught_by:
+        - cell: concept_clique_communities
+          supplies: >-
+            the definition of a clique as a set of nodes with every pair joined, and of a k-clique as one with exactly k of them
+      figure: {ref: five_node_graph}
+      prompt_markdown: |
+        A **clique** is a set of nodes in which every pair is joined by an edge,
+        and a **$3$-clique** is a clique with exactly three nodes. Which of these
+        sets of three nodes in the network shown is a $3$-clique?
+      options:
+        - id: o1
+          text: "$\\{V, W, X\\}$"
+        - id: o2
+          text: "$\\{W, X, Y\\}$"
+        - id: o3
+          text: "$\\{V, W, Y\\}$"
+        - id: o4
+          text: "$\\{V, X, Y\\}$"
+      correct: [o1]
+      rationale_markdown: |
+        A set of three nodes is a $3$-clique only when all three of its pairs
+        are joined, and thus we check each set pair by pair, not by how close
+        together the nodes are drawn. Let's check the set holding $V$, $W$ and
+        $X$ first. The edges $V$–$W$, $V$–$X$ and $W$–$X$ are all present, and
+        the set passes. Each of the others misses at least one pair, since $W$
+        and $Y$ are not joined, and neither are $V$ and $Y$.
+
+    - type: problem
+      id: q_32
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_clique_communities
+          supplies: >-
+            the rolling rule, which makes two k-cliques adjacent exactly when they share one fewer node than a whole clique
+      prompt_markdown: |
+        Two $4$-cliques in some network share exactly three nodes. Under the
+        rolling rule, do they belong to the same $4$-clique community?
+      hint_markdown: |
+        Write down the adjacency rule for a general $k$, then put in this item's
+        $k$.
+      options:
+        - id: o1
+          text: "Yes. At $k = 4$, two cliques are adjacent when they share three nodes, as these two do; thus the two roll together."
+        - id: o2
+          text: "No. Adjacency requires the two cliques to share all $k$ of their nodes, and two $4$-cliques sharing all four would be one clique."
+        - id: o3
+          text: "Yes, and any shared edge would have done, since the rolling rule links two complete groups that share an edge, whatever $k$ is."
+        - id: o4
+          text: "No. Three shared nodes leave one node different on each side, and a community is built only from cliques that agree on every node."
+      correct: [o1]
+      rationale_markdown: |
+        The rolling rule is written with $k$, and thus our first move is to
+        substitute. At $k = 4$, adjacency means sharing $k - 1 = 3$ nodes, and
+        these two cliques share exactly three. If we required all four shared
+        nodes, the rule would be useless, since two $4$-cliques sharing four
+        nodes are the same clique. A shared edge is enough at $k = 3$ and at no
+        other $k$; at $k = 3$ two shared nodes are a shared edge, and the
+        coincidence ends at larger $k$. Agreeing on every node is the same
+        requirement as sharing all four, and it too would leave no two cliques
+        adjacent.
+
+    - type: problem
+      id: q_33
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_clique_communities
+          supplies: >-
+            the procedure of listing the cliques and then testing each pair against the shared-node rule before joining any of them
+      figure: {ref: clique_roll}
+      prompt_markdown: |
+        For the network shown, roll the rule at $k = 3$: find the triangles, then
+        join two of them whenever they share two nodes, and keep joining until
+        nothing more can be joined. What are the $3$-clique communities?
+      hint_markdown: |
+        Find the triangles first, then check each pair of triangles separately;
+        the pairs do not all give the same verdict.
+      options:
+        - id: o1
+          text: "$\\{H, J, K, L\\}$ and $\\{L, M, N\\}$"
+        - id: o2
+          text: "$\\{H, J, K\\}$, $\\{J, K, L\\}$ and $\\{L, M, N\\}$"
+        - id: o3
+          text: "One community holding every node, since the whole picture is connected"
+        - id: o4
+          text: "$\\{H, J, K, L\\}$ and $\\{M, N\\}$"
+      correct: [o1]
+      rationale_markdown: |
+        We start by listing the triangles: the set holding $H$, $J$ and $K$;
+        the set holding $J$, $K$ and $L$; and the set holding $L$, $M$ and $N$.
+        Now let's test the pairs. The two triangles built on $J$ and $K$ share
+        both of those nodes, and thus they are adjacent and roll into one
+        community covering $H$, $J$, $K$ and $L$. In contrast, the triangle on $J$, $K$
+        and $L$ and the triangle on $L$, $M$ and $N$ share only $L$, one node
+        short, and they stay apart; the triangle on $H$, $J$, $K$ shares
+        nothing with the one on $L$, $M$, $N$. Stopping at the triangles skips
+        the rolling step. Dropping $L$ from the second community forgets that a
+        community is the union of its triangles, and $L$ is in the triangle on
+        $L$, $M$ and $N$. Sweeping every node into one community answers which
+        nodes are *connected*, a different question with a different answer.
+
+    - type: problem
+      id: q_34
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_clique_communities
+          supplies: >-
+            the membership number as a count taken after the rolling has finished, rather than a count of the cliques a node sits in
+      figure: {ref: clique_roll}
+      prompt_markdown: |
+        Still at $k = 3$ on the network shown, a node's **membership number** is
+        how many $3$-clique communities it belongs to. Which nodes have a
+        membership number above $1$?
+      hint_markdown: |
+        Being in two triangles and being in two communities are different things.
+        Work out the communities first, then count.
+      options:
+        - id: o1
+          text: "$L$ only"
+        - id: o2
+          text: "$J$ and $K$, since each of them lies in two different triangles"
+        - id: o3
+          text: "None of them, since the communities are disjoint"
+        - id: o4
+          text: "$J$, $K$ and $L$"
+      correct: [o1]
+      rationale_markdown: |
+        Nodes $J$ and $K$ do each lie in two triangles, and that is the trap,
+        because those two triangles share two nodes. Thus they are adjacent and
+        merge into a single community, and lying in two triangles that merge
+        leaves a node in one community. Node $L$ lies in two triangles that
+        do not merge, since they share only $L$ itself, and thus $L$ is the one
+        node the rolling rule places twice. Counting triangles gets the first
+        step right and then answers a question nobody asked; the count that
+        matters is taken after the rolling has finished. Since $L$ is in both,
+        the communities are not disjoint, and adding $J$ and $K$ to $L$ counts
+        triangles instead of communities.
+
+    - type: concept
+      id: concept_resolution_knob
+      title: "One knob, and everything it moves at once"
+      # 2026-10-22 fix pass: RT101-9 (raising k can shrink, split or drop, never
+      # adds; how much depends on the complete groups; the two-K6 counterexample),
+      # RT101-10 (the rule stated as "the smallest k at which no giant community
+      # appears"; "does not select a level of detail" dropped), RT101-15
+      # (unweighted, weighted, threshold, percolation, giant community defined;
+      # Palla et al. named), RT101-8 (the figure, in the module), rule 40 (the
+      # factor of two named as this sheet's convention), rule 41.
+      description_markdown: |
+        Our rolling rule takes a number, $k$, and for an unweighted network that
+        number is its only setting. Which value of $k$ should we pick? Raising $k$ demands
+        larger complete groups before anything can roll. Let's walk the control up
+        from $k = 3$ and watch the community sizes, the nodes left out, and the
+        largest community against the next one.
+
+        An **unweighted** network treats each edge alike; in a **weighted**
+        network each edge carries a number, its weight (how often two people
+        interact, say). A **threshold** $w^*$ turns a weighted network into
+        an unweighted one by keeping only the edges whose weight is above $w^*$,
+        and Palla and his coauthors set both $k$ and $w^*$ (p. 815).
+
+        How did Palla and his coauthors choose their settings? The word
+        **percolation** names the sudden appearance of one piece that spans most of a network as connections are added, as the
+        giant component appeared in Worksheet 8.1. A **giant community** is one that
+        has absorbed most of the network. Palla and his coauthors lower a weighted
+        network's threshold, and thus keep more and more edges, until the largest
+        community is twice the size of the second largest (p. 816); for an
+        unweighted network they take the smallest $k$ at which no giant community
+        appears (p. 817). For the unweighted case they give no number, and on this
+        sheet we use the same factor of two as our test, calling a community a giant
+        when it is more than twice the size of the next largest.
+      controls:
+        - kind: slider
+          name: k
+          label: "clique size k"
+          min: 3
+          max: 6
+          step: 1
+          default: 3
+      render_function: render_resolution_knob
+      layout: figure_left
+      takeaway_markdown: |
+        No setting of $k$ is correct in itself. Raising $k$ asks for a stricter
+        kind of cohesion, and the sizes, the coverage and the tightness of what
+        comes back can all change with it. On some networks nothing changes
+        until $k$ passes the size of the largest complete group; for example, two
+        six-node cliques joined by one edge keep the same two communities from
+        $k = 3$ to $k = 6$. Thus we have to choose $k$ by a property of the
+        output instead of by taste, and Palla and his coauthors use a property
+        that comes from percolation, the smallest $k$ at which no giant community
+        appears.
+      follow_up_problem_ids: [q_35, q_36, q_37, q_38]
+
+    - type: problem
+      id: q_35
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_resolution_knob
+          supplies: >-
+            the contrast between building communities out of overlapping complete pieces and removing edges from a single network until it falls apart
+      prompt_markdown: |
+        Why can the rolling rule report a node as belonging to two communities
+        when the edge-cutting cascade never can?
+      hint_markdown: |
+        Ask what object each method is holding at the moment it decides where a
+        node goes.
+      options:
+        - id: o1
+          text: "The cascade cuts one shared network into disjoint pieces at each stage, and each node lies in exactly one of those pieces."
+        - id: o2
+          text: "The cascade is run once for each community, and thus a node is examined once and assigned to one community."
+        - id: o3
+          text: "The cascade always ends with more communities than the rolling rule finds, and the extra ones absorb any node that would have been shared."
+        - id: o4
+          text: "The cascade works on undirected edges while the rolling rule works on directed ones, and only a directed method can point a node two ways."
+      correct: [o1]
+      rationale_markdown: |
+        The restriction is structural; nobody chose it. Consider the cascade first.
+        At each stage we have one network with some edges removed, and the
+        communities are its connected pieces, which are disjoint by the definition
+        of a connected piece. Thus no node can appear in two. In contrast, the
+        rolling rule never cuts anything. We build each community out of complete
+        subgroups, and nothing stops two such communities from running over the same
+        node. Neither method is run once per community, and both work on the same
+        undirected network. How many communities there are has nothing to do with it
+        either, since a cascade stage with many pieces still gives each node one
+        piece.
+
+    # ⚠ 2026-10-22 FIX PASS: q_36 RETARGETED (not in the register's list; the 9.1
+    # fix pass's Q17 precedent). RT101-9's approved caption now says how much
+    # raising k changes "depends on how large the network's complete groups are"
+    # and gives two six-node cliques that do not change, which stated the old
+    # q_36's key (hard) in the cell above. The item now applies that fact to sizes
+    # no cell shows: complete groups of 6, 5 and 4 nodes chained by single edges;
+    # from k = 3 to k = 5 the 6 and the 5 stay as they were and the 4 drops out.
+    # Band unchanged (hard: the k = 3 communities, then which groups hold a
+    # 5-clique and whether those roll). Derived: derive_101_fixpass_keys.py (q_36).
+    - type: problem
+      id: q_36
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_resolution_knob
+          supplies: >-
+            the fact that raising k can shrink, split or drop a community and never adds to one, with how much it changes set by the sizes of the network's complete groups
+      hint_markdown: |
+        At each $k$, ask which groups hold a $k$-clique and whether those cliques
+        can roll into one another.
+      prompt_markdown: |
+        A colleague's network is three complete groups, of 6, 5 and 4 nodes,
+        joined in a chain by single edges (one edge from the group of 6 to the
+        group of 5, and one from the group of 5 to the group of 4). What happens to
+        the $k$-clique communities when they raise $k$ from $3$ to $5$?
+      options:
+        - id: o1
+          text: "The groups of 6 and 5 are unchanged, and the group of 4 drops out of every community."
+        - id: o2
+          text: "Each community loses two nodes, since raising $k$ by two takes two nodes from each complete group."
+        - id: o3
+          text: "All three stay as they were, since each is a complete group and a complete group never loses members."
+        - id: o4
+          text: "Only the group of 6 survives, since a community at $k = 5$ needs a group of more than 5 nodes."
+      correct: [o1]
+      rationale_markdown: |
+        Let's start at $k = 3$, where the triangles inside each complete group roll
+        together and the joining edges lie in no triangle; thus the communities are
+        the three groups. Now raise $k$ to $5$. The group of 6 holds 5-cliques, and
+        any two of them share 4 nodes, which is $k - 1$; thus they roll into the
+        same six nodes as before. The group of 5 is itself one 5-clique, and it
+        stays as it was. Then the group of 4, which holds no five nodes at all,
+        drops out. Raising $k$ changed nothing for the two large groups, as the
+        cell's two six-node cliques showed, and removed the small one. If you shrank
+        each group by two, you treated $k$ as a count to subtract, but $k$ only sets
+        the size of the cliques the rule rolls on. Keeping all three forgets that a
+        group of 4 holds no 5-clique, and keeping only the group of 6 asks for more
+        than $k$ nodes.
+
+    # ⚠ 2026-10-22 FIX PASS: q_37 RETARGETED (Hari's ruling 5; RT101-13). The old
+    # item asked for the reasoning behind the "twice the second largest" test,
+    # and the knob takeaway printed it ("stop just below the setting at which a
+    # single community begins to absorb everything else"). It now applies the
+    # rule to a network no cell draws (`two_blocks_and_triangle`): the student
+    # rolls the triangles at k = 3 (8 and 3: a giant), then the 4-cliques (4 and
+    # 4: no giant), and reports what the rule returns. Band unchanged (hard: two
+    # rollings and the test). The options name no k, so q_38's key ("k = 4") is
+    # not printed here. Derived: scripts/derive_101_fixpass_keys.py (q_37).
+    - type: problem
+      id: q_37
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_resolution_knob
+          supplies: >-
+            the rule of Palla et al. for an unweighted network (the smallest k at which no giant community appears) and this sheet's test for a giant community, worked through on the knob network
+      figure: {ref: two_blocks_and_triangle}
+      prompt_markdown: |
+        For the network shown, apply the rule Palla and his coauthors use for an
+        unweighted network, with this sheet's test for a giant community. Which
+        communities does the rule return?
+      hint_markdown: |
+        Roll the triangles and compare the two largest communities; if a giant has
+        formed, do the same with the $4$-cliques.
+      options:
+        - id: o1
+          text: "$\\{1, 2, 3, 4\\}$ and $\\{5, 6, 7, 8\\}$, with 9, 10 and 11 in no community"
+        - id: o2
+          text: "$\\{1, 2, \\dots, 8\\}$ and $\\{9, 10, 11\\}$, the two communities the triangles roll into"
+        - id: o3
+          text: "$\\{1, 2, 3, 4\\}$, $\\{5, 6, 7, 8\\}$ and $\\{9, 10, 11\\}$, three communities with no node in two"
+        - id: o4
+          text: "No community at all, since no clique in the network is large enough to pass the test"
+      correct: [o1]
+      rationale_markdown: |
+        Let's start with the triangles, at $k = 3$. Inside each complete group
+        of four the triangles roll together, and the triangles on 3, 4, 5 and
+        on 4, 5, 6 link the two groups: the first shares 3 and 4 with the left
+        group's triangles, and the second shares 4 and 5 with the first, and 5
+        and 6 with the right group's triangles. Thus nodes 1 to 8 form one
+        community, and 9, 10 and 11 form a second (the edge from 8 to 9 lies in
+        no triangle). Since the largest community is $8/3$ times the second,
+        more than twice, it is a giant, and the triangles are too small a
+        setting. One step up, the 4-cliques are $\{1, 2, 3, 4\}$ and $\{5, 6,
+        7, 8\}$: they share no node, and no other four nodes are all joined (3
+        and 6 are not joined, for example). Their two communities have 4 nodes
+        each. Thus no giant has formed, and the rule stops at this smallest
+        passing setting, with 9, 10 and 11 in no community. If you chose the
+        triangle answer, you skipped the giant test. If you chose three
+        communities, you missed the two triangles that link the groups, or you
+        mixed two settings. The empty answer belongs to five-node cliques, a
+        stricter setting than the rule needs.
+
+    - type: problem
+      id: q_38
+      difficulty: medium
+      question_type: single_select
+      taught_by:
+        - cell: concept_resolution_knob
+          supplies: >-
+            the stopping principle for choosing a setting, stated for the case where the only knob available is the clique size
+      hint_markdown: |
+        Apply the test to each row in turn, then take the smallest setting that
+        passes it.
+      prompt_markdown: |
+        An unweighted network is analyzed at three settings. At $k = 3$ the
+        communities have sizes $40, 9, 6$; at $k = 4$ they have sizes
+        $14, 11, 7, 5$; at $k = 5$ they have sizes $6, 5$. Which setting does the
+        rule of Palla and his coauthors select, with this sheet's test for a giant
+        community?
+      options:
+        - id: o1
+          text: "$k = 4$"
+        - id: o2
+          text: "$k = 3$"
+        - id: o3
+          text: "$k = 5$"
+        - id: o4
+          text: "None of them, since no setting here places every node in a community."
+      correct: [o1]
+      rationale_markdown: |
+        At $k = 3$ the largest community is more than four times the next, a
+        giant. Thus we reject that setting, however good its coverage looks. At
+        $k = 4$ the largest is only slightly bigger than the next, and the
+        setting passes; since we want the smallest passing setting, the search
+        stops there. The setting $k = 5$ also passes, but it is larger and
+        discards more of the network for nothing. Coverage is not part of the test
+        at all, and nothing in the rule requires each node to be placed.
+
+    - type: concept
+      id: concept_partition_vs_cover
+      title: "What a partition has to do with a shared node"
+      # 2026-10-22 fix pass: RT101-11 ($Q$ is defined for a division; a cover can
+      # be pushed through the group sum, 87/400 here, and the number is not a
+      # modularity), RT101-12 (A–D completes one triangle; merging is a fourth
+      # move), figures F8 (each group keeps one color, in the module), rule 41.
+      description_markdown: |
+        Let's add one edge to the lesson network, between A and D. That one edge
+        is enough to make the two methods disagree, and the disagreement is not
+        about which method is more accurate. We are asking two different
+        questions of the network, and the score $Q$ can judge only one kind of
+        answer. With the control we can look at the rolling rule's answer and
+        then at the three ways of forcing D into a division. What does each
+        forced answer cost?
+      controls:
+        - kind: dropdown
+          name: answer
+          label: "answer"
+          options:
+            - "clique percolation: D is in both"
+            - "force D into the left group"
+            - "force D into the right group"
+            - "give D a group of its own"
+          default: "clique percolation: D is in both"
+      render_function: render_partition_vs_cover
+      layout: figure_left
+      takeaway_markdown: |
+        Modularity is defined for a division, in which every node is in exactly one
+        group. An overlapping answer can be pushed through the group sum, but the
+        shared node's degree is then counted in both groups, and the number that
+        comes out is not a modularity. Thus we cannot rank the two methods' outputs
+        against each other by $Q$, and forcing the shared node into one group
+        scores a different answer from the overlapping one. Choosing between the
+        two methods is a choice about which question to ask of the network, and we
+        make it before running either method, not with a score afterwards.
+      follow_up_problem_ids: [q_39, q_40, q_41, q_42]
+
+    # ⚠ 2026-10-22 FIX PASS: q_39 RETARGETED (Hari's ruling 5; RT101-13). The old
+    # item asked what is wrong with ranking the two answers by Q, and the
+    # partition-vs-cover takeaway printed its key. It now applies the cell's fact
+    # to a network no cell draws (`bowtie_plus_u`): force the shared node X three
+    # ways, compute Q for each (10/81, 1/6, 11/162), and say what the best score
+    # says about the overlapping answer. The trap is computed, not worded: the best
+    # division puts X with the SMALLER side, against the majority of its edges, and
+    # one distractor shares the key's division and Q but reads 1/6 as a bound on the
+    # overlap. Band unchanged (hard: three Q computations). Derived:
+    # scripts/derive_101_fixpass_keys.py (q_39).
+    - type: problem
+      id: q_39
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_partition_vs_cover
+          supplies: >-
+            the three ways of forcing a shared node into a division, each scored by Q, and the fact that a score for a forced division is not a score for the overlapping answer
+      figure: {ref: bowtie_plus_u}
+      prompt_markdown: |
+        In the network shown, $U$, $V$, $W$ and $X$ are all joined to one another,
+        and $X$, $Y$ and $Z$ form a triangle. At $k = 3$ the rolling rule puts $X$
+        in both $\{U, V, W, X\}$ and $\{X, Y, Z\}$. As in the cell above, force $X$
+        into a division in each of the three ways: with $U$, $V$ and $W$; with $Y$
+        and $Z$; or on its own. Which division scores the highest $Q$, and what
+        does that score say about the answer that puts $X$ in both groups?
+      hint_markdown: |
+        Score each division with the group sum, using each group's degree total;
+        here $m = 9$.
+      options:
+        - id: o1
+          text: "$X$ with $Y$ and $Z$, at $Q = 1/6$; the score ranks the three divisions and says nothing about the answer with $X$ in both groups."
+        - id: o2
+          text: "$X$ with $U$, $V$ and $W$, at $Q = 10/81$, since three of $X$'s five edges run that way; the score says nothing about the overlapping answer."
+        - id: o3
+          text: "$X$ with $Y$ and $Z$, at $Q = 1/6$; the overlapping answer keeps both of $X$'s groups, and thus it scores at least $1/6$."
+        - id: o4
+          text: "$X$ on its own, at $Q = 11/162$, since a node with edges into both groups belongs fully to neither; the score says nothing about the overlap."
+      correct: [o1]
+      rationale_markdown: |
+        Let's list the degrees first: 3 for each of $U$, $V$ and $W$, 5 for
+        $X$, and 2 for each of $Y$ and $Z$, with $m = 9$ and $2m = 18$. With
+        $X$ on the left, 7 of the 9 edges lie inside a group and the degree
+        totals are 14 and 4, which gives $Q = \frac{7}{9} - \frac{14^2 + 4^2}{18^2} =
+        \frac{10}{81} \approx 0.123$. With $X$ on the right, 6 edges lie inside
+        and the totals are 9 and 9, which gives $Q = \frac{6}{9} - \frac{9^2 +
+        9^2}{18^2} = \frac{1}{6} \approx 0.167$. With $X$ alone, 4 edges lie
+        inside and the totals are 9, 5 and 4, which gives $Q = \frac{4}{9} - \frac{9^2
+        + 5^2 + 4^2}{18^2} = \frac{11}{162} \approx 0.068$. Notice that the
+        best division puts $X$ with the smaller side, though three of $X$'s
+        five edges run to the larger one. Why would $X$ join the smaller side?
+        The penalty grows with the square of a group's degree total, and thus
+        joining $X$ to the heavier side costs more than its one extra inside
+        edge earns; following the majority of $X$'s edges picks $10/81$. Each of
+        these numbers scores a division, a different answer from the one that
+        puts $X$ in both groups, which has no $Q$ at all. Thus $1/6$ is no bound
+        on it. Setting $X$ apart scores lowest of the three.
+
+    - type: problem
+      id: q_40
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_partition_vs_cover
+          supplies: >-
+            the contrast between a method assembled from local pieces and one whose every decision rests on a network-wide sweep
+      prompt_markdown: |
+        Besides allowing overlaps, Palla and his coauthors ask that a community
+        definition be **local** (p. 815): whether some nodes form a community
+        should be decidable from the part of the network around them. In what way
+        does the edge-cutting cascade, on its own, fail that requirement?
+      hint_markdown: |
+        Think about what information the cascade uses to decide which edge to cut
+        next.
+      options:
+        - id: o1
+          text: "Whether two nodes end up together depends on betweenness, a sum over shortest paths across the whole network, which distant changes can move."
+        - id: o2
+          text: "The cascade does not fail it, since each step removes a single edge, which affects only that edge's two ends."
+        - id: o3
+          text: "The cascade fails it by needing the total number of edges $m$, a property of the whole network instead of any neighborhood."
+        - id: o4
+          text: "The cascade fails it since the betweenness computation has to be started from each node in turn, one root at a time, across the network."
+      correct: [o1]
+      rationale_markdown: |
+        Betweenness counts shortest paths, and a shortest path between two
+        distant nodes can run through an edge anywhere in between. Thus adding a
+        node at one end of the network can change which edge we cut at the other,
+        and that dependence makes the cascade a global procedure. On its own,
+        the cascade never uses $m$; $m$ enters only when $Q$ scores its
+        divisions, and a single global constant is a different thing from an
+        answer that depends on distant structure. Running from each node in
+        turn describes how betweenness is computed, not why the result is
+        non-local. Calling the cut of one edge a local act mistakes the *edit*
+        for the *decision*.
+
+    - type: problem
+      id: q_41
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_partition_vs_cover
+          supplies: >-
+            the requirements a proposed community is asked to meet, including that no single node holds it together
+      figure: {ref: clique_roll}
+      prompt_markdown: |
+        Palla and his coauthors also ask that a community contain no
+        **cut-node** (p. 815): no single node whose removal would break the
+        community into disconnected pieces. For the network shown, which of these
+        candidate groups fails that test?
+      hint_markdown: |
+        Delete each node of a candidate group in turn and ask whether what is left
+        of that group still hangs together.
+      options:
+        - id: o1
+          text: "$\\{J, K, L, M, N\\}$"
+        - id: o2
+          text: "$\\{H, J, K, L\\}$"
+        - id: o3
+          text: "$\\{L, M, N\\}$"
+        - id: o4
+          text: "$\\{H, J, K\\}$"
+      correct: [o1]
+      rationale_markdown: |
+        Consider the group holding $J$, $K$, $L$, $M$ and $N$. The only routes from
+        $M$ or $N$ to $J$ or $K$ pass through $L$, and if we delete $L$, the group
+        falls into two pieces with nothing joining them. Thus $L$ is a cut-node, and
+        the group fails. Each of the other three stays connected whichever single
+        node is removed: $\{H, J, K\}$ and $\{L, M, N\}$ are triangles, and $\{H, J,
+        K, L\}$ is two triangles sharing the edge $J$–$K$. The test is about the
+        group's own internal edges, not about how the group sits in the rest of the
+        network.
+
+    - type: problem
+      id: q_42
+      difficulty: hard
+      question_type: single_select
+      taught_by:
+        - cell: concept_partition_vs_cover
+          supplies: >-
+            the point that a method's output is only evidence about the data if the same method says something different on data without the structure
+      prompt_markdown: |
+        Palla and his coauthors re-ran their whole analysis on **randomized**
+        versions of each network (the same number of nodes, the same degree for
+        each node, the same $k$, but the edges rewired at random) and found almost
+        none of the community structure: few communities, all of them small
+        (p. 817). What does that control establish?
+      hint_markdown: |
+        List what the randomization held fixed and what it changed.
+      options:
+        - id: o1
+          text: "That the structure comes from how the real networks are wired, since networks matched on size and degrees show almost none of it."
+        - id: o2
+          text: "That the method finds communities in any network whatsoever, and thus its output on real data should not be trusted."
+        - id: o3
+          text: "That degree alone determines community structure, since the degree of each node was held fixed and the structure still appeared."
+        - id: o4
+          text: "That the randomized networks contain no cliques at all, which leaves the rolling rule nothing to start from."
+      correct: [o1]
+      rationale_markdown: |
+        Consider what it would mean if the method had found the same rich structure
+        on the rewired data. Then we would be learning about the method, not about
+        the networks. Holding size, degrees and $k$ fixed removes each explanation
+        except the wiring, and thus the collapse of the structure is evidence that
+        the wiring carries it. If you read the result as "degree determines the
+        structure", you inverted it, since degree was held constant and the
+        structure vanished anyway. Nor did the method find communities everywhere;
+        on the rewired networks it found almost none, and that is the point of the
+        control. Randomly wired networks do contain triangles, just far fewer of
+        them, arranged in fewer of the overlapping chains that rolling needs.
