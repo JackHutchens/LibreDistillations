@@ -161,7 +161,7 @@
       "difficulty": "medium",
       "taught_by": "sec_pbc_tail_corrections_and_neighbor_lists",
       "prompt_markdown": "Consider an attractive dispersion tail $V(r) = -4\\varepsilon(\\sigma/r)^6$ truncated at $r_c = 2.0\\sigma$ in a 3D fluid of number density $\\rho\\sigma^3 = 0.75$ with $\\varepsilon = 1.0$. Using the perturbation tail formula with $g(r) = 1$ for $r > r_c$:\n\n$$\\frac{\\Delta E_{\\text{tail}}}{N} = 2\\pi\\rho \\int_{r_c}^{\\infty} r^2 V(r)\\,dr = -\\frac{8\\pi\\rho\\varepsilon\\sigma^3}{3}\\left(\\frac{\\sigma}{r_c}\\right)^3$$\n\ncalculate $\\Delta E_{\\text{tail}}/N$ (in units of $\\varepsilon$, rounded to 3 decimal places).",
-      "hint_markdown": "Substitute $\\rho\\sigma^3 = 0.75$ and $(\\sigma/r_c)^3 = (1/2)^3 = 1/8$ into $-\\frac{8\\pi}{3}(0.75)(1/8) = -\\frac{\\pi}{4}$.",
+      "hint_markdown": "Integrate the attractive $r^{-6}$ tail beyond $r_c$ assuming uniform radial distribution $g(r) \\approx 1$.",
       "correct": {
         "value": -0.785,
         "tolerance": 0.005
@@ -364,8 +364,8 @@
         "sec_long_range_definition_and_stillinger_lovett",
         "concept_madelung_1d"
       ],
-      "prompt_markdown": "Calculate the exact Madelung constant $\\alpha_{\\text{1D}} = 2\\sum_{n=1}^{\\infty} \\frac{(-1)^{n-1}}{n} = 2\\ln 2$ for an infinite 1D chain of alternating $\\pm q$ ions with nearest-neighbor spacing $R$ (round to 4 decimal places).",
-      "hint_markdown": "Evaluate $2 \\times \\ln(2) = 2 \\times 0.693147...$",
+      "prompt_markdown": "Calculate the exact Madelung constant $\\alpha_{\\text{1D}} = 2\\sum_{n=1}^{\\infty} \\frac{(-1)^{n-1}}{n}$ for an infinite 1D chain of alternating $\\pm q$ ions with nearest-neighbor spacing $R$ (round to 4 decimal places).",
+      "hint_markdown": "Recognize the alternating harmonic series expansion of the natural logarithm of 2.",
       "correct": {
         "value": 1.3863,
         "tolerance": 0.001
@@ -382,7 +382,7 @@
         "concept_madelung_1d"
       ],
       "prompt_markdown": "In the 1D alternating ionic chain, if you truncate the direct sum after just $M = 3$ neighbor shells on each side:\n\n$$\\alpha_3 = 2\\left(1 - \\frac{1}{2} + \\frac{1}{3}\\right)$$\n\nwhat is the value of $\\alpha_3$ (round to 3 decimal places)? Notice how far it still is from $2\\ln 2 \\approx 1.386$!",
-      "hint_markdown": "Compute $2 \\times (1 - 0.5 + 1/3) = 2 \\times (5/6) = 5/3$.",
+      "hint_markdown": "Evaluate the first three terms of the alternating series and multiply by the two-sided line prefactor.",
       "correct": {
         "value": 1.667,
         "tolerance": 0.003
@@ -653,7 +653,7 @@
       "difficulty": "medium",
       "taught_by": "sec_ewald_summation_method",
       "prompt_markdown": "An Ewald simulation box contains $N = 100$ monovalent ions ($50$ cations with $q_i = +1$ and $50$ anions with $q_i = -1$, in electrostatic units where $4\\pi\\varepsilon_0 = 1$). If the Ewald screening parameter is set to $\\kappa = 0.5\\sqrt{\\pi}\\text{ \u00c5}^{-1} \\approx 0.8862\\text{ \u00c5}^{-1}$, what is the exact value of the Ewald self-energy correction $V_{\\text{self}} = -\\frac{\\kappa}{\\sqrt{\\pi}}\\sum_{i=1}^N q_i^2$ (in $\\text{e}^2/\\text{\u00c5}$)?",
-      "hint_markdown": "Notice that $\\kappa / \\sqrt{\\pi} = 0.5$ and $\\sum_{i=1}^{100} (\\pm 1)^2 = 100$.",
+      "hint_markdown": "Evaluate the self-energy formula using the ratio $\\kappa / \\sqrt{\\pi}$ and the sum of squared charges.",
       "correct": {
         "value": -50.0,
         "tolerance": 0.1
@@ -696,7 +696,7 @@
       "difficulty": "medium",
       "taught_by": "sec_ewald_summation_method",
       "prompt_markdown": "A cubic simulation box of volume $\\Omega = 100\\text{ nm}^3$ with **vacuum boundary conditions** ($\\varepsilon = 1$) has an instantaneous total dipole moment of magnitude $|\\sum_i \\boldsymbol{\\mu}_i| = 15.0$ (in reduced charge$\\cdot\\text{nm}$ units). Calculate the surface dipole energy $V_{\\text{dipole}} = \\frac{2\\pi}{(2\\varepsilon + 1)\\Omega}\\left|\\sum_i \\boldsymbol{\\mu}_i\\right|^2$ (round to 3 decimal places).",
-      "hint_markdown": "Substitute $\\varepsilon = 1$, $\\Omega = 100$, and $|\\sum \\boldsymbol{\\mu}_i|^2 = 225$ into $\\frac{2\\pi}{3 \\times 100} \\times 225 = 1.5\\pi$.",
+      "hint_markdown": "Evaluate the prefactor for vacuum conditions ($\\varepsilon = 1$) and scale by the square of the total dipole moment divided by box volume.",
       "correct": {
         "value": 4.712,
         "tolerance": 0.01
@@ -713,7 +713,7 @@
         "concept_ewald_splitting"
       ],
       "prompt_markdown": "In reciprocal space, the Ewald long-range potential is damped by the Gaussian factor $e^{-k^2 / (4\\kappa^2)}$. If $\\kappa = 1.5\\text{ nm}^{-1}$, what is the value of the Gaussian damping factor $e^{-k^2 / (4\\kappa^2)}$ at wavevector magnitude $k = 3.0\\text{ nm}^{-1}$ (round to 3 decimal places)?",
-      "hint_markdown": "Evaluate $k^2 / (4\\kappa^2) = 9.0 / (4 \\times 2.25) = 9.0 / 9.0 = 1.0$, then compute $e^{-1.0}$.",
+      "hint_markdown": "Evaluate the dimensionless exponent using the given wavevector magnitude and screening parameter.",
       "correct": {
         "value": 0.368,
         "tolerance": 0.005
@@ -941,7 +941,7 @@
         "concept_electrostatic_scaling"
       ],
       "prompt_markdown": "In an optimally tuned Ewald summation code whose CPU time per step scales as $\\mathcal{O}(N^{3/2})$, by what factor does the CPU time per step increase if the number of ions $N$ is increased by a factor of $4$ (e.g., from $N = 1{,}000$ to $N = 4{,}000$ at constant density)?",
-      "hint_markdown": "Compute $4^{3/2} = (\\sqrt{4})^3$.",
+      "hint_markdown": "Raise the system size scaling ratio to the $3/2$ power.",
       "correct": {
         "value": 8.0,
         "tolerance": 0.05
@@ -1047,8 +1047,8 @@
         "sec_pbc_tail_corrections_and_neighbor_lists",
         "concept_neighbor_skin"
       ],
-      "prompt_markdown": "A 3D liquid has number density $\\rho = 0.75\\,\\sigma^{-3}$. If a Verlet neighbor list is constructed with potential cutoff $r_c = 2.5\\,\\sigma$ and skin depth $\\Delta = 0.5\\,\\sigma$ (so $r_{\\text{list}} = r_c + \\Delta = 3.0\\,\\sigma$), what is the average number of neighbors $m = \\frac{4}{3}\\pi \\rho (r_c + \\Delta)^3$ stored per particle ( assuming $g(r) \\approx 1$, round to 1 decimal place)?",
-      "hint_markdown": "Evaluate $\\frac{4}{3}\\pi (0.75) (3.0)^3 = \\pi \\times 27 = 27\\pi$.",
+      "prompt_markdown": "A 3D liquid has number density $\\rho = 0.75\\,\\sigma^{-3}$. If a Verlet neighbor list is constructed with potential cutoff $r_c = 2.5\\,\\sigma$ and skin depth $\\Delta = 0.5\\,\\sigma$ (so $r_{\\text{list}} = r_c + \\Delta = 3.0\\,\\sigma$), what is the average number of neighbors $m$ stored per particle (assuming $g(r) \\approx 1$, round to 1 decimal place)?",
+      "hint_markdown": "Calculate the expected number of particles inside a sphere of radius $r_c + \\Delta$ at the given number density.",
       "correct": {
         "value": 84.8,
         "tolerance": 0.3
@@ -1079,7 +1079,7 @@
         "concept_ewald_splitting"
       ],
       "prompt_markdown": "In classic Ewald summation in a cubic box of length $L = 10.0\\text{ \u00c5}$, we choose $\\kappa$ so that the real-space screened potential $v_{\\text{short}}(r) = \\frac{q_1 q_2}{r}\\text{erfc}(\\kappa r)$ is negligible at the minimum-image boundary $r = L/2 = 5.0\\text{ \u00c5}$. Using the asymptotic approximation $\\text{erfc}(z) \\approx \\frac{e^{-z^2}}{z\\sqrt{\\pi}}$ for large $z$, estimate $\\kappa$ (in $\\text{\u00c5}^{-1}$) required so that $z = \\kappa(L/2) = 3.0$ (where $\\text{erfc}(3.0) \\approx 2.2 \\times 10^{-5}$).",
-      "hint_markdown": "Solve $\\kappa \\times 5.0 = 3.0$ for $\\kappa$.",
+      "hint_markdown": "Divide the target dimensionless argument $z = 3.0$ by the minimum-image cutoff distance $L/2$.",
       "correct": {
         "value": 0.6,
         "tolerance": 0.01
@@ -1212,7 +1212,7 @@
       "difficulty": "hard",
       "taught_by": "sec_pbc_tail_corrections_and_neighbor_lists",
       "prompt_markdown": "For the full 12-6 Lennard-Jones potential $V_{\\text{LJ}}(r) = 4\\varepsilon[(\\sigma/r)^{12} - (\\sigma/r)^6]$ truncated at $r_c = 2.0\\,\\sigma$ in a 3D fluid of reduced density $\\rho\\sigma^3 = 0.75$ and $\\varepsilon = 1.0$, calculate the complete per-particle energy tail correction:\n\n$$\\frac{\\Delta E_{\\text{tail}}^{\\text{LJ}}}{N} = \\frac{8\\pi\\rho\\varepsilon\\sigma^3}{3}\\left[ \\frac{1}{3}\\left(\\frac{\\sigma}{r_c}\\right)^9 - \\left(\\frac{\\sigma}{r_c}\\right)^3 \\right]$$\n\n(Round to 3 decimal places; notice how small the $r^{-12}$ repulsive tail is compared to the $r^{-6}$ attractive tail at $r_c = 2\\sigma$!)",
-      "hint_markdown": "We already found the $-(\\sigma/r_c)^3$ part is $-\\pi/4 \\approx -0.7854$; the $+\\frac{1}{3}(\\sigma/r_c)^9$ correction adds $+\\frac{2\\pi}{3 \\times 512} \\approx +0.0041$.",
+      "hint_markdown": "Substitute the density and cutoff ratio into the integrated Lennard-Jones tail formula.",
       "correct": {
         "value": -0.781,
         "tolerance": 0.005
@@ -1226,7 +1226,7 @@
       "difficulty": "medium",
       "taught_by": "sec_kspace_algorithm_natoli_and_scaling",
       "prompt_markdown": "In an optimally tuned Ewald simulation ($\\kappa \\propto N^{1/6}/L$), the number of reciprocal-space wavevectors $M_k$ inside the cutoff sphere $|\\mathbf{k}| < k_c$ scales as $M_k \\propto \\Omega \\kappa^3 \\propto N^{1/2}$. If an optimal Ewald simulation of $N_1 = 500$ ions uses $M_{k,1} = 120$ wavevectors, how many wavevectors $M_{k,2}$ should be used for a system $9$ times larger ($N_2 = 4{,}500$ ions at the same density) to maintain optimal $\\mathcal{O}(N^{3/2})$ balance?",
-      "hint_markdown": "Multiply $M_{k,1} = 120$ by $(N_2 / N_1)^{1/2} = \\sqrt{9} = 3$.",
+      "hint_markdown": "Scale the initial wavevector count by the square root of the system size expansion ratio.",
       "correct": {
         "value": 360.0,
         "tolerance": 1.0

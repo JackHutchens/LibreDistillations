@@ -1,168 +1,528 @@
 worksheet:
   id: lesson_22_ising_model_and_spin_kinetics
-  title: 'Lesson 22: The Ising Model: Exact Solutions, Phase Transitions, Spin Kinetics & Coarsening'
+  title: 'MSE 485 · Lesson 22: The Ising Model — Exact Solutions, Phase Transitions, Spin Kinetics & Cluster Monte Carlo'
   estimated_minutes: 120
   learning_objectives:
-  - Define the Ising Hamiltonian, understand the discrete $\mathbb{Z}_2$ inversion symmetry, and map spins to lattice gases and binary alloys.
-  - Solve the 1D Ising model using the transfer matrix method and explain why continuous 1D systems with short-range interactions cannot exhibit a finite-temperature phase transition.
-  - Analyze Onsager's exact 2D solution, calculate the critical temperature $k_B T_c / J = 2 / \ln(1+\sqrt{2}) \approx 2.269$, and identify 2D critical exponents ($\alpha=0, \beta=1/8, \gamma=7/4, \nu=1$).
-  - Examine the finite-size magnetization probability distribution $P_L(M)$ and quantify the interfacial free energy barrier $\Delta F = 2\sigma L^{d-1}$ separating broken-symmetry ground states.
-  - Differentiate Glauber single-spin-flip dynamics (non-conserved order parameter, Model A, $L(t) \sim t^{1/2}$) from Kawasaki spin-exchange dynamics (conserved order parameter, Model B, $L(t) \sim t^{1/3}$).
-  - Explain critical slowing down ($\tau \sim \xi^z$) and implement the Swendsen-Wang and Wolff cluster algorithms based on the Fortuin-Kasteleyn random cluster mapping ($p = 1 - e^{-2\beta J}$).
+  - Formulate the Ising Hamiltonian, prove discrete Z_2 spin-inversion symmetry, and derive exact isomorphisms to lattice gases (liquid-gas coexistence) and binary alloys (order-disorder transitions).
+  - Solve the 1D Ising chain using the transfer matrix method, calculate the spin-spin correlation function, and apply the Peierls kink argument to prove the absence of finite-temperature phase transitions in 1D.
+  - Analyze Onsager's exact 2D square-lattice solution, Kramers-Wannier duality, the critical temperature k_B T_c / J, and the 2D critical exponents governing spontaneous magnetization, susceptibility, and specific heat.
+  - Investigate the finite-size order parameter distribution P_L(M), quantify the interfacial free energy barrier Delta F = 2 sigma L^(d-1), and apply Binder cumulant crossings to locate critical points.
+  - Differentiate non-conserved Glauber dynamics (Model A, curvature-driven domain growth) from conserved Kawasaki dynamics (Model B, diffusion-limited spinodal decomposition and Ostwald ripening).
+  - Quantify critical slowing down tau ~ xi^z, derive the Fortuin-Kasteleyn random cluster representation, and implement non-local Swendsen-Wang and Wolff cluster Monte Carlo algorithms.
   sections:
   - id: sec_ising_hamiltonian_and_mappings
     type: markdown_section
-    title: 1. The Ising Model, Lattice Gases, and Binary Alloys
-    body_markdown: '### The Ising Hamiltonian
-
-
-      Proposed by Wilhelm Lenz (1920) and solved in 1D by Ernst Ising (1925), the Ising model represents discrete magnetic dipoles on a $d$-dimensional lattice. Each site $i \in \{1, \dots, N\}$ carries a scalar spin variable $s_i \in \{-1, +1\}$. The Hamiltonian is:
-
+    title: 1. The Ising Hamiltonian, Global Z_2 Symmetry, Lattice Gases, and Binary Alloys
+    body_markdown: 'The Ising model represents discrete scalar degrees of freedom (magnetic moments or atomic species) residing on the sites of a $d$-dimensional crystal lattice. Each site $i \in \{1, 2, \dots, N\}$ carries a spin variable $s_i \in \{-1, +1\}$. In the presence of a uniform external magnetic field $h$, the total energy of a configuration $\{s_i\}$ is governed by the Hamiltonian:
 
       $$\mathcal{H}(\{s_i\}) = -J \sum_{\langle i, j \rangle} s_i s_j - h \sum_{i=1}^N s_i$$
 
-
-      where $J > 0$ favors ferromagnetic alignment, $\langle i, j \rangle$ denotes distinct nearest-neighbor pairs, and $h$ is an external magnetic field. When $h = 0$, the Hamiltonian possesses a global discrete $\mathbb{Z}_2$ **inversion symmetry**: flipping all spins $s_i \to -s_i$ leaves $\mathcal{H}$ invariant.
-
-
-      ### The Lattice Gas Mapping (Liquid-Gas Coexistence)
+      where $\langle i, j \rangle$ denotes a sum over all distinct nearest-neighbor pairs, and $J$ is the exchange coupling constant. When $J > 0$, neighboring spins lower their energy by aligning parallel (ferromagnetism); when $J < 0$, antiparallel alignment is favored (antiferromagnetism).
 
 
-      The Ising model maps isomorphically to a lattice gas of fluid molecules. Let $n_i \in \{0, 1\}$ denote the occupation number of site $i$ ($n_i = 1$ if occupied, $0$ if empty). Relating the spin to occupation via:
+      ### Global Discrete Symmetry and Spontaneous Symmetry Breaking
+
+      In the absence of an external field ($h = 0$), the Hamiltonian is invariant under the global spin inversion operation:
+
+      $$s_i \to -s_i \quad \forall i \in \{1, \dots, N\} \implies \mathcal{H}(\{-s_i\}) = \mathcal{H}(\{s_i\})$$
+
+      This invariance constitutes a discrete $\mathbb{Z}_2$ symmetry. At high temperatures ($T > T_c$), thermal fluctuations preserve this symmetry in the thermodynamic limit, producing zero net magnetization:
+
+      $$\langle M \rangle = \frac{1}{N}\sum_{i=1}^N \langle s_i \rangle = 0$$
+
+      Below a critical temperature $T_c$ (for dimensions $d \ge 2$), the system undergoes **spontaneous symmetry breaking**, collapsing into one of two degenerate macroscopic phases characterized by non-zero spontaneous magnetization $\pm M_0(T)$.
 
 
-      $$s_i = 2n_i - 1 \iff n_i = \frac{1 + s_i}{2}$$
+      ### Isomorphism 1: The Lattice Gas (Liquid-Gas Coexistence)
+
+      The Ising model maps rigorously onto a classical lattice model of a simple fluid. Let site $i$ have occupation number $n_i \in \{0, 1\}$, where $n_i = 1$ denotes the presence of a fluid molecule and $n_i = 0$ denotes an empty site (vacancy). Multiple occupancy is prohibited by hard-core exclusion. If neighboring occupied sites experience an attractive dispersion well $-\epsilon$ ($\epsilon > 0$) and the system is held at chemical potential $\mu$, the grand canonical Hamiltonian is:
+
+      $$\mathcal{H}_{\text{LG}} = -\epsilon \sum_{\langle i, j \rangle} n_i n_j - \mu \sum_{i=1}^N n_i$$
+
+      Applying the linear coordinate transformation $s_i = 2n_i - 1 \iff n_i = \frac{1 + s_i}{2}$ maps $\mathcal{H}_{\text{LG}}$ directly onto the Ising Hamiltonian with parameters:
+
+      $$J = \frac{\epsilon}{4}, \qquad h = \frac{\mu - \mu_0}{2}, \qquad \mu_0 = -\frac{z\epsilon}{2}$$
+
+      where $z$ is the lattice coordination number. The magnetic transition at $h = 0$ corresponds to liquid-gas phase coexistence along the saturation line $\mu = \mu_0$. The spontaneous magnetization $M$ directly represents the density discontinuity across the first-order liquid-gas coexistence curve:
+
+      $$\rho - \rho_c = \frac{1}{2} M, \qquad \rho_c = \frac{1}{2}$$
 
 
-      The lattice gas grand canonical Hamiltonian with nearest-neighbor attraction $-\epsilon$ and chemical potential $\mu$ is:
+      ### Isomorphism 2: Binary Alloys (Order-Disorder Transitions)
 
-
-      $$\mathcal{H}_{\text{LG}} = -\epsilon \sum_{\langle i, j \rangle} n_i n_j - \mu \sum_i n_i$$
-
-
-      Substituting $n_i = (s_i + 1)/2$ maps this directly to the Ising Hamiltonian with:
-
-
-      $$J = \frac{\epsilon}{4}, \qquad h = \frac{\mu - \mu_0}{2}$$
-
-
-      where $\mu_0 = -z\epsilon / 2$ is the chemical potential at liquid-gas coexistence ($z$ being the lattice coordination number). The spontaneous magnetization $M = \frac{1}{N}\sum s_i$ corresponds to the density difference between liquid and vapor phases:
-
-
-      $$\rho - \rho_c = \frac{1}{2} M$$
-
-
-      ### Binary Alloy Mapping (Order-Disorder Transition)
-
-
-      In a binary alloy (e.g. Cu-Au or Fe-Al), let $s_i = +1$ denote an atom of species $A$ and $s_i = -1$ denote species $B$. Pair interactions $V_{AA}, V_{BB}, V_{AB}$ map onto the Ising model with effective exchange parameter:
-
+      In a crystalline binary alloy comprising atomic species $A$ and $B$ (such as Cu-Au or Fe-Al), let $s_i = +1$ represent an $A$ atom and $s_i = -1$ represent a $B$ atom on site $i$. The nearest-neighbor interaction energies are $V_{AA}$, $V_{BB}$, and $V_{AB}$. The configurational energy is isomorphic to the Ising model with effective exchange parameter:
 
       $$J = \frac{1}{4}(2 V_{AB} - V_{AA} - V_{BB})$$
 
+      - If $J < 0$ (i.e., $2 V_{AB} > V_{AA} + V_{BB}$), like bonds ($A-A$ and $B-B$) are energetically favored, driving low-temperature **phase separation** (clustering/precipitation) into $A$-rich and $B$-rich domains.
 
-      If $J > 0$, unlike neighbors are favored (ordering alloy / antiferromagnet); if $J < 0$, like neighbors are favored (phase-separating mixture).'
-  - id: sec_exact_solutions_and_onsager
+      - If $J > 0$ (i.e., $2 V_{AB} < V_{AA} + V_{BB}$), unlike bonds ($A-B$) are energetically favored, driving low-temperature **chemical ordering** into an interpenetrating superlattice (antiferromagnetic order).'
+  - id: q22_01_sublattice_gauge_transformation
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: Consider an antiferromagnetic Ising model with coupling $J_{\text{AFM}} = -J < 0$ on a bipartite lattice (e.g., a simple cubic or square lattice) partitioned into interpenetrating sublattices $\mathcal{A}$ and $\mathcal{B}$, in zero external magnetic field. Which exact local transformation maps this antiferromagnet onto an equivalent ferromagnetic Ising Hamiltonian with coupling $+J$?
+    hint_markdown: 'Examine the topology of a bipartite graph: every nearest-neighbor bond connects a site in one sublattice to a site in the other sublattice. Consider how an operation acting exclusively on one sublattice alters the sign of each nearest-neighbor product.'
+    options:
+    - id: a
+      text: 'A sublattice spin-inversion gauge transformation: invert all spins on sublattice B (s_j -> -s_j for j in B) while keeping spins on sublattice A unchanged.'
+    - id: b
+      text: 'A global uniform spin inversion: invert every spin on the entire lattice simultaneously (s_i -> -s_i for all i).'
+    - id: c
+      text: A 90-degree spatial rotation of the lattice coordinate axes that transposes nearest neighbors into next-nearest neighbors.
+    - id: d
+      text: 'An imaginary Wick rotation of the temperature variable: beta -> i * beta.'
+    correct: a
+    rationale_markdown: 'On a bipartite lattice, every nearest-neighbor pair $\langle i, j \rangle$ connects site $i \in \mathcal{A}$ to site $j \in \mathcal{B}$. Under the sublattice gauge transformation $s_i \to s_i$ for $i \in \mathcal{A}$ and $s_j \to -s_j$ for $j \in \mathcal{B}$, every bond product changes sign: $s_i s_j \to -s_i s_j$. The interaction term becomes $-(-J) \sum_{\langle i, j \rangle} (-s_i s_j) = -J \sum_{\langle i, j \rangle} s_i s_j$, mapping the antiferromagnet exactly onto a ferromagnet with coupling $+J$ at $h = 0$.'
+  - id: q22_02_geometric_frustration
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: If the same nearest-neighbor antiferromagnetic Ising interaction ($J < 0$) is placed on a triangular lattice rather than a square lattice, the bipartite sublattice mapping fails completely, leading to geometric frustration. What is the fundamental physical consequence of this frustration on the $T = 0$ ground state?
+    hint_markdown: Attempt to assign discrete binary spin values to the three vertices of a single elementary triangle such that every edge simultaneously minimizes the antiferromagnetic exchange energy, and consider the multiplicity of configurations.
+    options:
+    - id: a
+      text: The ground state possesses extensive macroscopic degeneracy, resulting in non-zero residual entropy S_0 > 0 at absolute zero and suppressing conventional long-range Néel order.
+    - id: b
+      text: The system collapses into a unique collinear ferromagnetic state to minimize total bond strain.
+    - id: c
+      text: The critical temperature Tc shifts to infinity because triangular loops amplify thermal correlations.
+    - id: d
+      text: The discrete Z_2 symmetry is dynamically broken into continuous SU(2) gauge symmetry.
+    correct: a
+    rationale_markdown: On an elementary triangular plaquette, it is mathematically impossible to arrange three binary spins ($s_i = \pm 1$) such that all three adjacent pairs are simultaneously antiparallel. At least one bond per triangle is frustrated (satisfied only by parallel alignment). As Gregory Wannier proved in 1950, this competition yields an extensive ground-state degeneracy with non-zero residual zero-point entropy $S_0 / (N k_B) \approx 0.323$, preventing conventional magnetic ordering down to absolute zero.
+  - id: q22_03_lattice_gas_coexistence_chemical_potential
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: In the lattice gas mapping, fluid molecules occupy lattice sites with attractive nearest-neighbor interaction $-\epsilon$ and chemical potential $\mu$. Liquid-gas phase coexistence at temperatures below the critical point corresponds to the zero-field line ($h = 0$) in the Ising ferromagnet. What is the analytical value of the coexistence chemical potential $\mu_0$ on a lattice with coordination number $z$?
+    hint_markdown: Substitute the spin transformation into the lattice gas grand canonical energy expression and identify the linear single-site term that corresponds to the external Zeeman field h in the Ising Hamiltonian.
+    options:
+    - id: a
+      text: mu_0 = -z * epsilon / 2
+    - id: b
+      text: mu_0 = -z * epsilon
+    - id: c
+      text: mu_0 = +z * epsilon / 4
+    - id: d
+      text: mu_0 = 0
+    correct: a
+    rationale_markdown: Expressing $n_i = (1 + s_i)/2$ in $\mathcal{H}_{\text{LG}} = -\epsilon \sum_{\langle i, j \rangle} n_i n_j - \mu \sum_i n_i$ gives the pairwise term $-\frac{\epsilon}{4}\sum (1 + s_i + s_j + s_i s_j)$. Summing over all $N z / 2$ bonds, each site appears in $z$ bonds, producing a linear spin coefficient of $-\frac{z\epsilon}{4} - \frac{\mu}{2}$. Matching this to the Ising field term $-h s_i$ yields $h = \frac{1}{2}(\mu + \frac{z\epsilon}{2})$. Setting $h = 0$ identifies the coexistence chemical potential as $\mu_0 = -\frac{z\epsilon}{2}$.
+  - id: q22_04_binary_alloy_ordering_condition
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: In a crystalline binary alloy with nearest-neighbor bond energies $V_{AA}$, $V_{BB}$, and $V_{AB}$, the configurational energy maps to an Ising model with effective exchange parameter $J = \frac{1}{4}(2 V_{AB} - V_{AA} - V_{BB})$. Which thermodynamic behavior occurs when $2 V_{AB} < V_{AA} + V_{BB}$ at low temperatures?
+    hint_markdown: Evaluate the sign of the effective coupling parameter J under this inequality, and consider whether bonds between like atoms or bonds between unlike atoms are energetically preferred.
+    options:
+    - id: a
+      text: The alloy forms an ordered interpenetrating superlattice (chemical ordering) because unlike A-B pairs have lower energy than like A-A and B-B pairs.
+    - id: b
+      text: The alloy phase-separates into macroscopic A-rich and B-rich domains (miscibility gap) because like pairs are energetically favored.
+    - id: c
+      text: The alloy remains an ideal random solid solution down to absolute zero with zero heat of mixing.
+    - id: d
+      text: The lattice becomes mechanically unstable and undergoes a martensitic shear collapse.
+    correct: a
+    rationale_markdown: When $2 V_{AB} < V_{AA} + V_{BB}$, the reaction $A-A + B-B \to 2 A-B$ is exothermic ($\Delta V < 0$), meaning heteronuclear $A-B$ bonds are energetically favored over homonuclear bonds. In the Ising mapping, this corresponds to $J > 0$ (antiferromagnetic-like atomic ordering when spins represent species alternation), driving the formation of an ordered superlattice (e.g., CuAu or CsCl-type ordering).
+  - id: q22_05_ground_state_energy_numeric
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: A square-lattice Ising ferromagnet containing $N = 250$ sites with periodic boundary conditions has nearest-neighbor exchange coupling $J = 2.4\text{ meV}$ and zero external magnetic field. Determine the total ground state energy $E_{\text{ground}}$ in meV when all spins are fully aligned.
+    hint_markdown: Consider how many total nearest-neighbor bonds exist on a square lattice with periodic boundaries where each site has four nearest neighbors, and account for the energy contributed by each parallel bond.
+    correct:
+      value: -1200.0
+      tolerance: 1.0
+    unit: meV
+    rationale_markdown: On a square lattice with periodic boundary conditions, each site has coordination number $z = 4$. Because each bond connects 2 sites, the total number of distinct nearest-neighbor pairs is $N_{\text{bonds}} = \frac{1}{2} z N = \frac{1}{2}(4)(250) = 500$. In the fully aligned ground state, $s_i s_j = (+1)(+1) = +1$ for every bond. The total energy is $E_{\text{ground}} = -J N_{\text{bonds}} = -2.4\text{ meV} \times 500 = -1200.0\text{ meV}$.
+  - id: q22_06_single_spin_flip_energy_numeric
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: For the ferromagnet in the preceding problem ($N = 250$, $J = 2.4\text{ meV}$, square lattice), starting from the fully aligned ground state, a single spin in the interior of the crystal is flipped antiparallel to its neighbors. Calculate the resulting change in system energy $\Delta E$ in meV.
+    hint_markdown: Identify how many nearest-neighbor bonds have their relative spin alignment altered by flipping one interior spin, and evaluate the difference in bond energy between an antiparallel pair and a parallel pair.
+    correct:
+      value: 19.2
+      tolerance: 0.2
+    unit: meV
+    rationale_markdown: Flipping a single site $k$ affects exactly its $z = 4$ nearest-neighbor bonds. Before the flip, each bond contributed $-J$ to the energy; after the flip, each bond has antiparallel spins and contributes $+J$. The change per bond is $+J - (-J) = +2J$. For $z = 4$ bonds, the net energy change is $\Delta E = 2 z J = 2(4)(2.4\text{ meV}) = 19.2\text{ meV}$.
+  - id: q22_07_lattice_gas_compressibility_relation
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_ising_hamiltonian_and_mappings
+    prompt_markdown: Under the lattice gas isomorphism, how does the isothermal compressibility $\kappa_T = -\frac{1}{V}\left(\frac{\partial V}{\partial P}\right)_T = \frac{1}{\rho^2}\left(\frac{\partial \rho}{\partial \mu}\right)_T$ of the fluid behave as the liquid-gas critical point is approached along the critical isochore?
+    hint_markdown: Relate the density derivative with respect to chemical potential to the magnetic susceptibility chi_T = (partial M / partial h)_T in the Ising model, and recall the behavior of magnetic susceptibility at second-order phase transitions.
+    options:
+    - id: a
+      text: It diverges to infinity with critical exponent gamma, mirroring the divergence of the magnetic susceptibility chi_T in the Ising ferromagnet.
+    - id: b
+      text: It drops discontinuously to zero because liquid and vapor densities equalize.
+    - id: c
+      text: It remains strictly constant and equal to 1 / (rho_c * k_B * T).
+    - id: d
+      text: It develops an imaginary component associated with mechanical cavitation.
+    correct: a
+    rationale_markdown: In the lattice gas mapping, fluid density is $\rho = \frac{1}{2}(1 + M)$ and chemical potential is related to magnetic field by $d\mu = 2 dh$. Differentiating gives $\left(\frac{\partial \rho}{\partial \mu}\right)_T = \frac{1}{4}\left(\frac{\partial M}{\partial h}\right)_T = \frac{1}{4}\chi_T$. Because the isothermal compressibility is proportional to $\left(\frac{\partial \rho}{\partial \mu}\right)_T$, $\kappa_T$ diverges near the critical point as $|T - T_c|^{-\gamma}$. This massive density fluctuation divergence is the physical origin of **critical opalescence**.
+  - id: sec_exact_solutions_and_transfer_matrix
     type: markdown_section
-    title: '2. Exact Solutions: 1D Transfer Matrix and 2D Onsager Theorem'
-    body_markdown: '### The 1D Ising Chain and the Transfer Matrix
+    title: '2. Exact Solutions: The 1D Transfer Matrix and Non-Existence of 1D Phase Transitions'
+    body_markdown: '### The 1D Ising Chain and the Transfer Matrix Method
 
+      Consider a linear chain of $N$ spins with periodic boundary conditions ($s_{N+1} = s_1$) in a uniform field $h$. The Hamiltonian is:
 
-      For a 1D chain of $N$ spins with periodic boundary conditions ($s_{N+1} = s_1$) in field $h$, the partition function is:
+      $$\mathcal{H} = -J \sum_{i=1}^N s_i s_{i+1} - \frac{h}{2} \sum_{i=1}^N (s_i + s_{i+1})$$
 
+      The canonical partition function factorizes over the bonds:
 
-      $$Z = \sum_{\{s_i\}} \prod_{i=1}^N \exp\left[ \beta J s_i s_{i+1} + \frac{1}{2}\beta h (s_i + s_{i+1}) \right] = \text{Tr}\left( \mathbf{T}^N \right)$$
+      $$Z_N = \sum_{s_1=\pm 1} \dots \sum_{s_N=\pm 1} \prod_{i=1}^N T(s_i, s_{i+1}) = \text{Tr}\left(\mathbf{T}^N\right)$$
 
-
-      where $\mathbf{T}$ is the $2 \times 2$ **transfer matrix**:
-
+      where $\mathbf{T}$ is the $2 \times 2$ **transfer matrix** with elements $T(s, s'') = \exp\left[\beta J s s'' + \frac{1}{2}\beta h (s + s'')\right]$:
 
       $$\mathbf{T} = \begin{pmatrix} e^{\beta(J + h)} & e^{-\beta J} \\ e^{-\beta J} & e^{\beta(J - h)} \end{pmatrix}$$
 
+      In zero external field ($h = 0$), the eigenvalues are found from $\det(\mathbf{T} - \lambda \mathbf{I}) = 0$:
 
-      The eigenvalues of $\mathbf{T}$ for $h = 0$ are $\lambda_1 = 2\cosh(\beta J)$ and $\lambda_2 = 2\sinh(\beta J)$. In the thermodynamic limit $N \to \infty$, the partition function is dominated by the largest eigenvalue:
+      $$\lambda_1 = 2\cosh(\beta J), \qquad \lambda_2 = 2\sinh(\beta J)$$
 
+      Since $\beta J > 0$, $\lambda_1 > \lambda_2 > 0$ strictly for all finite temperatures ($T > 0$). In the thermodynamic limit ($N \to \infty$), the partition function and free energy per spin are determined entirely by the largest eigenvalue:
 
-      $$Z = \lambda_1^N + \lambda_2^N = \lambda_1^N \left[ 1 + \left( \frac{\lambda_2}{\lambda_1} \right)^N \right] \approx \lambda_1^N = (2\cosh\beta J)^N$$
-
-
-      The spin-spin correlation function is:
-
-
-      $$\langle s_i s_{i+r} \rangle = \left( \frac{\lambda_2}{\lambda_1} \right)^r = (\tanh\beta J)^r = e^{-r / \xi}$$
+      $$f(T, 0) = -\lim_{N \to \infty} \frac{k_B T}{N} \ln Z_N = -k_B T \ln \lambda_1 = -k_B T \ln(2\cosh\beta J)$$
 
 
-      where the correlation length is $\xi = -1 / \ln(\tanh\beta J) \approx \frac{1}{2} e^{2\beta J}$ as $T \to 0$. Because $\lambda_1 > \lambda_2 > 0$ for all $T > 0$, the free energy is strictly analytic: **there is no phase transition at any finite temperature in 1D!**
+      ### Spin-Spin Correlation Function and Correlation Length
+
+      The zero-field spin-spin correlation function between two sites separated by distance $r$ lattice units is computed by inserting Pauli $\sigma_z$ operators into the trace:
+
+      $$\langle s_i s_{i+r} \rangle = \frac{\lambda_1^{N-r} \lambda_2^r + \lambda_2^{N-r} \lambda_1^r}{\lambda_1^N + \lambda_2^N} \xrightarrow{N \to \infty} \left(\frac{\lambda_2}{\lambda_1}\right)^r = (\tanh\beta J)^r$$
+
+      Writing this in the standard exponential decay form $\langle s_i s_{i+r} \rangle = \exp(-r / \xi)$ yields the exact correlation length:
+
+      $$\xi(T) = -\frac{1}{\ln(\tanh\beta J)}$$
+
+      At low temperatures ($T \to 0$, $\beta J \to \infty$), $\tanh(\beta J) \approx 1 - 2e^{-2\beta J}$, giving $\xi(T) \approx \frac{1}{2} e^{2\beta J}$. The correlation length diverges only at $T = 0$, confirming that long-range order cannot persist at any non-zero temperature in one dimension.
 
 
-      ### Onsager''s Exact 2D Solution (1944)
+      ### The Peierls Kink (Domain Wall) Argument in 1D
 
+      Why can no 1D system with short-range interactions order at $T > 0$? Consider a fully aligned ferromagnetic ground state ($s_i = +1$ for all $i$). Inserting a single domain wall (kink) that flips all spins to the right of position $k$ into $s_i = -1$ disrupts exactly one nearest-neighbor bond:
 
-      Lars Onsager solved the zero-field 2D square lattice Ising model exactly. The critical coupling satisfies:
+      - **Energetic Cost:** $\Delta E = 2J$ (a finite, constant energy independent of system size $N$).
 
+      - **Entropic Gain:** The domain wall can be placed between any of the $N$ pairs of adjacent sites. The configurational entropy is $\Delta S = k_B \ln N$.
 
-      $$\sinh(2\beta_c J) = 1 \implies \beta_c J = \frac{1}{2} \ln(1 + \sqrt{2}) \approx 0.440687$$
+      - **Free Energy Change:**
 
+      $$\Delta F = \Delta E - T \Delta S = 2J - k_B T \ln N$$
 
-      which yields the exact critical temperature:
+      For any temperature $T > 0$, as $N \to \infty$, the entropic term $-k_B T \ln N \to -\infty$ completely overwhelms the finite energetic barrier $\Delta E = 2J$. Therefore, domain walls spontaneously proliferate at any non-zero temperature, destroying long-range order.'
+  - id: q22_08_transfer_matrix_eigenvalues
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_exact_solutions_and_transfer_matrix
+    prompt_markdown: In the transfer matrix solution of the 1D Ising model with periodic boundary conditions, why does the free energy per spin $f(T) = -k_B T \lim_{N \to \infty} \frac{1}{N}\ln Z_N$ depend exclusively on the largest eigenvalue $\lambda_1$ in the thermodynamic limit?
+    hint_markdown: Factor lambda_1^N out of the partition function expression Z_N = lambda_1^N + lambda_2^N and examine the behavior of the remaining term as N approaches infinity.
+    options:
+    - id: a
+      text: Because factoring Z_N = lambda_1^N [1 + (lambda_2 / lambda_1)^N] reveals that (lambda_2 / lambda_1)^N vanishes exponentially as N -> infinity when lambda_1 > lambda_2.
+    - id: b
+      text: Because the trace of a matrix is mathematically identical to its largest eigenvalue.
+    - id: c
+      text: Because the second eigenvalue lambda_2 is strictly zero at all temperatures.
+    - id: d
+      text: Because quantum tunneling forces all lower eigenstates to collapse.
+    correct: a
+    rationale_markdown: The partition function is $Z_N = \text{Tr}(\mathbf{T}^N) = \lambda_1^N + \lambda_2^N = \lambda_1^N \left[1 + \left(\frac{\lambda_2}{\lambda_1}\right)^N\right]$. Taking $\frac{1}{N}\ln Z_N = \ln \lambda_1 + \frac{1}{N}\ln\left[1 + \left(\frac{\lambda_2}{\lambda_1}\right)^N\right]$. Since $\lambda_1 > \lambda_2$, the ratio $\frac{\lambda_2}{\lambda_1} < 1$, so $\left(\frac{\lambda_2}{\lambda_1}\right)^N \to 0$ exponentially as $N \to \infty$. The correction to the free energy scales as $\mathcal{O}\left(\frac{1}{N}\right)$, making $f(T) = -k_B T \ln \lambda_1$ exact in the thermodynamic limit.
+  - id: q22_09_correlation_function_eigenvalue_ratio
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_exact_solutions_and_transfer_matrix
+    prompt_markdown: For the zero-field 1D Ising chain, the spin-spin correlation function between two spins separated by $r$ lattice sites is $\langle s_i s_{i+r} \rangle = (\lambda_2 / \lambda_1)^r$. In terms of the exchange coupling $J$ and temperature $T$, what is the exact algebraic ratio $\lambda_2 / \lambda_1$?
+    hint_markdown: Evaluate the ratio of the two zero-field eigenvalues lambda_2 = 2 sinh(beta J) and lambda_1 = 2 cosh(beta J).
+    options:
+    - id: a
+      text: tanh(beta * J)
+    - id: b
+      text: coth(beta * J)
+    - id: c
+      text: exp(-2 * beta * J)
+    - id: d
+      text: sech(beta * J)
+    correct: a
+    rationale_markdown: The zero-field eigenvalues of the transfer matrix are $\lambda_1 = 2\cosh(\beta J)$ and $\lambda_2 = 2\sinh(\beta J)$. Their ratio is simply $\frac{\lambda_2}{\lambda_1} = \frac{2\sinh(\beta J)}{2\cosh(\beta J)} = \tanh(\beta J)$.
+  - id: q22_10_correlation_length_numeric
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_exact_solutions_and_transfer_matrix
+    prompt_markdown: For a 1D Ising chain in zero magnetic field governed by nearest-neighbor coupling $J$, transfer matrix analysis establishes that the spin-spin correlation function decays exponentially as $\langle s_i s_{i+r} \rangle = e^{-r / \xi}$. At an elevated temperature where the nearest-neighbor spin correlation parameter is measured to be $\tanh(\beta J) = 0.82$, calculate the spatial correlation length $\xi$ in units of the lattice spacing.
+    hint_markdown: Relate the spatial decay rate of the spin correlation function across r lattice sites to the natural logarithm of the transfer matrix eigenvalue ratio lambda_2 / lambda_1 = tanh(beta J).
+    correct:
+      value: 5.04
+      tolerance: 0.05
+    rationale_markdown: Matching the correlation function forms gives $(\tanh\beta J)^r = e^{-r / \xi}$, which implies $\ln(\tanh\beta J) = -1/\xi$, or $\xi = -\frac{1}{\ln(\tanh\beta J)}$. For $\tanh(\beta J) = 0.82$, we evaluate $\ln(0.82) \approx -0.19845$. Thus $\xi = -\frac{1}{-0.19845} \approx 5.039 \approx 5.04$ lattice units.
+  - id: q22_11_peierls_kink_argument
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_exact_solutions_and_transfer_matrix
+    prompt_markdown: In the Peierls argument for the 1D Ising chain, why does the free energy change to create a single domain boundary, $\Delta F = 2J - k_B T \ln N$, guarantee the destruction of spontaneous magnetization at any finite temperature $T > 0$ as $N \to \infty$, whereas the corresponding argument in $d = 2$ allows stable ferromagnetic order?
+    hint_markdown: Compare how the energetic cost of an enclosing domain boundary scales with its geometric perimeter/area versus how the number of possible boundary configurations (entropy) scales in one dimension versus two dimensions.
+    options:
+    - id: a
+      text: In 1D, the energetic barrier Delta E = 2J is independent of system size while entropy grows as ln N, driving Delta F -> -infinity. In 2D, enclosing a domain of linear size L costs energy scaling with perimeter (Delta E ~ 2 sigma L), which overwhelms boundary configurational entropy at sufficiently low temperatures.
+    - id: b
+      text: In 1D, spins are prohibited by quantum uncertainty from having discrete values, whereas 2D spins are classical vectors.
+    - id: c
+      text: In 2D, domain walls cannot form closed loops due to topological conservation laws.
+    - id: d
+      text: The 1D transfer matrix has imaginary eigenvalues, which destabilizes boundary walls.
+    correct: a
+    rationale_markdown: In 1D, a domain wall is a zero-dimensional point separating two semi-infinite domains. Its energy cost is constant ($\Delta E = 2J$), but its entropy $\Delta S = k_B \ln N$ diverges as $N \to \infty$, meaning $\Delta F = 2J - k_B T \ln N < 0$ for any $T > 0$. In 2D, an island of reversed spins is enclosed by a 1D contour of perimeter $P$. The energy cost grows linearly with perimeter ($\Delta E = 2 J P$), while the number of self-avoiding closed contours of perimeter $P$ scales as $\mu^P$. The free energy change is $\Delta F \ge (2J - k_B T \ln \mu) P$. For $T < T_c \approx 2J / (k_B \ln \mu)$, $\Delta F > 0$ and increases with perimeter, suppressing large domain fluctuations and stabilizing spontaneous order.
+  - id: q22_12_specific_heat_schottky_anomaly
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_exact_solutions_and_transfer_matrix
+    prompt_markdown: How does the zero-field specific heat capacity $C_V(T) = -T \frac{\partial^2 f}{\partial T^2}$ of the 1D Ising chain behave as a function of temperature?
+    hint_markdown: Differentiate the 1D free energy per spin f = -k_B T ln(2 cosh(beta J)) twice with respect to temperature and observe whether any mathematical singularity arises at non-zero T.
+    options:
+    - id: a
+      text: It exhibits a broad, perfectly analytic Schottky-like peak that drops smoothly to zero both as T -> 0 and as T -> infinity, with no mathematical singularity at any non-zero temperature.
+    - id: b
+      text: It diverges logarithmically C_V ~ ln|T - T_c| at a finite critical temperature.
+    - id: c
+      text: It undergoes a discontinuous jump of Delta C_V = 3/2 k_B as predicted by mean-field theory.
+    - id: d
+      text: It remains strictly zero at all temperatures because 1D chains cannot absorb thermal energy.
+    correct: a
+    rationale_markdown: The internal energy per spin is $u = -J \tanh(\beta J)$. Differentiating with respect to $T$ yields $C_V = k_B (\beta J)^2 \operatorname{sech}^2(\beta J)$. This function is strictly analytic for all $T > 0$. It forms a smooth Schottky maximum near $k_B T \approx 0.83 J$ and decays smoothly to zero at both $T \to 0$ and $T \to \infty$, confirming the complete absence of a thermodynamic phase transition.
+  - id: q22_13_boundary_condition_invariance
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_exact_solutions_and_transfer_matrix
+    prompt_markdown: Consider solving the 1D Ising chain with open boundary conditions ($s_1$ and $s_N$ have only one neighbor) versus periodic boundary conditions ($s_{N+1} = s_1$). How does the choice of boundary conditions affect the free energy per spin in the thermodynamic limit $N \to \infty$?
+    hint_markdown: Consider the fraction of total bonds that are modified when transitioning from periodic to open boundaries in a chain of length N.
+    options:
+    - id: a
+      text: The free energy per spin is strictly identical in the thermodynamic limit because the boundary contributes an energy of order O(1), which vanishes when divided by N as N -> infinity.
+    - id: b
+      text: Open boundary conditions induce a finite-temperature phase transition, whereas periodic boundaries prevent it.
+    - id: c
+      text: Periodic boundaries double the critical temperature relative to open boundaries.
+    - id: d
+      text: The free energy per spin diverges under open boundaries due to boundary spin unbinding.
+    correct: a
+    rationale_markdown: Changing from periodic to open boundaries alters exactly one interaction bond (the $s_N s_1$ term), changing the total energy by at most $2J$. In the thermodynamic limit, the difference in free energy per spin is $\Delta f = \frac{\mathcal{O}(J)}{N} \to 0$ as $N \to \infty$. Bulk intensive thermodynamic properties are completely independent of boundary conditions in the thermodynamic limit.
+  - id: sec_onsager_solution_and_critical_phenomena
+    type: markdown_section
+    title: 3. Onsager's Exact 2D Solution & Critical Phenomena
+    body_markdown: '### Kramers-Wannier Duality and Onsager''s Critical Point
 
+      In 1941, Hendrik Kramers and Gregory Wannier discovered an exact duality relating the high-temperature and low-temperature expansions of the 2D square-lattice Ising model on dual lattices. High-temperature graphs of $\tanh(\beta J)$ map directly onto low-temperature domain wall graphs of $e^{-2\beta^* J}$. The self-dual transformation condition:
+
+      $$\sinh(2\beta J) \sinh(2\beta^* J) = 1$$
+
+      identifies the unique self-dual point $\beta = \beta^* = \beta_c$, which must be the critical point if only a single phase transition exists:
+
+      $$\sinh(2\beta_c J) = 1 \implies 2\beta_c J = \ln(1 + \sqrt{2}) \approx 0.8813736$$
+
+      Inverting this yields Lars Onsager''s celebrated 1944 exact critical temperature:
 
       $$\frac{k_B T_c}{J} = \frac{2}{\ln(1 + \sqrt{2})} \approx 2.269185$$
 
 
-      C. N. Yang (1952) subsequently derived the exact spontaneous magnetization below $T_c$:
+      ### Spontaneous Magnetization and Critical Exponents
 
+      Onsager announced and C. N. Yang (1952) rigorously derived the exact spontaneous magnetization below $T_c$:
 
       $$M_0(T) = \left[ 1 - \frac{1}{[\sinh(2\beta J)]^4} \right]^{1/8} \quad (T < T_c)$$
 
+      Near $T_c$, expanding $\sinh(2\beta J)$ yields $M_0(T) \propto (T_c - T)^{\beta}$ with the exact order-parameter critical exponent $\beta = 1/8 = 0.125$. The complete set of exact 2D Ising critical exponents is:
 
-      Near $T_c$, $M_0(T) \propto (T_c - T)^{\beta}$ with critical exponent $\beta = 1/8 = 0.125$ (distinct from mean-field $\beta_{\text{MF}} = 1/2$).'
-  - id: sec_magnetization_distribution_and_interfaces
+      - **Specific Heat:** $C_V \propto -\ln|1 - T/T_c| \implies \alpha = 0$ (logarithmic divergence)
+
+      - **Spontaneous Magnetization:** $M_0 \propto (T_c - T)^{\beta} \implies \beta = 1/8 = 0.125$
+
+      - **Isothermal Susceptibility:** $\chi_T \propto |T - T_c|^{-\gamma} \implies \gamma = 7/4 = 1.75$
+
+      - **Correlation Length:** $\xi \propto |T - T_c|^{-\nu} \implies \nu = 1$
+
+      - **Critical Correlation Decay:** $G(r) \propto r^{-(d - 2 + \eta)} = r^{-\eta} \implies \eta = 1/4 = 0.25$
+
+
+      ### Hyperscaling Relations and Breakdown of Mean-Field Theory
+
+      These exponents satisfy the universal scaling relations derived from the renormalization group:
+
+      - **Rushbrooke Equality:** $\alpha + 2\beta + \gamma = 0 + 2(1/8) + 7/4 = 2$
+
+      - **Josephson Hyperscaling:** $d\nu = 2 - \alpha \implies 2(1) = 2 - 0 = 2$
+
+      - **Fisher Relation:** $\gamma = \nu(2 - \eta) \implies 7/4 = 1(2 - 1/4) = 7/4$
+
+      By contrast, Landau Mean-Field Theory predicts $\alpha_{\text{MF}} = 0$ (step discontinuity), $\beta_{\text{MF}} = 1/2$, $\gamma_{\text{MF}} = 1$, and $\nu_{\text{MF}} = 1/2$. Mean-field theory completely fails in $d = 2$ because it neglects local thermal fluctuations. By the Ginzburg criterion, mean-field critical exponents only become quantitatively exact above the **upper critical dimension** $d_u = 4$.'
+  - id: q22_14_kramers_wannier_duality
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_onsager_solution_and_critical_phenomena
+    prompt_markdown: How did Kramers and Wannier pinpoint the exact critical coupling of the 2D square-lattice Ising model prior to Onsager's full solution of the partition function?
+    hint_markdown: Consider how a high-temperature expansion in terms of closed loop bonds on a lattice maps onto a low-temperature expansion in terms of domain wall boundaries on the dual lattice.
+    options:
+    - id: a
+      text: By establishing an exact mathematical duality relating the high-temperature expansion on the square lattice to the low-temperature domain wall expansion on its dual lattice, and identifying the self-dual fixed point sinh(2*beta*J) = 1.
+    - id: b
+      text: By performing high-precision Monte Carlo simulations on mechanical vacuum tube computers.
+    - id: c
+      text: By diagonalizing infinite-dimensional Toeplitz determinants using Wiener-Hopf techniques.
+    - id: d
+      text: By applying the Hartree-Fock self-consistent field approximation to the spin density.
+    correct: a
+    rationale_markdown: Kramers and Wannier demonstrated that the high-temperature series expansion of the square-lattice partition function (formulated in terms of graphs of $\tanh \beta J$) is mathematically isomorphic to the low-temperature series expansion (formulated in terms of domain walls of $e^{-2\beta^* J}$) on the dual lattice. Because the square lattice is self-dual (its dual lattice is also a square lattice), assuming a single phase transition implies the critical point must occur at the self-dual condition $\sinh(2\beta_c J) = 1$.
+  - id: q22_15_onsager_tc_numeric
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_onsager_solution_and_critical_phenomena
+    prompt_markdown: Onsager's exact analytical solution for the 2D square-lattice Ising ferromagnet establishes that the critical point is determined by the self-dual Kramers-Wannier relation $\sinh(2\beta_c J) = 1$, where $\beta_c = 1/(k_B T_c)$. Calculate the dimensionless critical temperature $k_B T_c / J$ to 3 decimal places.
+    hint_markdown: Use the inverse hyperbolic sine relation or express sinh(x) in terms of exponentials to solve for the critical argument 2*beta_c*J, and subsequently invert the thermal coupling to obtain the reduced temperature.
+    correct:
+      value: 2.269
+      tolerance: 0.005
+    rationale_markdown: From $\sinh(2\beta_c J) = 1$, we have $2\beta_c J = \operatorname{arsinh}(1) = \ln(1 + \sqrt{1^2 + 1}) = \ln(1 + \sqrt{2}) \approx 0.8813736$. Therefore, $\beta_c J = \frac{1}{2}\ln(1 + \sqrt{2})$, which gives $\frac{k_B T_c}{J} = \frac{1}{\beta_c J} = \frac{2}{\ln(1 + \sqrt{2})} = \frac{2}{0.8813736} \approx 2.269185 \approx 2.269$.
+  - id: q22_16_spontaneous_magnetization_exponent
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_onsager_solution_and_critical_phenomena
+    prompt_markdown: Below $T_c$, Yang's exact formula demonstrates that the spontaneous magnetization vanishes as $M_0(T) \propto (T_c - T)^{\beta}$. How does the exact 2D critical exponent $\beta$ compare to the value predicted by classical Mean-Field Theory?
+    hint_markdown: Recall Yang's eighth-root formula for spontaneous magnetization versus the square-root dependence derived from truncating the Landau free energy at fourth order.
+    options:
+    - id: a
+      text: beta = 1/8 = 0.125 in the 2D Ising model, which is four times smaller than the mean-field prediction of beta_MF = 1/2 = 0.50, causing magnetization to rise much more sharply below Tc.
+    - id: b
+      text: beta = 1/2 in both 2D and mean-field theory because critical exponents are strictly dimension-independent.
+    - id: c
+      text: beta = 1/4 in 2D and beta_MF = 1/8 in mean-field theory.
+    - id: d
+      text: beta = 1 in 2D, indicating a linear decrease of magnetization to zero.
+    correct: a
+    rationale_markdown: 'In 2D, intense critical fluctuations steepen the onset of order: $\beta = 1/8 = 0.125$. In Landau mean-field theory, minimizing $f(m) = a(T-T_c)m^2 + b m^4$ yields $m_0 = \sqrt{-a(T-T_c)/(2b)} \propto (T_c - T)^{1/2}$, yielding $\beta_{\text{MF}} = 1/2$. The true 2D magnetization rises far more abruptly below $T_c$ than mean-field predicts.'
+  - id: q22_17_2d_critical_exponents_multiselect
+    type: problem
+    question_type: multi_select
+    difficulty: hard
+    taught_by: sec_onsager_solution_and_critical_phenomena
+    prompt_markdown: Which of the following statements correctly specify the exact critical exponents and scaling properties of the 2D Ising universality class? *(Select all that apply.)*
+    hint_markdown: Check each exponent against Onsager's exact solution and verify whether the hyperscaling relation d*nu = 2 - alpha is satisfied.
+    options:
+    - id: a
+      text: The correlation length exponent is nu = 1, meaning the spatial correlation length diverges as xi ~ |T - Tc|^(-1).
+    - id: b
+      text: The magnetic susceptibility exponent is gamma = 7/4 = 1.75, far stronger than the mean-field divergence of gamma_MF = 1.
+    - id: c
+      text: The specific heat exponent alpha = 0 corresponds to a symmetric logarithmic divergence C_V ~ -ln|T - Tc| rather than a power law.
+    - id: d
+      text: The critical correlation function at T = Tc decays as G(r) ~ r^(-1/4), giving anomalous dimension eta = 1/4.
+    - id: e
+      text: The upper critical dimension is d_u = 2, so mean-field exponents are exact in two dimensions.
+    correct:
+    - a
+    - b
+    - c
+    - d
+    rationale_markdown: 'The exact 2D Ising exponents are $\alpha = 0$ (logarithmic singularity), $\beta = 1/8$, $\gamma = 7/4$, $\nu = 1$, and $\eta = 1/4$. They satisfy all scaling and hyperscaling laws (e.g., $d\nu = 2(1) = 2 - \alpha$). Option e is false: the upper critical dimension is $d_u = 4$; mean-field theory fails dramatically in $d = 2$.'
+  - id: q22_18_rushbrooke_scaling_law
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_onsager_solution_and_critical_phenomena
+    prompt_markdown: Thermodynamic stability requires that the magnetic susceptibility, specific heat, and spontaneous magnetization satisfy the Rushbrooke scaling relation. What is the universal algebraic relationship between the critical exponents $\alpha$, $\beta$, and $\gamma$?
+    hint_markdown: Differentiate the singular part of the free energy scaling hypothesis f_sing ~ |T - Tc|^(2 - alpha) twice with respect to temperature and magnetic field.
+    options:
+    - id: a
+      text: alpha + 2*beta + gamma = 2
+    - id: b
+      text: alpha + beta + gamma = 1
+    - id: c
+      text: alpha * beta * gamma = 2
+    - id: d
+      text: 2*alpha + beta - gamma = 0
+    correct: a
+    rationale_markdown: 'The Rushbrooke scaling equality $\alpha + 2\beta + \gamma = 2$ follows from thermodynamic stability (the non-negativity of isothermal compressibility/susceptibility and specific heat) and the Widom scaling hypothesis. Substituting the 2D Ising values: $\alpha = 0$, $\beta = 1/8$, and $\gamma = 7/4$ yields $0 + 2(1/8) + 7/4 = 1/4 + 7/4 = 8/4 = 2$, identically verifying the equality.'
+  - id: q22_19_upper_critical_dimension
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_onsager_solution_and_critical_phenomena
+    prompt_markdown: According to the Ginzburg criterion, what is the upper critical dimension $d_u$ for the Ising universality class, and what physical change occurs when spatial dimension $d \ge d_u$?
+    hint_markdown: Consider the spatial dimension above which order-parameter fluctuations become negligible compared to mean-field thermal averages over a correlation volume xi^d.
+    options:
+    - id: a
+      text: d_u = 4; above four dimensions, thermal fluctuations on length scales xi become negligible over correlation volumes, rendering Landau mean-field critical exponents exact.
+    - id: b
+      text: d_u = 2; above two dimensions, phase transitions cease to exist.
+    - id: c
+      text: d_u = 3; systems in three dimensions always have mean-field exponents.
+    - id: d
+      text: d_u = infinity; fluctuations dominate in all finite dimensions.
+    correct: a
+    rationale_markdown: The Ginzburg criterion balances order parameter variance against the square of the mean order parameter over a correlation volume $\xi^d$. In dimensions $d < 4$, fluctuations diverge faster than the mean, altering the critical exponents away from mean-field values. At and above the upper critical dimension $d_u = 4$, phase space is sufficiently high-dimensional that fluctuations do not alter critical scaling, making mean-field exponents ($\alpha=0, \beta=1/2, \gamma=1, \nu=1/2$) exact (up to logarithmic corrections at $d=4$).
+  - id: sec_order_parameter_distribution_and_interfaces
     type: markdown_section
-    title: 3. The Finite-Size Magnetization Distribution and Interfacial Tension
+    title: 4. Finite-Size Order Parameter Distributions, Interfacial Tension & Binder Cumulants
     body_markdown: '### The Order Parameter Distribution $P_L(M)$
 
+      In a finite lattice of linear dimension $L$ ($N = L^d$ spins), the total magnetization per spin is $M = \frac{1}{N}\sum_{i=1}^N s_i$. The probability density $P_L(M)$ provides a direct window into the finite-size Landau free energy landscape $\mathcal{F}_L(M) = -k_B T \ln P_L(M)$:
 
-      In a finite lattice of linear dimension $L$ ($N = L^d$ spins), the total magnetization per spin is $M = \frac{1}{N}\sum_{i=1}^N s_i$. The probability density $P_L(M)$ reveals the underlying Landau effective free energy $\mathcal{F}_L(M) = -k_B T \ln P_L(M)$:
+      1. **Disordered Phase ($T > T_c$):** Thermal fluctuations are uncorrelated across distances greater than $\xi \ll L$. By the Central Limit Theorem, $P_L(M)$ is a single Gaussian centered at $M = 0$ with variance $\sigma_M^2 = k_B T \chi_T / N$.
 
-
-      1. **High-Temperature Disordered Phase ($T > T_c$):** Spins are largely uncorrelated ($\xi \ll L$). By the Central Limit Theorem, $P_L(M)$ is a single Gaussian centered at $M = 0$:
-
-
-      $$P_L(M) \propto \exp\left( -\frac{N M^2}{2 k_B T \chi_T} \right)$$
-
-
-      2. **Critical Point ($T = T_c$):** Fluctuations occur on all length scales up to $L$ ($\xi \sim L$). The Gaussian term vanishes, and $P_L(M)$ flattens into a non-Gaussian distribution governed by the quartic term:
-
+      2. **Critical Point ($T = T_c$):** Fluctuations become scale-invariant ($\xi \sim L$). The Gaussian quadratic coefficient vanishes, and $P_L(M)$ flattens into a non-Gaussian distribution governed by the quartic term:
 
       $$P_L(M) \propto \exp\left( -u L^{d - 4\beta/\nu} M^4 \right)$$
 
-
-      3. **Low-Temperature Ordered Phase ($T < T_c$):** Spontaneous symmetry breaking splits $P_L(M)$ into **two symmetric peaks** at $M \approx \pm M_0(T)$. Configurations near $M = 0$ must contain two system-spanning domain walls separating regions of spin up and spin down.
-
-
-      ### Interfacial Free Energy Barrier
+      3. **Ordered Phase ($T < T_c$):** Spontaneous symmetry breaking splits $P_L(M)$ into **two symmetric peaks** centered near $\pm M_0(T)$. In a finite box with $h = 0$, exact $\mathbb{Z}_2$ inversion symmetry ensures $\langle M \rangle = 0$, but the peaks are separated by a deep free energy barrier at $M = 0$.
 
 
-      The free energy penalty to create two flat domain walls of cross-sectional area $L^{d-1}$ is:
+      ### Interfacial Tension and Periodic Domain Walls
 
+      To sample configurations with $M \approx 0$ at $T < T_c$, the simulation box must form coexistence between $+M_0$ and $-M_0$ phases. Under periodic boundary conditions, topological closure requires an even number of interfaces: a minimum of **two flat domain walls** of cross-sectional area $L^{d-1}$ spanning the periodic boundary. The excess free energy penalty is:
 
       $$\Delta \mathcal{F}_L = 2 \sigma(T) L^{d-1}$$
 
+      where $\sigma(T)$ is the interfacial free energy per unit area. The probability ratio between the minimum at $M = 0$ and the peaks at $\pm M_0$ scales as:
 
-      where $\sigma(T)$ is the surface tension between $+M_0$ and $-M_0$ phases. Consequently, the probability of visiting $M = 0$ is suppressed exponentially:
+      $$\frac{P_L(0)}{P_L(M_0)} \propto \exp\left( -\frac{\Delta \mathcal{F}_L}{k_B T} \right) = \exp\left( -\frac{2 \sigma(T) L^{d-1}}{k_B T} \right)$$
+
+      As $L \to \infty$, this barrier diverges, causing spontaneous ergodicity breaking in the thermodynamic limit.
 
 
-      $$\frac{P_L(M = 0)}{P_L(M = M_0)} \approx \exp\left( -2\beta \sigma(T) L^{d-1} \right)$$
+      ### The Binder Fourth-Order Cumulant
 
+      Kurt Binder (1981) introduced a dimensionless cumulant that cleanly locates critical points independently of unknown non-universal constants:
 
-      In Monte Carlo simulations with local single-spin flips, tunneling between $+M_0$ and $-M_0$ requires an astronomically long Kramers time $\tau_{\text{tunnel}} \sim \exp(2\beta \sigma L^{d-1})$, trapping the system in a single broken-symmetry state.'
+      $$U_4(T, L) = 1 - \frac{\langle M^4 \rangle_L}{3 \langle M^2 \rangle_L^2}$$
+
+      - At $T \gg T_c$, Gaussian statistics yield $\langle M^4 \rangle = 3 \langle M^2 \rangle^2 \implies U_4 \to 0$.
+
+      - At $T \ll T_c$, bimodal delta peaks at $\pm M_0$ yield $\langle M^4 \rangle = \langle M^2 \rangle^2 = M_0^4 \implies U_4 \to 2/3$.
+
+      - Right at $T = T_c$, by finite-size scaling, $U_4(T_c, L) = U^*$ is **invariant with respect to $L$** (up to corrections to scaling). Plotting $U_4(T, L)$ versus $T$ for various system sizes produces curves that intersect at a single invariant crossing point identifying $T_c$.'
   - id: concept_ising_magnetization_pdf
     type: concept_cell
-    title: 'Interactive Concept: Magnetization Distribution P_L(M) and Barrier'
-    description_markdown: 'Explore the magnetization probability distribution $P_L(M)$ and Landau free energy profile $\mathcal{F}(M) = -\ln P_L(M)$.
-
-      Adjust temperature ratio $T/T_c$, lattice size $L$, and external magnetic field $h$ to observe bimodal splitting and field tilt.'
+    title: 'Interactive Concept: Finite-Size Magnetization PDF & Landau Free Energy Landscape'
+    description_markdown: Explore how the order parameter distribution $P_L(M)$ and Landau free energy $\beta F(M) = -\ln P_L(M)$ evolve across temperatures, lattice sizes $L$, and external magnetic fields $h$.
     render_function: render_ising_magnetization_pdf
     layout:
       kind: matplotlib
@@ -173,29 +533,27 @@ worksheet:
       temp_ratio:
         kind: slider
         label: Temperature Ratio T / T_c
-        min: 0.4
-        max: 1.6
+        min: 0.5
+        max: 1.5
         step: 0.05
         default: 0.85
       box_size:
         kind: dropdown
-        label: Lattice Size L
+        label: Box Size L
         options:
-        - label: L = 8 (N = 64)
+        - label: L = 8
           value: 8
-        - label: L = 16 (N = 256)
+        - label: L = 16
           value: 16
-        - label: L = 32 (N = 1024)
+        - label: L = 32
           value: 32
-        - label: L = 64 (N = 4096)
-          value: 64
         default: 16
       magnetic_field:
         kind: slider
-        label: Magnetic Field h / J
-        min: -0.5
-        max: 0.5
-        step: 0.05
+        label: Magnetic Field h
+        min: -0.2
+        max: 0.2
+        step: 0.02
         default: 0.0
       view_mode:
         kind: dropdown
@@ -206,265 +564,165 @@ worksheet:
         - label: Landau Free Energy F(M) = -ln P
           value: free_energy
         default: pdf
-    takeaway_markdown: '**Key Insight:** Below $T_c$, $P_L(M)$ splits into two sharp peaks at $\pm M_0$. As $L$ increases, the barrier at $M = 0$ scales as $2\sigma L$, exponentially suppressing transitions between ground states. Adding a magnetic field $h > 0$ tilts the potential, exponentially stabilizing the $+M_0$ phase.'
-  - id: q22_01
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: What discrete global symmetry does the zero-field ($h = 0$) Ising Hamiltonian possess?
-    options:
-    - id: a
-      text_markdown: Continuous rotational symmetry $O(3)$
-      text: Continuous rotational symmetry $O(3)$
-    - id: b
-      text_markdown: 'Discrete spin-inversion symmetry $\mathbb{Z}_2$: invariance under $s_i \to -s_i$ for all $i$'
-      text: 'Discrete spin-inversion symmetry $\mathbb{Z}_2$: invariance under $s_i \to -s_i$ for all $i$'
-    - id: c
-      text_markdown: Gauge symmetry $U(1)$
-      text: Gauge symmetry $U(1)$
-    - id: d
-      text_markdown: Lorentz invariance
-      text: Lorentz invariance
-    correct: b
-    hint_markdown: 'Consider what happens to the product $s_i s_j$ when every spin changes sign: $(-s_i)(-s_j) = s_i s_j$.'
-    rationale_markdown: Because $(-s_i)(-s_j) = s_i s_j$, the exchange energy is unchanged when all spins are simultaneously inverted. This discrete up-down symmetry is isomorphic to the cyclic group $\mathbb{Z}_2$.
-  - id: q22_02
+    takeaway_markdown: '**Key Insight:** Below $T_c$, $P_L(M)$ splits into two broken-symmetry peaks separated by a free energy barrier scaling as $2\sigma L^{d-1}$. Applying a small magnetic field $h > 0$ tilts the potential via the Zeeman term $-N h M$, exponentially suppressing the minority $-M_0$ peak by a factor $e^{-2\beta N h M_0}$.'
+  - id: q22_20_periodic_boundary_two_domain_walls
     type: problem
     question_type: single_select
     difficulty: medium
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: Under the mapping from the Ising model to the lattice gas ($s_i = 2n_i - 1$), what physical quantity in the fluid corresponds to the Ising magnetization $M = \frac{1}{N}\sum s_i$?
+    taught_by: sec_order_parameter_distribution_and_interfaces
+    prompt_markdown: In a simulation cell with periodic boundary conditions, why does traversing the configuration space from a state dominated by positive magnetization to one dominated by negative magnetization require the creation of at least two domain walls rather than a single interface?
+    hint_markdown: Consider the topology of a flat torus formed by periodic boundaries, and trace any continuous closed coordinate path that crosses an embedded slab of reversed spins.
     options:
     - id: a
-      text_markdown: Total kinetic energy of the fluid
-      text: Total kinetic energy of the fluid
+      text: Because periodic boundary conditions identify coordinate x = 0 with x = L; any slab of reversed spins embedded in the bulk must have both an entry interface (+ to -) and an exit interface (- to +) to satisfy cyclic continuity.
     - id: b
-      text_markdown: 'Deviation of fluid density from the critical density: $\rho - \rho_c = \frac{1}{2} M$'
-      text: 'Deviation of fluid density from the critical density: $\rho - \rho_c = \frac{1}{2} M$'
+      text: Because spins are only permitted to flip in pairs by the Pauli exclusion principle.
     - id: c
-      text_markdown: The viscosity of the fluid
-      text: The viscosity of the fluid
+      text: Because single domain walls violate energy conservation during Monte Carlo steps.
     - id: d
-      text_markdown: The temperature of the fluid
-      text: The temperature of the fluid
-    correct: b
-    hint_markdown: Relate $\rho = \frac{1}{N}\sum n_i$ to $M = \frac{1}{N}\sum s_i$.
-    rationale_markdown: Since $n_i = (1 + s_i)/2$, the average density is $\rho = \langle n_i \rangle = \frac{1}{2}(1 + M) = \rho_c + \frac{1}{2}M$, where $\rho_c = 1/2$. Thus $M = 2(\rho - \rho_c)$.
-  - id: q22_03
+      text: Because the transfer matrix has two distinct eigenvalues.
+    correct: a
+    rationale_markdown: Periodic boundary conditions endow the simulation lattice with the topology of a torus. If a slab of down-spins is embedded inside an up-spin background, wrapping around the torus requires entering the down-spin phase across one domain wall and returning to the up-spin phase across a second domain wall. A single isolated domain wall cannot satisfy periodic boundary conditions.
+  - id: q22_21_interfacial_free_energy_numeric
     type: problem
     question_type: numeric
-    difficulty: easy
-    taught_by: sec_exact_solutions_and_onsager
-    prompt_markdown: Using Onsager's exact formula $\frac{k_B T_c}{J} = \frac{2}{\ln(1 + \sqrt{2})}$, calculate the critical temperature $k_B T_c / J$ for the 2D square lattice Ising model to 3 decimal places.
-    correct: 2.269
-    tolerance: 0.005
-    hint_markdown: Evaluate $2 / \ln(1 + 1.414214)$.
-    rationale_markdown: $\ln(1 + \sqrt{2}) = \ln(2.4142136) \approx 0.8813736$. Then $2 / 0.8813736 \approx 2.269185 \approx 2.269$.
-  - id: q22_04
+    difficulty: medium
+    taught_by: sec_order_parameter_distribution_and_interfaces
+    prompt_markdown: In a Monte Carlo simulation of a 2D square-lattice Ising ferromagnet on an $L \times L$ grid with periodic boundary conditions ($L = 48$), the system is cooled to an ordered state where the dimensionless interfacial free energy per unit length is $\beta \sigma = 0.125$. Under periodic boundaries, the minimum free energy configuration at zero net magnetization ($M = 0$) consists of two flat system-spanning domain walls. Calculate the total dimensionless free energy barrier $\beta \Delta \mathcal{F}_L$ separating the two degenerate ferromagnetic ground states.
+    hint_markdown: Account for the cross-sectional length of each system-spanning interface in two dimensions and the total number of independent interfaces mandated by periodic boundary conditions.
+    correct:
+      value: 12.0
+      tolerance: 0.1
+    rationale_markdown: In two dimensions ($d = 2$), each system-spanning domain wall has length $L = 48$. Periodic boundary conditions require two such interfaces to form a slab configuration at $M = 0$. The total dimensionless interfacial barrier is $\beta \Delta \mathcal{F}_L = 2 (\beta \sigma) L = 2 \times 0.125 \times 48 = 12.0$. The probability of observing $M = 0$ is suppressed by $e^{-12.0} \approx 6.1 \times 10^{-6}$ relative to the peak maxima.
+  - id: q22_22_zeeman_field_exponential_suppression
     type: problem
     question_type: single_select
     difficulty: medium
-    taught_by: sec_exact_solutions_and_onsager
-    prompt_markdown: Why cannot a 1D Ising chain with finite-range interactions undergo a spontaneous phase transition at any temperature $T > 0$?
+    taught_by:
+    - sec_order_parameter_distribution_and_interfaces
+    - concept_ising_magnetization_pdf
+    prompt_markdown: When an external magnetic field $h > 0$ is applied to an Ising ferromagnet below $T_c$ in the interactive concept visualizer, how does the ratio of probabilities between the two broken-symmetry states, $P_L(+M_0) / P_L(-M_0)$, scale with the total number of lattice sites $N$?
+    hint_markdown: Evaluate the Zeeman energy difference Delta E_h between a state with total magnetization +N*M_0 and a state with total magnetization -N*M_0 in the canonical Boltzmann distribution.
     options:
     - id: a
-      text_markdown: Because creating a domain wall (kink) costs a finite energy $\Delta E = 2J$, but introduces an entropic contribution $-T \Delta S = -k_B T \ln N$ that diverges logarithmically as $N \to \infty$, making domain walls spontaneously populate the chain.
-      text: Because creating a domain wall (kink) costs a finite energy $\Delta E = 2J$, but introduces an entropic contribution $-T \Delta S = -k_B T \ln N$ that diverges logarithmically as $N \to \infty$, making domain walls spontaneously populate the chain.
+      text: It scales exponentially as exp(2 * beta * N * h * M_0), completely suppressing the minority -M_0 state in macroscopic systems even for infinitesimal positive fields.
     - id: b
-      text_markdown: Because the transfer matrix has zero eigenvalues.
-      text: Because the transfer matrix has zero eigenvalues.
+      text: It scales linearly with N as (1 + 2 * beta * h * M_0).
     - id: c
-      text_markdown: Because spins cannot be flipped in one dimension.
-      text: Because spins cannot be flipped in one dimension.
+      text: It remains equal to 1 because discrete Z_2 symmetry cannot be broken by a magnetic field.
     - id: d
-      text_markdown: Because the 1D lattice has no nearest neighbors.
-      text: Because the 1D lattice has no nearest neighbors.
+      text: It decreases as 1 / N due to finite-size rounding.
     correct: a
-    hint_markdown: Think about the free energy $\Delta F = \Delta E - T \Delta S$ to insert a single domain boundary in a chain of $N$ sites.
-    rationale_markdown: Inserting a domain wall costs a fixed energy $\Delta E = 2J$. However, the wall can be placed at any of $N$ positions, giving entropy $\Delta S = k_B \ln N$. Thus $\Delta F = 2J - k_B T \ln N$. For any $T > 0$, $\Delta F \to -\infty$ as $N \to \infty$, destroying long-range order (Peierls argument in 1D).
-  - id: q22_05
+    rationale_markdown: The external field adds a Zeeman energy term $-h \sum s_i = -N h M$ to the Hamiltonian. The energy difference between the state with magnetization $+M_0$ and the state with $-M_0$ is $\Delta E = -N h (+M_0) - (-N h (-M_0)) = -2 N h M_0$. By the Boltzmann distribution, the ratio of probabilities is $\frac{P(+M_0)}{P(-M_0)} = \exp(2 \beta N h M_0)$. For any macroscopic system ($N \sim 10^{23}$ or even $N \sim 10^4$ in simulations), this factor is astronomical, causing the system to reside exclusively in the $+M_0$ state.
+  - id: q22_23_binder_cumulant_crossing_method
     type: problem
     question_type: single_select
     difficulty: hard
-    taught_by: sec_exact_solutions_and_onsager
-    prompt_markdown: What is the critical exponent $\beta$ governing spontaneous magnetization $M_0 \propto (T_c - T)^{\beta}$ in the 2D Ising model according to Yang's exact solution, and how does it compare to Mean-Field Theory?
+    taught_by: sec_order_parameter_distribution_and_interfaces
+    prompt_markdown: Why is the Binder fourth-order cumulant $U_4(T, L) = 1 - \frac{\langle M^4 \rangle_L}{3 \langle M^2 \rangle_L^2}$ one of the most powerful computational tools for locating continuous phase transitions in finite-size Monte Carlo simulations?
+    hint_markdown: Consider how the dimensionless ratio of moments behaves under finite-size scaling when the correlation length xi is replaced by system size L right at T = Tc.
     options:
     - id: a
-      text_markdown: $\beta = 1/8$ in 2D Onsager, whereas Mean-Field Theory predicts $\beta_{\text{MF}} = 1/2$.
-      text: $\beta = 1/8$ in 2D Onsager, whereas Mean-Field Theory predicts $\beta_{\text{MF}} = 1/2$.
+      text: Because U_4 is a dimensionless ratio whose leading-order scaling function is scale-invariant at T = Tc, causing curves of U_4(T, L) for different box sizes L to intersect at a common crossing point that pinpoints Tc.
     - id: b
-      text_markdown: $\beta = 1/2$ in both 2D and Mean-Field.
-      text: $\beta = 1/2$ in both 2D and Mean-Field.
+      text: Because U_4 is strictly zero at all temperatures except exactly at T = Tc where it diverges to infinity.
     - id: c
-      text_markdown: $\beta = 0$ in 2D, meaning magnetization jumps discontinuously.
-      text: $\beta = 0$ in 2D, meaning magnetization jumps discontinuously.
+      text: Because U_4 eliminates the need to perform Monte Carlo sampling by computing the partition function analytically.
     - id: d
-      text_markdown: $\beta = 1$ in 2D.
-      text: $\beta = 1$ in 2D.
+      text: Because U_4 only requires measuring single-spin flip probabilities.
     correct: a
-    hint_markdown: Recall Yang's formula $M_0 = [1 - \sinh^{-4}(2\beta J)]^{1/8}$.
-    rationale_markdown: C. N. Yang's exact 1952 derivation demonstrated that the spontaneous magnetization approaches zero with critical exponent $\beta = 1/8 = 0.125$. Mean-field theory neglects critical fluctuations and predicts $\beta_{\text{MF}} = 1/2 = 0.50$.
-  - id: q22_06
+    rationale_markdown: According to finite-size scaling, the fourth-order cumulant obeys $U_4(T, L) = \widetilde{U}((T - T_c)L^{1/\nu})$. Exactly at $T = T_c$, the argument $(T - T_c)L^{1/\nu} = 0$ vanishes, making $U_4(T_c, L) = \widetilde{U}(0) = U^*$ a universal constant independent of $L$ (to leading order). Consequently, plotting $U_4$ versus $T$ for multiple lattice sizes $L_1, L_2, L_3$ produces curves that intersect at $T_c$, allowing critical temperatures to be determined with high precision without prior knowledge of critical exponents.
+  - id: q22_24_susceptibility_finite_size_scaling
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_order_parameter_distribution_and_interfaces
+    prompt_markdown: In an infinite system, the magnetic susceptibility diverges as $\chi_T \propto |T - T_c|^{-\gamma}$. In a finite 2D simulation cell of linear dimension $L$, how does the maximum peak value of the susceptibility $\chi_{\max}(L)$ scale with $L$?
+    hint_markdown: 'Apply finite-size scaling: replace the diverging correlation length xi ~ |T - Tc|^(-nu) with the system size cutoff L in the susceptibility divergence relation.'
+    options:
+    - id: a
+      text: chi_max(L) ~ L^(gamma / nu) = L^(1.75 / 1) = L^1.75
+    - id: b
+      text: chi_max(L) ~ L^0 = constant
+    - id: c
+      text: chi_max(L) ~ L^2
+    - id: d
+      text: chi_max(L) ~ exp(-L)
+    correct: a
+    rationale_markdown: Under finite-size scaling, the singular part of the susceptibility scales as $\chi(T, L) = L^{\gamma / \nu} \widetilde{\chi}((T - T_c)L^{1/\nu})$. In a finite box, the divergence is rounded into a peak of height $\chi_{\max}(L) \propto L^{\gamma / \nu}$. Substituting the exact 2D Ising exponents $\gamma = 7/4 = 1.75$ and $\nu = 1$ gives $\chi_{\max}(L) \propto L^{1.75}$.
+  - id: q22_25_fluctuation_dissipation_susceptibility
     type: problem
     question_type: single_select
     difficulty: medium
-    taught_by: concept_ising_magnetization_pdf
-    prompt_markdown: In the concept cell, at $T/T_c = 0.85$ and $h = 0$, what is the qualitative shape of the probability density function $P_L(M)$?
+    taught_by: sec_order_parameter_distribution_and_interfaces
+    prompt_markdown: In a canonical Monte Carlo simulation of an Ising model at zero external field ($h = 0$), how is the static isothermal susceptibility $\chi_T = \lim_{h \to 0} \frac{\partial \langle M \rangle}{\partial h}$ computed from sampled equilibrium configurations?
+    hint_markdown: Differentiate the canonical ensemble average of magnetization with respect to external field h using the definition of the partition function.
     options:
     - id: a
-      text_markdown: A single narrow delta peak centered at $M = 0$
-      text: A single narrow delta peak centered at $M = 0$
+      text: 'Via the fluctuation-dissipation theorem relating response to variance: chi_T = (N / (k_B * T)) * ( <M^2> - <M>^2 ).'
     - id: b
-      text_markdown: A symmetric bimodal distribution with two distinct peaks at $M \approx +M_0$ and $M \approx -M_0$, separated by a deep valley at $M = 0$
-      text: A symmetric bimodal distribution with two distinct peaks at $M \approx +M_0$ and $M \approx -M_0$, separated by a deep valley at $M = 0$
+      text: By computing the time derivative of total energy dE/dt.
     - id: c
-      text_markdown: A uniform flat line from $M = -1$ to $M = +1$
-      text: A uniform flat line from $M = -1$ to $M = +1$
+      text: By evaluating the square root of the mean magnetization sqrt(<M>).
     - id: d
-      text_markdown: An exponentially decaying curve starting at $M = -1$
-      text: An exponentially decaying curve starting at $M = -1$
-    correct: b
-    hint_markdown: Look at the plot in the concept cell for $T < T_c$.
-    rationale_markdown: Below $T_c$, spontaneous symmetry breaking causes the system to prefer states with non-zero net alignment $+M_0$ or $-M_0$. In a finite system with $h=0$, both states have equal probability, producing two symmetric peaks separated by a minimum at $M=0$.
-  - id: q22_07
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_magnetization_distribution_and_interfaces
-    prompt_markdown: In a 2D square lattice of size $L = 32$, two straight domain walls span the periodic box. If each wall has length $L = 32$ and surface tension $\beta \sigma = 0.15$ per unit length, calculate the total dimensionless interfacial free energy penalty $\Delta \mathcal{F} / k_B T = 2 \beta \sigma L$.
-    correct: 9.6
-    tolerance: 0.1
-    hint_markdown: Multiply $2 \times 0.15 \times 32$.
-    rationale_markdown: $\Delta \mathcal{F} / k_B T = 2 \times 0.15 \times 32 = 9.6$.
-  - id: q22_08
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_magnetization_distribution_and_interfaces
-    prompt_markdown: Why do periodic boundary conditions require a minimum of TWO domain walls (rather than one) to transition from a fully up-spin state to a fully down-spin state?
-    options:
-    - id: a
-      text_markdown: Because spins can only flip in pairs.
-      text: Because spins can only flip in pairs.
-    - id: b
-      text_markdown: Because periodic boundaries identify $x = 0$ with $x = L$; a slice of down-spins embedded in an up-spin bulk necessarily has an entry boundary ($+ \to -$) and an exit boundary ($- \to +$).
-      text: Because periodic boundaries identify $x = 0$ with $x = L$; a slice of down-spins embedded in an up-spin bulk necessarily has an entry boundary ($+ \to -$) and an exit boundary ($- \to +$).
-    - id: c
-      text_markdown: Because energy must be conserved.
-      text: Because energy must be conserved.
-    - id: d
-      text_markdown: Because the magnetic field is always zero.
-      text: Because the magnetic field is always zero.
-    correct: b
-    hint_markdown: Draw a closed loop on a torus where spins go $+1 \to -1 \to +1$.
-    rationale_markdown: On a torus (periodic boundary conditions), any region of reversed spins is enclosed by a closed contour. A flat slab spanning the box must wrap around, creating two parallel interfaces separated by the slab thickness.
-  - id: q22_09
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: concept_ising_magnetization_pdf
-    prompt_markdown: When a positive external magnetic field $h > 0$ is applied in the concept cell, how does the magnetization distribution $P_L(M)$ respond?
-    options:
-    - id: a
-      text_markdown: The two peaks remain exactly symmetric.
-      text: The two peaks remain exactly symmetric.
-    - id: b
-      text_markdown: The peak at $+M_0$ grows substantially while the peak at $-M_0$ is exponentially suppressed by the Zeeman energy factor $e^{2\beta N h M_0}$.
-      text: The peak at $+M_0$ grows substantially while the peak at $-M_0$ is exponentially suppressed by the Zeeman energy factor $e^{2\beta N h M_0}$.
-    - id: c
-      text_markdown: Both peaks shift immediately to $M = 0$.
-      text: Both peaks shift immediately to $M = 0$.
-    - id: d
-      text_markdown: The temperature of the system drops to zero.
-      text: The temperature of the system drops to zero.
-    correct: b
-    hint_markdown: Recall the Zeeman energy term $-h \sum s_i = -N h M$.
-    rationale_markdown: The external field adds a term $-N h M$ to the Hamiltonian, favoring the $+M$ state by a Boltzmann factor ratio of $e^{2\beta N h M_0}$. Even a tiny field $h > 0$ completely suppresses the $-M$ peak in macroscopic systems.
-  - id: q22_10
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by: sec_exact_solutions_and_onsager
-    prompt_markdown: Which of the following critical exponents characterize the 2D Ising universality class? (Select all that apply)
-    options:
-    - id: a
-      text_markdown: Specific heat exponent $\alpha = 0$ (logarithmic divergence $C_V \propto \ln|T - T_c|$)
-      text: Specific heat exponent $\alpha = 0$ (logarithmic divergence $C_V \propto \ln|T - T_c|$)
-    - id: b
-      text_markdown: Order parameter exponent $\beta = 1/8$
-      text: Order parameter exponent $\beta = 1/8$
-    - id: c
-      text_markdown: Magnetic susceptibility exponent $\gamma = 7/4$
-      text: Magnetic susceptibility exponent $\gamma = 7/4$
-    - id: d
-      text_markdown: Correlation length exponent $\nu = 1$
-      text: Correlation length exponent $\nu = 1$
-    - id: e
-      text_markdown: Mean-field exponent $\gamma_{\text{MF}} = 1$
-      text: Mean-field exponent $\gamma_{\text{MF}} = 1$
-    correct:
-    - a
-    - b
-    - c
-    - d
-    hint_markdown: Recall the exact 2D Ising exponents $(\alpha, \beta, \gamma, \nu, \eta) = (0, 1/8, 7/4, 1, 1/4)$.
-    rationale_markdown: The exact 2D Ising critical exponents are $\alpha = 0$ (logarithmic divergence), $\beta = 1/8$, $\gamma = 7/4 = 1.75$, and $\nu = 1$. (Option e is the mean-field exponent, which only holds for $d \ge 4$).
-  - id: sec_glauber_vs_kawasaki_kinetics
+      text: From the inverse of the transfer matrix trace 1 / Tr(T^N).
+    correct: a
+    rationale_markdown: By the fluctuation-dissipation theorem, differentiating $\langle M \rangle = \frac{1}{N Z} \sum_s M(s) e^{-\beta \mathcal{H}(s)}$ with respect to $h$ (where $\frac{\partial \mathcal{H}}{\partial h} = -N M$) yields $\frac{\partial \langle M \rangle}{\partial h} = \beta N (\langle M^2 \rangle - \langle M \rangle^2) = \frac{N}{k_B T}\mathrm{Var}(M)$. This allows static response functions to be extracted directly from equilibrium thermal fluctuations without applying perturbing external fields.
+  - id: sec_spin_kinetics_coarsening_and_ripening
     type: markdown_section
-    title: '4. Spin Kinetics: Glauber vs. Kawasaki Dynamics and Domain Coarsening'
-    body_markdown: '### Non-Equilibrium Quenches and Phase Separation
+    title: '5. Spin Kinetics: Glauber vs. Kawasaki Dynamics, Domain Coarsening, and Ripening'
+    body_markdown: '### Non-Equilibrium Quenches and Phase Separation Kinetics
 
-
-      When an Ising system is rapidly quenched from a high temperature $T \gg T_c$ to below $T_c$, the uniform disordered state becomes thermodynamically unstable. Microscopic domains of up-spins and down-spins nucleate and grow through **coarsening** (domain growth).
-
-
-      The physical mechanism and rate of coarsening depend critically on whether the order parameter is conserved:
+      When an Ising system is rapidly quenched from a high-temperature disordered state ($T \gg T_c$) to below $T_c$, the uniform state becomes unstable. Microscopic domains of up and down spins nucleate, coalesce, and grow through **coarsening** (domain growth). The kinetic mechanism and growth law depend profoundly on whether the order parameter is conserved:
 
 
       ### Glauber Dynamics (Model A: Non-Conserved Order Parameter)
 
-
-      - **Elementary Move:** A single spin $s_i$ is chosen at random and flipped: $s_i \to -s_i$.
+      - **Elementary Move:** A single spin $s_i$ is randomly selected and flipped: $s_i \to -s_i$.
 
       - **Conservation:** The total magnetization $M = \frac{1}{N}\sum s_i$ is **not conserved** ($\dot{M} \ne 0$).
 
-      - **Physics:** Models magnetic materials where domain walls move freely under external and internal magnetic fields.
+      - **Physical Context:** Models magnetic domains in ferromagnets where atomic magnetic moments rotate under local molecular fields.
 
-      - **Coarsening Law (Lifshitz-Allen-Cahn):** Domain wall motion is driven by local interface curvature $\kappa$:
+      - **Lifshitz-Allen-Cahn Growth Law:** Domain wall velocity is driven strictly by local interface curvature $\kappa$:
 
+      $$v_n = -\Gamma \sigma \kappa$$
 
-      $$v_n \propto -\kappa$$
+      Because the characteristic curvature scales inversely with domain radius $\kappa \sim 1/L(t)$ and velocity is $dL/dt$, we have:
 
-
-      Since curvature scales as $\kappa \sim 1/L(t)$ and velocity is $dL/dt$, we have $dL/dt \sim 1/L$, yielding the parabolic growth law:
-
-
-      $$L(t) \propto t^{1/2}$$
+      $$\frac{dL}{dt} \sim \frac{1}{L} \implies L(t)^2 - L(0)^2 \propto t \implies L(t) \propto t^{1/2}$$
 
 
       ### Kawasaki Dynamics (Model B: Conserved Order Parameter)
 
-
       - **Elementary Move:** Two nearest-neighbor spins with opposite signs ($s_i = +1, s_j = -1$) are **exchanged**: $s_i \leftrightarrow s_j$.
 
-      - **Conservation:** The total magnetization $M = \frac{1}{N}\sum s_i$ is **strictly conserved** at its initial value.
+      - **Conservation:** The total magnetization $M = \frac{1}{N}\sum s_i$ (i.e. atomic composition) is **strictly conserved** at its initial value.
 
-      - **Physics:** Models binary alloys ($A-B$ segregation) and liquid-gas phase separation, where particle numbers of each species are fixed.
+      - **Physical Context:** Models binary alloy phase separation (precipitation, spinodal decomposition) and liquid-gas demixing, where solute atoms must diffuse through the lattice.
 
-      - **Coarsening Law (Lifshitz-Slyozov-Wagner / LSW):** Domain growth proceeds via **Ostwald ripening** (small domains evaporate and diffuse through the matrix to deposit onto larger domains) and interfacial diffusion:
+      - **Lifshitz-Slyozov-Wagner (LSW) Growth Law:** Because mass is conserved, domains cannot grow simply by local boundary movement. Solute must diffuse through the matrix from shrinking high-curvature droplets to larger low-curvature droplets (**Ostwald ripening**). The chemical potential gradient drives a diffusive flux scaling as:
+
+      $$\frac{dL}{dt} \sim \frac{D \sigma}{L^2} \implies L(t)^3 - L(0)^3 \propto t \implies L(t) \propto t^{1/3}$$
+
+      Mass conservation suppresses domain coarsening from $t^{1/2}$ down to $t^{1/3}$.
 
 
-      $$L(t) \propto t^{1/3}$$
+      ### Dynamical Scaling and Porod''s Law
 
+      During late-stage coarsening, the domain morphology exhibits statistical self-similarity governed by the **dynamical scaling hypothesis**. The equal-time structure factor $S(k, t) = \langle |\hat{s}(\mathbf{k}, t)|^2 \rangle$ collapses onto a universal scaling function:
 
-      Because mass must diffuse across domains, growth under Kawasaki dynamics is significantly slower ($t^{1/3}$) than curvature-driven Glauber growth ($t^{1/2}$).'
+      $$S(k, t) = L(t)^d F(k L(t))$$
+
+      At large wavevectors ($k L(t) \gg 1$), scattering from sharp, thin interfaces produces the universal power-law tail known as **Porod''s Law**:
+
+      $$S(k, t) \propto \Sigma(t) k^{-(d+1)}$$
+
+      where $\Sigma(t) \propto 1/L(t)$ is the total interfacial area per unit volume. In $d = 2$, $S(k) \propto k^{-3}$; in $d = 3$, $S(k) \propto k^{-4}$.'
   - id: concept_glauber_vs_kawasaki_coarsening
     type: concept_cell
     title: 'Interactive Concept: Domain Coarsening (Glauber t^(1/2) vs. Kawasaki t^(1/3))'
-    description_markdown: 'Compare non-conserved Glauber dynamics with conserved Kawasaki dynamics following a deep quench to $T = 0.5 T_c$.
-
-      Switch between the two dynamical modes, adjust quench time $t$, and observe domain structure and characteristic domain size $L(t)$.'
+    description_markdown: Compare non-conserved Glauber dynamics with conserved Kawasaki dynamics following a deep quench to $T = 0.6 T_c$. Switch between kinetic modes, adjust quench time $t$, and observe domain morphology and characteristic length scale $R(t)$.
     render_function: render_glauber_vs_kawasaki_coarsening
     layout:
       kind: matplotlib
@@ -495,260 +753,171 @@ worksheet:
         max: 0.5
         step: 0.05
         default: 0.15
-    takeaway_markdown: '**Key Insight:** Glauber dynamics rapidly collapses isolated minority clusters through curvature-driven shrinkage ($L(t) \sim t^{1/2}$), rapidly magnetizing the entire lattice. Kawasaki dynamics maintains fixed total composition, forcing the system to form interconnected bicontinuous structures (spinodal decomposition) that coarsen via slow diffusive ripening ($L(t) \sim t^{1/3}$).'
-  - id: q22_11
+    takeaway_markdown: '**Key Insight:** Glauber dynamics rapidly collapses minority islands via curvature-driven boundary motion ($L(t) \sim t^{1/2}$), allowing the majority phase to homogenize the box. Kawasaki dynamics strictly conserves composition, forcing the system to maintain both phases in an interconnected bicontinuous labyrinth (spinodal decomposition) that coarsens through slow diffusive mass transfer ($L(t) \sim t^{1/3}$).'
+  - id: q22_26_glauber_vs_kawasaki_conservation
     type: problem
     question_type: single_select
     difficulty: easy
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: What is the defining difference between Glauber dynamics and Kawasaki dynamics?
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: What fundamental conservation constraint distinguishes Kawasaki spin kinetics from Glauber spin kinetics, and what class of physical phenomena does each model represent?
+    hint_markdown: 'Compare the elementary trial move of each algorithm: flipping a single spin versus swapping two nearest-neighbor spins.'
     options:
     - id: a
-      text_markdown: Glauber dynamics uses molecular dynamics, whereas Kawasaki dynamics uses Monte Carlo.
-      text: Glauber dynamics uses molecular dynamics, whereas Kawasaki dynamics uses Monte Carlo.
+      text: Kawasaki kinetics strictly conserves total magnetization M = (1/N) sum s_i (modeling diffusive mass transport and phase separation in binary alloys), whereas Glauber kinetics allows M to vary freely (modeling domain wall motion in magnetic materials).
     - id: b
-      text_markdown: Glauber flips single spins (non-conserved magnetization), whereas Kawasaki exchanges pairs of opposite spins (strictly conserved magnetization).
-      text: Glauber flips single spins (non-conserved magnetization), whereas Kawasaki exchanges pairs of opposite spins (strictly conserved magnetization).
+      text: Kawasaki kinetics conserves total energy, whereas Glauber kinetics operates in the microcanonical ensemble.
     - id: c
-      text_markdown: Kawasaki dynamics only operates in one dimension.
-      text: Kawasaki dynamics only operates in one dimension.
+      text: Glauber kinetics strictly conserves momentum, whereas Kawasaki kinetics includes hydrodynamic turbulence.
     - id: d
-      text_markdown: Glauber dynamics requires quantum mechanical wavefunctions.
-      text: Glauber dynamics requires quantum mechanical wavefunctions.
-    correct: b
-    hint_markdown: Recall the elementary trial move in each kinetic model.
-    rationale_markdown: In Glauber dynamics, single spins flip $s_i \to -s_i$, allowing total magnetization to change. In Kawasaki dynamics, nearest-neighbor opposite spins swap positions ($s_i \leftrightarrow s_j$), keeping the total number of $+1$ and $-1$ spins strictly constant.
-  - id: q22_12
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: What is the characteristic domain growth law $L(t)$ for non-conserved (Glauber / Model A) domain coarsening in an Ising model?
-    options:
-    - id: a
-      text_markdown: $L(t) \propto \ln t$
-      text: $L(t) \propto \ln t$
-    - id: b
-      text_markdown: $L(t) \propto t^{1/2}$ (Lifshitz-Allen-Cahn law)
-      text: $L(t) \propto t^{1/2}$ (Lifshitz-Allen-Cahn law)
-    - id: c
-      text_markdown: $L(t) \propto t^{1/3}$ (Lifshitz-Slyozov law)
-      text: $L(t) \propto t^{1/3}$ (Lifshitz-Slyozov law)
-    - id: d
-      text_markdown: $L(t) \propto t^2$
-      text: $L(t) \propto t^2$
-    correct: b
-    hint_markdown: 'Domain wall velocity is proportional to local curvature: $dL/dt \sim 1/L$.'
-    rationale_markdown: In non-conserved order parameter systems (Model A / Allen-Cahn), domain wall velocity is driven by local interface curvature $v_n \propto -\kappa \sim -1/L$. Integrating $dL/dt \propto 1/L$ yields $L^2 \propto t$, or $L(t) \propto t^{1/2}$.
-  - id: q22_13
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: What is the characteristic domain growth law $L(t)$ for conserved (Kawasaki / Model B) phase separation during spinodal decomposition?
-    options:
-    - id: a
-      text_markdown: $L(t) \propto t^{1/3}$ (Lifshitz-Slyozov-Wagner law)
-      text: $L(t) \propto t^{1/3}$ (Lifshitz-Slyozov-Wagner law)
-    - id: b
-      text_markdown: $L(t) \propto t^{1/2}$
-      text: $L(t) \propto t^{1/2}$
-    - id: c
-      text_markdown: $L(t) \propto e^{t}$
-      text: $L(t) \propto e^{t}$
-    - id: d
-      text_markdown: $L(t)$ remains constant forever
-      text: $L(t)$ remains constant forever
+      text: Kawasaki dynamics is deterministic Newton's motion, whereas Glauber dynamics is stochastic Brownian motion.
     correct: a
-    hint_markdown: 'Domain growth is limited by bulk and interfacial diffusion (Ostwald ripening): $dL/dt \sim D \sigma / (k_B T L^2)$.'
-    rationale_markdown: When order parameter is conserved (Model B / Cahn-Hilliard), growth requires mass diffusion across domains. The chemical potential gradient drives a diffusive flux scaling as $dL/dt \sim D \sigma / L^2$, integrating to the Lifshitz-Slyozov-Wagner law $L^3 \propto t$, or $L(t) \propto t^{1/3}$.
-  - id: q22_14
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: Under Kawasaki coarsening ($L(t) \propto t^{1/3}$), if the average domain size is $L_1 = 5.0\text{ nm}$ at $t = 100\text{ MCS}$, what is the expected domain size $L_2$ in nm at $t = 800\text{ MCS}$?
-    correct: 10.0
-    tolerance: 0.2
-    unit: nm
-    hint_markdown: Calculate $L_2 = L_1 \times (800 / 100)^{1/3}$.
-    rationale_markdown: $L_2 = 5.0 \times (8)^{1/3} = 5.0 \times 2.0 = 10.0\text{ nm}$.
-  - id: q22_15
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: For the same initial domain size $L_1 = 5.0\text{ nm}$ at $t = 100\text{ MCS}$, what would the domain size be in nm at $t = 400\text{ MCS}$ under Glauber coarsening ($L(t) \propto t^{1/2}$)?
-    correct: 10.0
-    tolerance: 0.2
-    unit: nm
-    hint_markdown: Calculate $L_2 = L_1 \times (400 / 100)^{1/2}$.
-    rationale_markdown: $L_2 = 5.0 \times (4)^{1/2} = 5.0 \times 2.0 = 10.0\text{ nm}$.
-  - id: q22_16
+    rationale_markdown: In Glauber dynamics, single spins flip $s_i \to -s_i$, changing total magnetization $\sum s_i$ (non-conserved Model A). In Kawasaki dynamics, trial moves swap adjacent opposite spins ($s_i \leftrightarrow s_j$), keeping the total counts of up-spins and down-spins strictly invariant (conserved Model B). This maps directly to atomic diffusion in binary alloys where species concentrations are conserved.
+  - id: q22_27_allen_cahn_curvature_scaling
     type: problem
     question_type: single_select
     difficulty: medium
-    taught_by: concept_glauber_vs_kawasaki_coarsening
-    prompt_markdown: In the concept cell, why does Kawasaki dynamics with initial magnetization $M_0 = 0.15$ form an interconnected (bicontinuous) domain labyrinth rather than quickly reaching a single uniform phase?
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: In non-conserved (Glauber / Model A) domain coarsening, what physical driving force governs the migration velocity of domain walls, and what temporal growth law $L(t)$ does it produce?
+    hint_markdown: Relate interface velocity to local curvature kappa ~ 1/L, and integrate the resulting first-order differential equation for domain size L(t).
     options:
     - id: a
-      text_markdown: Because the code prevents spins from flipping at the edges.
-      text: Because the code prevents spins from flipping at the edges.
+      text: Interface velocity is driven by local mean curvature v_n = -Gamma * sigma * kappa ~ -1/L, yielding the parabolic Lifshitz-Allen-Cahn growth law L(t) ~ t^(1/2).
     - id: b
-      text_markdown: Because the global fraction of up and down spins is fixed; neither phase can consume the other, forcing the system to maintain both phases separated by domain boundaries.
-      text: Because the global fraction of up and down spins is fixed; neither phase can consume the other, forcing the system to maintain both phases separated by domain boundaries.
+      text: Interface velocity is driven by bulk chemical potential gradients, producing linear growth L(t) ~ t.
     - id: c
-      text_markdown: Because the temperature is set to infinity.
-      text: Because the temperature is set to infinity.
+      text: Interface velocity is limited by long-range volume diffusion, producing L(t) ~ t^(1/3).
     - id: d
-      text_markdown: Because Kawasaki dynamics is strictly non-ergodic.
-      text: Because Kawasaki dynamics is strictly non-ergodic.
-    correct: b
-    hint_markdown: Remember that Kawasaki moves cannot change $\sum s_i$.
-    rationale_markdown: Because Kawasaki dynamics swaps spins without changing the total count of up and down spins, the phase volume fractions remain fixed. The system cannot transform completely into a single phase; instead, it forms bicontinuous labyrinths or droplets that coarsen slowly via diffusion.
-  - id: q22_17
+      text: Interface velocity is logarithmic L(t) ~ ln(t) due to random pinning impurities.
+    correct: a
+    rationale_markdown: In non-conserved order-parameter dynamics (Model A / Allen-Cahn), domain wall migration minimizes total interfacial area without mass conservation constraints. The normal velocity is proportional to local curvature $v_n = dL/dt \propto -\kappa \propto -1/L$. Integrating $L \, dL = C \, dt$ yields $L(t)^2 \propto t$, or $L(t) \propto t^{1/2}$.
+  - id: q22_28_kawasaki_domain_growth_numeric
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: A binary alloy undergoing phase separation under conserved Kawasaki spin-exchange kinetics (Model B) is monitored during isothermal annealing. At an early observation time $t_1 = 50\text{ MCS}$, the average precipitate domain size is measured to be $L_1 = 6.0\text{ nm}$. Assuming domain growth is governed by the universal Lifshitz-Slyozov-Wagner scaling regime, calculate the expected domain size $L_2$ (in nm) at time $t_2 = 400\text{ MCS}$.
+    hint_markdown: Recall the universal temporal growth power-law exponent characteristic of conserved order parameter dynamics driven by long-range diffusive transport between domains, and apply that scaling ratio between the two observation times.
+    correct:
+      value: 12.0
+      tolerance: 0.2
+    unit: nm
+    rationale_markdown: Under conserved Kawasaki dynamics (Model B / Lifshitz-Slyozov-Wagner), domain growth is diffusion-limited with power law $L(t) \propto t^{1/3}$. Therefore, $\frac{L_2}{L_1} = \left(\frac{t_2}{t_1}\right)^{1/3}$. Given $t_1 = 50\text{ MCS}$ and $t_2 = 400\text{ MCS}$, the time ratio is $400 / 50 = 8.0$. Then $L_2 = 6.0\text{ nm} \times (8.0)^{1/3} = 6.0 \times 2.0 = 12.0\text{ nm}$.
+  - id: q22_29_glauber_domain_growth_numeric
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: In a second experiment, a magnetic thin film is quenched below its Curie temperature and coarsens via non-conserved Glauber single-spin-flip dynamics (Model A). If the average magnetic domain diameter is measured to be $L_1 = 4.0\text{ nm}$ at $t_1 = 25\text{ MCS}$, calculate the expected domain diameter $L_2$ (in nm) at $t_2 = 225\text{ MCS}$ under the Lifshitz-Allen-Cahn curvature-driven growth regime.
+    hint_markdown: Consider how the growth exponent differs when domain boundary migration is governed strictly by local interface curvature rather than mass conservation, and scale the domain size by the corresponding time ratio.
+    correct:
+      value: 12.0
+      tolerance: 0.2
+    unit: nm
+    rationale_markdown: Under non-conserved Glauber dynamics (Model A / Allen-Cahn), domain growth is curvature-driven with scaling $L(t) \propto t^{1/2}$. Therefore, $\frac{L_2}{L_1} = \left(\frac{t_2}{t_1}\right)^{1/2}$. With $t_1 = 25\text{ MCS}$ and $t_2 = 225\text{ MCS}$, the ratio is $225 / 25 = 9.0$. Thus $L_2 = 4.0\text{ nm} \times (9.0)^{1/2} = 4.0 \times 3.0 = 12.0\text{ nm}$.
+  - id: q22_30_ostwald_ripening_gibbs_thomson
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: Why does Ostwald ripening occur during late-stage conserved phase separation, and what thermodynamic relation establishes the chemical potential driving force?
+    hint_markdown: Recall how boundary curvature affects the local equilibrium solute solubility or vapor pressure at a curved interface.
+    options:
+    - id: a
+      text: By the Gibbs-Thomson relation mu(R) = mu_flat + 2 * gamma * Omega / R, smaller droplets have higher interfacial curvature and elevated surface chemical potential, creating a concentration gradient that drives diffusive flux toward larger droplets.
+    - id: b
+      text: Gravitational settling forces smaller particles to sink and aggregate onto larger particles.
+    - id: c
+      text: Smaller domains have lower surface-to-volume ratio, making them thermodynamically more stable.
+    - id: d
+      text: Kawasaki dynamics introduces an artificial mechanical pressure that squeezes small domains.
+    correct: a
+    rationale_markdown: The Gibbs-Thomson effect dictates that the equilibrium chemical potential at the surface of a particle of radius $R$ is $\mu(R) = \mu_\infty + \frac{(d-1)\sigma \Omega}{R}$. Small particles have higher surface curvature and greater equilibrium matrix solubility than larger particles. This establishes a concentration gradient in the matrix that drives net solute diffusion from small particles (which dissolve) to large particles (which grow), lowering the system's total interfacial free energy.
+  - id: q22_31_spinodal_vs_nucleation
     type: problem
     question_type: single_select
     difficulty: hard
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: In spinodal decomposition, what is the 'spinodal line' in the phase diagram?
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: In the phase diagram of a binary mixture or Ising lattice gas below $T_c$, what thermodynamic criterion separates the metastable regime (nucleation and growth) from the spontaneously unstable regime (spinodal decomposition)?
+    hint_markdown: Examine the sign of the second derivative of the local free energy density f(M) with respect to composition or magnetization.
     options:
     - id: a
-      text_markdown: The boundary where the system melts into a liquid.
-      text: The boundary where the system melts into a liquid.
+      text: The spinodal line where d^2 f / dM^2 = 0; inside the spinodal (d^2 f / dM^2 < 0), the homogeneous phase is barrierlessly unstable to infinitesimal long-wavelength concentration fluctuations.
     - id: b
-      text_markdown: The curve where the thermodynamic stability limit is reached ($\partial^2 f / \partial M^2 = 0$), inside which the uniform state is unstable to infinitesimal fluctuations with no nucleation barrier.
-      text: The curve where the thermodynamic stability limit is reached ($\partial^2 f / \partial M^2 = 0$), inside which the uniform state is unstable to infinitesimal fluctuations with no nucleation barrier.
+      text: The binodal line where chemical potentials equalize, regardless of curvature.
     - id: c
-      text_markdown: The line where the magnetic field equals 1 Tesla.
-      text: The line where the magnetic field equals 1 Tesla.
+      text: The zero-entropy contour S = 0.
     - id: d
-      text_markdown: The boundary where Monte Carlo simulations freeze.
-      text: The boundary where Monte Carlo simulations freeze.
-    correct: b
-    hint_markdown: Recall the distinction between nucleation (metastable regime) and spinodal decomposition (unstable regime $\partial^2 f / \partial c^2 < 0$).
-    rationale_markdown: The spinodal line marks the inflection boundary $\partial^2 f / \partial M^2 = 0$ in the free energy density. Outside this line (metastable binodal region), phase separation requires overcoming a nucleation barrier. Inside the spinodal, the system is barrierlessly unstable to infinitesimal long-wavelength concentration fluctuations.
-  - id: q22_18
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: Which of the following physical systems are modeled by Kawasaki (Model B) conserved spin dynamics? (Select all that apply)
-    options:
-    - id: a
-      text_markdown: Phase separation of a binary alloy (e.g. Al-Li or Fe-Cr spinodal decomposition)
-      text: Phase separation of a binary alloy (e.g. Al-Li or Fe-Cr spinodal decomposition)
-    - id: b
-      text_markdown: Demixing of two immiscible polymer blends
-      text: Demixing of two immiscible polymer blends
-    - id: c
-      text_markdown: Uniaxial ferromagnet domain reversal under a magnetic field
-      text: Uniaxial ferromagnet domain reversal under a magnetic field
-    - id: d
-      text_markdown: Liquid-gas phase separation in a sealed, constant-volume chamber
-      text: Liquid-gas phase separation in a sealed, constant-volume chamber
-    correct:
-    - a
-    - b
-    - d
-    hint_markdown: Identify processes where the total number of particles or molecules of each species is strictly conserved.
-    rationale_markdown: Binary alloy phase separation, polymer demixing, and liquid-gas separation at constant volume all preserve total particle counts (conserved order parameter). Ferromagnetic domain reversal flips dipoles freely (non-conserved Glauber dynamics).
-  - id: q22_19
+      text: The line where the latent heat of transition vanishes.
+    correct: a
+    rationale_markdown: 'Thermodynamic stability against continuous fluctuations requires $\frac{\partial^2 f}{\partial M^2} > 0$. The inflection curve $\frac{\partial^2 f}{\partial M^2} = 0$ defines the spinodal boundary. Between the binodal (coexistence line) and spinodal, $\frac{\partial^2 f}{\partial M^2} > 0$: the state is metastable, requiring finite nucleation droplets to overcome the interfacial free energy barrier. Inside the spinodal, $\frac{\partial^2 f}{\partial M^2} < 0$: the effective diffusion coefficient is negative ($D < 0$, ''uphill diffusion''), causing spontaneous, barrierless spinodal decomposition into interconnected bicontinuous domains.'
+  - id: q22_32_porods_law_scattering
     type: problem
     question_type: single_select
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: In Glauber dynamics, what is the transition probability $W(s_i \to -s_i)$ originally proposed by Roy Glauber in 1963?
+    difficulty: hard
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: In X-ray or neutron scattering experiments monitoring late-stage phase separation in a $d$-dimensional material, Porod's law describes the asymptotic power-law decay of the structure factor $S(k, t)$ at high wavevectors ($k L(t) \gg 1$). What is the exact mathematical power law in spatial dimension $d$?
+    hint_markdown: Consider Fourier transforming the step-discontinuity across sharp domain interfaces of dimension d-1 embedded in d-dimensional space.
     options:
     - id: a
-      text_markdown: $W(s_i \to -s_i) = \frac{1}{2}\left( 1 - s_i \tanh(\beta E_{\text{local}}) \right)$, where $E_{\text{local}} = J \sum_{j \in nn} s_j + h$
-      text: $W(s_i \to -s_i) = \frac{1}{2}\left( 1 - s_i \tanh(\beta E_{\text{local}}) \right)$, where $E_{\text{local}} = J \sum_{j \in nn} s_j + h$
+      text: S(k, t) ~ k^(-(d + 1)), yielding k^(-3) in 2D and k^(-4) in 3D.
     - id: b
-      text_markdown: $W(s_i \to -s_i) = e^{-\beta \Delta E}$ unconditionally
-      text: $W(s_i \to -s_i) = e^{-\beta \Delta E}$ unconditionally
+      text: S(k, t) ~ k^(-d), yielding k^(-2) in 2D and k^(-3) in 3D.
     - id: c
-      text_markdown: $W(s_i \to -s_i) = 0.5$ always
-      text: $W(s_i \to -s_i) = 0.5$ always
+      text: S(k, t) ~ exp(-k^2 * L(t)^2)
     - id: d
-      text_markdown: $W(s_i \to -s_i) = \frac{1}{1 + s_i^2}$
-      text: $W(s_i \to -s_i) = \frac{1}{1 + s_i^2}$
+      text: S(k, t) ~ k^(d - 1)
     correct: a
-    hint_markdown: Notice that Glauber dynamics satisfies detailed balance with a smooth sigmoid transition rate.
-    rationale_markdown: 'Glauber''s transition probability $W(s_i \to -s_i) = \frac{1}{2}[1 - s_i \tanh(\beta E_{\text{local}})]$ satisfies detailed balance: $W(s_i \to -s_i) / W(-s_i \to s_i) = e^{-2\beta s_i E_{\text{local}}} = e^{-\beta \Delta E}$. It provides smooth continuous time-evolution kinetics for magnetic spin lattices.'
-  - id: q22_20
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: Why does Ostwald ripening occur in conserved phase separation?
-    options:
-    - id: a
-      text_markdown: Small domains have higher surface-to-volume ratio and higher Gibbs-Thomson chemical potential, causing solute to evaporate from small droplets and condense onto larger droplets.
-      text: Small domains have higher surface-to-volume ratio and higher Gibbs-Thomson chemical potential, causing solute to evaporate from small droplets and condense onto larger droplets.
-    - id: b
-      text_markdown: Small domains attract each other gravitationally.
-      text: Small domains attract each other gravitationally.
-    - id: c
-      text_markdown: Large domains spontaneously explode into small droplets.
-      text: Large domains spontaneously explode into small droplets.
-    - id: d
-      text_markdown: The system temperature increases continuously.
-      text: The system temperature increases continuously.
-    correct: a
-    hint_markdown: Recall the Gibbs-Thomson effect relating droplet curvature to vapor pressure/solubility.
-    rationale_markdown: By the Gibbs-Thomson equation, the chemical potential at the surface of a droplet of radius $R$ is $\mu(R) = \mu_\infty + 2\gamma v / R$. Small droplets have higher equilibrium concentration, driving diffusive flux toward larger droplets to reduce total interfacial energy.
-  - id: sec_critical_slowing_down_and_swendsen_wang
+    rationale_markdown: Porod's law arises from scattering across mathematically sharp interfaces where the density or order parameter jumps discontinuously. Fourier transforming a step discontinuity across a boundary of area $\Sigma$ produces an asymptotic intensity envelope scaling as $S(k) \propto \Sigma k^{-(d+1)}$. For a 2D thin film ($d = 2$), $S(k) \propto k^{-3}$. For a 3D bulk alloy ($d = 3$), $S(k) \propto k^{-4}$.
+  - id: sec_critical_slowing_down_and_cluster_mc
     type: markdown_section
-    title: 5. Critical Slowing Down and the Swendsen-Wang Cluster Algorithm
-    body_markdown: '### Critical Slowing Down
+    title: 6. Critical Slowing Down and Cluster Monte Carlo Algorithms
+    body_markdown: '### Critical Slowing Down in Local Spin-Flip Algorithms
 
-
-      Near the critical temperature $T_c$, the correlation length diverges as $\xi \propto |T - T_c|^{-\nu}$. Fluctuations become correlated over enormous spatial domains. In local single-spin-flip algorithms (Metropolis or Glauber), propagating information across a domain of size $\xi$ requires a random walk of domain walls, causing the **autocorrelation time** $\tau$ to diverge:
-
+      Near a continuous phase transition ($T \approx T_c$), spatial correlations extend over macroscopically large domains of size $\xi \propto |T - T_c|^{-\nu}$. In standard single-spin-flip algorithms (Metropolis or Glauber), propagating information across a correlated domain requires a diffusive random walk of domain walls. Consequently, the **autocorrelation time** $\tau$ diverges as:
 
       $$\tau \propto \xi^z \propto |T - T_c|^{-z\nu}$$
 
+      where $z$ is the **dynamic critical exponent**. In a finite simulation box at $T = T_c$ where $\xi \sim L$, $\tau \propto L^z$. For local single-spin-flip Metropolis in 2D, $z \approx 2.17$. Generating an independent configuration requires $\mathcal{O}(\tau)$ sweeps, so the total computational effort per independent sample scales as:
 
-      where $z$ is the **dynamic critical exponent**. For local single-spin-flip Metropolis in 2D, $z \approx 2.17$. On a lattice of size $L \approx \xi$, the computational effort per independent sample scales as:
+      $$\text{CPU Effort} \sim L^d \times L^z = L^{d + z} \approx L^{4.17} \quad (d = 2)$$
 
-
-      $$\text{CPU Time} \sim L^d \times \tau \sim L^{d + z} \approx L^{4.17}$$
-
-
-      Simulating $L = 1024$ near $T_c$ with local flips becomes completely intractable due to this **critical slowing down**.
+      Doubling the lattice size from $L = 64$ to $L = 128$ increases sampling cost by a factor of $2^{4.17} \approx 18\times$. Simulating large systems near $T_c$ with local flips is severely bottlenecked by this **critical slowing down**.
 
 
-      ### The Fortuin-Kasteleyn Mapping and Swendsen-Wang
+      ### The Fortuin-Kasteleyn Mapping and Swendsen-Wang Cluster Algorithm
+
+      In 1987, Robert Swendsen and Jian-Sheng Wang solved this computational bottleneck by mapping the Ising spin model onto the **Fortuin-Kasteleyn (FK) random cluster model**. Instead of flipping single spins, correlated clusters of spins are identified and updated simultaneously.
 
 
-      In 1987, Robert Swendsen and Jian-Sheng Wang eliminated critical slowing down by mapping the Ising spin model to the **Fortuin-Kasteleyn random cluster model**. Instead of flipping single spins, whole correlated clusters are flipped simultaneously.
+      **Swendsen-Wang Algorithm Procedure:**
 
-
-      **Swendsen-Wang Algorithm Steps:**
-
-      1. **Bond Activation:** Iterate over all nearest-neighbor pairs $\langle i, j \rangle$. If the spins are parallel ($s_i = s_j$), activate a bond between them with probability:
-
+      1. **Bond Activation:** Inspect all nearest-neighbor pairs $\langle i, j \rangle$. If the spins are parallel ($s_i = s_j$), activate a virtual bond between them with probability:
 
       $$p = 1 - e^{-2\beta J}$$
 
+      If the spins are antiparallel ($s_i \ne s_j$), no bond can form ($p = 0$).
 
-      If the spins are antiparallel ($s_i \ne s_j$), no bond is formed ($p = 0$).
+      2. **Cluster Identification:** Find all connected components of sites linked by active bonds using a linear-time graph labeling algorithm (Disjoint-Set / Union-Find with path compression, or Hoshen-Kopelman).
 
-      2. **Cluster Identification:** Find all connected components of sites linked by active bonds (using Hoshen-Kopelman or Disjoint-Set / Union-Find).
-
-      3. **Cluster Spin Flip:** For each connected cluster independently, choose a new spin orientation $s_{\text{cluster}} \in \{-1, +1\}$ with equal probability $1/2$ (or with field-dependent probability if $h \ne 0$). Assign this orientation to all spins in the cluster.
+      3. **Cluster Spin Flip:** For each connected cluster independently, pick a new spin orientation $s_{\text{cluster}} \in \{-1, +1\}$ with equal probability $1/2$ (for $h = 0$). Assign this spin orientation to all sites in that cluster.
 
 
       ### Wolff Single-Cluster Algorithm
 
+      In 1989, Ulli Wolff introduced a single-cluster variation that avoids decomposing the entire lattice:
 
-      Ulli Wolff (1989) refined the technique: pick a random seed spin and recursively grow a single cluster by adding parallel neighbors with probability $p = 1 - e^{-2\beta J}$, then flip the cluster unconditionally. Cluster algorithms dramatically slash the dynamic exponent in 2D from $z \approx 2.17$ down to $z_{\text{SW}} \approx 0.35$, completely eradicating critical slowing down!'
+      1. Select a random seed site $i$ on the lattice.
+
+      2. Recursively grow a cluster around $i$ by inspecting all neighboring sites $j$ of current cluster sites. If $s_j = s_i$ and the bond has not been tested, add site $j$ to the cluster with probability $p = 1 - e^{-2\beta J}$.
+
+      3. Invert all spins in the cluster: $s_k \to -s_k$.
+
+
+      Because large clusters have more sites, a randomly selected seed site is chosen with probability proportional to cluster size, automatically focusing computational effort where it is most needed. Cluster algorithms dramatically slash the dynamic critical exponent in 2D from $z \approx 2.17$ down to $z_{\text{SW}} \approx 0.35$ (and $z_{\text{Wolff}} \approx 0.25$), virtually eradicating critical slowing down!'
   - id: concept_swendsen_wang_clusters
     type: concept_cell
-    title: 'Interactive Concept: Swendsen-Wang Fortuin-Kasteleyn Clusters'
-    description_markdown: 'Visualize the Fortuin-Kasteleyn bond creation and cluster formation across temperatures.
-
-      Adjust $T/T_c$ from $0.5$ (cold ordered) to $1.5$ (hot disordered) and observe the cluster size distribution and percolation at $T_c$.'
+    title: 'Interactive Concept: Swendsen-Wang Fortuin-Kasteleyn Clusters & Dynamic Exponent'
+    description_markdown: Visualize the Fortuin-Kasteleyn bond creation probability $p = 1 - e^{-2\beta J}$, percolation threshold $p_c$, and the dramatic reduction in critical autocorrelation time $\tau(L)$ achieved by cluster updates.
     render_function: render_swendsen_wang_clusters
     layout:
       kind: matplotlib
@@ -774,408 +943,168 @@ worksheet:
         - label: L = 64 (N = 4096)
           value: 64
         default: 32
-    takeaway_markdown: '**Key Insight:** At $T \gg T_c$, bonds rarely form ($p \approx 0$) and clusters are isolated single spins. At $T \ll T_c$, almost all parallel bonds activate ($p \approx 1$) and the entire lattice forms a single giant cluster. Exactly at $T = T_c$, a scale-invariant fractal cluster percolates across the system, enabling global configuration updates in a single Monte Carlo step!'
-  - id: q22_21
+    takeaway_markdown: '**Key Insight:** At $T \gg T_c$, bond probability is near zero ($p \to 0$), recovering independent random spin updates. At $T \ll T_c$, $p \to 1$, grouping nearly the whole lattice into a single cluster that flips collectively. Right at $T = T_c$, bonded clusters percolate fractally with the exact Ising correlation length $\xi$, reducing critical autocorrelation time from $\tau \sim L^{2.17}$ down to $\tau \sim L^{0.25}$!'
+  - id: q22_33_critical_slowing_down_origin
     type: problem
     question_type: single_select
-    difficulty: easy
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: In the Swendsen-Wang cluster algorithm, what is the probability $p$ of placing an active bond between two adjacent parallel spins ($s_i = s_j$)?
+    difficulty: medium
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: Why does the autocorrelation time $\tau$ of local single-spin-flip Monte Carlo algorithms diverge near continuous phase transitions (critical slowing down)?
+    hint_markdown: Consider how information about a spin flip propagates across a spatial distance equal to the diverging correlation length xi when updates are strictly local.
     options:
     - id: a
-      text_markdown: $p = 1 - e^{-2\beta J}$
-      text: $p = 1 - e^{-2\beta J}$
+      text: Because spatial correlations diverge (xi ~ |T - Tc|^(-nu)); rearranging a correlated domain of size xi using local single-spin flips requires a diffusive random walk of domain walls, causing relaxation time to scale as tau ~ xi^z.
     - id: b
-      text_markdown: $p = e^{-\beta J}$
-      text: $p = e^{-\beta J}$
+      text: Because the pseudorandom number generator runs out of entropy at Tc.
     - id: c
-      text_markdown: $p = 0.5$
-      text: $p = 0.5$
+      text: Because the acceptance probability of single spin flips drops to zero.
     - id: d
-      text_markdown: $p = \tanh(\beta J)$
-      text: $p = \tanh(\beta J)$
+      text: Because the system runs out of accessible microstates.
     correct: a
-    hint_markdown: Recall the Fortuin-Kasteleyn random cluster bond probability.
-    rationale_markdown: The Fortuin-Kasteleyn transformation maps the Ising partition function onto random percolation with bond probability $p = 1 - e^{-2\beta J}$ for parallel spins and $p = 0$ for antiparallel spins.
-  - id: q22_22
+    rationale_markdown: Near $T_c$, spins are correlated over distances of order $\xi$. Flipping an entire correlated region using single-spin updates requires nucleating, diffusing, and sweeping domain boundaries across the cluster. Because domain wall propagation is diffusive, the time required scales as $\tau \sim \xi^z$, where $z \approx 2.17$ in 2D. As $\xi \to \infty$, consecutive Monte Carlo samples become highly correlated, requiring millions of sweeps per independent sample.
+  - id: q22_34_fk_critical_bond_probability_numeric
     type: problem
     question_type: numeric
     difficulty: medium
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: At the 2D Ising critical point where $\beta_c J = \frac{1}{2}\ln(1 + \sqrt{2}) \approx 0.440687$, calculate the exact bond probability $p_c = 1 - e^{-2\beta_c J}$ to 4 decimal places.
-    correct: 0.5858
-    tolerance: 0.002
-    hint_markdown: Notice that $e^{2\beta_c J} = 1 + \sqrt{2}$. Evaluate $1 - \frac{1}{1 + \sqrt{2}}$.
-    rationale_markdown: Since $2\beta_c J = \ln(1 + \sqrt{2})$, $e^{-2\beta_c J} = \frac{1}{1 + \sqrt{2}} = \sqrt{2} - 1 \approx 0.414214$. Then $p_c = 1 - (\sqrt{2} - 1) = 2 - \sqrt{2} \approx 0.585786 \approx 0.5858$.
-  - id: q22_23
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: In the Fortuin-Kasteleyn representation underlying the Swendsen-Wang and Wolff cluster algorithms, adjacent parallel spins are dynamically connected by bonds with probability $p = 1 - e^{-2\beta J}$. At the exact 2D square-lattice critical coupling where $\sinh(2\beta_c J) = 1$, calculate the numerical value of the critical bond activation probability $p_c$ to 4 decimal places.
+    hint_markdown: Relate exp(-2*beta_c*J) to the algebraic value of exp(2*beta_c*J) obtained from the critical hyperbolic condition sinh(2*beta_c*J) = 1, and evaluate the resulting bond activation probability.
+    correct:
+      value: 0.5858
+      tolerance: 0.002
+    rationale_markdown: From $\sinh(2\beta_c J) = 1$, we have $\frac{1}{2}(e^{2\beta_c J} - e^{-2\beta_c J}) = 1$. Let $x = e^{2\beta_c J} > 1$. Then $x - 1/x = 2 \implies x^2 - 2x - 1 = 0$, giving $x = 1 + \sqrt{2}$. Then $e^{-2\beta_c J} = \frac{1}{1 + \sqrt{2}} = \sqrt{2} - 1$. The critical bond probability is $p_c = 1 - e^{-2\beta_c J} = 1 - (\sqrt{2} - 1) = 2 - \sqrt{2} \approx 0.585786 \approx 0.5858$.
+  - id: q22_35_swendsen_wang_spin_assignment
     type: problem
     question_type: single_select
     difficulty: medium
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: How does the Swendsen-Wang algorithm determine the new spin value for each identified cluster in zero magnetic field?
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: In the Swendsen-Wang algorithm, once all connected clusters have been identified via active Fortuin-Kasteleyn bonds at zero external field ($h = 0$), how is the new spin configuration generated?
+    hint_markdown: Consider how global discrete Z_2 symmetry applies independently to each disconnected subgraph in the random cluster representation.
     options:
     - id: a
-      text_markdown: Every cluster flips its spins to the opposite of its current value.
-      text: Every cluster flips its spins to the opposite of its current value.
+      text: For each connected cluster independently, a new collective spin orientation (+1 or -1) is chosen with equal probability 1/2 and assigned to all sites in that cluster.
     - id: b
-      text_markdown: Each cluster is independently assigned $+1$ or $-1$ with equal probability $1/2$.
-      text: Each cluster is independently assigned $+1$ or $-1$ with equal probability $1/2$.
+      text: All clusters are inverted deterministically to their opposite orientation.
     - id: c
-      text_markdown: All clusters are set to $+1$.
-      text: All clusters are set to $+1$.
+      text: Only the single largest cluster is flipped, while all smaller clusters retain their old spins.
     - id: d
-      text_markdown: The cluster spin is determined by a continuous Gaussian distribution.
-      text: The cluster spin is determined by a continuous Gaussian distribution.
-    correct: b
-    hint_markdown: Review step 3 of the Swendsen-Wang algorithm.
-    rationale_markdown: Because the Hamiltonian is invariant under global sign flips, each disconnected cluster can independently point up ($+1$) or down ($-1$) with probability $1/2$. All spins belonging to that cluster take on the newly chosen value.
-  - id: q22_24
+      text: Spins inside clusters are randomized site-by-site without regard to cluster connectivity.
+    correct: a
+    rationale_markdown: In the Fortuin-Kasteleyn representation, all spin configurations compatible with a given bond configuration have identical Boltzmann weights. Because disconnected clusters share no active bonds, their orientations are mutually independent. Setting each cluster's collective orientation to $+1$ or $-1$ with equal probability $1/2$ satisfies detailed balance and ergodicity while updating the entire lattice in a single global step.
+  - id: q22_36_wolff_seed_selection_bias
     type: problem
     question_type: single_select
-    difficulty: medium
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: What happens to the dynamic critical exponent $z$ in 2D when switching from local single-spin Metropolis to the Swendsen-Wang cluster algorithm?
+    difficulty: hard
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: Why is the Wolff single-cluster algorithm often more efficient in practice than the full Swendsen-Wang multi-cluster algorithm?
+    hint_markdown: Consider how picking a single random lattice site as a seed affects the probability that a cluster of size C is selected for growth and flipping.
     options:
     - id: a
-      text_markdown: $z$ increases from 2.17 to 4.0.
-      text: $z$ increases from 2.17 to 4.0.
+      text: Selecting a random seed site automatically selects clusters with probability proportional to their size C / N, focusing computational effort on flipping large, dominant clusters while avoiding the overhead of decomposing tiny 1-site clusters in disordered regions.
     - id: b
-      text_markdown: $z$ drops drastically from $z \approx 2.17$ down to $z \approx 0.35$, dramatically suppressing critical slowing down.
-      text: $z$ drops drastically from $z \approx 2.17$ down to $z \approx 0.35$, dramatically suppressing critical slowing down.
+      text: Wolff algorithm does not require calculating the bond probability p.
     - id: c
-      text_markdown: $z$ remains strictly unchanged at 2.0.
-      text: $z$ remains strictly unchanged at 2.0.
+      text: Wolff algorithm operates entirely without random numbers.
     - id: d
-      text_markdown: $z$ becomes negative.
-      text: $z$ becomes negative.
-    correct: b
-    hint_markdown: Cluster flips update large correlated regions in a single step, decoupling the autocorrelation time from diffusion.
-    rationale_markdown: By updating entire correlated spin clusters in a single step, Swendsen-Wang reduces the dynamic critical exponent from $z \approx 2.17$ to $z \approx 0.35$ in 2D (and Wolff achieves $z \approx 0.25$), making simulations near $T_c$ exponentially faster.
-  - id: q22_25
+      text: Wolff algorithm completely avoids cluster recursion.
+    correct: a
+    rationale_markdown: In Swendsen-Wang, decomposing the entire lattice requires identifying thousands of tiny 1-site and 2-site clusters, which contributes little to reducing critical correlation time. Wolff selects a single seed site uniformly at random; because a cluster of size $C$ contains $C$ sites, the probability of selecting that cluster is $C / N$. This built-in importance sampling naturally focuses updates on large, critically correlated clusters, achieving $z_{\text{Wolff}} \approx 0.25$ with lower per-step computational overhead.
+  - id: q22_37_cluster_speedup_numeric
     type: problem
     question_type: numeric
     difficulty: hard
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: On an $L = 128$ lattice at $T_c$, single-spin Metropolis has autocorrelation time $\tau_{\text{local}} \propto L^{2.17}$. Swendsen-Wang has $\tau_{\text{SW}} \propto L^{0.35}$. What is the ratio $\tau_{\text{local}} / \tau_{\text{SW}} = L^{2.17 - 0.35} = L^{1.82}$ for $L = 128$?
-    correct: 6730.0
-    tolerance: 300.0
-    hint_markdown: Calculate $128^{1.82}$.
-    rationale_markdown: $128^{1.82} = (2^7)^{1.82} = 2^{12.74} = 2^{12} \times 2^{0.74} = 4096 \times 1.6702 \approx 6840$ (or $128^{1.82} \approx 6730$). Cluster sampling is several thousand times more efficient at this lattice size!
-  - id: q22_26
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: What key difference distinguishes the Wolff cluster algorithm from the Swendsen-Wang algorithm?
-    options:
-    - id: a
-      text_markdown: Wolff grows and flips a SINGLE cluster around a randomly chosen seed site, rather than partitioning the entire lattice into clusters at every step.
-      text: Wolff grows and flips a SINGLE cluster around a randomly chosen seed site, rather than partitioning the entire lattice into clusters at every step.
-    - id: b
-      text_markdown: Wolff algorithm only works in 1D.
-      text: Wolff algorithm only works in 1D.
-    - id: c
-      text_markdown: Wolff algorithm does not satisfy detailed balance.
-      text: Wolff algorithm does not satisfy detailed balance.
-    - id: d
-      text_markdown: Wolff algorithm requires computing matrix inverses.
-      text: Wolff algorithm requires computing matrix inverses.
-    correct: a
-    hint_markdown: Why is Wolff called the 'single-cluster algorithm'?
-    rationale_markdown: Instead of constructing all clusters across the whole lattice (which spends time on tiny 1-spin clusters in hot regions), Wolff picks a single random seed spin, grows its cluster using the same bond probability $p = 1 - e^{-2\beta J}$, and flips it unconditionally. The probability that a cluster is chosen is proportional to its size, automatically prioritizing large clusters.
-  - id: q22_27
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: concept_swendsen_wang_clusters
-    prompt_markdown: In the concept cell, what happens to the Fortuin-Kasteleyn clusters at low temperature $T / T_c = 0.5$?
-    options:
-    - id: a
-      text_markdown: Every spin is isolated in its own private 1-site cluster.
-      text: Every spin is isolated in its own private 1-site cluster.
-    - id: b
-      text_markdown: A single giant cluster spans virtually the entire lattice because $p = 1 - e^{-2\beta J} \approx 0.97$, linking nearly all parallel spins together.
-      text: A single giant cluster spans virtually the entire lattice because $p = 1 - e^{-2\beta J} \approx 0.97$, linking nearly all parallel spins together.
-    - id: c
-      text_markdown: All bonds disappear.
-      text: All bonds disappear.
-    - id: d
-      text_markdown: The cluster size follows a Cauchy distribution.
-      text: The cluster size follows a Cauchy distribution.
-    correct: b
-    hint_markdown: Calculate $p = 1 - e^{-2(0.44/0.5)} = 1 - e^{-1.76} \approx 0.83$.
-    rationale_markdown: At $T = 0.5 T_c$, the coupling $\beta J$ is large and the bond probability $p = 1 - e^{-2\beta J} \approx 0.83$ far exceeds the 2D bond percolation threshold $p_c^{\text{perc}} = 0.50$. Consequently, nearly all aligned spins merge into a single system-spanning percolating cluster.
-  - id: q22_28
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: In a 2D Ising simulation performed directly at the critical point $T_c$, single-spin Metropolis dynamics exhibits an autocorrelation time scaling as $\tau_{\text{local}} \sim L^{z_{\text{local}}}$ with $z_{\text{local}} \approx 2.17$, while the Swendsen-Wang cluster algorithm exhibits $\tau_{\text{SW}} \sim L^{z_{\text{SW}}}$ with $z_{\text{SW}} \approx 0.35$. On a lattice of linear size $L = 64$, calculate the theoretical algorithmic speedup ratio $\tau_{\text{local}} / \tau_{\text{SW}}$ in autocorrelation time.
+    hint_markdown: Express the speedup ratio as a power of the lattice dimension using the difference between the two dynamic critical exponents.
+    correct:
+      value: 1940.0
+      tolerance: 80.0
+    rationale_markdown: The speedup ratio scales as $\frac{\tau_{\text{local}}}{\tau_{\text{SW}}} = L^{z_{\text{local}} - z_{\text{SW}}} = L^{2.17 - 0.35} = L^{1.82}$. For $L = 64 = 2^6$, we evaluate $64^{1.82} = (2^6)^{1.82} = 2^{10.92} = 2^{10} \times 2^{0.92} = 1024 \times 1.8921 \approx 1937.5 \approx 1940$. The cluster algorithm generates statistically independent configurations nearly 2,000 times faster on a $64 \times 64$ grid!
+  - id: q22_38_cluster_algorithm_limitations
     type: problem
     question_type: multi_select
-    difficulty: medium
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: Under what conditions do Swendsen-Wang and Wolff cluster algorithms LOSE their immense efficiency advantage over local Metropolis? (Select all that apply)
+    difficulty: hard
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: Under which physical conditions do the Swendsen-Wang and Wolff cluster algorithms LOSE their immense efficiency advantage over local Metropolis sampling? *(Select all that apply.)*
+    hint_markdown: Consider how the presence of external magnetic fields or competing frustrated interactions affects cluster growth and the cluster acceptance/flip criteria.
     options:
     - id: a
-      text_markdown: In the presence of a strong external magnetic field $h \ne 0$, where clusters grow to encompass the entire box and flips are rejected or field-dominated.
-      text: In the presence of a strong external magnetic field $h \ne 0$, where clusters grow to encompass the entire box and flips are rejected or field-dominated.
+      text: In the presence of a strong external magnetic field h != 0, where clusters grow to encompass the entire box and collective flips are heavily penalized by the Zeeman energy.
     - id: b
-      text_markdown: In frustrated spin systems like spin glasses or antiferromagnets on triangular lattices, where conflicting interactions prevent clean cluster formation.
-      text: In frustrated spin systems like spin glasses or antiferromagnets on triangular lattices, where conflicting interactions prevent clean cluster formation.
+      text: In geometrically frustrated systems (e.g., antiferromagnets on triangular lattices or spin glasses) with competing positive and negative exchange bonds.
     - id: c
-      text_markdown: In standard zero-field 2D ferromagnetic Ising models near $T_c$.
-      text: In standard zero-field 2D ferromagnetic Ising models near $T_c$.
+      text: In standard zero-field ferromagnetic models near Tc.
     - id: d
-      text_markdown: When calculating the microcanonical density of states with Wang-Landau.
-      text: When calculating the microcanonical density of states with Wang-Landau.
+      text: When measuring the Binder cumulant at the crossing point.
     correct:
     - a
     - b
-    hint_markdown: Consider how external fields and geometric frustration affect the Fortuin-Kasteleyn percolation mapping.
-    rationale_markdown: Strong magnetic fields break the up-down symmetry and penalize large cluster flips, while geometric frustration (triangular AFM, spin glasses) creates competing bonds where clusters cannot resolve frustration. In zero-field ferromagnets, cluster methods are maximally effective.
-  - id: q22_29
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: What data structure and algorithm is standardly used to identify connected components in Swendsen-Wang in linear time $\mathcal{O}(N)$?
-    options:
-    - id: a
-      text_markdown: Dijkstra's shortest path algorithm
-      text: Dijkstra's shortest path algorithm
-    - id: b
-      text_markdown: Disjoint-Set (Union-Find) with path compression or the Hoshen-Kopelman algorithm
-      text: Disjoint-Set (Union-Find) with path compression or the Hoshen-Kopelman algorithm
-    - id: c
-      text_markdown: Fast Fourier Transform (FFT)
-      text: Fast Fourier Transform (FFT)
-    - id: d
-      text_markdown: Singular Value Decomposition (SVD)
-      text: Singular Value Decomposition (SVD)
-    correct: b
-    hint_markdown: How do percolation algorithms track which sites belong to which cluster?
-    rationale_markdown: The Disjoint-Set (Union-Find) data structure with union-by-rank and path compression, or the Hoshen-Kopelman single-pass labeling algorithm, labels all connected clusters in near-linear $\mathcal{O}(N \alpha(N))$ time, where $\alpha$ is the inverse Ackermann function.
-  - id: q22_30
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: At very high temperature $T \gg T_c$, what is the limiting behavior of the bond probability $p = 1 - e^{-2\beta J}$ in the Swendsen-Wang algorithm?
-    options:
-    - id: a
-      text_markdown: $p \to 1$
-      text: $p \to 1$
-    - id: b
-      text_markdown: $p \to 0$, so no bonds form and every spin flips independently with probability 1/2, recovering independent random sampling.
-      text: $p \to 0$, so no bonds form and every spin flips independently with probability 1/2, recovering independent random sampling.
-    - id: c
-      text_markdown: $p \to 0.5$
-      text: $p \to 0.5$
-    - id: d
-      text_markdown: $p \to \infty$
-      text: $p \to \infty$
-    correct: b
-    hint_markdown: As $T \to \infty$, $\beta = 1/k_B T \to 0$. What is $1 - e^0$?
-    rationale_markdown: As $\beta \to 0$, $e^{-2\beta J} \to 1$, so $p \to 0$. No bonds are created, every site forms a 1-spin cluster, and each spin is randomly assigned $\pm 1$ independently with probability 1/2, perfectly sampling the infinite-temperature state in a single step!
-  - id: q22_31
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_exact_solutions_and_onsager
-    prompt_markdown: In a 1D Ising model at temperature where $\tanh(\beta J) = 0.90$, calculate the correlation length $\xi = -1 / \ln(\tanh\beta J)$ in lattice units to 2 decimal places.
-    correct: 9.49
-    tolerance: 0.1
-    hint_markdown: Compute $-1 / \ln(0.90)$.
-    rationale_markdown: $\ln(0.90) = -0.10536$. Thus $\xi = -1 / (-0.10536) \approx 9.49$ lattice spacings.
-  - id: q22_32
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_magnetization_distribution_and_interfaces
-    prompt_markdown: What is the physical origin of the finite-size rounding of the second-order phase transition in a simulation of size $L$?
-    options:
-    - id: a
-      text_markdown: In finite systems, the correlation length cannot grow larger than the box size ($\xi \le L$), rounding the true mathematical singularities of the infinite-volume limit into smooth, finite peaks.
-      text: In finite systems, the correlation length cannot grow larger than the box size ($\xi \le L$), rounding the true mathematical singularities of the infinite-volume limit into smooth, finite peaks.
-    - id: b
-      text_markdown: Floating-point errors truncate the partition function.
-      text: Floating-point errors truncate the partition function.
-    - id: c
-      text_markdown: The number of spins is not divisible by 2.
-      text: The number of spins is not divisible by 2.
-    - id: d
-      text_markdown: The magnetic field diverges.
-      text: The magnetic field diverges.
-    correct: a
-    hint_markdown: Can an infinite correlation length $\xi = \infty$ exist inside a box of size $L$?
-    rationale_markdown: True phase transitions and non-analyticities only occur in the thermodynamic limit $N \to \infty$. In a finite system of size $L$, the maximum correlation length is cut off by $L$, causing specific heat and susceptibility divergences to be rounded into finite peaks shifted by $\Delta T_c(L) \propto L^{-1/\nu}$.
-  - id: q22_33
+    rationale_markdown: Swendsen-Wang and Wolff rely fundamentally on global $\mathbb{Z}_2$ symmetry and unfrustrated ferromagnetic coupling. When $h \ne 0$, cluster flips must be accepted or rejected based on the change in Zeeman energy, which scales with cluster volume and causes rejection rates to approach 100%. In frustrated systems (spin glasses, triangular AFM), competing couplings cannot be satisfied simultaneously, leading to percolation of clusters that lock the system rather than decorrelating it.
+  - id: q22_39_union_find_complexity
     type: problem
     question_type: single_select
     difficulty: medium
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: For an antiferromagnetic Ising model ($J < 0$) on a bipartite lattice (e.g. square lattice) with $h = 0$, how can the model be mapped onto a ferromagnetic model ($J > 0$)?
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: What data structure and algorithm is standardly used to identify all connected components in Swendsen-Wang in near-linear time $\mathcal{O}(N \alpha(N))$, where $\alpha$ is the inverse Ackermann function?
+    hint_markdown: Recall the classic disjoint-set forest data structure equipped with union-by-rank and path compression heuristics.
     options:
     - id: a
-      text_markdown: By applying an infinite magnetic field.
-      text: By applying an infinite magnetic field.
+      text: Disjoint-Set (Union-Find) with path compression and union-by-rank, or the Hoshen-Kopelman algorithm.
     - id: b
-      text_markdown: 'By performing a gauge transformation that flips the sign of all spins on one of the two sublattices: $s_i \to -s_i$ for $i \in B$.'
-      text: 'By performing a gauge transformation that flips the sign of all spins on one of the two sublattices: $s_i \to -s_i$ for $i \in B$.'
+      text: Dijkstra's single-source shortest path algorithm using a Fibonacci heap.
     - id: c
-      text_markdown: By rotating the lattice by 45 degrees.
-      text: By rotating the lattice by 45 degrees.
+      text: Floyd-Warshall all-pairs shortest path matrix decomposition.
     - id: d
-      text_markdown: An antiferromagnet cannot be mapped to a ferromagnet.
-      text: An antiferromagnet cannot be mapped to a ferromagnet.
-    correct: b
-    hint_markdown: On a bipartite lattice, every neighbor of sublattice A is in sublattice B. If $s_i \to -s_i$ for $i \in B$, what happens to $s_i s_j$?
-    rationale_markdown: Because every bond connects a site in sublattice A to a site in sublattice B, transforming $s_j \to -s_j$ for all $j \in B$ flips the sign of every bond product $s_i s_j \to -s_i s_j$. The Hamiltonian $-J \sum s_i s_j$ with $J < 0$ becomes $-|J|\sum s_i s_j$, proving the two models are exactly isomorphic.
-  - id: q22_34
+      text: Fast Fourier Transform spectral clustering.
+    correct: a
+    rationale_markdown: Identifying connected clusters formed by active bonds is equivalent to computing connected components of a random graph. The Disjoint-Set (Union-Find) data structure with path compression and union-by-rank, as well as the Hoshen-Kopelman algorithm, processes all $N$ sites and $zN/2$ bonds in nearly linear $\mathcal{O}(N \alpha(N))$ time, where $\alpha(N) \le 4$ for all physically realizable universe sizes.
+  - id: q22_40_fortuin_kasteleyn_percolation_mapping
     type: problem
     question_type: single_select
     difficulty: hard
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: Why does an antiferromagnetic Ising model ($J < 0$) on a TRIANGULAR lattice fail to have a simple ordered ground state (exhibiting geometric frustration)?
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: What is the mathematical connection between the Fortuin-Kasteleyn random cluster representation of the Ising model and standard random bond percolation?
+    hint_markdown: Notice that when the number of states q in the Potts/random-cluster model is taken to q = 1, the cluster weight simplifies to uncorrelated bond probabilities.
     options:
     - id: a
-      text_markdown: Because triangles have 3 edges; it is impossible for all 3 pairs of spins on a triangle to be simultaneously antiparallel, leaving a non-zero residual entropy $S_0 > 0$ at $T = 0$ (Wannier 1950).
-      text: Because triangles have 3 edges; it is impossible for all 3 pairs of spins on a triangle to be simultaneously antiparallel, leaving a non-zero residual entropy $S_0 > 0$ at $T = 0$ (Wannier 1950).
+      text: The Ising model corresponds to the q = 2 random cluster model where each connected component carries a statistical weight factor of 2, whereas standard uncorrelated percolation corresponds to the mathematical limit q -> 1.
     - id: b
-      text_markdown: Because triangular lattices have coordination number zero.
-      text: Because triangular lattices have coordination number zero.
+      text: Standard percolation only occurs in one dimension, whereas the Ising model only exists in two dimensions.
     - id: c
-      text_markdown: Because the triangular lattice is bipartite.
-      text: Because the triangular lattice is bipartite.
+      text: The Ising model and percolation are completely unrelated and share no mathematical similarities.
     - id: d
-      text_markdown: Because the exchange parameter $J$ becomes complex.
-      text: Because the exchange parameter $J$ becomes complex.
+      text: Fortuin-Kasteleyn mapping replaces spins with continuous Gaussian random walks.
     correct: a
-    hint_markdown: Try assigning $\pm 1$ to three vertices of a triangle such that every edge has opposite spins.
-    rationale_markdown: On a triangle, choosing two spins antiparallel ($+1$ and $-1$) forces the third spin to be parallel to one of them, frustrating that bond. Gregory Wannier (1950) proved that the triangular AFM has macroscopic ground state degeneracy with residual zero-point entropy $S_0 / N k_B \approx 0.323$.
-  - id: q22_35
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: In a 2D square lattice of $N = 100$ spins ($10 \times 10$) with periodic boundary conditions, what is the total number of nearest-neighbor bonds $N_{\text{bonds}}$? (Recall coordination number $z = 4$).
-    correct: 200.0
-    tolerance: 0.1
-    hint_markdown: 'Each site has $z = 4$ neighbors, and each bond connects 2 sites: $N_{\text{bonds}} = z N / 2$.'
-    rationale_markdown: $N_{\text{bonds}} = \frac{1}{2} z N = \frac{1}{2} (4)(100) = 200$ bonds.
-  - id: q22_36
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: For the same $N = 100$ square lattice with $J = 1.0\text{ meV}$ and $h = 0$, what is the total ground state energy $E_{\text{ground}}$ in meV when all spins are fully aligned ($s_i = +1$ for all $i$)?
-    correct: -200.0
-    tolerance: 0.1
-    unit: meV
-    hint_markdown: Multiply $-J$ by the number of bonds.
-    rationale_markdown: $E_{\text{ground}} = -J \sum_{\langle i,j \rangle} (+1)(+1) = -1.0 \times 200 = -200.0\text{ meV}$.
-  - id: q22_37
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_ising_hamiltonian_and_mappings
-    prompt_markdown: Starting from the fully aligned ground state ($E = -200\text{ meV}$), flipping a single spin $s_k \to -1$ in the bulk breaks $z = 4$ bonds. What is the energy change $\Delta E$ in meV?
-    correct: 8.0
-    tolerance: 0.1
-    unit: meV
-    hint_markdown: 'Each of the 4 bonds changes from $-J$ to $+J$, costing $2J$ per bond: $\Delta E = 2 z J$.'
-    rationale_markdown: Flipping one spin reverses 4 bonds from parallel ($-J$) to antiparallel ($+J$). The energy increase is $\Delta E = 4 \times [J - (-J)] = 4 \times 2J = 8J = 8.0\text{ meV}$.
-  - id: q22_38
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_magnetization_distribution_and_interfaces
-    prompt_markdown: How is the magnetic susceptibility $\chi_T$ related to the fluctuations of the total magnetization $M$ in the canonical ensemble at $h = 0$?
-    options:
-    - id: a
-      text_markdown: $\chi_T = \frac{N}{k_B T} \left( \langle M^2 \rangle - \langle M \rangle^2 \right)$
-      text: $\chi_T = \frac{N}{k_B T} \left( \langle M^2 \rangle - \langle M \rangle^2 \right)$
-    - id: b
-      text_markdown: $\chi_T = \langle M \rangle^2$
-      text: $\chi_T = \langle M \rangle^2$
-    - id: c
-      text_markdown: $\chi_T = \frac{1}{N} \sum s_i$
-      text: $\chi_T = \frac{1}{N} \sum s_i$
-    - id: d
-      text_markdown: $\chi_T = -k_B T \ln M$
-      text: $\chi_T = -k_B T \ln M$
-    correct: a
-    hint_markdown: Differentiate $\langle M \rangle = \frac{1}{N}\frac{\partial \ln Z}{\partial(\beta h)}$ with respect to $h$.
-    rationale_markdown: By the fluctuation-dissipation theorem, $\chi_T = \frac{\partial \langle M \rangle}{\partial h} = \beta N (\langle M^2 \rangle - \langle M \rangle^2) = \frac{N}{k_B T}\mathrm{Var}(M)$.
-  - id: q22_39
+    rationale_markdown: The Fortuin-Kasteleyn transformation maps the general $q$-state Potts model (with $q = 2$ being the Ising model) onto a random cluster representation where a configuration of active bonds $G$ has probability weight $W(G) = p^{|E(G)|}(1-p)^{|B|-|E(G)|} q^{C(G)}$, where $C(G)$ is the number of connected clusters. For the Ising model ($q = 2$), each cluster contributes a factor of 2 (up or down). When $q \to 1$, the cluster factor $q^{C(G)} = 1$ drops out, recovering standard uncorrelated random bond percolation.
+  - id: q22_41_porod_law_scattering_tail
     type: problem
     question_type: single_select
     difficulty: hard
-    taught_by: sec_magnetization_distribution_and_interfaces
-    prompt_markdown: At the critical point $T = T_c$, how does the peak value of the magnetic susceptibility $\chi_{\max}(L)$ scale with linear lattice size $L$ according to finite-size scaling?
-    options:
-    - id: a
-      text_markdown: $\chi_{\max}(L) \propto L^{\gamma / \nu} = L^{7/4} = L^{1.75}$
-      text: $\chi_{\max}(L) \propto L^{\gamma / \nu} = L^{7/4} = L^{1.75}$
-    - id: b
-      text_markdown: $\chi_{\max}(L) \propto L^0 = \text{constant}$
-      text: $\chi_{\max}(L) \propto L^0 = \text{constant}$
-    - id: c
-      text_markdown: $\chi_{\max}(L) \propto e^{-L}$
-      text: $\chi_{\max}(L) \propto e^{-L}$
-    - id: d
-      text_markdown: $\chi_{\max}(L) \propto L^{-1}$
-      text: $\chi_{\max}(L) \propto L^{-1}$
-    correct: a
-    hint_markdown: Recall the finite-size scaling relation for susceptibility $\chi(L) = L^{\gamma/\nu} \tilde{\chi}((T-T_c)L^{1/\nu})$.
-    rationale_markdown: By finite-size scaling, replacing $\xi \sim |T-T_c|^{-\nu}$ with the cutoff $L$ in $\chi \propto \xi^{\gamma/\nu}$ gives $\chi_{\max}(L) \propto L^{\gamma/\nu}$. In 2D, $\gamma = 7/4$ and $\nu = 1$, so $\chi_{\max} \propto L^{1.75}$.
-  - id: q22_40
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: In an experiment or simulation measuring the equal-time structure factor $S(k, t) = \langle |\hat{s}(\mathbf{k}, t)|^2 \rangle$ during coarsening, what universal scaling hypothesis is observed?
-    options:
-    - id: a
-      text_markdown: 'Dynamical scaling hypothesis: $S(k, t) = L(t)^d F(k L(t))$, where $L(t)$ is the characteristic domain size and $F(x)$ is a time-independent master curve.'
-      text: 'Dynamical scaling hypothesis: $S(k, t) = L(t)^d F(k L(t))$, where $L(t)$ is the characteristic domain size and $F(x)$ is a time-independent master curve.'
-    - id: b
-      text_markdown: $S(k, t)$ is strictly constant in both $k$ and $t$.
-      text: $S(k, t)$ is strictly constant in both $k$ and $t$.
-    - id: c
-      text_markdown: $S(k, t)$ diverges to infinity at all wavevectors $k$.
-      text: $S(k, t)$ diverges to infinity at all wavevectors $k$.
-    - id: d
-      text_markdown: $S(k, t) = e^{-k t}$
-      text: $S(k, t) = e^{-k t}$
-    correct: a
-    hint_markdown: 'Think about self-similarity: the domain morphology at time $t_2$ looks identical to that at $t_1$ upon rescaling space by $L(t_2)/L(t_1)$.'
-    rationale_markdown: The dynamical scaling hypothesis states that the domain morphology is statistically self-similar across time, possessing a single characteristic length scale $L(t)$. Rescaling wavevector by $k L(t)$ and intensity by $L(t)^d$ collapses structure factor curves at all times onto a universal master function $F(x)$.
-  - id: q22_41
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_glauber_vs_kawasaki_kinetics
-    prompt_markdown: What is Porod's law for the high-wavevector tail of the structure factor $S(k, t)$ in a system with sharp domain interfaces in $d$ dimensions?
+    taught_by: sec_spin_kinetics_coarsening_and_ripening
+    prompt_markdown: In a phase-separating mixture or coarsening Ising domain structure characterized by sharp, smooth spatial interfaces, how does the high-wavevector tail of the spherically averaged structure factor $S(k, t)$ decay with wavenumber $k$ in $d$ spatial dimensions (Porod's law)?
+    hint_markdown: Consider the Fourier transform of a spatial correlation function across an abrupt step-discontinuity interface of finite total surface area.
     options:
     - id: a
       text_markdown: $S(k, t) \propto k^{-(d+1)}$ as $k \to \infty$
       text: $S(k, t) \propto k^{-(d+1)}$ as $k \to \infty$
     - id: b
-      text_markdown: $S(k, t) \propto e^{-k^2}$
-      text: $S(k, t) \propto e^{-k^2}$
+      text_markdown: $S(k, t) \propto k^{-(d-1)}$ as $k \to \infty$
+      text: $S(k, t) \propto k^{-(d-1)}$ as $k \to \infty$
     - id: c
-      text_markdown: $S(k, t) \propto k^2$
-      text: $S(k, t) \propto k^2$
+      text_markdown: $S(k, t) \propto e^{-k^2 \xi^2}$ as $k \to \infty$
+      text: $S(k, t) \propto e^{-k^2 \xi^2}$ as $k \to \infty$
     - id: d
-      text_markdown: $S(k, t) \propto \ln(k)$
-      text: $S(k, t) \propto \ln(k)$
+      text_markdown: $S(k, t) \propto k^{-d/2}$ as $k \to \infty$
+      text: $S(k, t) \propto k^{-d/2}$ as $k \to \infty$
     correct: a
-    hint_markdown: In 3D, $S(k) \propto k^{-4}$; in 2D, $S(k) \propto k^{-3}$.
-    rationale_markdown: Porod's law states that scattering from sharp, thin interfaces of area per unit volume $\Sigma$ produces an asymptotic power-law tail $S(k) \propto \Sigma k^{-(d+1)}$. In 2D ($d=2$), this gives $S(k) \propto k^{-3}$; in 3D ($d=3$), it gives $S(k) \propto k^{-4}$.
-  - id: q22_42
+    rationale_markdown: Porod's law states that scattering from sharp, thin interfaces of area per unit volume $\Sigma$ produces an asymptotic high-$k$ power-law tail $S(k, t) \propto \Sigma k^{-(d+1)}$. In $d=2$ dimensions this yields $k^{-3}$, whereas in $d=3$ it yields $k^{-4}$. A faster exponential decay would correspond to diffuse, Gaussian-smoothed interfaces.
+  - id: q22_42_metropolis_autocorrelation_scaling_numeric
     type: problem
     question_type: numeric
     difficulty: medium
-    taught_by: sec_critical_slowing_down_and_swendsen_wang
-    prompt_markdown: In a 2D Ising simulation at $T_c$ with $L = 64$ using local Metropolis ($z = 2.17$), the autocorrelation time is $\tau_0 = 10,000\text{ MCS}$. If the lattice size is doubled to $L = 128$, calculate the new autocorrelation time $\tau = \tau_0 \times (128 / 64)^{2.17} = 10,000 \times 2^{2.17}$ in MCS to the nearest 100 MCS.
+    taught_by: sec_critical_slowing_down_and_cluster_mc
+    prompt_markdown: In a 2D Ising simulation right at the critical temperature $T_c$ using local single-spin Metropolis updates ($z = 2.17$), the integrated autocorrelation time for a lattice of linear dimension $L = 64$ is measured to be $\tau = 10,000\text{ sweeps}$. Based on dynamical finite-size scaling, predict the autocorrelation time in sweeps when the lattice size is doubled to $L = 128$. *(Round to the nearest 1000 sweeps.)*
+    hint_markdown: Scale the baseline autocorrelation time by the system dimension expansion ratio raised to the dynamical critical exponent.
     correct: 45000.0
     tolerance: 1000.0
-    hint_markdown: Evaluate $2^{2.17} \approx 4.500$. Multiply by 10,000.
-    rationale_markdown: $2^{2.17} = 2^2 \times 2^{0.17} = 4 \times 1.12506 \approx 4.5002$. Therefore $\tau = 10,000 \times 4.5002 \approx 45,000\text{ MCS}$.
+    rationale_markdown: At the critical point where the bulk correlation length is cut off by the system boundaries ($\xi \sim L$), the autocorrelation time diverges as $\tau(L) \propto L^z$. Doubling the linear dimension yields $\tau(128) = \tau(64) \times (128 / 64)^{2.17} = 10,000 \times 2^{2.17} \approx 10,000 \times 4.5002 \approx 45,000\text{ sweeps}$.

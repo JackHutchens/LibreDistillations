@@ -54,7 +54,7 @@
           "concept_surface_scaling"
         ],
         "prompt_markdown": "Consider a 3D simple cubic nanocrystal containing $N = 1000$ atoms arranged as a $10 \\times 10 \\times 10$ cube in vacuum (free boundary conditions). If the outermost single layer of atoms ($d = 1$) on all six faces is considered the surface shell, what **percentage** of the atoms in this cluster are surface atoms? (Enter a number between 0 and 100, e.g., `48.8`.)\n",
-        "hint_markdown": "Count the interior bulk atoms first: removing 1 layer from each end of the 3 axes leaves an $(10 - 2) \\times (10 - 2) \\times (10 - 2) = 8^3$ interior cube.",
+        "hint_markdown": "Determine the number of atoms remaining in the interior core by stripping the surface thickness from both boundaries along each Cartesian dimension.",
         "correct": {
           "value": 48.8,
           "tolerance": 0.2
@@ -71,7 +71,7 @@
           "concept_surface_scaling"
         ],
         "prompt_markdown": "As discussed in the lecture notes, suppose a simulated droplet has $N = 10^6 = (100)^3$ atoms on a cubic grid, and the surface region affected by under-coordination is $d = 5$ atomic layers thick on every face. Calculate the **exact percentage** of atoms that lie within this 5-atom-thick surface region.\n",
-        "hint_markdown": "With $n = 100$ and $d = 5$ on both sides of each axis, the unaffected interior cube has side length $n - 2d = 100 - 10 = 90$.",
+        "hint_markdown": "Consider the dimensions of the unaffected interior core after subtracting the under-coordinated boundary thickness from opposing faces along each axis.",
         "correct": {
           "value": 27.1,
           "tolerance": 0.5
@@ -87,7 +87,7 @@
           "sec_surface_pbc_intro"
         ],
         "prompt_markdown": "In a $D$-dimensional cluster of $N$ particles with free boundaries, the surface-to-volume ratio (fraction of atoms near the surface) scales asymptotically with particle count $N$ as:\n",
-        "hint_markdown": "Linear dimension $L \\propto N^{1/D}$, volume $\\propto L^D$, and surface area $\\propto L^{D-1}$.",
+        "hint_markdown": "Relate the surface area and volume of a $D$-dimensional object to its characteristic linear scale, and express that linear scale in terms of particle number.",
         "options": [
           {
             "id": "a",
@@ -215,7 +215,7 @@
           "sec_surface_pbc_intro"
         ],
         "prompt_markdown": "A 3D periodic simulation cell of crystalline Silicon has cubic side length $L = 5.43\\text{ nm}$. What is the **longest non-zero acoustic phonon wavelength** $\\lambda_{\\max}$ (in $\\text{nm}$) that can propagate parallel to the $[100]$ axis ($x$-axis) in this simulation?\n",
-        "hint_markdown": "Periodic boundary conditions require $u(x + L) = u(x)$, so an integer number of wavelengths must fit inside $L$: $n \\lambda = L$.",
+        "hint_markdown": "Consider how the periodic boundary condition constrains the allowed normal-mode wavevectors along an edge of the simulation domain.",
         "correct": {
           "value": 5.43,
           "tolerance": 0.05
@@ -303,7 +303,7 @@
           "sec_mic_and_cutoffs"
         ],
         "prompt_markdown": "A cubic simulation box has side length $L = 10.0\\text{ \u00c5}$ spanning $[0, 10.0)\\text{ \u00c5}$. After a Verlet position update, an atom's $x$-coordinate is $x = -2.3\\text{ \u00c5}$. What is its wrapped $x$-coordinate (in $\\text{\u00c5}$) inside the primary box $[0, L)$?\n",
-        "hint_markdown": "Apply $x_{\\text{wrapped}} = x - L \\lfloor x/L \\rfloor$ with $\\lfloor -0.23 \\rfloor = -1$.",
+        "hint_markdown": "Determine which integer multiple of the periodic box dimension must be added to map a coordinate into the half-open primary interval $[0, L)$.",
         "correct": {
           "value": 7.7,
           "tolerance": 0.02
@@ -320,7 +320,7 @@
           "concept_minimum_image"
         ],
         "prompt_markdown": "In a 1D periodic box of length $L = 10.0\\text{ \u00c5}$, particle $i$ is at $x_i = 1.2\\text{ \u00c5}$ and particle $j$ is at $x_j = 8.9\\text{ \u00c5}$. What is the signed Minimum Image displacement $\\Delta x_{\\text{mic}} = (x_i - x_j)_{\\text{mic}}$ in $\\text{\u00c5}$? (Include the correct sign!)\n",
-        "hint_markdown": "First compute $\\Delta x = x_i - x_j = 1.2 - 8.9 = -7.7\\text{ \u00c5}$. Since $\\Delta x < -L/2$, add $L$.",
+        "hint_markdown": "Apply the minimum image convention to find the shortest periodic displacement along the coordinate axis, shifting by $\\pm L$ if the raw separation exceeds half the box length.",
         "correct": {
           "value": 2.3,
           "tolerance": 0.02
@@ -337,7 +337,7 @@
           "concept_minimum_image"
         ],
         "prompt_markdown": "In a 3D cubic periodic box of side length $L = 10.0\\text{ \u00c5}$, atom $A$ is at $\\mathbf{r}_A = (1.0, 9.0, 2.0)\\text{ \u00c5}$ and atom $B$ is at $\\mathbf{r}_B = (8.0, 2.0, 6.0)\\text{ \u00c5}$. Calculate the Minimum Image distance $|\\mathbf{r}_{AB}|_{\\text{M}}$ in $\\text{\u00c5}$.\n",
-        "hint_markdown": "Find the minimum-image displacement along each axis first: $\\Delta x_{\\text{mic}}, \\Delta y_{\\text{mic}}, \\Delta z_{\\text{mic}} \\in [-5, 5]$, then take the Euclidean norm.",
+        "hint_markdown": "Evaluate the minimum-image displacement vector along each Cartesian component individually before computing the Euclidean distance.",
         "correct": {
           "value": 5.831,
           "tolerance": 0.05
@@ -384,8 +384,8 @@
         "taught_by": [
           "sec_mic_and_cutoffs"
         ],
-        "prompt_markdown": "You are setting up a 3D periodic FCC Argon crystal with conventional cubic lattice constant $a = 1.55\\,\\sigma$ ($4$ atoms per unit cell) and a Lennard-Jones cutoff of $r_c = 2.5\\,\\sigma$. To strictly satisfy $r_c < L/2$ for an $M \\times M \\times M$ supercell of FCC unit cells (where $L = M a$), what is the **minimum total number of atoms $N = 4M^3$** required?\n",
-        "hint_markdown": "First find the minimum integer $M$ such that $L = M a > 2 r_c = 5.0\\,\\sigma$, then compute $N = 4M^3$.",
+        "prompt_markdown": "You are setting up a 3D periodic FCC Argon crystal with conventional cubic lattice constant $a = 1.55\\,\\sigma$ ($4$ atoms per conventional cubic unit cell) and a Lennard-Jones cutoff of $r_c = 2.5\\,\\sigma$. To strictly satisfy $r_c < L/2$ for an $M \\times M \\times M$ supercell of FCC unit cells (where $L = M a$), what is the **minimum total number of atoms** required in the simulation supercell?",
+        "hint_markdown": "Ensure the cubic box length strictly satisfies the minimum image criterion relative to the cutoff radius, and calculate the total atoms in the resulting supercell.",
         "correct": {
           "value": 256,
           "tolerance": 0.5
@@ -463,7 +463,7 @@
           "sec_mic_and_cutoffs"
         ],
         "prompt_markdown": "For a Lennard-Jones 12-6 potential $V(r) = 4\\varepsilon\\left[(\\sigma/r)^{12} - (\\sigma/r)^6\\right]$ truncated and shifted at $r_c = 2.5\\,\\sigma$ so that $V_c(r) = V(r) - V(r_c)$, what is the value of the potential energy at the cutoff prior to shifting, $V(r_c)/\\varepsilon$? (Include the negative sign, e.g., `-0.0163`.)\n",
-        "hint_markdown": "Compute $4 \\times (2.5^{-12} - 2.5^{-6})$.",
+        "hint_markdown": "Evaluate the standard 12-6 Lennard-Jones potential directly at the cutoff separation distance $r = r_c$ in reduced units.",
         "correct": {
           "value": -0.0163,
           "tolerance": 0.001
@@ -577,8 +577,8 @@
         "taught_by": [
           "sec_verlet_neighbor_lists"
         ],
-        "prompt_markdown": "In an all-pairs force calculation using Newton's third law (`j in range(i+1, N)`), how many distinct pair distance checks $\\frac{1}{2}N(N-1)$ are performed per MD timestep for a system of $N = 4000$ atoms? (Enter the exact integer.)\n",
-        "hint_markdown": "Compute $4000 \\times 3999 / 2$.",
+        "prompt_markdown": "In an all-pairs force calculation using Newton's third law (`j in range(i+1, N)`), how many distinct pair distance checks are performed per MD timestep for a system of $N = 4000$ atoms? (Enter the exact integer.)",
+        "hint_markdown": "Consider how many unique unordered particle pairs $(i, j)$ exist in an $N$-particle system.",
         "correct": {
           "value": 7998000,
           "tolerance": 1
@@ -594,7 +594,7 @@
           "sec_verlet_neighbor_lists"
         ],
         "prompt_markdown": "Consider two bulk liquid Argon simulations at the same number density $\\rho = 0.84\\,\\sigma^{-3}$ and cutoff $r_c = 2.5\\,\\sigma$: System A has $N = 1000$ atoms and System B has $N = 1,000,000$ atoms. How does the average number of interacting neighbors $m$ inside $r_c$ for a single atom compare between System A and System B?\n",
-        "hint_markdown": "Recall $m \\approx \\frac{4}{3}\\pi r_c^3 \\rho$.",
+        "hint_markdown": "Consider whether the local coordination number inside a fixed spherical cutoff radius depends on macroscopic system volume or on local particle density.",
         "options": [
           {
             "id": "a",
@@ -688,8 +688,8 @@
           "sec_verlet_neighbor_lists",
           "concept_verlet_skin"
         ],
-        "prompt_markdown": "In a 3D simulation with force cutoff $r_c = 2.5\\,\\sigma$ and Verlet skin thickness $\\Delta = 0.5\\,\\sigma$ (so $r_v = r_c + \\Delta = 3.0\\,\\sigma$), by what factor $(r_v / r_c)^3$ does the volume of the Verlet sphere (and thus the average number of neighbors stored in the list per atom) exceed the actual force cutoff sphere? (Enter a number to 3 decimal places, e.g., `1.728`.)\n",
-        "hint_markdown": "In 3D, sphere volume scales as $r^3$, so compute $(3.0 / 2.5)^3 = 1.2^3$.",
+        "prompt_markdown": "In a 3D simulation with force cutoff $r_c = 2.5\\,\\sigma$ and Verlet skin thickness $\\Delta = 0.5\\,\\sigma$ (so $r_v = r_c + \\Delta = 3.0\\,\\sigma$), by what factor does the volume of the Verlet sphere (and thus the average number of neighbors stored in the list per atom) exceed the actual force cutoff sphere? (Enter a number to 3 decimal places, e.g., `1.728`.)",
+        "hint_markdown": "Relate the ratio of two spherical volumes to the ratio of their outer radii.",
         "correct": {
           "value": 1.728,
           "tolerance": 0.01
@@ -769,7 +769,7 @@
           "concept_verlet_skin"
         ],
         "prompt_markdown": "If a Verlet neighbor list is reconstructed every $n_{\\text{reb}} = 15$ steps using a standard all-pairs loop (without cell binning), what is the formal asymptotic complexity per step as $N \\to \\infty$?\n",
-        "hint_markdown": "Amortize the $\\mathcal{O}(N^2)$ rebuild cost over $n_{\\text{reb}}$ steps: $c_1 N + \\frac{c_2}{n_{\\text{reb}}} N^2$.",
+        "hint_markdown": "Consider the dominant computational cost across both intermediate timesteps and list rebuild steps as system size grows arbitrarily large.",
         "options": [
           {
             "id": "a",
@@ -832,7 +832,7 @@
           "concept_verlet_skin"
         ],
         "prompt_markdown": "In a liquid MD simulation with timestep $\\Delta t = 0.005\\,\\tau$ and skin depth $\\Delta = 0.40\\,\\sigma$, the fastest atoms move at $v_{\\max} = 4.0\\,\\sigma/\\tau$. Assuming the worst-case bound where the two fastest atoms travel straight lines ($d_1 = d_2 = v_{\\max} n \\Delta t$), after how many timesteps $n$ will the rebuild condition $d_1 + d_2 \\ge \\Delta$ be triggered?\n",
-        "hint_markdown": "Solve $2 v_{\\max} n \\Delta t = \\Delta$ for $n$.",
+        "hint_markdown": "Equate the maximum possible relative displacement between two approaching atoms to the skin buffer thickness, and solve for the integer step threshold.",
         "correct": {
           "value": 10,
           "tolerance": 0.5
@@ -919,7 +919,7 @@
           "sec_cell_linked_lists"
         ],
         "prompt_markdown": "A 3D cubic periodic simulation box has side length $L = 22.0\\,\\sigma$, and you use the Cell Method to build a Verlet neighbor list of radius $r_v = r_c + \\Delta = 3.0\\,\\sigma$. What is the **maximum number of cells per edge $M$** (where $l_c = L / M \\ge r_v$) that you can partition the box into along each axis?\n",
-        "hint_markdown": "Compute $M = \\lfloor L / r_v \\rfloor = \\lfloor 22.0 / 3.0 \\rfloor$.",
+        "hint_markdown": "Determine the largest number of subdivisions along each box dimension such that cell width remains no smaller than the Verlet list radius.",
         "correct": {
           "value": 7,
           "tolerance": 0.1
@@ -1030,8 +1030,8 @@
         "taught_by": [
           "sec_cell_linked_lists"
         ],
-        "prompt_markdown": "In 3D, suppose the cell size equals the cutoff radius ($l_c = r_c$). The 27 neighbor cells searched around an atom have total volume $V_{\\text{cells}} = 27 r_c^3$, whereas the actual interaction sphere has volume $V_{\\text{sphere}} = \\frac{4}{3}\\pi r_c^3$. Calculate the ratio $V_{\\text{cells}} / V_{\\text{sphere}} = \\frac{81}{4\\pi}$ to two decimal places (e.g., `6.45`).\n",
-        "hint_markdown": "Divide $27$ by $(4\\pi / 3) \\approx 4.18879$.",
+        "prompt_markdown": "In 3D, suppose the cell size equals the cutoff radius ($l_c = r_c$). The 27 neighbor cells searched around an atom have total volume $V_{\\text{cells}} = 27 r_c^3$, whereas the actual interaction sphere has volume $V_{\\text{sphere}} = \\frac{4}{3}\\pi r_c^3$. Calculate the ratio $V_{\\text{cells}} / V_{\\text{sphere}}$ to two decimal places (e.g., `6.45`).",
+        "hint_markdown": "Compute the ratio between the total volume of the 27 cubic search cells and the volume of the interaction sphere.",
         "correct": {
           "value": 6.45,
           "tolerance": 0.05

@@ -248,7 +248,7 @@
         "correct": 7.67,
         "tolerance": 0.05,
         "unit": "kcal/mol",
-        "hint_markdown": "Compute $\\frac{1}{6}[12.0 + 4(7.5) + 4.0]$.",
+        "hint_markdown": "Apply the Simpson's rule weights $(1, 4, 1)/6$ to the three integrand evaluations.",
         "rationale_markdown": "$\\Delta F = \\frac{1}{6}[12.0 + 30.0 + 4.0] = \\frac{46.0}{6} = 7.6667 \\approx 7.67\\text{ kcal/mol}$."
       },
       {
@@ -517,7 +517,7 @@
         "correct": 9.92,
         "tolerance": 0.1,
         "unit": "kJ/mol",
-        "hint_markdown": "Use $\\mu_{\\text{ex}} = -k_B T \\ln \\langle e^{-\\beta \\Delta U} \\rangle$.",
+        "hint_markdown": "Relate the excess chemical potential to the logarithm of the ensemble-averaged test-particle Boltzmann factor.",
         "rationale_markdown": "$\\mu_{\\text{ex}} = -2.479 \\times \\ln(0.0183) = -2.479 \\times (-4.0009) \\approx 9.918 \\approx 9.92\\text{ kJ/mol}$."
       },
       {
@@ -736,7 +736,7 @@
         "prompt_markdown": "For an ideal gas at density $\\rho = 0.05\\text{ nm}^{-3}$, what is the exact excess chemical potential $\\mu_{\\text{ex}}$ in units of $k_B T$?",
         "correct": 0.0,
         "tolerance": 0.001,
-        "hint_markdown": "In an ideal gas, particles do not interact, so $\\Delta U_{\\text{test}} = 0$ everywhere.",
+        "hint_markdown": "Consider the definition of excess chemical potential relative to the non-interacting reference state.",
         "rationale_markdown": "For an ideal gas, $V(\\mathbf{r}^N) = 0$, so $\\Delta U_{\\text{test}} = 0$. Thus $\\langle e^{-\\beta \\Delta U} \\rangle = \\langle e^0 \\rangle = 1$. The excess chemical potential is $\\mu_{\\text{ex}} = -k_B T \\ln(1) = 0.0$."
       },
       {
@@ -898,10 +898,10 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_bennett_acceptance_ratio",
-        "prompt_markdown": "In a BAR calculation with equal samples ($n_0 = n_1$), a single energy difference observation in ensemble 0 gives $\\beta(V_1 - V_0 - \\Delta F) = 0.0$. What is the Fermi weight $f(0) = \\frac{1}{1 + e^0}$ assigned to this configuration?",
+        "prompt_markdown": "In a BAR calculation with equal samples ($n_0 = n_1$), a single energy difference observation in ensemble 0 gives $\\beta(V_1 - V_0 - \\Delta F) = 0.0$. What is the Fermi weight $f(x) = \\frac{1}{1 + e^{\\beta(V_1 - V_0 - \\Delta F)}}$ assigned to this configuration?",
         "correct": 0.5,
         "tolerance": 0.01,
-        "hint_markdown": "Evaluate $1 / (1 + 1)$.",
+        "hint_markdown": "Evaluate the Fermi weighting function when its exponential argument is zero.",
         "rationale_markdown": "$f(0) = \\frac{1}{1 + e^0} = \\frac{1}{1 + 1} = 0.5$."
       },
       {
@@ -1012,7 +1012,7 @@
         "prompt_markdown": "If $n_0 = 10,000$ configurations are collected in state 0 and $n_1 = 1,000$ configurations in state 1, what is the shift term $\\ln(n_0 / n_1)$ in the BAR equation? (Enter to 2 decimal places).",
         "correct": 2.3,
         "tolerance": 0.05,
-        "hint_markdown": "Compute $\\ln(10,000 / 1,000) = \\ln(10)$.",
+        "hint_markdown": "Evaluate the natural logarithm of the sample size ratio.",
         "rationale_markdown": "$\\ln(10,000 / 1,000) = \\ln(10) \\approx 2.3026 \\approx 2.30$."
       },
       {
@@ -1280,7 +1280,7 @@
         "prompt_markdown": "Starting with an initial Wang-Landau modification factor $f_0 = e^1$ (so $\\ln f_0 = 1.0$), what is the value of $\\ln f$ after $k = 4$ successful flatness refinement stages?",
         "correct": 0.0625,
         "tolerance": 0.001,
-        "hint_markdown": "Each stage divides $\\ln f$ by 2: evaluate $(1/2)^4$.",
+        "hint_markdown": "Recall how the log modification factor is updated at each completed flatness stage.",
         "rationale_markdown": "$\\ln f_k = \\ln f_0 \\times (1/2)^k = 1.0 \\times (1/2)^4 = 1/16 = 0.0625$."
       },
       {
@@ -1292,7 +1292,7 @@
         "prompt_markdown": "How many refinement stages $k$ are required to reduce $\\ln f$ from $1.0$ to below $10^{-6}$ (i.e. $(1/2)^k < 10^{-6}$)?",
         "correct": 20.0,
         "tolerance": 0.01,
-        "hint_markdown": "Solve $2^k > 10^6$: $k > 6 \\times \\log_2(10) \\approx 6 \\times 3.322$.",
+        "hint_markdown": "Determine the smallest integer power of 2 that exceeds one million.",
         "rationale_markdown": "$2^{19} = 524,288 < 10^6$, whereas $2^{20} = 1,048,576 > 10^6$. Therefore, exactly $k = 20$ stages are required."
       },
       {
@@ -1470,10 +1470,10 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_free_energy_foundations",
-        "prompt_markdown": "A reaction has a free energy barrier of $\\Delta F^* = 10.0\\text{ kcal/mol}$ at $T = 300\\text{ K}$ ($k_B T = 0.596\\text{ kcal/mol}$). By what factor is the transition state probability reduced relative to the reactant minimum ($e^{-\\Delta F^* / k_B T}$)? Enter the order of magnitude exponent $m$ where the factor is $10^{-m}$ (i.e. $m = \\frac{\\Delta F^*}{k_B T \\ln 10}$).",
+        "prompt_markdown": "A reaction has a free energy barrier of $\\Delta F^* = 10.0\\text{ kcal/mol}$ at $T = 300\\text{ K}$ ($k_B T = 0.596\\text{ kcal/mol}$). By what factor is the transition state probability reduced relative to the reactant minimum? Enter the base-10 order of magnitude exponent $m$ where the reduction factor is $10^{-m}$.",
         "correct": 7.29,
         "tolerance": 0.1,
-        "hint_markdown": "Calculate $10.0 / (0.596 \\times 2.3026)$.",
+        "hint_markdown": "Convert the natural exponential Boltzmann factor into base 10 using the thermal energy.",
         "rationale_markdown": "$\\Delta F^* / k_B T = 10.0 / 0.596 = 16.7785$. In base 10: $m = 16.7785 / \\ln(10) = 16.7785 / 2.302585 \\approx 7.287 \\approx 7.29$. The probability is suppressed by a factor of $\\sim 10^{-7.3}$."
       }
     ]

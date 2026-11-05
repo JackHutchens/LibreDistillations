@@ -1,1061 +1,1242 @@
 id: lesson_18_long_range_potentials_and_ewald
-title: "Lesson 18: Neighbor Lists, Long-Range Potentials, and Ewald Summation"
+title: 'Lesson 18: Neighbor Lists, Long-Range Potentials, and Ewald Summation'
 estimated_minutes: 135
 learning_objectives:
-  - "Reduce short-range pair force complexity from O(N^2) to O(N) using Verlet neighbor lists with skin depth Δ and O(N)-memory linked-cell lists."
-  - "Derive analytic long-range energy and virial pressure tail corrections for short-range potentials (ν > D) and apply the mathematical definition of a long-range potential (ν ≤ D)."
-  - "Explain the Stillinger–Lovett screening condition S_qq(k) = c k^2 at low k for charged fluids and why naive spherical truncation of Coulomb forces fails catastrophically."
-  - "Evaluate the conditionally convergent 1D alternating ionic chain Madelung constant α_1D = 2 ln 2 ≈ 1.38629 and compare 3D Madelung constants (NaCl, CsCl, ZnS)."
-  - "Decompose the periodic Coulomb interaction via the Ewald summation method into real-space erfc(κr)/r, reciprocal-space Gaussian exp(-k^2/4κ^2)/k^2, self-interaction -κ/√π ∑ q_i^2, and macroscopic surface dipole terms."
-  - "Factor the reciprocal-space double sum into single-particle structure factors ρ_k using recursive complex multiplications, and compare theNatoli–Ceperley optimized breakup against classic Gaussian Ewald."
-  - "Derive the optimal Ewald complexity O(N^(3/2)) and compare it with Particle-Mesh Ewald (PME/PPPM, O(N ln N)) and the Fast Multipole Method (FMM, O(N))."
-
+- Reduce short-range pair force complexity from O(N^2) to O(N) using Verlet neighbor lists with skin depth Δ and O(N)-memory
+  linked-cell lists.
+- Derive analytic long-range energy and virial pressure tail corrections for short-range potentials (ν > D) and apply the
+  mathematical definition of a long-range potential (ν ≤ D).
+- Explain the Stillinger–Lovett screening condition S_qq(k) = c k^2 at low k for charged fluids and why naive spherical truncation
+  of Coulomb forces fails catastrophically.
+- Evaluate the conditionally convergent 1D alternating ionic chain Madelung constant α_1D = 2 ln 2 ≈ 1.38629 and compare 3D
+  Madelung constants (NaCl, CsCl, ZnS).
+- Decompose the periodic Coulomb interaction via the Ewald summation method into real-space erfc(κr)/r, reciprocal-space Gaussian
+  exp(-k^2/4κ^2)/k^2, self-interaction -κ/√π ∑ q_i^2, and macroscopic surface dipole terms.
+- Factor the reciprocal-space double sum into single-particle structure factors ρ_k using recursive complex multiplications,
+  and compare theNatoli–Ceperley optimized breakup against classic Gaussian Ewald.
+- Derive the optimal Ewald complexity O(N^(3/2)) and compare it with Particle-Mesh Ewald (PME/PPPM, O(N ln N)) and the Fast
+  Multipole Method (FMM, O(N)).
 sections:
-  - id: sec_pbc_tail_corrections_and_neighbor_lists
-    type: markdown_section
-    title: "1. Minimum Image Convention, Perturbation Tail Corrections, and O(N) Neighbor Lists"
-    body_markdown: |
-      ### Periodic Distances and the Minimum Image Convention
-      In a periodic simulation box of side length $L$, the **Minimum Image Convention (MIC)** computes the interaction between particles $i$ and $j$ using only the closest periodic image:
-
-      $$|\mathbf{r}_{ij}|_M = \min_{\mathbf{n} \in \mathbb{Z}^3} |\mathbf{r}_i - \mathbf{r}_j + \mathbf{n}L|$$
-
-      For the pair potential and force to remain continuous as particles cross the mid-planes of the box, a spherically symmetric potential without image summation **must be truncated at a cutoff radius $r_c \le L/2$** ($V(r) = 0$ for $r > r_c$).
-
-      ### Analytic Tail Corrections for Short-Range Potentials ($\nu > D$)
-      When we truncate a short-ranged potential $V(r)$ at $r_c$, we can restore the missing long-range attraction via thermodynamic perturbation theory by assuming that the radial distribution function approaches the uniform ideal-gas limit **$g(r) \approx 1$ for $r > r_c$**:
-
-      * **Energy Tail Correction per Particle (3D):**
-        $$\frac{\Delta E_{\text{tail}}}{N} = \frac{\rho}{2} \int_{r_c}^{\infty} d^3r\, g(r) V(r) \approx 2\pi\rho \int_{r_c}^{\infty} r^2 V(r)\,dr$$
-      * **Virial Pressure Tail Correction (3D):**
-        $$\Delta P_{\text{tail}} = -\frac{2\pi\rho^2}{3} \int_{r_c}^{\infty} r^3 \frac{dV(r)}{dr}\,dr$$
-
-      For the **Lennard-Jones 12-6 potential** $V_{\text{LJ}}(r) = 4\varepsilon\left[\left(\frac{\sigma}{r}\right)^{12} - \left(\frac{\sigma}{r}\right)^6\right]$, integrating from $r_c$ to $\infty$ yields closed-form corrections:
-
-      $$\frac{\Delta E_{\text{tail}}^{\text{LJ}}}{N} = \frac{8\pi\rho\varepsilon\sigma^3}{3}\left[ \frac{1}{3}\left(\frac{\sigma}{r_c}\right)^9 - \left(\frac{\sigma}{r_c}\right)^3 \right], \qquad \Delta P_{\text{tail}}^{\text{LJ}} = \frac{16\pi\rho^2\varepsilon\sigma^3}{3}\left[ \frac{2}{3}\left(\frac{\sigma}{r_c}\right)^9 - \left(\frac{\sigma}{r_c}\right)^3 \right]$$
-
-      *(If truncating the potential significantly perturbs $g(r)$ itself, one must solve an integral equation such as the **RHNC — Reference Hypernetted-Chain** equation).*
-
-      ---
-
-      ### Reducing Force Complexity from $\mathcal{O}(N^2)$ to $\mathcal{O}(N)$: Neighbor Lists & Cell Lists
-      Evaluating all $N(N-1)/2$ pairs directly scales as $\mathcal{O}(N^2)$. However, if $V(r) = 0$ for $r > r_c$, each particle interacts only with an average of $m = \frac{4}{3}\pi\rho r_c^3$ neighbors inside $r_c$, where **$m$ is independent of system size $N$**!
-
-      1. **Verlet Neighbor List with Skin Depth $\Delta$:**
-         * For each particle, we store a table of all neighbors within an extended radius **$r_{\text{list}} = r_c + \Delta$** (where $\Delta$ is the **skin depth**).
-         * Force evaluation checks only the table entries: $\mathcal{O}(m N) = \mathcal{O}(N)$ per step.
-         * We track the **two largest scalar displacements $d_1$ and $d_2$** traveled by any particles since the last table build. As soon as **$d_1 + d_2 \ge \Delta$**, a particle outside the list could have crossed inside $r_c$, so we rebuild the neighbor table.
-         * **Tradeoff in $\Delta$:** As $\Delta$ decreases, $m \propto (r_c + \Delta)^3$ shrinks (fewer force evaluations per step), but the table must be rebuilt more frequently. As $\Delta$ increases, rebuilds are rarer, but each step checks more pairs. Modern MD codes dynamically optimize $\Delta$ by fitting the CPU time $t(\Delta)$ to a polynomial and minimizing it.
-      2. **The Linked-Cell (Bin Sort) Method:**
-         * Naive Verlet table construction checks all pairs and costs $\mathcal{O}(N^2)$ (and requires $\mathcal{O}(mN)$ memory).
-         * Dividing the simulation box into a regular mesh of cells of side length **$L_{\text{cell}} > r_c + \Delta$** and sorting particles into a **linked list** (head-of-chain + next-particle arrays) reduces **table construction to $\mathcal{O}(N)$** (checking only a particle's own cell and its $3^3 - 1 = 26$ adjacent cells in 3D) and reduces **memory to $\mathcal{O}(N)$**!
-
-  - id: concept_neighbor_skin
-    type: concept_cell
-    title: "Interactive Explorer: Verlet Neighbor List Skin Depth Δ Optimization"
-    description_markdown: "Adjust the number of particles $N$, potential cutoff $r_c$, and table rebuild algorithm ($\\mathcal{O}(N^2)$ all-pairs vs. $\\mathcal{O}(N)$ linked-cell) to see how the optimal skin depth $\\Delta^*$ balances per-step pair evaluations against amortized table rebuild cost."
-    render_function: render_neighbor_skin_optimization
-    layout: figure_left
-    controls:
-      n_particles:
-        kind: slider
-        label: "Number of Particles N"
-        min: 1000
-        max: 10000
-        step: 1000
-        default: 4000
-      rc:
-        kind: slider
-        label: "Potential Cutoff r_c / σ"
-        min: 1.5
-        max: 3.5
-        step: 0.5
-        default: 2.5
-        format: ".1f"
-      rebuild_mode:
-        kind: dropdown
-        label: "Table Construction Method"
-        default: "verlet_O_N2"
-        options:
-          - label: "All-Pairs Verlet Rebuild O(N²)"
-            value: "verlet_O_N2"
-          - label: "Linked-Cell Assisted Rebuild O(N)"
-            value: "cell_O_N"
-    takeaway_markdown: "**Key Takeaway:** Choosing $\\Delta$ too small causes frequent table rebuilds; choosing $\\Delta$ too large bloats the sphere volume $\\propto (r_c + \\Delta)^3$. Combining a linked-cell mesh with a Verlet skin list makes both force evaluation and table construction strictly $\\mathcal{O}(N)$."
-
-  - id: q01_minimum_image_cutoff_limit
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_pbc_tail_corrections_and_neighbor_lists
-    prompt_markdown: "Under the Minimum Image Convention in a cubic periodic box of side length $L$, why must a spherically truncated short-range potential satisfy $V(r) = 0$ for $r > L/2$?"
-    hint_markdown: "Consider what happens to the force on a particle as a neighbor crosses the midplane $x_j - x_i = \\pm L/2$."
-    options:
-      - id: a
-        text: "So that the potential and force remain continuous across the minimum-image boundary at r = L/2 and avoid self-overlapping images."
-      - id: b
-        text: "Because the radial distribution function g(r) is identically zero for r > L/2 in all liquids."
-      - id: c
-        text: "Because the Fourier transform of any function vanishes for wavelengths larger than L/2."
-      - id: d
-        text: "Because computer floating-point numbers cannot represent distances larger than L/2."
-    correct: a
-    rationale_markdown: "In a cubic box of length $L$, the minimum-image vector switches sign across the planes $|x_\\alpha| = L/2$. Truncating the potential smoothly to zero at or below $r_c \\le L/2$ guarantees that a particle interacts with at most one periodic image of any neighbor and that forces do not jump discontinuously across the midplane."
-
-  - id: q02_verlet_skin_rebuild_trigger
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by:
-      - sec_pbc_tail_corrections_and_neighbor_lists
-      - concept_neighbor_skin
-    prompt_markdown: "In a Verlet neighbor list cut off at $r_c + \\Delta$ (where $\\Delta$ is the skin depth), we monitor the two largest distances $d_1$ and $d_2$ traveled by any particles since the table was last constructed. What exact condition triggers a neighbor-table rebuild?"
-    hint_markdown: "Consider the worst case where two particles initially just outside $r_c + \\Delta$ move directly toward each other."
-    options:
-      - id: a
-        text: "When d₁ + d₂ ≥ Δ"
-      - id: b
-        text: "When d₁ - d₂ ≥ r_c"
-      - id: c
-        text: "When d₁² + d₂² ≥ L/2"
-      - id: d
-        text: "Only after a fixed number of 10,000 steps regardless of particle velocities"
-    correct: a
-    rationale_markdown: "If two particles initially separated by slightly more than $r_c + \\Delta$ move directly toward one another by distances $d_1$ and $d_2$, their separation can shrink by at most $d_1 + d_2$. Rebuilding as soon as $d_1 + d_2 \\ge \\Delta$ guarantees that no pair inside $r_c$ is ever missed."
-
-  - id: q03_cell_method_complexity_and_memory
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by:
-      - sec_pbc_tail_corrections_and_neighbor_lists
-      - concept_neighbor_skin
-    prompt_markdown: "How does the linked-cell (bin sort) method improve upon a pure all-pairs Verlet neighbor table for $N$ particles with average neighbor count $m$?"
-    hint_markdown: "Compare both the table-construction CPU scaling and the array memory scaling."
-    options:
-      - id: a
-        text: "It reduces neighbor-table construction from O(N²) to O(N) and reduces linked-list memory storage from O(mN) to O(N)."
-      - id: b
-        text: "It eliminates the need for periodic boundary conditions and allows r_c > 2L."
-      - id: c
-        text: "It computes exact long-range 1/r Coulomb forces in O(1) time without Fourier transforms."
-      - id: d
-        text: "It increases memory usage to O(N³) in exchange for zero force evaluations."
-    correct: a
-    rationale_markdown: "Sorting $N$ particles into cells of side $L_{\\text{cell}} > r_c + \\Delta$ via a linked list takes $\\mathcal{O}(N)$ time and stores only one head pointer per cell plus one next-particle index per atom ($\\mathcal{O}(N)$ memory instead of $\\mathcal{O}(mN)$)."
-
-  - id: q04_lj_energy_tail_correction_numeric
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_pbc_tail_corrections_and_neighbor_lists
-    prompt_markdown: "Consider an attractive dispersion tail $V(r) = -4\\varepsilon(\\sigma/r)^6$ truncated at $r_c = 2.0\\sigma$ in a 3D fluid of number density $\\rho\\sigma^3 = 0.75$ with $\\varepsilon = 1.0$. Using the perturbation tail formula with $g(r) = 1$ for $r > r_c$:\n\n$$\\frac{\\Delta E_{\\text{tail}}}{N} = 2\\pi\\rho \\int_{r_c}^{\\infty} r^2 V(r)\\,dr = -\\frac{8\\pi\\rho\\varepsilon\\sigma^3}{3}\\left(\\frac{\\sigma}{r_c}\\right)^3$$\n\ncalculate $\\Delta E_{\\text{tail}}/N$ (in units of $\\varepsilon$, rounded to 3 decimal places)."
-    hint_markdown: "Substitute $\\rho\\sigma^3 = 0.75$ and $(\\sigma/r_c)^3 = (1/2)^3 = 1/8$ into $-\\frac{8\\pi}{3}(0.75)(1/8) = -\\frac{\\pi}{4}$."
-    correct:
-      value: -0.785
-      tolerance: 0.005
-    rationale_markdown: "Substituting $\\rho\\sigma^3 = 0.75 = 3/4$ and $(\\sigma/r_c)^3 = (0.5)^3 = 1/8$ gives $\\frac{\\Delta E_{\\text{tail}}}{N} = -\\frac{8\\pi}{3} \\times \\frac{3}{4} \\times \\frac{1}{8} = -\\frac{\\pi}{4} \\approx -0.7854\\,\\varepsilon$."
-
-  - id: q05_lj_pressure_tail_exponent
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_pbc_tail_corrections_and_neighbor_lists
-    prompt_markdown: "For a pair potential with an attractive tail $V(r) = -C_6 r^{-6}$ beyond $r_c$ in 3D, how does the virial pressure tail correction $\\Delta P_{\\text{tail}} = -\\frac{2\\pi\\rho^2}{3}\\int_{r_c}^\\infty r^3 \\frac{dV}{dr}\\,dr$ scale with the number density $\\rho$ and the cutoff radius $r_c$, and what is its sign?"
-    hint_markdown: "Note that $dV/dr = +6 C_6 r^{-7} > 0$, so $r^3 (dV/dr) = 6 C_6 r^{-4}$."
-    options:
-      - id: a
-        text: "ΔP_tail is negative (attractive tail lowers the pressure) and scales as -ρ² / r_c³."
-      - id: b
-        text: "ΔP_tail is positive and scales as +ρ / r_c⁶."
-      - id: c
-        text: "ΔP_tail is negative and scales as -ρ³ / r_c²."
-      - id: d
-        text: "ΔP_tail is identically zero because dV/dr integrates to zero."
-    correct: a
-    rationale_markdown: "Since $V(r) = -C_6 r^{-6}$ is attractive, $dV/dr = +6 C_6 r^{-7} > 0$. Substituting into $\\Delta P_{\\text{tail}} = -\\frac{2\\pi\\rho^2}{3}\\int_{r_c}^\\infty 6 C_6 r^{-4}\\,dr = -\\frac{4\\pi\\rho^2 C_6}{3 r_c^3} < 0$, showing that the missing long-range attraction pulls the fluid inward and lowers the pressure by $\\mathcal{O}(\\rho^2 r_c^{-3})$."
-
-  - id: sec_long_range_definition_and_stillinger_lovett
-    type: markdown_section
-    title: "2. Definition of a Long-Range Potential, Stillinger–Lovett Screening, and the 1D Madelung Sum"
-    body_markdown: |
-      ### What Makes a Potential "Long-Ranged"?
-      A pair potential $V(r) \sim r^{-\nu}$ is mathematically defined as **long-ranged** if its spatial tail integral (or real-space lattice sum) diverges at infinity. In **$D$ spatial dimensions**, the volume of a spherical shell of radius $r$ grows as $r^{D-1}\,dr$, so the tail integral is:
-
-      $$\int_{r_c}^{\infty} d^D r\, V(r) \propto \int_{r_c}^{\infty} r^{D-1} r^{-\nu}\,dr = \int_{r_c}^{\infty} r^{D - 1 - \nu}\,dr$$
-
-      This integral **diverges whenever $\nu \le D$**:
-      * **In 3D ($D = 3$):** A potential is long-ranged if it decays at a rate **$\nu \le 3$** (i.e., slower than or equal to $r^{-3}$). Thus **Coulomb interactions ($1/r$, $\nu=1$)**, **charge-dipole interactions ($1/r^2$, $\nu=2$)**, **dipole-dipole interactions ($1/r^3$, $\nu=3$)**, and **gravitation ($1/r$, $\nu=1$)** are all strictly long-ranged in 3D, whereas dispersion ($1/r^6$, $\nu=6 > 3$) is short-ranged!
-      * **In 2D ($D = 2$):** A potential is long-ranged if it decays at a rate **$\nu \le 2$**.
-
-      ---
-
-      ### Why Naive Cutoff Fails for Charged Systems: The Stillinger–Lovett Condition
-      What goes wrong if we treat a charged ionic fluid like a short-range fluid and simply truncate $V(r) = q_i q_j / r$ at $r_c = L/2$?
-      1. **Growing boundary discontinuity:** Because the number of ions in a shell at distance $r$ grows as $4\pi\rho r^2\,dr$, the contribution of the cutoff jump $(1/r)(r^2) \sim r$ **grows larger and larger with box size $L$** instead of disappearing!
-      2. **Violation of Poisson's Equation and the Stillinger–Lovett Screening Condition:**
-         In an uncharged (neutral) fluid, long-wavelength density fluctuations are governed by the isothermal compressibility:
-         $$\lim_{k\to 0} S(k) = c = \rho k_B T \chi_T > 0 \quad (\text{uncharged system})$$
-         In contrast, in a **charged conducting/ionic system**, long-range $1/r$ Coulomb forces (which transform as $4\pi/k^2$ in Fourier space via Poisson's equation $\nabla^2\phi = -4\pi\rho_q$) enforce **complete macroscopic charge screening**. The **Stillinger–Lovett second-moment condition** requires the charge-charge structure factor $S_{qq}(k)$ to vanish quadratically at small $k$:
-         $$S_{qq}(k) = c\,k^2 + \mathcal{O}(k^4) \quad \text{as } k \to 0 \quad (\text{charged system})$$
-         Truncating $1/r$ at $r_c$ breaks Poisson's equation at long wavelengths ($k < 2\pi/r_c$), violating the Stillinger–Lovett condition and creating unphysical artificial charge layers at $r = r_c$.
-
-      ---
-
-      ### Conditional Convergence and the 1D Madelung Constant
-      Consider a one-component lattice of $+1$ charges: $\sum_{\mathbf{L}\ne\mathbf{0}} \frac{1}{|\mathbf{r}_i - \mathbf{L}|} \approx \int_0^\infty 4\pi r^2 \frac{\rho}{r}\,dr = \infty$. A non-neutral infinite periodic system has **infinite electrostatic energy** unless neutralized by a uniform background (jellium) or opposite ions ($\sum_i q_i = 0$).
-
-      Even in a strictly **charge-neutral ionic crystal** ($\pm q$ alternating), the Coulomb lattice sum is **conditionally convergent**—its value depends on the order in which terms are summed!
-
-      #### Exact Derivation of the 1D Alternating Chain Madelung Constant
-      Consider an infinite 1D chain of alternating $+q$ and $-q$ ions spaced by nearest-neighbor distance $R$ ($r_{ij} = R p_{ij}$). Starting on a reference negative ion at the origin and summing symmetrically over shells to the left and right ($2$ neighbors at distance $p_{ij} = 1, 2, 3, \dots$):
-
-      $$V_{\text{electrostatic}} = -\frac{\alpha q^2}{R}, \qquad \alpha_{\text{1D}} = \sum_{j\ne i} \frac{(\pm 1)}{p_{ij}} = 2\left[ \frac{1}{1} - \frac{1}{2} + \frac{1}{3} - \frac{1}{4} + \cdots \right]$$
-
-      Using the Maclaurin series $\ln(1 + x) = x - \frac{x^2}{2} + \frac{x^3}{3} - \frac{x^4}{4} + \cdots$ evaluated at $x = 1$:
-
-      $$\alpha_{\text{1D}} = 2 \ln(1 + 1) = 2 \ln 2 \approx 1.386294$$
-
-      #### 3D Madelung Constants
-      In 3D, naive spherical shell sums do not even converge unless successive shells are grouped into fractional neutral units (Evjen 1932; Frank 1950) or resummed in Fourier space (Ewald 1921):
-      * **Rock Salt ($\text{NaCl}$, 6-coordinated):** $\alpha_{\text{NaCl}} = 1.747565$
-      * **Cesium Chloride ($\text{CsCl}$, 8-coordinated):** $\alpha_{\text{CsCl}} = 1.762675$
-      * **Zincblende ($\text{ZnS}$, 4-coordinated):** $\alpha_{\text{ZnS}} = 1.6381$
-
-  - id: concept_madelung_1d
-    type: concept_cell
-    title: "Interactive Explorer: 1D Madelung Sum — Conditional Direct Convergence vs. Ewald"
-    description_markdown: "Compare the slow, oscillatory convergence of the direct alternating sum $2\\sum_{n=1}^M (-1)^{n-1}/n$ against the rapid exponential convergence of the Ewald sum toward $\\alpha_{\\text{1D}} = 2\\ln 2 \\approx 1.386294$."
-    render_function: render_madelung_convergence
-    layout: figure_left
-    controls:
-      max_shells:
-        kind: slider
-        label: "Maximum Shell Index M"
-        min: 5
-        max: 60
-        step: 5
-        default: 25
-      kappa_1d:
-        kind: slider
-        label: "Ewald Screening Parameter κR"
-        min: 0.6
-        max: 2.0
-        step: 0.2
-        default: 1.2
-        format: ".1f"
-    takeaway_markdown: "**Key Takeaway:** The direct alternating Coulomb sum $2\\sum (-1)^{n-1}/n$ is only conditionally convergent, oscillating with $\\mathcal{O}(1/M)$ error, whereas Ewald summation converts it into two exponentially convergent series that reach 6-digit accuracy within a few shells."
-
-  - id: q06_long_range_dimension_criterion
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "In $D$ spatial dimensions, a pair potential $V(r) \\sim r^{-\\nu}$ is mathematically classified as **long-ranged** if its real-space tail integral $\\int_{r_c}^\\infty r^{D-1} r^{-\\nu}\\,dr$ diverges. What are the critical decay exponents $\\nu$ in 3D and 2D?"
-    hint_markdown: "Check when $\\int_{r_c}^\\infty r^{D - 1 - \\nu}\\,dr$ fails to converge at the upper limit."
-    options:
-      - id: a
-        text: "Long-ranged if ν ≤ 3 in 3D, and if ν ≤ 2 in 2D."
-      - id: b
-        text: "Long-ranged if ν ≤ 6 in 3D, and if ν ≤ 4 in 2D."
-      - id: c
-        text: "Long-ranged only if ν < 1 in all dimensions."
-      - id: d
-        text: "Long-ranged if ν > 3 in 3D, and if ν > 2 in 2D."
-    correct: a
-    rationale_markdown: "The integral $\\int_{r_c}^\\infty r^{D-1-\\nu}\\,dr$ diverges at $r \\to \\infty$ whenever $D - 1 - \\nu \\ge -1$, i.e., $\\nu \\le D$. Thus potentials decaying as $r^{-3}$ or slower in 3D ($\\nu \\le 3$) and $r^{-2}$ or slower in 2D ($\\nu \\le 2$) are long-ranged."
-
-  - id: q07_which_potentials_are_long_ranged_3d
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "According to the 3D long-range criterion ($\\nu \\le 3$), which of the following interactions are strictly **long-ranged** in three dimensions? *(Select all that apply.)*"
-    hint_markdown: "Check the exponent $\\nu$ in $r^{-\\nu}$ for each interaction against $\\nu \\le 3$."
-    options:
-      - id: a
-        text: "Ion–ion Coulomb potential V(r) ∝ 1/r (ν = 1)"
-      - id: b
-        text: "Newtonian gravitational potential V(r) ∝ -1/r (ν = 1)"
-      - id: c
-        text: "Unaveraged dipole–dipole interaction V(r) ∝ 1/r³ (ν = 3)"
-      - id: d
-        text: "London dispersion attraction V(r) ∝ -1/r⁶ (ν = 6)"
-      - id: e
-        text: "Lennard-Jones Pauli repulsion V(r) ∝ 1/r¹² (ν = 12)"
-    correct: [a, b, c]
-    rationale_markdown: "Coulomb ($1/r$, $\\nu=1$), gravity ($1/r$, $\\nu=1$), and dipole–dipole ($1/r^3$, $\\nu=3$) all satisfy $\\nu \\le 3$ and have divergent 3D tail integrals. Dispersion ($1/r^6$) and LJ repulsion ($1/r^{12}$) satisfy $\\nu > 3$ and are short-ranged."
-
-  - id: q08_stillinger_lovett_condition
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "How does the small-wavevector ($k \\to 0$) behavior of the structure factor $S(k)$ in a **charged ionic system** differ from that of an **uncharged neutral fluid** according to the Stillinger–Lovett screening condition?"
-    hint_markdown: "Check Slide 3 ('Perturbation theory') for $S(k)$ at low $k$ in charged vs. uncharged systems."
-    options:
-      - id: a
-        text: "For a charged system S(k) = c k² as k → 0 (perfect screening of long-wavelength charge fluctuations), whereas for an uncharged system S(k) → c > 0."
-      - id: b
-        text: "For a charged system S(k) → ∞ as 1/k², whereas for an uncharged system S(k) = 0 identically for all k."
-      - id: c
-        text: "For both charged and uncharged systems, S(k) = 1 at k = 0."
-      - id: d
-        text: "For a charged system S(k) = c k⁴, whereas for an uncharged system S(k) = c k²."
-    correct: a
-    rationale_markdown: "Because the $1/r$ Coulomb interaction diverges as $4\\pi/k^2$ at small $k$ (Poisson's equation), long-wavelength charge fluctuations cost infinite energy unless suppressed by screening, forcing $S_{qq}(k) = c k^2$ as $k \\to 0$. In an uncharged fluid, $S(0) = \\rho k_B T \\chi_T = c > 0$."
-
-  - id: q09_why_cutoff_coulomb_fails
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "Why is it physically unacceptable to handle a charged system simply by truncating the Coulomb potential $1/r$ at $r_c = L/2$ like a short-range potential?"
-    hint_markdown: "Check Slide 8 ('Charged systems') for the two key problems with a cutoff Coulomb potential."
-    options:
-      - id: a
-        text: "The boundary discontinuity effect (1/r)(r²) ~ r grows with cutoff radius instead of vanishing, and truncation violates Poisson's equation and the Stillinger–Lovett screening condition."
-      - id: b
-        text: "The Coulomb potential is zero for r < L/2 and only turns on for r > L/2."
-      - id: c
-        text: "Truncating 1/r causes the particle masses to become negative."
-      - id: d
-        text: "Verlet neighbor lists cannot store pairs when charges have opposite signs."
-    correct: a
-    rationale_markdown: "Because shell volume grows as $4\\pi r^2$, the boundary discontinuity of $1/r$ scales as $(1/r)(r^2) = r$, which grows with $L$. Furthermore, setting $V(r > L/2) = 0$ violates Poisson's equation and destroys Stillinger–Lovett $S(k) = ck^2$ screening."
-
-  - id: q10_madelung_1d_exact_value_numeric
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by:
-      - sec_long_range_definition_and_stillinger_lovett
-      - concept_madelung_1d
-    prompt_markdown: "Calculate the exact Madelung constant $\\alpha_{\\text{1D}} = 2\\sum_{n=1}^{\\infty} \\frac{(-1)^{n-1}}{n} = 2\\ln 2$ for an infinite 1D chain of alternating $\\pm q$ ions with nearest-neighbor spacing $R$ (round to 4 decimal places)."
-    hint_markdown: "Evaluate $2 \\times \\ln(2) = 2 \\times 0.693147...$"
-    correct:
-      value: 1.3863
-      tolerance: 0.001
-    rationale_markdown: "Using $\\ln(1+x) = x - x^2/2 + x^3/3 - x^4/4 + \\cdots$ at $x = 1$, the symmetric left-and-right sum is $\\alpha_{\\text{1D}} = 2(1 - 1/2 + 1/3 - 1/4 + \\cdots) = 2\\ln 2 \\approx 1.386294$."
-
-  - id: q11_madelung_1d_partial_sum_numeric
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by:
-      - sec_long_range_definition_and_stillinger_lovett
-      - concept_madelung_1d
-    prompt_markdown: "In the 1D alternating ionic chain, if you truncate the direct sum after just $M = 3$ neighbor shells on each side:\n\n$$\\alpha_3 = 2\\left(1 - \\frac{1}{2} + \\frac{1}{3}\\right)$$\n\nwhat is the value of $\\alpha_3$ (round to 3 decimal places)? Notice how far it still is from $2\\ln 2 \\approx 1.386$!"
-    hint_markdown: "Compute $2 \\times (1 - 0.5 + 1/3) = 2 \\times (5/6) = 5/3$."
-    correct:
-      value: 1.667
-      tolerance: 0.003
-    rationale_markdown: "Evaluating the first three shells gives $\\alpha_3 = 2(1 - 1/2 + 1/3) = 2(5/6) = 5/3 \\approx 1.6667$, which overshoots the exact value $2\\ln 2 \\approx 1.3863$ by more than $20\\%$."
-
-  - id: q12_madelung_3d_coordination_ordering
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "Rank the three cubic ionic crystal structures—Zincblende ($\\text{ZnS}$, 4-coordinated), Rock Salt ($\\text{NaCl}$, 6-coordinated), and Cesium Chloride ($\\text{CsCl}$, 8-coordinated)—in order of **increasing** 3D Madelung constant $\\alpha$ (defined relative to nearest-neighbor distance $R$)."
-    hint_markdown: "Check the table on Slide 9 ('1-D Madelung Sum: Prelude to Ewald Sum'): ZnS (1.6381), NaCl (1.747565), CsCl (1.762675)."
-    options:
-      - id: a
-        text: "α(ZnS) = 1.6381 < α(NaCl) = 1.747565 < α(CsCl) = 1.762675"
-      - id: b
-        text: "α(CsCl) < α(NaCl) < α(ZnS)"
-      - id: c
-        text: "α(NaCl) < α(ZnS) < α(CsCl)"
-      - id: d
-        text: "All three 3D structures have the exact same Madelung constant α = 2 ln 2."
-    correct: a
-    rationale_markdown: "As nearest-neighbor coordination increases from 4 (ZnS, $\\alpha = 1.6381$) to 6 (NaCl, $\\alpha = 1.747565$) to 8 (CsCl, $\\alpha = 1.762675$), the Madelung constant $\\alpha$ increases monotonically (and all are larger than the 2-coordinated 1D chain $\\alpha_{\\text{1D}} = 1.3863$)."
-
-  - id: q13_conditional_convergence_meaning
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "What does it mean mathematically and physically that the electrostatic lattice sum $\\sum_{j\\ne i} q_i q_j / r_{ij}$ in a neutral crystal is **conditionally convergent**?"
-    hint_markdown: "Recall the definition of conditional convergence for an infinite series whose absolute values diverge ($\\sum 1/r = \\infty$)."
-    options:
-      - id: a
-        text: "The sum of absolute values diverges (∑ |q_i q_j|/r_ij = ∞), so the series only converges if positive and negative terms are grouped to nearly cancel, and its limiting value depends on the summation order / macroscopic surface shape and boundary conditions."
-      - id: b
-        text: "The sum converges only when the temperature T is below the Debye temperature."
-      - id: c
-        text: "Every rearrangement of the terms in the series converges to the exact same number."
-      - id: d
-        text: "The sum is finite only when all charges have the same sign (+q)."
-    correct: a
-    rationale_markdown: "Because $\\sum |q_i q_j|/r_{ij}$ diverges, Riemann's rearrangement theorem implies that the alternating sum depends on the order of summation (e.g., spherical shells vs. neutral fractional Evjen cubes), which physically corresponds to different macroscopic surface dipole layers on the crystal boundary."
-
-  - id: sec_ewald_summation_method
-    type: markdown_section
-    title: "3. The Classic Ewald Summation Method (1921): Real, Reciprocal, Self, and Dipole Terms"
-    body_markdown: |
-      ### Origin of the Convergence Problem in $r$-Space vs. $k$-Space
-      For a periodic function $f(\mathbf{r} + \mathbf{L}_n) = f(\mathbf{r})$ in a box of volume $\Omega = L_x L_y L_z$, the discrete Fourier expansion uses reciprocal lattice vectors $\mathbf{k} = 2\pi\left(\frac{m_x}{L_x}\hat{\mathbf{x}} + \frac{m_y}{L_y}\hat{\mathbf{y}} + \frac{m_z}{L_z}\hat{\mathbf{z}}\right)$ with $m_x, m_y, m_z \in \mathbb{Z}$:
-
-      $$v(\mathbf{r}) = \frac{e^2}{r} \Longleftrightarrow v_{\mathbf{k}} = \frac{1}{\Omega}\int d^3r\, e^{-i\mathbf{k}\cdot\mathbf{r}} \frac{e^2}{r} = \frac{4\pi e^2}{\Omega k^2}$$
-
-      Why can't we just do the entire sum in real space *or* the entire sum in $k$-space?
-      * **$r$-space convergence issue comes from $r \to \infty$ ($k \to 0$):** $1/r$ has a long tail at large $r$.
-      * **$k$-space convergence issue comes from $k \to \infty$ ($r \to 0$):** Because $1/r$ has a sharp $r \to 0$ singularity in real space, its Fourier transform $4\pi e^2 / k^2$ decays slowly at large $k$!
-
-      ---
-
-      ### Ewald's Physical Trick: Screening with Neutralizing Gaussian Clouds
-      Because **Poisson's equation is linear**, we can split the Coulomb potential into a rapidly decaying **short-range real-space part** and a smooth **long-range reciprocal-space part** by surrounding every point charge $q_i$ with a diffuse, neutralizing **Gaussian charge distribution** of width $1/\kappa$:
-
-      $$\rho_i^{\text{Gauss}}(\mathbf{r}) = -q_i \left(\frac{\kappa^2}{\pi}\right)^{3/2} e^{-\kappa^2 |\mathbf{r} - \mathbf{r}_i|^2}$$
-
-      and then **adding back** the exact same compensating Gaussian charge distribution $+\rho_i^{\text{Gauss}}(\mathbf{r})$ to be summed in $k$-space! Using the error function $\text{erf}(z) = \frac{2}{\sqrt{\pi}}\int_0^z e^{-t^2}\,dt$ and its complement $\text{erfc}(z) = 1 - \text{erf}(z)$, the identity $\frac{1}{r} = \frac{\text{erfc}(\kappa r)}{r} + \frac{\text{erf}(\kappa r)}{r}$ splits the pair interaction into:
-
-      1. **Short-Range Real-Space Potential ($v_{\text{short}}$):**
-         $$v_{\text{short}}(r) = \frac{q_1 q_2}{r}\text{erfc}(\kappa r) \qquad (\text{decays exponentially fast as } e^{-\kappa^2 r^2}\text{ at large } r)$$
-         We choose the **Ewald parameter $\kappa$** large enough that $v_{\text{short}}(L/2) = \frac{2q_1 q_2}{L}\text{erfc}(\kappa L/2) \approx 0$ at the minimum-image boundary $r = L/2$, so we need **only the minimum image** in real space!
-      2. **Long-Range Reciprocal-Space Potential ($v_{\text{long}}$):**
-         $$v_{\text{long}}(r) = \frac{q_1 q_2}{r}\text{erf}(\kappa r) \Longleftrightarrow v_{\text{long},\mathbf{k}} = \frac{4\pi q_1 q_2}{\Omega k^2} e^{-k^2 / (4\kappa^2)} \qquad (\text{decays exponentially fast at large } k)$$
-         Because $\text{erf}(\kappa r)/r \to \frac{2\kappa}{\sqrt{\pi}}$ is completely smooth and non-singular as $r \to 0$, its Fourier transform acquires the Gaussian damping factor $e^{-k^2/(4\kappa^2)}$, allowing truncation at a modest wavevector cutoff $|\mathbf{k}| < k_c$!
-
-      ---
-
-      ### The Four Complete Ewald Energy Terms
-      Combining all pairs and periodic images in a charge-neutral cell ($\sum_i q_i = 0$ removes the $\mathbf{k} = \mathbf{0}$ divergence) yields the complete Ewald electrostatic energy:
-
-      $$V_{\text{Ewald}} = V_{\text{real}} + V_{\text{recip}} + V_{\text{self}} + V_{\text{dipole}}$$
-
-      * **1. Real-Space Term:**
-        $$V_{\text{real}} = \frac{1}{2} \sum_{i \ne j}^N \frac{q_i q_j}{r_{ij}} \text{erfc}(\kappa r_{ij}), \qquad r_{ij} = \min_{\mathbf{L}} |\mathbf{r}_i - \mathbf{r}_j - \mathbf{L}| < r_c$$
-      * **2. Reciprocal-Space Term:**
-        $$V_{\text{recip}} = \frac{1}{2\Omega} \sum_{\mathbf{k} \ne \mathbf{0}, |\mathbf{k}| < k_c} \frac{4\pi}{k^2} e^{-k^2/(4\kappa^2)} \left| \sum_{j=1}^N q_j e^{i\mathbf{k}\cdot\mathbf{r}_j} \right|^2$$
-      * **3. Self-Interaction Subtraction Term ($C = V_{\text{self}}$):**
-        When we write the unrestricted double sum $\frac{1}{2}\sum_{i,j} q_i q_j e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)} v_{\text{long},\mathbf{k}} = \frac{1}{2}\sum_{\mathbf{k}} |\rho_{\mathbf{k}}|^2 v_{\mathbf{k}}$ in $k$-space, we inadvertently include the $i = j$ self-interaction of each point charge with its own compensating Gaussian cloud at $r = 0$. Since $\lim_{r\to 0} \frac{\text{erf}(\kappa r)}{r} = \frac{2\kappa}{\sqrt{\pi}}$, we must subtract this constant self-energy:
-        $$V_{\text{self}} = -\frac{1}{2}\sum_{i=1}^N q_i^2 \lim_{r\to 0} \frac{\text{erf}(\kappa r)}{r} = -\frac{\kappa}{\sqrt{\pi}} \sum_{i=1}^N q_i^2$$
-      * **4. Macroscopic Surface Dipole Term ($V_{\text{dipole}}$ for Insulators):**
-        For a macroscopic sphere of periodic replicas embedded in an external medium of dielectric constant $\varepsilon_{\text{ext}}$, surface polarization adds a depolarization energy proportional to the square of the total simulation cell dipole moment $\mathbf{M} = \sum_i \boldsymbol{\mu}_i = \sum_{i=1}^N q_i \mathbf{r}_i$:
-        $$V_{\text{dipole}} = \frac{2\pi}{(2\varepsilon_{\text{ext}} + 1)\Omega} \left| \sum_{i=1}^N q_i \mathbf{r}_i \right|^2$$
-        * **Tin-foil (conducting metal) boundary conditions ($\varepsilon_{\text{ext}} \to \infty$):** Surface charges on the surrounding conductor screen out the macroscopic dipole field completely, so **$V_{\text{dipole}} = 0$**.
-        * **Vacuum boundary conditions ($\varepsilon_{\text{ext}} = 1$):** $V_{\text{dipole}} = \frac{2\pi}{3\Omega}\left|\sum_i q_i \mathbf{r}_i\right|^2$.
-
-  - id: concept_ewald_splitting
-    type: concept_cell
-    title: "Interactive Explorer: Ewald Screening Parameter κ — Real Space, k-Space, and CPU Tradeoff"
-    description_markdown: "Vary the Ewald screening parameter $\\kappa$ and switch between the real-space potential split ($v_{\\text{short}}$ vs. $v_{\\text{long}}$), the $k$-space Gaussian envelope $v_{\\text{long},k}$, and the total CPU operation count."
-    render_function: render_ewald_splitting_tradeoff
-    layout: figure_left
-    controls:
-      kappa:
-        kind: slider
-        label: "Ewald Screening Parameter κ"
-        min: 0.4
-        max: 2.6
-        step: 0.2
-        default: 1.2
-        format: ".1f"
-      view_mode:
-        kind: dropdown
-        label: "Visualization Panel"
-        default: "real_potentials"
-        options:
-          - label: "Real-Space Split: erfc(κr)/r vs. erf(κr)/r"
-            value: "real_potentials"
-          - label: "Reciprocal-Space Envelope: (4π/k²) exp(-k²/4κ²)"
-            value: "k_space"
-          - label: "CPU Cost Balance: Real O(κ⁻³) vs. Reciprocal O(κ³)"
-            value: "cpu_balance"
-    takeaway_markdown: "**Key Takeaway:** Increasing $\\kappa$ makes the Gaussian screening cloud narrower in real space (so $\\text{erfc}(\\kappa r)/r$ decays faster and needs a smaller real-space cutoff $r_c$), but wider in $k$-space (so $e^{-k^2/(4\\kappa^2)}$ decays slower and requires more $\\mathbf{k}$-vectors)."
-
-  - id: q14_convergence_origin_r_vs_k
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_ewald_summation_method
-    prompt_markdown: "For the bare Coulomb potential $v(r) = e^2/r$ with Fourier transform $v_k = 4\\pi e^2/(\\Omega k^2)$, where do the slow convergence problems originate in real space ($r$-space) versus reciprocal space ($k$-space)?"
-    hint_markdown: "Check Slide 13 ('Origin of Convergence Problem')."
-    options:
-      - id: a
-        text: "The r-space convergence issue comes from r → ∞ (k → 0), whereas the k-space convergence issue comes from k → ∞ (the sharp 1/r singularity at r → 0)."
-      - id: b
-        text: "Both the r-space and k-space convergence issues come solely from r → ∞."
-      - id: c
-        text: "The r-space convergence issue comes from r → 0, whereas the k-space convergence issue comes from k → 0."
-      - id: d
-        text: "Neither r-space nor k-space has any convergence issue in 3D."
-    correct: a
-    rationale_markdown: "In real space, $1/r$ decays too slowly as $r \\to \\infty$ (corresponding to $k \\to 0$). In $k$-space, the sharp $1/r$ cusp at $r \\to 0$ produces a slowly decaying $4\\pi e^2/k^2$ tail as $k \\to \\infty$."
-
-  - id: q15_ewald_gaussian_screening_idea
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by:
-      - sec_ewald_summation_method
-      - concept_ewald_splitting
-    prompt_markdown: "What is the physical 'trick' behind the classic Ewald summation breakup of the Coulomb potential?"
-    hint_markdown: "Check Slide 16 ('Classic Ewald'): why are we free to add and subtract Gaussian charge clouds?"
-    options:
-      - id: a
-        text: "Because Poisson's equation is linear, we add a neutralizing Gaussian charge cloud around each point charge to screen out the long-range part in real space, and subtract the same Gaussian cloud in smooth k-space."
-      - id: b
-        text: "We replace all point charges with neutral hard spheres of diameter L/2."
-      - id: c
-        text: "We set the permittivity of free space to infinity inside a radius r_c and zero outside r_c."
-      - id: d
-        text: "We multiply all ionic charges by exp(-t/τ) so that the system becomes uncharged at long times."
-    correct: a
-    rationale_markdown: "By linearity of Poisson's equation, adding a screening Gaussian cloud $-q_i(\\kappa^2/\\pi)^{3/2}e^{-\\kappa^2 r^2}$ around each point charge makes the real-space potential $\\text{erfc}(\\kappa r)/r$ short-ranged, while the compensating Gaussian cloud $+q_i(\\kappa^2/\\pi)^{3/2}e^{-\\kappa^2 r^2}$ is smooth and converges rapidly in $k$-space."
-
-  - id: q16_ewald_short_and_long_formulas
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by:
-      - sec_ewald_summation_method
-      - concept_ewald_splitting
-    prompt_markdown: "In the classic Gaussian Ewald split $v(r) = v_{\\text{short}}(r) + v_{\\text{long}}(r)$, what are the exact functional forms of $v_{\\text{short}}(r)$ in real space and $v_{\\text{long},\\mathbf{k}}$ in reciprocal space?"
-    hint_markdown: "Check Slide 15 ('Classic Ewald') for $v_{\\text{short}}(r)$ and $v_{\\text{long},k}$."
-    options:
-      - id: a
-        text: "v_short(r) = (q₁q₂ / r) erfc(κr)  and  v_long,k = (4π q₁q₂ / (Ω k²)) exp(-k² / (4κ²))"
-      - id: b
-        text: "v_short(r) = (q₁q₂ / r) erf(κr)  and  v_long,k = (4π q₁q₂ / (Ω k²)) exp(-κ² k²)"
-      - id: c
-        text: "v_short(r) = (q₁q₂ / r²) exp(-κr)  and  v_long,k = (4π q₁q₂ / (Ω k⁴))"
-      - id: d
-        text: "v_short(r) = q₁q₂ erfc(r/κ)  and  v_long,k = (q₁q₂ / Ω) cos(k / κ)"
-    correct: a
-    rationale_markdown: "Screening a point charge with a Gaussian of width $1/\\kappa$ produces $v_{\\text{short}}(r) = \\frac{q_1 q_2}{r}\\text{erfc}(\\kappa r)$ in real space, while the compensating Gaussian interaction $v_{\\text{long}}(r) = \\frac{q_1 q_2}{r}\\text{erf}(\\kappa r)$ has the 3D Fourier transform $v_{\\text{long},\\mathbf{k}} = \\frac{4\\pi q_1 q_2}{\\Omega k^2}e^{-k^2/(4\\kappa^2)}$."
-
-  - id: q17_ewald_kappa_increase_effect
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by:
-      - sec_ewald_summation_method
-      - concept_ewald_splitting
-    prompt_markdown: "If you **increase** the Ewald parameter $\\kappa$ (making the real-space screening Gaussian narrower and taller) while holding target accuracy fixed, how do the required real-space cutoff $r_c$ and reciprocal-space wavevector cutoff $k_c$ change?"
-    hint_markdown: "Look at $\\text{erfc}(\\kappa r_c)$ and $e^{-k_c^2/(4\\kappa^2)}$ in the interactive explorer."
-    options:
-      - id: a
-        text: "v_short(r) decays faster so r_c decreases (less real-space work), while v_long,k decays slower so k_c increases (more k-space work)."
-      - id: b
-        text: "Both r_c and k_c decrease simultaneously, reducing total work to O(1)."
-      - id: c
-        text: "v_short(r) decays slower so r_c increases, while v_long,k decays faster so k_c decreases."
-      - id: d
-        text: "Neither r_c nor k_c depends on κ."
-    correct: a
-    rationale_markdown: "In real space, $\\text{erfc}(\\kappa r_c) \\le \\epsilon$ requires $\\kappa r_c = \\text{const} \\implies r_c \\propto 1/\\kappa$ (shrinks as $\\kappa$ increases). In $k$-space, $e^{-k_c^2/(4\\kappa^2)} \\le \\epsilon$ requires $k_c / (2\\kappa) = \\text{const} \\implies k_c \\propto \\kappa$ (grows as $\\kappa$ increases)."
-
-  - id: q18_ewald_self_energy_origin
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_ewald_summation_method
-    prompt_markdown: "Why must the constant self-energy term $V_{\\text{self}} = -\\frac{\\kappa}{\\sqrt{\\pi}}\\sum_{i=1}^N q_i^2$ be subtracted from the reciprocal-space Ewald sum?"
-    hint_markdown: "Notice that the $k$-space structure factor product $|\\rho_{\\mathbf{k}}|^2 = \\sum_{i,j} q_i q_j e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j)}$ includes the diagonal $i = j$ terms."
-    options:
-      - id: a
-        text: "Because factoring the k-space double sum into |ρ_k|² includes the i = j interaction of each point charge with its own compensating Gaussian cloud at r = 0, where lim_{r→0} erf(κr)/r = 2κ/√π."
-      - id: b
-        text: "Because erfc(κr)/r approaches 2κ/√π at r = ∞."
-      - id: c
-        text: "Because the minimum image convention double-counts pairs at r = L/2."
-      - id: d
-        text: "Because the total charge ∑ q_i of an ionic crystal is always nonzero."
-    correct: a
-    rationale_markdown: "Writing $\\frac{1}{2}\\sum_{i,j} q_i q_j e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j)} v_{\\mathbf{k}} = \\frac{1}{2}\\sum_{\\mathbf{k}} |\\rho_{\\mathbf{k}}|^2 v_{\\mathbf{k}}$ includes the $i=j$ terms $\\frac{1}{2}\\sum_i q_i^2 v_{\\text{long}}(r=0)$. Since $\\lim_{r\\to 0} \\frac{\\text{erf}(\\kappa r)}{r} = \\frac{2\\kappa}{\\sqrt{\\pi}}$, subtracting this unphysical self-interaction gives $V_{\\text{self}} = -\\frac{\\kappa}{\\sqrt{\\pi}}\\sum_i q_i^2$."
-
-  - id: q19_ewald_self_energy_numeric
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_ewald_summation_method
-    prompt_markdown: "An Ewald simulation box contains $N = 100$ monovalent ions ($50$ cations with $q_i = +1$ and $50$ anions with $q_i = -1$, in electrostatic units where $4\\pi\\varepsilon_0 = 1$). If the Ewald screening parameter is set to $\\kappa = 0.5\\sqrt{\\pi}\\text{ Å}^{-1} \\approx 0.8862\\text{ Å}^{-1}$, what is the exact value of the Ewald self-energy correction $V_{\\text{self}} = -\\frac{\\kappa}{\\sqrt{\\pi}}\\sum_{i=1}^N q_i^2$ (in $\\text{e}^2/\\text{Å}$)?"
-    hint_markdown: "Notice that $\\kappa / \\sqrt{\\pi} = 0.5$ and $\\sum_{i=1}^{100} (\\pm 1)^2 = 100$."
-    correct:
-      value: -50.0
-      tolerance: 0.1
-    rationale_markdown: "Since $q_i^2 = (\\pm 1)^2 = 1$ for every ion, $\\sum_{i=1}^{100} q_i^2 = 100$. With $\\kappa / \\sqrt{\\pi} = 0.5$, the self-energy correction is $V_{\\text{self}} = -0.5 \\times 100 = -50.0\\text{ e}^2/\\text{Å}$."
-
-  - id: q20_ewald_dipole_boundary_conditions
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_ewald_summation_method
-    prompt_markdown: "In the Ewald summation for a macroscopically spherical assembly of periodic boxes embedded in an external medium of dielectric constant $\\varepsilon$, the surface dipole correction is $V_{\\text{dipole}} = \\frac{2\\pi}{(2\\varepsilon + 1)\\Omega}\\left|\\sum_i \\boldsymbol{\\mu}_i\\right|^2$. How does $V_{\\text{dipole}}$ behave for (i) a surrounding **conducting metal ('tin-foil' boundary, $\\varepsilon \\to \\infty$)** versus (ii) a surrounding **vacuum (insulator in vacuum, $\\varepsilon = 1$)**?"
-    hint_markdown: "Evaluate $\\frac{2\\pi}{(2\\varepsilon + 1)\\Omega}$ as $\\varepsilon \\to \\infty$ and at $\\varepsilon = 1$."
-    options:
-      - id: a
-        text: "For a conducting boundary (ε → ∞), V_dipole = 0; for vacuum boundary conditions (ε = 1), V_dipole = (2π / 3Ω) |∑ μ_i|²."
-      - id: b
-        text: "For a conducting boundary (ε → ∞), V_dipole → ∞; for vacuum (ε = 1), V_dipole = 0."
-      - id: c
-        text: "In both cases, V_dipole = (4π / Ω) |∑ μ_i|²."
-      - id: d
-        text: "V_dipole is negative in vacuum and positive in a conductor."
-    correct: a
-    rationale_markdown: "When surrounded by a perfect conductor ('tin-foil' BCs, $\\varepsilon \\to \\infty$), induced surface charges neutralize any macroscopic surface depolarization field so $V_{\\text{dipole}} = 0$. In vacuum ($\\varepsilon = 1$), $2\\varepsilon + 1 = 3$, yielding the depolarization energy $V_{\\text{dipole}} = \\frac{2\\pi}{3\\Omega}|\\sum_i \\boldsymbol{\\mu}_i|^2$."
-
-  - id: q21_ewald_dipole_term_numeric
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_ewald_summation_method
-    prompt_markdown: "A cubic simulation box of volume $\\Omega = 100\\text{ nm}^3$ with **vacuum boundary conditions** ($\\varepsilon = 1$) has an instantaneous total dipole moment of magnitude $|\\sum_i \\boldsymbol{\\mu}_i| = 15.0$ (in reduced charge$\\cdot\\text{nm}$ units). Calculate the surface dipole energy $V_{\\text{dipole}} = \\frac{2\\pi}{(2\\varepsilon + 1)\\Omega}\\left|\\sum_i \\boldsymbol{\\mu}_i\\right|^2$ (round to 3 decimal places)."
-    hint_markdown: "Substitute $\\varepsilon = 1$, $\\Omega = 100$, and $|\\sum \\boldsymbol{\\mu}_i|^2 = 225$ into $\\frac{2\\pi}{3 \\times 100} \\times 225 = 1.5\\pi$."
-    correct:
-      value: 4.712
-      tolerance: 0.01
-    rationale_markdown: "With $\\varepsilon = 1$ and $\\Omega = 100$, $V_{\\text{dipole}} = \\frac{2\\pi}{3 \\times 100} (15.0)^2 = \\frac{2\\pi}{300} \\times 225 = 1.5\\pi \\approx 4.7124$."
-
-  - id: q22_ewald_kspace_damping_numeric
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by:
-      - sec_ewald_summation_method
-      - concept_ewald_splitting
-    prompt_markdown: "In reciprocal space, the Ewald long-range potential is damped by the Gaussian factor $e^{-k^2 / (4\\kappa^2)}$. If $\\kappa = 1.5\\text{ nm}^{-1}$, what is the value of the Gaussian damping factor $e^{-k^2 / (4\\kappa^2)}$ at wavevector magnitude $k = 3.0\\text{ nm}^{-1}$ (round to 3 decimal places)?"
-    hint_markdown: "Evaluate $k^2 / (4\\kappa^2) = 9.0 / (4 \\times 2.25) = 9.0 / 9.0 = 1.0$, then compute $e^{-1.0}$."
-    correct:
-      value: 0.368
-      tolerance: 0.005
-    rationale_markdown: "Since $k^2 / (4\\kappa^2) = 3.0^2 / (4 \\times 1.5^2) = 9.0 / 9.0 = 1.0$, the Gaussian factor is $e^{-1} \\approx 0.3679 \\approx 0.368$."
-
-  - id: sec_kspace_algorithm_natoli_and_scaling
-    type: markdown_section
-    title: "4. Fast k-Space Evaluation, Natoli–Ceperley Optimal Breakup, and O(N^(3/2)) vs. PME vs. FMM"
-    body_markdown: |
-      ### Optimizing Breakup: The Natoli–Ceperley (1995) Method
-      In the conventional Gaussian Ewald breakup, truncating $v_{\text{short}}(r)$ at $r = L/2$ leaves a small residual jump $v_{\text{short}}(L/2) = \frac{2q_1 q_2}{L}\text{erfc}(\kappa L/2) \ne 0$, and the Gaussian is not the mathematically optimal splitting function for a given $(r_c, k_c)$ budget.
-
-      **Natoli and Ceperley (1995)** showed how to achieve machine-precision accuracy with minimal $k$-vectors by expanding the short-range (or long-range) potential in a set of local basis functions (e.g., polynomial splines $h_n(r)$ that vanish smoothly at $r_c = L/2$):
-
-      $$v_{\text{short}}(r) = \sum_{n} c_n h_n(r)$$
-
-      1. Require $h_n(r)$ to satisfy the boundary conditions ($v_{\text{short}}(r_c) = v'_{\text{short}}(r_c) = 0$).
-      2. Choose a desired reciprocal-space cutoff $k_c$.
-      3. Write down the mean-square $\chi^2$ error coming from neglecting higher wavevectors $|\mathbf{k}| > k_c$ and **minimize $\chi^2$ with respect to the expansion coefficients $c_n$**. As shown on Slide 17, the Natoli–Ceperley optimized breakup reduces the error $\ln[\chi/(e^2/L)]$ by several orders of magnitude compared to classic Gaussian Ewald at the same $k_c r_c$!
-
-      ---
-
-      ### Look at $k$-Space: Factoring the Double Sum & Avoiding Complex Exponentiation
-      Naively, the reciprocal-space sum $\frac{1}{2}\sum_{\mathbf{k}} \sum_{i \ne j} q_i q_j e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)} v_{\mathbf{k}}$ looks like an $\mathcal{O}(M_k N^2)$ calculation for $M_k$ wavevectors. However, we can factor the double sum over $(i, j)$ into the product of **single-particle structure factors** $\rho_{\mathbf{k}}$:
-
-      $$V_{\text{long}} = \frac{1}{2}\sum_{\mathbf{k}} \left[\sum_{i=1}^N q_i e^{i\mathbf{k}\cdot\mathbf{r}_i}\right]\left[\sum_{j=1}^N q_j e^{-i\mathbf{k}\cdot\mathbf{r}_j}\right] v_{\mathbf{k}} + C = \frac{1}{2}\sum_{\mathbf{k}} \rho_{\mathbf{k}} \rho_{-\mathbf{k}} v_{\mathbf{k}} + C$$
-
-      * **Hermitian Symmetry ($\rho_{-\mathbf{k}} = \rho_{\mathbf{k}}^*$):** Because particle positions $\mathbf{r}_i$ are real, $\rho_{-\mathbf{k}} = \rho_{\mathbf{k}}^*$, so we only need to compute half of the $\mathbf{k}$-space sphere!
-      * **Linear Scaling in $N$ per $\mathbf{k}$-vector ($\mathcal{O}(N M_k)$):** Computing $\rho_{\mathbf{k}} = \sum_{i=1}^N q_i e^{i\mathbf{k}\cdot\mathbf{r}_i}$ for $M_k$ wavevectors takes **$\mathcal{O}(N M_k)$** operations instead of $\mathcal{O}(N^2 M_k)$.
-      * **Fast Single-Particle MC Updates ($\mathcal{O}(M_k)$):** If only one or a few particles move (as in Monte Carlo), we do not recompute $\rho_{\mathbf{k}}$ from scratch! We simply update $\Delta \rho_{\mathbf{k}} = q_i (e^{i\mathbf{k}\cdot\mathbf{r}_i^{\text{new}}} - e^{i\mathbf{k}\cdot\mathbf{r}_i^{\text{old}}})$ in $\mathcal{O}(M_k)$ time.
-      * **Recursive Complex Multiplication Trick:** Calling `exp(i k·r)` or `sin`/`cos` from scratch for every $(i, \mathbf{k})$ pair is slow. Instead, for $\mathbf{k} = \left(m_1 \frac{2\pi}{L_x}, m_2 \frac{2\pi}{L_y}, m_3 \frac{2\pi}{L_z}\right)$, we factor:
-        $$e^{i\mathbf{k}\cdot\mathbf{r}_i} = \left[e^{i\frac{2\pi}{L_x}r_{ix}}\right]^{m_1} \left[e^{i\frac{2\pi}{L_y}r_{iy}}\right]^{m_2} \left[e^{i\frac{2\pi}{L_z}r_{iz}}\right]^{m_3}$$
-        For each particle $i$, we compute the fundamental base phase $C_j = \exp(i k_{0j} r_{ij}) = (\cos(k_{0j}r_{ij}), \sin(k_{0j}r_{ij}))$ only **3 times** ($\mathcal{O}(N)$ total), generate integer powers $C_{j,m} = (C_j)^m$ iteratively by fast **complex multiplication** $e^{i m k_0 x} = e^{i(m-1)k_0 x}\cdot e^{i k_0 x}$, and multiply the three Cartesian factors together!
-
-      ---
-
-      ### Derivation of Optimal Ewald $\mathcal{O}(N^{3/2})$ Scaling vs. PME $\mathcal{O}(N\ln N)$ vs. FMM $\mathcal{O}(N)$
-      At fixed liquid density $\rho = N / \Omega$ ($\Omega = L^3 \propto N$) and fixed target accuracy $\epsilon = e^{-p}$:
-      * **Real-space work:** Cutoff $r_c \sim \sqrt{p}/\kappa$. Using a neighbor list, each of the $N$ particles interacts with $\frac{4}{3}\pi\rho r_c^3$ neighbors:
-        $$W_{\text{real}} \propto N \rho r_c^3 \propto \frac{N^2}{\Omega \kappa^3}$$
-      * **Reciprocal-space work:** Cutoff $k_c \sim 2\kappa\sqrt{p}$. The number of discrete $\mathbf{k}$-vectors inside radius $k_c$ is $M_k \propto \Omega k_c^3 \propto \Omega \kappa^3$. Summing $\rho_{\mathbf{k}}$ over $N$ particles for each of the $M_k$ wavevectors costs:
-        $$W_{\text{recip}} \propto N M_k \propto N \Omega \kappa^3$$
-
-      #### Balancing Real and Reciprocal Work
-      * **Unoptimized $\kappa$ (fixing $r_c = L/2$, $\kappa \propto 1/L \propto N^{-1/3}$):** Then $W_{\text{real}} \propto \mathcal{O}(N^2)$ and $W_{\text{recip}} \propto \mathcal{O}(N)$, so unoptimized Ewald scales as **$\mathcal{O}(N^2)$**!
-      * **Optimized $\kappa$:** Setting $W_{\text{real}} \sim W_{\text{recip}}$ requires:
-        $$\frac{N^2}{\Omega \kappa^3} \sim N \Omega \kappa^3 \implies \kappa_{\text{opt}} \propto \frac{N^{1/6}}{\Omega^{1/3}} = \frac{N^{1/6}}{L} \propto \rho^{1/3} N^{-1/6}$$
-        Substituting $\Omega \kappa_{\text{opt}}^3 \propto N^{1/2}$ into both work expressions gives the celebrated **Optimal Ewald complexity**:
-        $$W_{\text{real}} \sim W_{\text{recip}} \sim N \cdot N^{1/2} = \mathcal{O}(N^{3/2}), \qquad M_k \propto \mathcal{O}(N^{1/2})$$
-        *(Slide 21 step breakdown at optimal $\kappa$: 1. Base $\exp(ik_0 x_i)$ is $\mathcal{O}(N)$; 2. Powers & products $\mathcal{O}(N^{3/2})$; 3. Sum over particles for $\rho_{\mathbf{k}}$ is $\mathcal{O}(N^{3/2})$; 4. Sum over $\mathbf{k}$ for potential is $\mathcal{O}(M_k) = \mathcal{O}(N^{1/2})$; 5. Forces via gradients $\mathcal{O}(N^{3/2})$; 6. Self/constant terms $\mathcal{O}(1)$. Code verification check: a unit-charge simple cubic lattice in a neutralizing background has Wigner energy $V = -1.4186487 / a$.)*
-
-      #### Faster Asymptotic Methods for Large $N$
-      1. **Particle-Mesh / Particle-Cell Methods (Hockney PPPM, Darden PME — $\mathcal{O}(N \ln N)$):**
-         Instead of evaluating $\rho_{\mathbf{k}}$ by direct $\mathcal{O}(N M_k)$ summation, charges are interpolated onto a 3D regular grid and Poisson's equation is solved in $k$-space using the **3D Fast Fourier Transform (FFT)**, reducing reciprocal-space cost to **$\mathcal{O}(N \ln N)$**.
-      2. **Fast Multipole Method (Greengard & Rokhlin FMM — $\mathcal{O}(N)$):**
-         Divides space recursively into an octree of cells, computes multipole (monopole, dipole, quadrupole, $\dots$) moments of each cell, and translates moments hierarchically between parent supercells and child cells, achieving true linear **$\mathcal{O}(N)$** complexity for very large $N$.
-
-      ---
-
-      ### Artifacts of Periodic Image Potentials in Inhomogeneous / Slab Systems
-      On Slide 23 ("Problems with Image potential"): Ewald summation assumes the simulation cell is replicated periodically in all 3 directions to infinity. For an **inhomogeneous system** such as a **2D charged surface, membrane, or liquid–vapor interface (charge layer)**, 3D periodic images impose an artificial long-range crystal lattice of parallel dipole layers! Whereas a real nearby fluid would be **anticorrelated** (screening the local dipole), periodic images are **perfectly correlated** replicas, artificially **penalizing** localized dipole fluctuations unless a 2D slab dipole correction or vacuum gap is applied.
-
-  - id: concept_electrostatic_scaling
-    type: concept_cell
-    title: "Interactive Explorer: Electrostatic Solver Complexity — O(N²) vs. O(N^(3/2)) vs. O(N ln N) vs. O(N)"
-    description_markdown: "Compare the per-step CPU time on log–log axes across five orders of magnitude in particle count $N$ ($10^2$ to $10^7$) for Direct/Unoptimized Ewald $\\mathcal{O}(N^2)$, Optimized Ewald $\\mathcal{O}(N^{3/2})$, Particle-Mesh Ewald (PME/PPPM) $\\mathcal{O}(N\\ln N)$, and the Fast Multipole Method (FMM) $\\mathcal{O}(N)$."
-    render_function: render_electrostatic_algorithm_scaling
-    layout: figure_left
-    controls:
-      log10_n:
-        kind: slider
-        label: "Log₁₀(Particle Count N)"
-        min: 2.0
-        max: 7.0
-        step: 0.5
-        default: 4.0
-        format: ".1f"
-      fmm_accuracy_p:
-        kind: slider
-        label: "FMM Multipole Order p"
-        min: 3
-        max: 10
-        step: 1
-        default: 6
-    takeaway_markdown: "**Key Takeaway:** Optimized Ewald ($\\mathcal{O}(N^{3/2})$) has a tiny prefactor and excels for small systems ($N \\lesssim 10^3$), PME/PPPM ($\\mathcal{O}(N\\ln N)$) dominates intermediate biomolecular and materials simulations ($10^3 \\lesssim N \\lesssim 10^5$), and FMM ($\\mathcal{O}(N)$) wins at ultra-large scales ($N \\gtrsim 10^5$–$10^6$) depending on multipole order $p$."
-
-  - id: q23_kspace_factorization_trick
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "How does the Ewald algorithm avoid an $\\mathcal{O}(N^2)$ double loop over particle pairs $(i, j)$ when evaluating the reciprocal-space energy $V_{\\text{long}}$ for a given wavevector $\\mathbf{k}$?"
-    hint_markdown: "Check Slide 18 ('Look at k-space: the algorithm')."
-    options:
-      - id: a
-        text: "It factors exp(i k·(r_i - r_j)) into the single-particle sum ρ_k = ∑_i q_i exp(i k·r_i) and its complex conjugate ρ_{-k} = ρ_k*, reducing the cost per k-vector from O(N²) to O(N)."
-      - id: b
-        text: "It truncates the sum over i and j after the first 10 particles in the array."
-      - id: c
-        text: "It sets exp(i k·(r_i - r_j)) = 1 for all pairs in k-space."
-      - id: d
-        text: "It uses a Verlet skin list in k-space so each particle only interacts with 12 k-vectors."
-    correct: a
-    rationale_markdown: "Because $e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_j)} = e^{i\\mathbf{k}\\cdot\\mathbf{r}_i} e^{-i\\mathbf{k}\\cdot\\mathbf{r}_j}$, the double sum factors into $\\left(\\sum_i q_i e^{i\\mathbf{k}\\cdot\\mathbf{r}_i}\\right)\\left(\\sum_j q_j e^{-i\\mathbf{k}\\cdot\\mathbf{r}_j}\\right) = \\rho_{\\mathbf{k}}\\rho_{-\\mathbf{k}} = |\\rho_{\\mathbf{k}}|^2$, which takes only a single $\\mathcal{O}(N)$ pass per $\\mathbf{k}$-vector."
-
-  - id: q24_rho_k_hermitian_symmetry
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "Because particle coordinates $\\mathbf{r}_i$ and charges $q_i$ are real numbers, how is the structure factor at $-\\mathbf{k}$ related to $\\rho_{\\mathbf{k}} = \\sum_{j=1}^N q_j e^{i\\mathbf{k}\\cdot\\mathbf{r}_j}$, and what computational savings does this provide?"
-    hint_markdown: "Take the complex conjugate of $\\rho_{\\mathbf{k}}$."
-    options:
-      - id: a
-        text: "ρ_{-k} = ρ_k* (complex conjugate), so we only need to compute ρ_k over half of the reciprocal-space k-vectors."
-      - id: b
-        text: "ρ_{-k} = -ρ_k, so ρ_k ρ_{-k} cancels to zero for every k."
-      - id: c
-        text: "ρ_{-k} = 1 / ρ_k, so ρ_k ρ_{-k} = 1 identically."
-      - id: d
-        text: "ρ_{-k} is independent of ρ_k and requires doubling the k-space cutoff."
-    correct: a
-    rationale_markdown: "Taking the complex conjugate gives $\\rho_{\\mathbf{k}}^* = \\sum_j q_j e^{-i\\mathbf{k}\\cdot\\mathbf{r}_j} = \\rho_{-\\mathbf{k}}$, cutting the number of required $\\rho_{\\mathbf{k}}$ evaluations in half."
-
-  - id: q25_fast_complex_multiply_algorithm
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "When computing $e^{i\\mathbf{k}\\cdot\\mathbf{r}_i}$ across hundreds of reciprocal lattice vectors $\\mathbf{k} = \\left(m_1 \\frac{2\\pi}{L_x}, m_2 \\frac{2\\pi}{L_y}, m_3 \\frac{2\\pi}{L_z}\\right)$, how do efficient Ewald codes avoid calling slow trigonometric or complex exponential library functions inside the inner loop over $\\mathbf{k}$?"
-    hint_markdown: "Check Slides 19–21 on factoring $e^{i\\mathbf{k}\\cdot\\mathbf{r}}$ into powers of fundamental phases $[e^{i(2\\pi/L_x)r_x}]^{m_1}$."
-    options:
-      - id: a
-        text: "They compute the base phases exp(i k₀ x_i) = (cos(k₀ x_i), sin(k₀ x_i)) once per particle in O(N) time and generate all higher harmonics m₁, m₂, m₃ and 3D products purely by fast complex multiplications."
-      - id: b
-        text: "They replace exp(i k·r) with its first-order Taylor expansion 1 + i k·r for all k."
-      - id: c
-        text: "They round all particle coordinates r_i to integers so exp(i k·r) is always ±1."
-      - id: d
-        text: "They evaluate exp(i k·r) using a 100-term series of Bessel functions at each k-vector."
-    correct: a
-    rationale_markdown: "By factoring $e^{i\\mathbf{k}\\cdot\\mathbf{r}} = [e^{i(2\\pi/L_x)r_x}]^{m_1}[e^{i(2\\pi/L_y)r_y}]^{m_2}[e^{i(2\\pi/L_z)r_z}]^{m_3}$, an Ewald code evaluates `cos` and `sin` only 3 times per particle ($\\mathcal{O}(N)$) and builds all powers $C_{j,m} = C_j^m$ and 3D wavevectors via fast complex multiplications."
-
-  - id: q26_single_particle_mc_ewald_update
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "In a Monte Carlo simulation of $N$ ions using Ewald summation with $M_k$ reciprocal-space wavevectors, suppose a trial move displaces only **a single ion $i$** from $\\mathbf{r}_i^{\\text{old}}$ to $\\mathbf{r}_i^{\\text{new}}$. How many operations are needed to update the reciprocal-space energy $V_{\\text{long}}$?"
-    hint_markdown: "Look at the bottom of Slide 18: 'Changes due to moving a few particles can be calculated more quickly'."
-    options:
-      - id: a
-        text: "O(M_k) operations (or O(N^(1/2)) at optimal κ), by updating ρ_k^new = ρ_k^old + q_i [exp(i k·r_i^new) - exp(i k·r_i^old)] for each k-vector without re-summing the other N - 1 particles."
-      - id: b
-        text: "O(N² M_k) operations, because every pair distance r_jk must be Fourier transformed from scratch."
-      - id: c
-        text: "O(N³) operations via Cholesky decomposition of the k-space matrix."
-      - id: d
-        text: "Zero operations, because V_long does not depend on individual particle positions."
-    correct: a
-    rationale_markdown: "Because $\\rho_{\\mathbf{k}} = \\sum_j q_j e^{i\\mathbf{k}\\cdot\\mathbf{r}_j}$ is an additive single-particle sum, moving one particle $i$ only changes $\\rho_{\\mathbf{k}}$ by $\\Delta\\rho_{\\mathbf{k}} = q_i(e^{i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{new}}} - e^{i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{old}}})$, which costs $\\mathcal{O}(M_k)$ instead of $\\mathcal{O}(N M_k)$!"
-
-  - id: q27_natoli_ceperley_optimized_breakup
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "How does the **Natoli–Ceperley (1995) optimized breakup** improve upon the conventional Gaussian Ewald splitting?"
-    hint_markdown: "Check Slide 17 ('Ewald: optimizing breakup')."
-    options:
-      - id: a
-        text: "It expands v_short(r) = ∑_n c_n h_n(r) in basis functions satisfying boundary conditions at r_c = L/2 and optimizes the coefficients c_n to minimize the k-space truncation error from neglecting |k| > k_c."
-      - id: b
-        text: "It replaces the Coulomb potential 1/r with a hard-sphere potential at all distances."
-      - id: c
-        text: "It sets the k-space cutoff k_c = 0 so that no Fourier vectors are ever needed."
-      - id: d
-        text: "It uses a wider Gaussian so that v_short(L/2) is maximized at the box boundary."
-    correct: a
-    rationale_markdown: "Classic Gaussian Ewald leaves a nonzero boundary error $v_{\\text{short}}(L/2) = \\frac{2q_1q_2}{L}\\text{erfc}(\\kappa L/2) \\ne 0$ and uses a fixed Gaussian shape. Natoli & Ceperley expand $v_{\\text{short}}(r) = \\sum_n c_n h_n(r)$ in basis functions that vanish smoothly at $L/2$ and variationally choose $c_n$ to minimize the error from neglected $|\\mathbf{k}| > k_c$ terms."
-
-  - id: q28_optimal_ewald_complexity_derivation
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by:
-      - sec_kspace_algorithm_natoli_and_scaling
-      - concept_electrostatic_scaling
-    prompt_markdown: "When simulating $N$ charges at constant density ($\\Omega \\propto N$), what is the per-step computational complexity of the Ewald sum if (i) $\\kappa$ is **not** re-optimized with $N$ ($r_c = L/2$ fixed fraction of box) versus (ii) $\\kappa$ **is** optimally tuned ($\\kappa \\propto N^{1/6}/L$) together with neighbor lists?"
-    hint_markdown: "Check Slide 20 ('Use neighbor tables and optimize κ, Ewald is O(N^(3/2)); If we do not reoptimize, then O(N²)')."
-    options:
-      - id: a
-        text: "O(N²) if κ is not re-optimized; O(N^(3/2)) when κ is optimally tuned and neighbor lists are used."
-      - id: b
-        text: "O(N³) if κ is not re-optimized; O(N²) when κ is optimally tuned."
-      - id: c
-        text: "O(N ln N) in both cases."
-      - id: d
-        text: "O(N) if κ is not re-optimized; O(N^(3/2)) when κ is optimally tuned."
-    correct: a
-    rationale_markdown: "If $\\kappa \\propto 1/L$ is not re-optimized as $N$ grows, the real-space cutoff $r_c = L/2$ encompasses the entire box ($\\mathcal{O}(N)$ neighbors per particle), giving $\\mathcal{O}(N^2)$ scaling. Tuning $\\kappa \\propto N^{1/6}/L$ (so $r_c \\propto N^{-1/6}L$ and $M_k \\propto N^{1/2}$) balances real and $k$-space costs at $\\mathcal{O}(N^{3/2})$."
-
-  - id: q29_ewald_scaling_factor_numeric
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by:
-      - sec_kspace_algorithm_natoli_and_scaling
-      - concept_electrostatic_scaling
-    prompt_markdown: "In an optimally tuned Ewald summation code whose CPU time per step scales as $\\mathcal{O}(N^{3/2})$, by what factor does the CPU time per step increase if the number of ions $N$ is increased by a factor of $4$ (e.g., from $N = 1{,}000$ to $N = 4{,}000$ at constant density)?"
-    hint_markdown: "Compute $4^{3/2} = (\\sqrt{4})^3$."
-    correct:
-      value: 8.0
-      tolerance: 0.05
-    rationale_markdown: "With $\\mathcal{O}(N^{3/2})$ scaling, multiplying $N$ by $4$ increases the CPU cost by $4^{3/2} = 2^3 = 8.0$ (compared to $4^2 = 16$ for an unoptimized $\\mathcal{O}(N^2)$ algorithm)."
-
-  - id: q30_ewald_step_by_step_complexities
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "In an optimally tuned Ewald sum ($\\mathcal{O}(N^{3/2})$ overall, where the number of $\\mathbf{k}$-vectors scales as $M_k \\propto N^{1/2}$), what are the individual asymptotic scalings of: (1) computing the fundamental 1D phases $\\exp(ik_0 x_i)$ for all particles, (3) summing over all $N$ particles to get $\\rho_{\\mathbf{k}}$ for all $M_k$ wavevectors, and (4) summing $|\\rho_{\\mathbf{k}}|^2 v_{\\mathbf{k}}$ over the $M_k$ wavevectors to get the total reciprocal-space potential?"
-    hint_markdown: "Check the right-hand column of Slide 21 ('How to do it')."
-    options:
-      - id: a
-        text: "Step (1) is O(N); Step (3) is O(N^(3/2)); Step (4) is O(N^(1/2))."
-      - id: b
-        text: "Step (1) is O(N^(3/2)); Step (3) is O(N²); Step (4) is O(N)."
-      - id: c
-        text: "Step (1) is O(1); Step (3) is O(N); Step (4) is O(N^(3/2))."
-      - id: d
-        text: "All three steps scale as O(N^(3/2))."
-    correct: a
-    rationale_markdown: "As listed on Slide 21: (1) computing the 3 base phases $\\exp(ik_0 x_i)$ per particle costs $\\mathcal{O}(N)$; (3) accumulating $\\rho_{\\mathbf{k}}$ over $N$ particles for $M_k \\propto N^{1/2}$ wavevectors costs $N \\times N^{1/2} = \\mathcal{O}(N^{3/2})$; and (4) summing $\\rho_{\\mathbf{k}}\\rho_{-\\mathbf{k}}v_{\\mathbf{k}}$ over the $M_k$ wavevectors costs $\\mathcal{O}(M_k) = \\mathcal{O}(N^{1/2})$."
-
-  - id: q31_pme_and_fmm_complexities
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by:
-      - sec_kspace_algorithm_natoli_and_scaling
-      - concept_electrostatic_scaling
-    prompt_markdown: "What are the asymptotic CPU complexities for large $N$ of (i) **Particle-Cell / Particle-Mesh Ewald methods (Hockney PPPM / PME)** that use Fast Fourier Transforms on a grid, and (ii) the **Fast Multipole Method (FMM)** that recursively divides space into cells and translates multipole moments?"
-    hint_markdown: "Check Slide 22 ('Complexity of Fast Multipole')."
-    options:
-      - id: a
-        text: "Particle-Mesh / FFT methods scale as O(N ln N), and Fast Multipole Methods (FMM) scale as O(N)."
-      - id: b
-        text: "Particle-Mesh / FFT methods scale as O(N²), and Fast Multipole Methods scale as O(N^(3/2))."
-      - id: c
-        text: "Both Particle-Mesh and Fast Multipole Methods scale as O(N^(1/2))."
-      - id: d
-        text: "Particle-Mesh scales as O(N), and Fast Multipole scales as O(N³)."
-    correct: a
-    rationale_markdown: "Interpolating charges onto a mesh and using 3D FFTs (Hockney PPPM / PME) scales as $\\mathcal{O}(N \\ln N)$, while hierarchical octree multipole expansion (Fast Multipole Method) achieves $\\mathcal{O}(N)$ complexity for large $N$."
-
-  - id: q32_image_potential_slab_artifact
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "According to Slide 23 ('Problems with Image potential'), what physical artifact arises when standard 3D periodic Ewald summation is applied to an inhomogeneous **charge layer or dipolar surface**?"
-    hint_markdown: "Compare how a real surrounding fluid responds to a local dipole/charge layer versus what periodic replicas do."
-    options:
-      - id: a
-        text: "3D periodic images force the charge/dipole structure to repeat identically at large r (correlated replicas), whereas a real nearby fluid would be anticorrelated (screening); thus such structures are artificially penalized."
-      - id: b
-        text: "The Ewald sum sets all forces perpendicular to the layer to zero."
-      - id: c
-        text: "The self-interaction term V_self becomes infinite whenever a surface is present."
-      - id: d
-        text: "Periodic boundary conditions cause all ions to evaporate into vacuum immediately."
-    correct: a
-    rationale_markdown: "Standard Ewald summation replicates the central cell's dipole/charge layer with identical orientation across all periodic images. In reality, a nearby fluid would polarize in the opposite direction (anticorrelated screening), so artificial periodic image alignment penalizes polarized surface structures."
-
-  - id: q33_verlet_neighbor_count_numeric
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by:
-      - sec_pbc_tail_corrections_and_neighbor_lists
-      - concept_neighbor_skin
-    prompt_markdown: "A 3D liquid has number density $\\rho = 0.75\\,\\sigma^{-3}$. If a Verlet neighbor list is constructed with potential cutoff $r_c = 2.5\\,\\sigma$ and skin depth $\\Delta = 0.5\\,\\sigma$ (so $r_{\\text{list}} = r_c + \\Delta = 3.0\\,\\sigma$), what is the average number of neighbors $m = \\frac{4}{3}\\pi \\rho (r_c + \\Delta)^3$ stored per particle ( assuming $g(r) \\approx 1$, round to 1 decimal place)?"
-    hint_markdown: "Evaluate $\\frac{4}{3}\\pi (0.75) (3.0)^3 = \\pi \\times 27 = 27\\pi$."
-    correct:
-      value: 84.8
-      tolerance: 0.3
-    rationale_markdown: "With $r_{\\text{list}} = 2.5 + 0.5 = 3.0\\,\\sigma$, the average number of particles inside the sphere is $m = \\frac{4}{3}\\pi \\rho r_{\\text{list}}^3 = \\frac{4}{3}\\pi (0.75)(27) = 27\\pi \\approx 84.82$ neighbors per particle, regardless of whether $N = 10^3$ or $N = 10^7$!"
-
-  - id: q34_cell_method_3d_neighbor_cells_numeric
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_pbc_tail_corrections_and_neighbor_lists
-    prompt_markdown: "In the 3D linked-cell method, the simulation box is divided into cubic cells of side length $L_{\\text{cell}} > r_c + \\Delta$. To find all neighbors of a particle within $r_c + \\Delta$ (without using Newton's 3rd law half-shell optimization), how many total cells must be searched for that particle (counting the particle's own cell plus all immediately adjacent cells in 3D)?"
-    hint_markdown: "Consider a $3 \\times 3 \\times 3$ cube of cells centered on the particle's cell."
-    correct:
-      value: 27.0
-      tolerance: 0.1
-    rationale_markdown: "In 3D, a cell and its nearest-neighbor cells (sharing a face, edge, or corner) form a $3 \\times 3 \\times 3$ block of $3^3 = 27$ cells (or $14$ cells if Newton's third law is used to search only half the stencil)."
-
-  - id: q35_ewald_real_space_erfc_cutoff_numeric
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by:
-      - sec_ewald_summation_method
-      - concept_ewald_splitting
-    prompt_markdown: "In classic Ewald summation in a cubic box of length $L = 10.0\\text{ Å}$, we choose $\\kappa$ so that the real-space screened potential $v_{\\text{short}}(r) = \\frac{q_1 q_2}{r}\\text{erfc}(\\kappa r)$ is negligible at the minimum-image boundary $r = L/2 = 5.0\\text{ Å}$. Using the asymptotic approximation $\\text{erfc}(z) \\approx \\frac{e^{-z^2}}{z\\sqrt{\\pi}}$ for large $z$, estimate $\\kappa$ (in $\\text{Å}^{-1}$) required so that $z = \\kappa(L/2) = 3.0$ (where $\\text{erfc}(3.0) \\approx 2.2 \\times 10^{-5}$)."
-    hint_markdown: "Solve $\\kappa \\times 5.0 = 3.0$ for $\\kappa$."
-    correct:
-      value: 0.6
-      tolerance: 0.01
-    rationale_markdown: "Setting $\\kappa (L/2) = 3.0$ with $L/2 = 5.0\\text{ Å}$ gives $\\kappa = 3.0 / 5.0 = 0.60\\text{ Å}^{-1}$."
-
-  - id: q36_one_component_plasma_background
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_long_range_definition_and_stillinger_lovett
-    prompt_markdown: "If you want to simulate a **one-component charged system** (such as an electron gas or a lattice of $+1$ ions with no counter-ions) in periodic boundary conditions, what must be added to prevent the electrostatic energy ($\\mathbf{k} = \\mathbf{0}$ term) from diverging to infinity?"
-    hint_markdown: "Check Slide 2 and Slide 8 ('For one component system, need to add a background to make it neutral')."
-    options:
-      - id: a
-        text: "A uniform neutralizing background charge density of opposite sign (jellium background), which exactly cancels the k = 0 divergence."
-      - id: b
-        text: "A global Langevin friction term with ζ → ∞."
-      - id: c
-        text: "An extra repulsive 1/r¹² Lennard-Jones core at r = 0."
-      - id: d
-        text: "Nothing; the sum ∑_{L≠0} 1/|r - L| converges to zero on its own."
-    correct: a
-    rationale_markdown: "A non-neutral periodic system has infinite total charge and an infinite $\\mathbf{k} = \\mathbf{0}$ Fourier component ($\\int 4\\pi r^2 (\\rho/r)\\,dr = \\infty$). Adding a uniform neutralizing background charge density cancels the $\\mathbf{k} = \\mathbf{0}$ term and yields a well-defined finite energy (e.g., $-1.4186487/a$ for a simple cubic lattice)."
-
-  - id: q37_cubic_lattice_wigner_check
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "On Slide 21 ('How to do it'), what benchmark test is recommended to verify that a newly written 3D Ewald summation code (including real-space, $k$-space, and constant self/background terms) is bug-free and independent of $\\kappa$?"
-    hint_markdown: "Look at the last bullet of Slide 21 ('Checks: perfect cubic lattice...')."
-    options:
-      - id: a
-        text: "Compute the potential energy of a perfect simple cubic lattice of unit charges in a neutralizing background and verify that V = -1.4186487 / a (independent of the choice of κ)."
-      - id: b
-        text: "Verify that the total electrostatic energy is proportional to κ³ when κ is varied."
-      - id: c
-        text: "Check that setting all charges q_i = +1 gives V = +∞."
-      - id: d
-        text: "Verify that the real-space term alone equals zero for any κ."
-    correct: a
-    rationale_markdown: "A standard verification test for any Ewald code is to place unit point charges on a perfect simple cubic lattice of spacing $a$ (with neutralizing background), check that the total energy matches the exact Wigner lattice constant $V = -1.4186487 / a$, and confirm that $\\partial V_{\\text{total}} / \\partial \\kappa = 0$ over a range of $\\kappa$."
-
-  - id: q38_ewald_independence_of_kappa
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by:
-      - sec_ewald_summation_method
-      - concept_ewald_splitting
-    prompt_markdown: "When both the real-space sum ($r < r_c$) and reciprocal-space sum ($|\\mathbf{k}| < k_c$) are converged to high accuracy, how should the **total** Ewald potential energy $V_{\\text{Ewald}} = V_{\\text{real}}(\\kappa) + V_{\\text{recip}}(\\kappa) + V_{\\text{self}}(\\kappa) + V_{\\text{dipole}}$ depend on the screening parameter $\\kappa$?"
-    hint_markdown: "Remember that $\\kappa$ only controls how we split $\\frac{1}{r} = \\frac{\\text{erfc}(\\kappa r)}{r} + \\frac{\\text{erf}(\\kappa r)}{r}$."
-    options:
-      - id: a
-        text: "V_Ewald is completely independent of κ (∂V_Ewald / ∂κ = 0), even though V_real, V_recip, and V_self each vary strongly with κ."
-      - id: b
-        text: "V_Ewald increases linearly with κ because V_self ∝ -κ."
-      - id: c
-        text: "V_Ewald is proportional to 1/κ²."
-      - id: d
-        text: "V_Ewald oscillates sinusoidally with κ."
-    correct: a
-    rationale_markdown: "Because $\\text{erfc}(\\kappa r) + \\text{erf}(\\kappa r) = 1$ is an exact identity for any $\\kappa > 0$, the exact total Ewald energy is invariant with respect to $\\kappa$; $\\kappa$ only shifts work between real space and reciprocal space."
-
-  - id: q39_fast_multipole_hierarchical_steps
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "Which sequence of steps describes how the **Fast Multipole Method (FMM)** achieves $\\mathcal{O}(N)$ complexity for long-range Coulomb interactions?"
-    hint_markdown: "Check the bullet points under 'Fast Multipole Methods are O(N) for large N' on Slide 22."
-    options:
-      - id: a
-        text: "Divide space into cells recursively, compute the multipole (dipole, quadrupole, ...) moments of each small cell, and apply translation rules relating supercell moments to smaller cell moments."
-      - id: b
-        text: "Truncate the Coulomb potential at nearest neighbors and add a constant density tail correction."
-      - id: c
-        text: "Diagonalize the 3N × 3N Oseen matrix via Cholesky decomposition at every timestep."
-      - id: d
-        text: "Transform all coordinates into 1D chains and multiply by 2 ln 2."
-    correct: a
-    rationale_markdown: "As outlined on Slide 22, FMM achieves $\\mathcal{O}(N)$ scaling by recursively subdividing space into a hierarchy of cells, computing multipole moments of each cell, and using exact multipole translation theorems to aggregate far-field interactions at the supercell level."
-
-  - id: q40_lj_total_tail_correction_zero_crossing_numeric
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_pbc_tail_corrections_and_neighbor_lists
-    prompt_markdown: "For the full 12-6 Lennard-Jones potential $V_{\\text{LJ}}(r) = 4\\varepsilon[(\\sigma/r)^{12} - (\\sigma/r)^6]$ truncated at $r_c = 2.0\\,\\sigma$ in a 3D fluid of reduced density $\\rho\\sigma^3 = 0.75$ and $\\varepsilon = 1.0$, calculate the complete per-particle energy tail correction:\n\n$$\\frac{\\Delta E_{\\text{tail}}^{\\text{LJ}}}{N} = \\frac{8\\pi\\rho\\varepsilon\\sigma^3}{3}\\left[ \\frac{1}{3}\\left(\\frac{\\sigma}{r_c}\\right)^9 - \\left(\\frac{\\sigma}{r_c}\\right)^3 \\right]$$\n\n(Round to 3 decimal places; notice how small the $r^{-12}$ repulsive tail is compared to the $r^{-6}$ attractive tail at $r_c = 2\\sigma$!)"
-    hint_markdown: "We already found the $-(\\sigma/r_c)^3$ part is $-\\pi/4 \\approx -0.7854$; the $+\\frac{1}{3}(\\sigma/r_c)^9$ correction adds $+\\frac{2\\pi}{3 \\times 512} \\approx +0.0041$."
-    correct:
-      value: -0.781
-      tolerance: 0.005
-    rationale_markdown: "With $\\frac{8\\pi\\rho\\varepsilon\\sigma^3}{3} = \\frac{8\\pi(0.75)}{3} = 2\\pi \\approx 6.283185$ and $\\sigma/r_c = 0.5$, the bracket is $\\frac{1}{3}(0.5)^9 - (0.5)^3 = \\frac{1}{1536} - \\frac{1}{8} = -0.124349$. Multiplying by $2\\pi$ gives $\\Delta E_{\\text{tail}}^{\\text{LJ}}/N = -0.7813\\,\\varepsilon$."
-
-  - id: q41_optimal_kspace_vectors_scaling_numeric
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "In an optimally tuned Ewald simulation ($\\kappa \\propto N^{1/6}/L$), the number of reciprocal-space wavevectors $M_k$ inside the cutoff sphere $|\\mathbf{k}| < k_c$ scales as $M_k \\propto \\Omega \\kappa^3 \\propto N^{1/2}$. If an optimal Ewald simulation of $N_1 = 500$ ions uses $M_{k,1} = 120$ wavevectors, how many wavevectors $M_{k,2}$ should be used for a system $9$ times larger ($N_2 = 4{,}500$ ions at the same density) to maintain optimal $\\mathcal{O}(N^{3/2})$ balance?"
-    hint_markdown: "Multiply $M_{k,1} = 120$ by $(N_2 / N_1)^{1/2} = \\sqrt{9} = 3$."
-    correct:
-      value: 360.0
-      tolerance: 1.0
-    rationale_markdown: "Because $M_k \\propto N^{1/2}$ at optimal $\\kappa$, increasing $N$ by a factor of $9$ increases the optimal number of $\\mathbf{k}$-vectors by $\\sqrt{9} = 3$, giving $M_{k,2} = 3 \\times 120 = 360$."
-
-  - id: q42_long_range_and_ewald_synthesis_multiselect
-    type: problem
-    question_type: multi_select
-    difficulty: hard
-    taught_by:
-      - sec_pbc_tail_corrections_and_neighbor_lists
-      - sec_long_range_definition_and_stillinger_lovett
-      - sec_ewald_summation_method
-      - sec_kspace_algorithm_natoli_and_scaling
-    prompt_markdown: "Which of the following statements about neighbor lists, long-range potentials, and Ewald summation are true? *(Select all that apply.)*"
-    hint_markdown: "Check each statement against the 3D long-range criterion, Stillinger–Lovett screening, Ewald k-space factorization, and linked-cell scaling."
-    options:
-      - id: a
-        text: "Combining a linked-cell mesh (cell size L_cell > r_c + Δ) with a Verlet skin list reduces both force evaluation and neighbor-table construction to O(N)."
-      - id: b
-        text: "In 3D, any potential decaying as r^(-ν) with ν ≤ 3 (including Coulomb 1/r and dipole 1/r³) is long-ranged because ∫ r² r^(-ν) dr diverges."
-      - id: c
-        text: "By factoring exp(i k·(r_i - r_j)) into single-particle sums ρ_k ρ_{-k} and tuning κ ∝ N^(1/6)/L, classic Ewald summation achieves O(N^(3/2)) complexity."
-      - id: d
-        text: "Truncating a 3D Coulomb potential sharply at r_c = L/2 satisfies Poisson's equation and preserves the Stillinger–Lovett condition S(k) = c k²."
-    correct: [a, b, c]
-    rationale_markdown: "Statements (a), (b), and (c) are core results of this lesson. Statement (d) is false: truncating $1/r$ at $L/2$ violates Poisson's equation and destroys the Stillinger–Lovett screening condition $S(k) = c k^2$."
+- id: sec_pbc_tail_corrections_and_neighbor_lists
+  type: markdown_section
+  title: 1. Minimum Image Convention, Perturbation Tail Corrections, and O(N) Neighbor Lists
+  body_markdown: "### Periodic Distances and the Minimum Image Convention\nIn a periodic simulation box of side length $L$,\
+    \ the **Minimum Image Convention (MIC)** computes the interaction between particles $i$ and $j$ using only the closest\
+    \ periodic image:\n\n$$|\\mathbf{r}_{ij}|_M = \\min_{\\mathbf{n} \\in \\mathbb{Z}^3} |\\mathbf{r}_i - \\mathbf{r}_j +\
+    \ \\mathbf{n}L|$$\n\nFor the pair potential and force to remain continuous as particles cross the mid-planes of the box,\
+    \ a spherically symmetric potential without image summation **must be truncated at a cutoff radius $r_c \\le L/2$** ($V(r)\
+    \ = 0$ for $r > r_c$).\n\n### Analytic Tail Corrections for Short-Range Potentials ($\\nu > D$)\nWhen we truncate a short-ranged\
+    \ potential $V(r)$ at $r_c$, we can restore the missing long-range attraction via thermodynamic perturbation theory by\
+    \ assuming that the radial distribution function approaches the uniform ideal-gas limit **$g(r) \\approx 1$ for $r > r_c$**:\n\
+    \n* **Energy Tail Correction per Particle (3D):**\n  $$\\frac{\\Delta E_{\\text{tail}}}{N} = \\frac{\\rho}{2} \\int_{r_c}^{\\\
+    infty} d^3r\\, g(r) V(r) \\approx 2\\pi\\rho \\int_{r_c}^{\\infty} r^2 V(r)\\,dr$$\n* **Virial Pressure Tail Correction\
+    \ (3D):**\n  $$\\Delta P_{\\text{tail}} = -\\frac{2\\pi\\rho^2}{3} \\int_{r_c}^{\\infty} r^3 \\frac{dV(r)}{dr}\\,dr$$\n\
+    \nFor the **Lennard-Jones 12-6 potential** $V_{\\text{LJ}}(r) = 4\\varepsilon\\left[\\left(\\frac{\\sigma}{r}\\right)^{12}\
+    \ - \\left(\\frac{\\sigma}{r}\\right)^6\\right]$, integrating from $r_c$ to $\\infty$ yields closed-form corrections:\n\
+    \n$$\\frac{\\Delta E_{\\text{tail}}^{\\text{LJ}}}{N} = \\frac{8\\pi\\rho\\varepsilon\\sigma^3}{3}\\left[ \\frac{1}{3}\\\
+    left(\\frac{\\sigma}{r_c}\\right)^9 - \\left(\\frac{\\sigma}{r_c}\\right)^3 \\right], \\qquad \\Delta P_{\\text{tail}}^{\\\
+    text{LJ}} = \\frac{16\\pi\\rho^2\\varepsilon\\sigma^3}{3}\\left[ \\frac{2}{3}\\left(\\frac{\\sigma}{r_c}\\right)^9 - \\\
+    left(\\frac{\\sigma}{r_c}\\right)^3 \\right]$$\n\n*(If truncating the potential significantly perturbs $g(r)$ itself,\
+    \ one must solve an integral equation such as the **RHNC — Reference Hypernetted-Chain** equation).*\n\n---\n\n### Reducing\
+    \ Force Complexity from $\\mathcal{O}(N^2)$ to $\\mathcal{O}(N)$: Neighbor Lists & Cell Lists\nEvaluating all $N(N-1)/2$\
+    \ pairs directly scales as $\\mathcal{O}(N^2)$. However, if $V(r) = 0$ for $r > r_c$, each particle interacts only with\
+    \ an average of $m = \\frac{4}{3}\\pi\\rho r_c^3$ neighbors inside $r_c$, where **$m$ is independent of system size $N$**!\n\
+    \n1. **Verlet Neighbor List with Skin Depth $\\Delta$:**\n   * For each particle, we store a table of all neighbors within\
+    \ an extended radius **$r_{\\text{list}} = r_c + \\Delta$** (where $\\Delta$ is the **skin depth**).\n   * Force evaluation\
+    \ checks only the table entries: $\\mathcal{O}(m N) = \\mathcal{O}(N)$ per step.\n   * We track the **two largest scalar\
+    \ displacements $d_1$ and $d_2$** traveled by any particles since the last table build. As soon as **$d_1 + d_2 \\ge \\\
+    Delta$**, a particle outside the list could have crossed inside $r_c$, so we rebuild the neighbor table.\n   * **Tradeoff\
+    \ in $\\Delta$:** As $\\Delta$ decreases, $m \\propto (r_c + \\Delta)^3$ shrinks (fewer force evaluations per step), but\
+    \ the table must be rebuilt more frequently. As $\\Delta$ increases, rebuilds are rarer, but each step checks more pairs.\
+    \ Modern MD codes dynamically optimize $\\Delta$ by fitting the CPU time $t(\\Delta)$ to a polynomial and minimizing it.\n\
+    2. **The Linked-Cell (Bin Sort) Method:**\n   * Naive Verlet table construction checks all pairs and costs $\\mathcal{O}(N^2)$\
+    \ (and requires $\\mathcal{O}(mN)$ memory).\n   * Dividing the simulation box into a regular mesh of cells of side length\
+    \ **$L_{\\text{cell}} > r_c + \\Delta$** and sorting particles into a **linked list** (head-of-chain + next-particle arrays)\
+    \ reduces **table construction to $\\mathcal{O}(N)$** (checking only a particle's own cell and its $3^3 - 1 = 26$ adjacent\
+    \ cells in 3D) and reduces **memory to $\\mathcal{O}(N)$**!\n"
+- id: concept_neighbor_skin
+  type: concept_cell
+  title: 'Interactive Explorer: Verlet Neighbor List Skin Depth Δ Optimization'
+  description_markdown: Adjust the number of particles $N$, potential cutoff $r_c$, and table rebuild algorithm ($\mathcal{O}(N^2)$
+    all-pairs vs. $\mathcal{O}(N)$ linked-cell) to see how the optimal skin depth $\Delta^*$ balances per-step pair evaluations
+    against amortized table rebuild cost.
+  render_function: render_neighbor_skin_optimization
+  layout: figure_left
+  controls:
+    n_particles:
+      kind: slider
+      label: Number of Particles N
+      min: 1000
+      max: 10000
+      step: 1000
+      default: 4000
+    rc:
+      kind: slider
+      label: Potential Cutoff r_c / σ
+      min: 1.5
+      max: 3.5
+      step: 0.5
+      default: 2.5
+      format: .1f
+    rebuild_mode:
+      kind: dropdown
+      label: Table Construction Method
+      default: verlet_O_N2
+      options:
+      - label: All-Pairs Verlet Rebuild O(N²)
+        value: verlet_O_N2
+      - label: Linked-Cell Assisted Rebuild O(N)
+        value: cell_O_N
+  takeaway_markdown: '**Key Takeaway:** Choosing $\Delta$ too small causes frequent table rebuilds; choosing $\Delta$ too
+    large bloats the sphere volume $\propto (r_c + \Delta)^3$. Combining a linked-cell mesh with a Verlet skin list makes
+    both force evaluation and table construction strictly $\mathcal{O}(N)$.'
+- id: q01_minimum_image_cutoff_limit
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_pbc_tail_corrections_and_neighbor_lists
+  prompt_markdown: Under the Minimum Image Convention in a cubic periodic box of side length $L$, why must a spherically truncated
+    short-range potential satisfy $V(r) = 0$ for $r > L/2$?
+  hint_markdown: Consider what happens to the force on a particle as a neighbor crosses the midplane $x_j - x_i = \pm L/2$.
+  options:
+  - id: a
+    text: So that the potential and force remain continuous across the minimum-image boundary at r = L/2 and avoid self-overlapping
+      images.
+  - id: b
+    text: Because the radial distribution function g(r) is identically zero for r > L/2 in all liquids.
+  - id: c
+    text: Because the Fourier transform of any function vanishes for wavelengths larger than L/2.
+  - id: d
+    text: Because computer floating-point numbers cannot represent distances larger than L/2.
+  correct: a
+  rationale_markdown: In a cubic box of length $L$, the minimum-image vector switches sign across the planes $|x_\alpha| =
+    L/2$. Truncating the potential smoothly to zero at or below $r_c \le L/2$ guarantees that a particle interacts with at
+    most one periodic image of any neighbor and that forces do not jump discontinuously across the midplane.
+- id: q02_verlet_skin_rebuild_trigger
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by:
+  - sec_pbc_tail_corrections_and_neighbor_lists
+  - concept_neighbor_skin
+  prompt_markdown: In a Verlet neighbor list cut off at $r_c + \Delta$ (where $\Delta$ is the skin depth), we monitor the
+    two largest distances $d_1$ and $d_2$ traveled by any particles since the table was last constructed. What exact condition
+    triggers a neighbor-table rebuild?
+  hint_markdown: Consider the worst case where two particles initially just outside $r_c + \Delta$ move directly toward each
+    other.
+  options:
+  - id: a
+    text: When d₁ + d₂ ≥ Δ
+  - id: b
+    text: When d₁ - d₂ ≥ r_c
+  - id: c
+    text: When d₁² + d₂² ≥ L/2
+  - id: d
+    text: Only after a fixed number of 10,000 steps regardless of particle velocities
+  correct: a
+  rationale_markdown: If two particles initially separated by slightly more than $r_c + \Delta$ move directly toward one another
+    by distances $d_1$ and $d_2$, their separation can shrink by at most $d_1 + d_2$. Rebuilding as soon as $d_1 + d_2 \ge
+    \Delta$ guarantees that no pair inside $r_c$ is ever missed.
+- id: q03_cell_method_complexity_and_memory
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by:
+  - sec_pbc_tail_corrections_and_neighbor_lists
+  - concept_neighbor_skin
+  prompt_markdown: How does the linked-cell (bin sort) method improve upon a pure all-pairs Verlet neighbor table for $N$
+    particles with average neighbor count $m$?
+  hint_markdown: Compare both the table-construction CPU scaling and the array memory scaling.
+  options:
+  - id: a
+    text: It reduces neighbor-table construction from O(N²) to O(N) and reduces linked-list memory storage from O(mN) to O(N).
+  - id: b
+    text: It eliminates the need for periodic boundary conditions and allows r_c > 2L.
+  - id: c
+    text: It computes exact long-range 1/r Coulomb forces in O(1) time without Fourier transforms.
+  - id: d
+    text: It increases memory usage to O(N³) in exchange for zero force evaluations.
+  correct: a
+  rationale_markdown: Sorting $N$ particles into cells of side $L_{\text{cell}} > r_c + \Delta$ via a linked list takes $\mathcal{O}(N)$
+    time and stores only one head pointer per cell plus one next-particle index per atom ($\mathcal{O}(N)$ memory instead
+    of $\mathcal{O}(mN)$).
+- id: q04_lj_energy_tail_correction_numeric
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_pbc_tail_corrections_and_neighbor_lists
+  prompt_markdown: 'Consider an attractive dispersion tail $V(r) = -4\varepsilon(\sigma/r)^6$ truncated at $r_c = 2.0\sigma$
+    in a 3D fluid of number density $\rho\sigma^3 = 0.75$ with $\varepsilon = 1.0$. Using the perturbation tail formula with
+    $g(r) = 1$ for $r > r_c$:
+
+
+    $$\frac{\Delta E_{\text{tail}}}{N} = 2\pi\rho \int_{r_c}^{\infty} r^2 V(r)\,dr = -\frac{8\pi\rho\varepsilon\sigma^3}{3}\left(\frac{\sigma}{r_c}\right)^3$$
+
+
+    calculate $\Delta E_{\text{tail}}/N$ (in units of $\varepsilon$, rounded to 3 decimal places).'
+  hint_markdown: Integrate the attractive $r^{-6}$ tail beyond $r_c$ assuming uniform radial distribution $g(r) \approx 1$.
+  correct:
+    value: -0.785
+    tolerance: 0.005
+  rationale_markdown: Substituting $\rho\sigma^3 = 0.75 = 3/4$ and $(\sigma/r_c)^3 = (0.5)^3 = 1/8$ gives $\frac{\Delta E_{\text{tail}}}{N}
+    = -\frac{8\pi}{3} \times \frac{3}{4} \times \frac{1}{8} = -\frac{\pi}{4} \approx -0.7854\,\varepsilon$.
+- id: q05_lj_pressure_tail_exponent
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_pbc_tail_corrections_and_neighbor_lists
+  prompt_markdown: For a pair potential with an attractive tail $V(r) = -C_6 r^{-6}$ beyond $r_c$ in 3D, how does the virial
+    pressure tail correction $\Delta P_{\text{tail}} = -\frac{2\pi\rho^2}{3}\int_{r_c}^\infty r^3 \frac{dV}{dr}\,dr$ scale
+    with the number density $\rho$ and the cutoff radius $r_c$, and what is its sign?
+  hint_markdown: Note that $dV/dr = +6 C_6 r^{-7} > 0$, so $r^3 (dV/dr) = 6 C_6 r^{-4}$.
+  options:
+  - id: a
+    text: ΔP_tail is negative (attractive tail lowers the pressure) and scales as -ρ² / r_c³.
+  - id: b
+    text: ΔP_tail is positive and scales as +ρ / r_c⁶.
+  - id: c
+    text: ΔP_tail is negative and scales as -ρ³ / r_c².
+  - id: d
+    text: ΔP_tail is identically zero because dV/dr integrates to zero.
+  correct: a
+  rationale_markdown: Since $V(r) = -C_6 r^{-6}$ is attractive, $dV/dr = +6 C_6 r^{-7} > 0$. Substituting into $\Delta P_{\text{tail}}
+    = -\frac{2\pi\rho^2}{3}\int_{r_c}^\infty 6 C_6 r^{-4}\,dr = -\frac{4\pi\rho^2 C_6}{3 r_c^3} < 0$, showing that the missing
+    long-range attraction pulls the fluid inward and lowers the pressure by $\mathcal{O}(\rho^2 r_c^{-3})$.
+- id: sec_long_range_definition_and_stillinger_lovett
+  type: markdown_section
+  title: 2. Definition of a Long-Range Potential, Stillinger–Lovett Screening, and the 1D Madelung Sum
+  body_markdown: "### What Makes a Potential \"Long-Ranged\"?\nA pair potential $V(r) \\sim r^{-\\nu}$ is mathematically defined\
+    \ as **long-ranged** if its spatial tail integral (or real-space lattice sum) diverges at infinity. In **$D$ spatial dimensions**,\
+    \ the volume of a spherical shell of radius $r$ grows as $r^{D-1}\\,dr$, so the tail integral is:\n\n$$\\int_{r_c}^{\\\
+    infty} d^D r\\, V(r) \\propto \\int_{r_c}^{\\infty} r^{D-1} r^{-\\nu}\\,dr = \\int_{r_c}^{\\infty} r^{D - 1 - \\nu}\\\
+    ,dr$$\n\nThis integral **diverges whenever $\\nu \\le D$**:\n* **In 3D ($D = 3$):** A potential is long-ranged if it decays\
+    \ at a rate **$\\nu \\le 3$** (i.e., slower than or equal to $r^{-3}$). Thus **Coulomb interactions ($1/r$, $\\nu=1$)**,\
+    \ **charge-dipole interactions ($1/r^2$, $\\nu=2$)**, **dipole-dipole interactions ($1/r^3$, $\\nu=3$)**, and **gravitation\
+    \ ($1/r$, $\\nu=1$)** are all strictly long-ranged in 3D, whereas dispersion ($1/r^6$, $\\nu=6 > 3$) is short-ranged!\n\
+    * **In 2D ($D = 2$):** A potential is long-ranged if it decays at a rate **$\\nu \\le 2$**.\n\n---\n\n### Why Naive Cutoff\
+    \ Fails for Charged Systems: The Stillinger–Lovett Condition\nWhat goes wrong if we treat a charged ionic fluid like a\
+    \ short-range fluid and simply truncate $V(r) = q_i q_j / r$ at $r_c = L/2$?\n1. **Growing boundary discontinuity:** Because\
+    \ the number of ions in a shell at distance $r$ grows as $4\\pi\\rho r^2\\,dr$, the contribution of the cutoff jump $(1/r)(r^2)\
+    \ \\sim r$ **grows larger and larger with box size $L$** instead of disappearing!\n2. **Violation of Poisson's Equation\
+    \ and the Stillinger–Lovett Screening Condition:**\n   In an uncharged (neutral) fluid, long-wavelength density fluctuations\
+    \ are governed by the isothermal compressibility:\n   $$\\lim_{k\\to 0} S(k) = c = \\rho k_B T \\chi_T > 0 \\quad (\\\
+    text{uncharged system})$$\n   In contrast, in a **charged conducting/ionic system**, long-range $1/r$ Coulomb forces (which\
+    \ transform as $4\\pi/k^2$ in Fourier space via Poisson's equation $\\nabla^2\\phi = -4\\pi\\rho_q$) enforce **complete\
+    \ macroscopic charge screening**. The **Stillinger–Lovett second-moment condition** requires the charge-charge structure\
+    \ factor $S_{qq}(k)$ to vanish quadratically at small $k$:\n   $$S_{qq}(k) = c\\,k^2 + \\mathcal{O}(k^4) \\quad \\text{as\
+    \ } k \\to 0 \\quad (\\text{charged system})$$\n   Truncating $1/r$ at $r_c$ breaks Poisson's equation at long wavelengths\
+    \ ($k < 2\\pi/r_c$), violating the Stillinger–Lovett condition and creating unphysical artificial charge layers at $r\
+    \ = r_c$.\n\n---\n\n### Conditional Convergence and the 1D Madelung Constant\nConsider a one-component lattice of $+1$\
+    \ charges: $\\sum_{\\mathbf{L}\\ne\\mathbf{0}} \\frac{1}{|\\mathbf{r}_i - \\mathbf{L}|} \\approx \\int_0^\\infty 4\\pi\
+    \ r^2 \\frac{\\rho}{r}\\,dr = \\infty$. A non-neutral infinite periodic system has **infinite electrostatic energy** unless\
+    \ neutralized by a uniform background (jellium) or opposite ions ($\\sum_i q_i = 0$).\n\nEven in a strictly **charge-neutral\
+    \ ionic crystal** ($\\pm q$ alternating), the Coulomb lattice sum is **conditionally convergent**—its value depends on\
+    \ the order in which terms are summed!\n\n#### Exact Derivation of the 1D Alternating Chain Madelung Constant\nConsider\
+    \ an infinite 1D chain of alternating $+q$ and $-q$ ions spaced by nearest-neighbor distance $R$ ($r_{ij} = R p_{ij}$).\
+    \ Starting on a reference negative ion at the origin and summing symmetrically over shells to the left and right ($2$\
+    \ neighbors at distance $p_{ij} = 1, 2, 3, \\dots$):\n\n$$V_{\\text{electrostatic}} = -\\frac{\\alpha q^2}{R}, \\qquad\
+    \ \\alpha_{\\text{1D}} = \\sum_{j\\ne i} \\frac{(\\pm 1)}{p_{ij}} = 2\\left[ \\frac{1}{1} - \\frac{1}{2} + \\frac{1}{3}\
+    \ - \\frac{1}{4} + \\cdots \\right]$$\n\nUsing the Maclaurin series $\\ln(1 + x) = x - \\frac{x^2}{2} + \\frac{x^3}{3}\
+    \ - \\frac{x^4}{4} + \\cdots$ evaluated at $x = 1$:\n\n$$\\alpha_{\\text{1D}} = 2 \\ln(1 + 1) = 2 \\ln 2 \\approx 1.386294$$\n\
+    \n#### 3D Madelung Constants\nIn 3D, naive spherical shell sums do not even converge unless successive shells are grouped\
+    \ into fractional neutral units (Evjen 1932; Frank 1950) or resummed in Fourier space (Ewald 1921):\n* **Rock Salt ($\\\
+    text{NaCl}$, 6-coordinated):** $\\alpha_{\\text{NaCl}} = 1.747565$\n* **Cesium Chloride ($\\text{CsCl}$, 8-coordinated):**\
+    \ $\\alpha_{\\text{CsCl}} = 1.762675$\n* **Zincblende ($\\text{ZnS}$, 4-coordinated):** $\\alpha_{\\text{ZnS}} = 1.6381$\n"
+- id: concept_madelung_1d
+  type: concept_cell
+  title: 'Interactive Explorer: 1D Madelung Sum — Conditional Direct Convergence vs. Ewald'
+  description_markdown: Compare the slow, oscillatory convergence of the direct alternating sum $2\sum_{n=1}^M (-1)^{n-1}/n$
+    against the rapid exponential convergence of the Ewald sum toward $\alpha_{\text{1D}} = 2\ln 2 \approx 1.386294$.
+  render_function: render_madelung_convergence
+  layout: figure_left
+  controls:
+    max_shells:
+      kind: slider
+      label: Maximum Shell Index M
+      min: 5
+      max: 60
+      step: 5
+      default: 25
+    kappa_1d:
+      kind: slider
+      label: Ewald Screening Parameter κR
+      min: 0.6
+      max: 2.0
+      step: 0.2
+      default: 1.2
+      format: .1f
+  takeaway_markdown: '**Key Takeaway:** The direct alternating Coulomb sum $2\sum (-1)^{n-1}/n$ is only conditionally convergent,
+    oscillating with $\mathcal{O}(1/M)$ error, whereas Ewald summation converts it into two exponentially convergent series
+    that reach 6-digit accuracy within a few shells.'
+- id: q06_long_range_dimension_criterion
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: In $D$ spatial dimensions, a pair potential $V(r) \sim r^{-\nu}$ is mathematically classified as **long-ranged**
+    if its real-space tail integral $\int_{r_c}^\infty r^{D-1} r^{-\nu}\,dr$ diverges. What are the critical decay exponents
+    $\nu$ in 3D and 2D?
+  hint_markdown: Check when $\int_{r_c}^\infty r^{D - 1 - \nu}\,dr$ fails to converge at the upper limit.
+  options:
+  - id: a
+    text: Long-ranged if ν ≤ 3 in 3D, and if ν ≤ 2 in 2D.
+  - id: b
+    text: Long-ranged if ν ≤ 6 in 3D, and if ν ≤ 4 in 2D.
+  - id: c
+    text: Long-ranged only if ν < 1 in all dimensions.
+  - id: d
+    text: Long-ranged if ν > 3 in 3D, and if ν > 2 in 2D.
+  correct: a
+  rationale_markdown: The integral $\int_{r_c}^\infty r^{D-1-\nu}\,dr$ diverges at $r \to \infty$ whenever $D - 1 - \nu \ge
+    -1$, i.e., $\nu \le D$. Thus potentials decaying as $r^{-3}$ or slower in 3D ($\nu \le 3$) and $r^{-2}$ or slower in 2D
+    ($\nu \le 2$) are long-ranged.
+- id: q07_which_potentials_are_long_ranged_3d
+  type: problem
+  question_type: multi_select
+  difficulty: medium
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: According to the 3D long-range criterion ($\nu \le 3$), which of the following interactions are strictly
+    **long-ranged** in three dimensions? *(Select all that apply.)*
+  hint_markdown: Check the exponent $\nu$ in $r^{-\nu}$ for each interaction against $\nu \le 3$.
+  options:
+  - id: a
+    text: Ion–ion Coulomb potential V(r) ∝ 1/r (ν = 1)
+  - id: b
+    text: Newtonian gravitational potential V(r) ∝ -1/r (ν = 1)
+  - id: c
+    text: Unaveraged dipole–dipole interaction V(r) ∝ 1/r³ (ν = 3)
+  - id: d
+    text: London dispersion attraction V(r) ∝ -1/r⁶ (ν = 6)
+  - id: e
+    text: Lennard-Jones Pauli repulsion V(r) ∝ 1/r¹² (ν = 12)
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: Coulomb ($1/r$, $\nu=1$), gravity ($1/r$, $\nu=1$), and dipole–dipole ($1/r^3$, $\nu=3$) all satisfy
+    $\nu \le 3$ and have divergent 3D tail integrals. Dispersion ($1/r^6$) and LJ repulsion ($1/r^{12}$) satisfy $\nu > 3$
+    and are short-ranged.
+- id: q08_stillinger_lovett_condition
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: How does the small-wavevector ($k \to 0$) behavior of the structure factor $S(k)$ in a **charged ionic
+    system** differ from that of an **uncharged neutral fluid** according to the Stillinger–Lovett screening condition?
+  hint_markdown: Check Slide 3 ('Perturbation theory') for $S(k)$ at low $k$ in charged vs. uncharged systems.
+  options:
+  - id: a
+    text: For a charged system S(k) = c k² as k → 0 (perfect screening of long-wavelength charge fluctuations), whereas for
+      an uncharged system S(k) → c > 0.
+  - id: b
+    text: For a charged system S(k) → ∞ as 1/k², whereas for an uncharged system S(k) = 0 identically for all k.
+  - id: c
+    text: For both charged and uncharged systems, S(k) = 1 at k = 0.
+  - id: d
+    text: For a charged system S(k) = c k⁴, whereas for an uncharged system S(k) = c k².
+  correct: a
+  rationale_markdown: Because the $1/r$ Coulomb interaction diverges as $4\pi/k^2$ at small $k$ (Poisson's equation), long-wavelength
+    charge fluctuations cost infinite energy unless suppressed by screening, forcing $S_{qq}(k) = c k^2$ as $k \to 0$. In
+    an uncharged fluid, $S(0) = \rho k_B T \chi_T = c > 0$.
+- id: q09_why_cutoff_coulomb_fails
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: Why is it physically unacceptable to handle a charged system simply by truncating the Coulomb potential
+    $1/r$ at $r_c = L/2$ like a short-range potential?
+  hint_markdown: Check Slide 8 ('Charged systems') for the two key problems with a cutoff Coulomb potential.
+  options:
+  - id: a
+    text: The boundary discontinuity effect (1/r)(r²) ~ r grows with cutoff radius instead of vanishing, and truncation violates
+      Poisson's equation and the Stillinger–Lovett screening condition.
+  - id: b
+    text: The Coulomb potential is zero for r < L/2 and only turns on for r > L/2.
+  - id: c
+    text: Truncating 1/r causes the particle masses to become negative.
+  - id: d
+    text: Verlet neighbor lists cannot store pairs when charges have opposite signs.
+  correct: a
+  rationale_markdown: Because shell volume grows as $4\pi r^2$, the boundary discontinuity of $1/r$ scales as $(1/r)(r^2)
+    = r$, which grows with $L$. Furthermore, setting $V(r > L/2) = 0$ violates Poisson's equation and destroys Stillinger–Lovett
+    $S(k) = ck^2$ screening.
+- id: q10_madelung_1d_exact_value_numeric
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by:
+  - sec_long_range_definition_and_stillinger_lovett
+  - concept_madelung_1d
+  prompt_markdown: Calculate the exact Madelung constant $\alpha_{\text{1D}} = 2\sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n}$
+    for an infinite 1D chain of alternating $\pm q$ ions with nearest-neighbor spacing $R$ (round to 4 decimal places).
+  hint_markdown: Recognize the alternating harmonic series expansion of the natural logarithm of 2.
+  correct:
+    value: 1.3863
+    tolerance: 0.001
+  rationale_markdown: Using $\ln(1+x) = x - x^2/2 + x^3/3 - x^4/4 + \cdots$ at $x = 1$, the symmetric left-and-right sum is
+    $\alpha_{\text{1D}} = 2(1 - 1/2 + 1/3 - 1/4 + \cdots) = 2\ln 2 \approx 1.386294$.
+- id: q11_madelung_1d_partial_sum_numeric
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by:
+  - sec_long_range_definition_and_stillinger_lovett
+  - concept_madelung_1d
+  prompt_markdown: 'In the 1D alternating ionic chain, if you truncate the direct sum after just $M = 3$ neighbor shells on
+    each side:
+
+
+    $$\alpha_3 = 2\left(1 - \frac{1}{2} + \frac{1}{3}\right)$$
+
+
+    what is the value of $\alpha_3$ (round to 3 decimal places)? Notice how far it still is from $2\ln 2 \approx 1.386$!'
+  hint_markdown: Evaluate the first three terms of the alternating series and multiply by the two-sided line prefactor.
+  correct:
+    value: 1.667
+    tolerance: 0.003
+  rationale_markdown: Evaluating the first three shells gives $\alpha_3 = 2(1 - 1/2 + 1/3) = 2(5/6) = 5/3 \approx 1.6667$,
+    which overshoots the exact value $2\ln 2 \approx 1.3863$ by more than $20\%$.
+- id: q12_madelung_3d_coordination_ordering
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: Rank the three cubic ionic crystal structures—Zincblende ($\text{ZnS}$, 4-coordinated), Rock Salt ($\text{NaCl}$,
+    6-coordinated), and Cesium Chloride ($\text{CsCl}$, 8-coordinated)—in order of **increasing** 3D Madelung constant $\alpha$
+    (defined relative to nearest-neighbor distance $R$).
+  hint_markdown: 'Check the table on Slide 9 (''1-D Madelung Sum: Prelude to Ewald Sum''): ZnS (1.6381), NaCl (1.747565),
+    CsCl (1.762675).'
+  options:
+  - id: a
+    text: α(ZnS) = 1.6381 < α(NaCl) = 1.747565 < α(CsCl) = 1.762675
+  - id: b
+    text: α(CsCl) < α(NaCl) < α(ZnS)
+  - id: c
+    text: α(NaCl) < α(ZnS) < α(CsCl)
+  - id: d
+    text: All three 3D structures have the exact same Madelung constant α = 2 ln 2.
+  correct: a
+  rationale_markdown: As nearest-neighbor coordination increases from 4 (ZnS, $\alpha = 1.6381$) to 6 (NaCl, $\alpha = 1.747565$)
+    to 8 (CsCl, $\alpha = 1.762675$), the Madelung constant $\alpha$ increases monotonically (and all are larger than the
+    2-coordinated 1D chain $\alpha_{\text{1D}} = 1.3863$).
+- id: q13_conditional_convergence_meaning
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: What does it mean mathematically and physically that the electrostatic lattice sum $\sum_{j\ne i} q_i q_j
+    / r_{ij}$ in a neutral crystal is **conditionally convergent**?
+  hint_markdown: Recall the definition of conditional convergence for an infinite series whose absolute values diverge ($\sum
+    1/r = \infty$).
+  options:
+  - id: a
+    text: The sum of absolute values diverges (∑ |q_i q_j|/r_ij = ∞), so the series only converges if positive and negative
+      terms are grouped to nearly cancel, and its limiting value depends on the summation order / macroscopic surface shape
+      and boundary conditions.
+  - id: b
+    text: The sum converges only when the temperature T is below the Debye temperature.
+  - id: c
+    text: Every rearrangement of the terms in the series converges to the exact same number.
+  - id: d
+    text: The sum is finite only when all charges have the same sign (+q).
+  correct: a
+  rationale_markdown: Because $\sum |q_i q_j|/r_{ij}$ diverges, Riemann's rearrangement theorem implies that the alternating
+    sum depends on the order of summation (e.g., spherical shells vs. neutral fractional Evjen cubes), which physically corresponds
+    to different macroscopic surface dipole layers on the crystal boundary.
+- id: sec_ewald_summation_method
+  type: markdown_section
+  title: '3. The Classic Ewald Summation Method (1921): Real, Reciprocal, Self, and Dipole Terms'
+  body_markdown: "### Origin of the Convergence Problem in $r$-Space vs. $k$-Space\nFor a periodic function $f(\\mathbf{r}\
+    \ + \\mathbf{L}_n) = f(\\mathbf{r})$ in a box of volume $\\Omega = L_x L_y L_z$, the discrete Fourier expansion uses reciprocal\
+    \ lattice vectors $\\mathbf{k} = 2\\pi\\left(\\frac{m_x}{L_x}\\hat{\\mathbf{x}} + \\frac{m_y}{L_y}\\hat{\\mathbf{y}} +\
+    \ \\frac{m_z}{L_z}\\hat{\\mathbf{z}}\\right)$ with $m_x, m_y, m_z \\in \\mathbb{Z}$:\n\n$$v(\\mathbf{r}) = \\frac{e^2}{r}\
+    \ \\Longleftrightarrow v_{\\mathbf{k}} = \\frac{1}{\\Omega}\\int d^3r\\, e^{-i\\mathbf{k}\\cdot\\mathbf{r}} \\frac{e^2}{r}\
+    \ = \\frac{4\\pi e^2}{\\Omega k^2}$$\n\nWhy can't we just do the entire sum in real space *or* the entire sum in $k$-space?\n\
+    * **$r$-space convergence issue comes from $r \\to \\infty$ ($k \\to 0$):** $1/r$ has a long tail at large $r$.\n* **$k$-space\
+    \ convergence issue comes from $k \\to \\infty$ ($r \\to 0$):** Because $1/r$ has a sharp $r \\to 0$ singularity in real\
+    \ space, its Fourier transform $4\\pi e^2 / k^2$ decays slowly at large $k$!\n\n---\n\n### Ewald's Physical Trick: Screening\
+    \ with Neutralizing Gaussian Clouds\nBecause **Poisson's equation is linear**, we can split the Coulomb potential into\
+    \ a rapidly decaying **short-range real-space part** and a smooth **long-range reciprocal-space part** by surrounding\
+    \ every point charge $q_i$ with a diffuse, neutralizing **Gaussian charge distribution** of width $1/\\kappa$:\n\n$$\\\
+    rho_i^{\\text{Gauss}}(\\mathbf{r}) = -q_i \\left(\\frac{\\kappa^2}{\\pi}\\right)^{3/2} e^{-\\kappa^2 |\\mathbf{r} - \\\
+    mathbf{r}_i|^2}$$\n\nand then **adding back** the exact same compensating Gaussian charge distribution $+\\rho_i^{\\text{Gauss}}(\\\
+    mathbf{r})$ to be summed in $k$-space! Using the error function $\\text{erf}(z) = \\frac{2}{\\sqrt{\\pi}}\\int_0^z e^{-t^2}\\\
+    ,dt$ and its complement $\\text{erfc}(z) = 1 - \\text{erf}(z)$, the identity $\\frac{1}{r} = \\frac{\\text{erfc}(\\kappa\
+    \ r)}{r} + \\frac{\\text{erf}(\\kappa r)}{r}$ splits the pair interaction into:\n\n1. **Short-Range Real-Space Potential\
+    \ ($v_{\\text{short}}$):**\n   $$v_{\\text{short}}(r) = \\frac{q_1 q_2}{r}\\text{erfc}(\\kappa r) \\qquad (\\text{decays\
+    \ exponentially fast as } e^{-\\kappa^2 r^2}\\text{ at large } r)$$\n   We choose the **Ewald parameter $\\kappa$** large\
+    \ enough that $v_{\\text{short}}(L/2) = \\frac{2q_1 q_2}{L}\\text{erfc}(\\kappa L/2) \\approx 0$ at the minimum-image\
+    \ boundary $r = L/2$, so we need **only the minimum image** in real space!\n2. **Long-Range Reciprocal-Space Potential\
+    \ ($v_{\\text{long}}$):**\n   $$v_{\\text{long}}(r) = \\frac{q_1 q_2}{r}\\text{erf}(\\kappa r) \\Longleftrightarrow v_{\\\
+    text{long},\\mathbf{k}} = \\frac{4\\pi q_1 q_2}{\\Omega k^2} e^{-k^2 / (4\\kappa^2)} \\qquad (\\text{decays exponentially\
+    \ fast at large } k)$$\n   Because $\\text{erf}(\\kappa r)/r \\to \\frac{2\\kappa}{\\sqrt{\\pi}}$ is completely smooth\
+    \ and non-singular as $r \\to 0$, its Fourier transform acquires the Gaussian damping factor $e^{-k^2/(4\\kappa^2)}$,\
+    \ allowing truncation at a modest wavevector cutoff $|\\mathbf{k}| < k_c$!\n\n---\n\n### The Four Complete Ewald Energy\
+    \ Terms\nCombining all pairs and periodic images in a charge-neutral cell ($\\sum_i q_i = 0$ removes the $\\mathbf{k}\
+    \ = \\mathbf{0}$ divergence) yields the complete Ewald electrostatic energy:\n\n$$V_{\\text{Ewald}} = V_{\\text{real}}\
+    \ + V_{\\text{recip}} + V_{\\text{self}} + V_{\\text{dipole}}$$\n\n* **1. Real-Space Term:**\n  $$V_{\\text{real}} = \\\
+    frac{1}{2} \\sum_{i \\ne j}^N \\frac{q_i q_j}{r_{ij}} \\text{erfc}(\\kappa r_{ij}), \\qquad r_{ij} = \\min_{\\mathbf{L}}\
+    \ |\\mathbf{r}_i - \\mathbf{r}_j - \\mathbf{L}| < r_c$$\n* **2. Reciprocal-Space Term:**\n  $$V_{\\text{recip}} = \\frac{1}{2\\\
+    Omega} \\sum_{\\mathbf{k} \\ne \\mathbf{0}, |\\mathbf{k}| < k_c} \\frac{4\\pi}{k^2} e^{-k^2/(4\\kappa^2)} \\left| \\sum_{j=1}^N\
+    \ q_j e^{i\\mathbf{k}\\cdot\\mathbf{r}_j} \\right|^2$$\n* **3. Self-Interaction Subtraction Term ($C = V_{\\text{self}}$):**\n\
+    \  When we write the unrestricted double sum $\\frac{1}{2}\\sum_{i,j} q_i q_j e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\\
+    mathbf{r}_j)} v_{\\text{long},\\mathbf{k}} = \\frac{1}{2}\\sum_{\\mathbf{k}} |\\rho_{\\mathbf{k}}|^2 v_{\\mathbf{k}}$\
+    \ in $k$-space, we inadvertently include the $i = j$ self-interaction of each point charge with its own compensating Gaussian\
+    \ cloud at $r = 0$. Since $\\lim_{r\\to 0} \\frac{\\text{erf}(\\kappa r)}{r} = \\frac{2\\kappa}{\\sqrt{\\pi}}$, we must\
+    \ subtract this constant self-energy:\n  $$V_{\\text{self}} = -\\frac{1}{2}\\sum_{i=1}^N q_i^2 \\lim_{r\\to 0} \\frac{\\\
+    text{erf}(\\kappa r)}{r} = -\\frac{\\kappa}{\\sqrt{\\pi}} \\sum_{i=1}^N q_i^2$$\n* **4. Macroscopic Surface Dipole Term\
+    \ ($V_{\\text{dipole}}$ for Insulators):**\n  For a macroscopic sphere of periodic replicas embedded in an external medium\
+    \ of dielectric constant $\\varepsilon_{\\text{ext}}$, surface polarization adds a depolarization energy proportional\
+    \ to the square of the total simulation cell dipole moment $\\mathbf{M} = \\sum_i \\boldsymbol{\\mu}_i = \\sum_{i=1}^N\
+    \ q_i \\mathbf{r}_i$:\n  $$V_{\\text{dipole}} = \\frac{2\\pi}{(2\\varepsilon_{\\text{ext}} + 1)\\Omega} \\left| \\sum_{i=1}^N\
+    \ q_i \\mathbf{r}_i \\right|^2$$\n  * **Tin-foil (conducting metal) boundary conditions ($\\varepsilon_{\\text{ext}} \\\
+    to \\infty$):** Surface charges on the surrounding conductor screen out the macroscopic dipole field completely, so **$V_{\\\
+    text{dipole}} = 0$**.\n  * **Vacuum boundary conditions ($\\varepsilon_{\\text{ext}} = 1$):** $V_{\\text{dipole}} = \\\
+    frac{2\\pi}{3\\Omega}\\left|\\sum_i q_i \\mathbf{r}_i\\right|^2$.\n"
+- id: concept_ewald_splitting
+  type: concept_cell
+  title: 'Interactive Explorer: Ewald Screening Parameter κ — Real Space, k-Space, and CPU Tradeoff'
+  description_markdown: Vary the Ewald screening parameter $\kappa$ and switch between the real-space potential split ($v_{\text{short}}$
+    vs. $v_{\text{long}}$), the $k$-space Gaussian envelope $v_{\text{long},k}$, and the total CPU operation count.
+  render_function: render_ewald_splitting_tradeoff
+  layout: figure_left
+  controls:
+    kappa:
+      kind: slider
+      label: Ewald Screening Parameter κ
+      min: 0.4
+      max: 2.6
+      step: 0.2
+      default: 1.2
+      format: .1f
+    view_mode:
+      kind: dropdown
+      label: Visualization Panel
+      default: real_potentials
+      options:
+      - label: 'Real-Space Split: erfc(κr)/r vs. erf(κr)/r'
+        value: real_potentials
+      - label: 'Reciprocal-Space Envelope: (4π/k²) exp(-k²/4κ²)'
+        value: k_space
+      - label: 'CPU Cost Balance: Real O(κ⁻³) vs. Reciprocal O(κ³)'
+        value: cpu_balance
+  takeaway_markdown: '**Key Takeaway:** Increasing $\kappa$ makes the Gaussian screening cloud narrower in real space (so
+    $\text{erfc}(\kappa r)/r$ decays faster and needs a smaller real-space cutoff $r_c$), but wider in $k$-space (so $e^{-k^2/(4\kappa^2)}$
+    decays slower and requires more $\mathbf{k}$-vectors).'
+- id: q14_convergence_origin_r_vs_k
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_ewald_summation_method
+  prompt_markdown: For the bare Coulomb potential $v(r) = e^2/r$ with Fourier transform $v_k = 4\pi e^2/(\Omega k^2)$, where
+    do the slow convergence problems originate in real space ($r$-space) versus reciprocal space ($k$-space)?
+  hint_markdown: Check Slide 13 ('Origin of Convergence Problem').
+  options:
+  - id: a
+    text: The r-space convergence issue comes from r → ∞ (k → 0), whereas the k-space convergence issue comes from k → ∞ (the
+      sharp 1/r singularity at r → 0).
+  - id: b
+    text: Both the r-space and k-space convergence issues come solely from r → ∞.
+  - id: c
+    text: The r-space convergence issue comes from r → 0, whereas the k-space convergence issue comes from k → 0.
+  - id: d
+    text: Neither r-space nor k-space has any convergence issue in 3D.
+  correct: a
+  rationale_markdown: In real space, $1/r$ decays too slowly as $r \to \infty$ (corresponding to $k \to 0$). In $k$-space,
+    the sharp $1/r$ cusp at $r \to 0$ produces a slowly decaying $4\pi e^2/k^2$ tail as $k \to \infty$.
+- id: q15_ewald_gaussian_screening_idea
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by:
+  - sec_ewald_summation_method
+  - concept_ewald_splitting
+  prompt_markdown: What is the physical 'trick' behind the classic Ewald summation breakup of the Coulomb potential?
+  hint_markdown: 'Check Slide 16 (''Classic Ewald''): why are we free to add and subtract Gaussian charge clouds?'
+  options:
+  - id: a
+    text: Because Poisson's equation is linear, we add a neutralizing Gaussian charge cloud around each point charge to screen
+      out the long-range part in real space, and subtract the same Gaussian cloud in smooth k-space.
+  - id: b
+    text: We replace all point charges with neutral hard spheres of diameter L/2.
+  - id: c
+    text: We set the permittivity of free space to infinity inside a radius r_c and zero outside r_c.
+  - id: d
+    text: We multiply all ionic charges by exp(-t/τ) so that the system becomes uncharged at long times.
+  correct: a
+  rationale_markdown: By linearity of Poisson's equation, adding a screening Gaussian cloud $-q_i(\kappa^2/\pi)^{3/2}e^{-\kappa^2
+    r^2}$ around each point charge makes the real-space potential $\text{erfc}(\kappa r)/r$ short-ranged, while the compensating
+    Gaussian cloud $+q_i(\kappa^2/\pi)^{3/2}e^{-\kappa^2 r^2}$ is smooth and converges rapidly in $k$-space.
+- id: q16_ewald_short_and_long_formulas
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by:
+  - sec_ewald_summation_method
+  - concept_ewald_splitting
+  prompt_markdown: In the classic Gaussian Ewald split $v(r) = v_{\text{short}}(r) + v_{\text{long}}(r)$, what are the exact
+    functional forms of $v_{\text{short}}(r)$ in real space and $v_{\text{long},\mathbf{k}}$ in reciprocal space?
+  hint_markdown: Check Slide 15 ('Classic Ewald') for $v_{\text{short}}(r)$ and $v_{\text{long},k}$.
+  options:
+  - id: a
+    text: v_short(r) = (q₁q₂ / r) erfc(κr)  and  v_long,k = (4π q₁q₂ / (Ω k²)) exp(-k² / (4κ²))
+  - id: b
+    text: v_short(r) = (q₁q₂ / r) erf(κr)  and  v_long,k = (4π q₁q₂ / (Ω k²)) exp(-κ² k²)
+  - id: c
+    text: v_short(r) = (q₁q₂ / r²) exp(-κr)  and  v_long,k = (4π q₁q₂ / (Ω k⁴))
+  - id: d
+    text: v_short(r) = q₁q₂ erfc(r/κ)  and  v_long,k = (q₁q₂ / Ω) cos(k / κ)
+  correct: a
+  rationale_markdown: Screening a point charge with a Gaussian of width $1/\kappa$ produces $v_{\text{short}}(r) = \frac{q_1
+    q_2}{r}\text{erfc}(\kappa r)$ in real space, while the compensating Gaussian interaction $v_{\text{long}}(r) = \frac{q_1
+    q_2}{r}\text{erf}(\kappa r)$ has the 3D Fourier transform $v_{\text{long},\mathbf{k}} = \frac{4\pi q_1 q_2}{\Omega k^2}e^{-k^2/(4\kappa^2)}$.
+- id: q17_ewald_kappa_increase_effect
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by:
+  - sec_ewald_summation_method
+  - concept_ewald_splitting
+  prompt_markdown: If you **increase** the Ewald parameter $\kappa$ (making the real-space screening Gaussian narrower and
+    taller) while holding target accuracy fixed, how do the required real-space cutoff $r_c$ and reciprocal-space wavevector
+    cutoff $k_c$ change?
+  hint_markdown: Look at $\text{erfc}(\kappa r_c)$ and $e^{-k_c^2/(4\kappa^2)}$ in the interactive explorer.
+  options:
+  - id: a
+    text: v_short(r) decays faster so r_c decreases (less real-space work), while v_long,k decays slower so k_c increases
+      (more k-space work).
+  - id: b
+    text: Both r_c and k_c decrease simultaneously, reducing total work to O(1).
+  - id: c
+    text: v_short(r) decays slower so r_c increases, while v_long,k decays faster so k_c decreases.
+  - id: d
+    text: Neither r_c nor k_c depends on κ.
+  correct: a
+  rationale_markdown: In real space, $\text{erfc}(\kappa r_c) \le \epsilon$ requires $\kappa r_c = \text{const} \implies r_c
+    \propto 1/\kappa$ (shrinks as $\kappa$ increases). In $k$-space, $e^{-k_c^2/(4\kappa^2)} \le \epsilon$ requires $k_c /
+    (2\kappa) = \text{const} \implies k_c \propto \kappa$ (grows as $\kappa$ increases).
+- id: q18_ewald_self_energy_origin
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_ewald_summation_method
+  prompt_markdown: Why must the constant self-energy term $V_{\text{self}} = -\frac{\kappa}{\sqrt{\pi}}\sum_{i=1}^N q_i^2$
+    be subtracted from the reciprocal-space Ewald sum?
+  hint_markdown: Notice that the $k$-space structure factor product $|\rho_{\mathbf{k}}|^2 = \sum_{i,j} q_i q_j e^{i\mathbf{k}\cdot(\mathbf{r}_i
+    - \mathbf{r}_j)}$ includes the diagonal $i = j$ terms.
+  options:
+  - id: a
+    text: Because factoring the k-space double sum into |ρ_k|² includes the i = j interaction of each point charge with its
+      own compensating Gaussian cloud at r = 0, where lim_{r→0} erf(κr)/r = 2κ/√π.
+  - id: b
+    text: Because erfc(κr)/r approaches 2κ/√π at r = ∞.
+  - id: c
+    text: Because the minimum image convention double-counts pairs at r = L/2.
+  - id: d
+    text: Because the total charge ∑ q_i of an ionic crystal is always nonzero.
+  correct: a
+  rationale_markdown: Writing $\frac{1}{2}\sum_{i,j} q_i q_j e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)} v_{\mathbf{k}}
+    = \frac{1}{2}\sum_{\mathbf{k}} |\rho_{\mathbf{k}}|^2 v_{\mathbf{k}}$ includes the $i=j$ terms $\frac{1}{2}\sum_i q_i^2
+    v_{\text{long}}(r=0)$. Since $\lim_{r\to 0} \frac{\text{erf}(\kappa r)}{r} = \frac{2\kappa}{\sqrt{\pi}}$, subtracting
+    this unphysical self-interaction gives $V_{\text{self}} = -\frac{\kappa}{\sqrt{\pi}}\sum_i q_i^2$.
+- id: q19_ewald_self_energy_numeric
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_ewald_summation_method
+  prompt_markdown: An Ewald simulation box contains $N = 100$ monovalent ions ($50$ cations with $q_i = +1$ and $50$ anions
+    with $q_i = -1$, in electrostatic units where $4\pi\varepsilon_0 = 1$). If the Ewald screening parameter is set to $\kappa
+    = 0.5\sqrt{\pi}\text{ Å}^{-1} \approx 0.8862\text{ Å}^{-1}$, what is the exact value of the Ewald self-energy correction
+    $V_{\text{self}} = -\frac{\kappa}{\sqrt{\pi}}\sum_{i=1}^N q_i^2$ (in $\text{e}^2/\text{Å}$)?
+  hint_markdown: Evaluate the self-energy formula using the ratio $\kappa / \sqrt{\pi}$ and the sum of squared charges.
+  correct:
+    value: -50.0
+    tolerance: 0.1
+  rationale_markdown: Since $q_i^2 = (\pm 1)^2 = 1$ for every ion, $\sum_{i=1}^{100} q_i^2 = 100$. With $\kappa / \sqrt{\pi}
+    = 0.5$, the self-energy correction is $V_{\text{self}} = -0.5 \times 100 = -50.0\text{ e}^2/\text{Å}$.
+- id: q20_ewald_dipole_boundary_conditions
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_ewald_summation_method
+  prompt_markdown: In the Ewald summation for a macroscopically spherical assembly of periodic boxes embedded in an external
+    medium of dielectric constant $\varepsilon$, the surface dipole correction is $V_{\text{dipole}} = \frac{2\pi}{(2\varepsilon
+    + 1)\Omega}\left|\sum_i \boldsymbol{\mu}_i\right|^2$. How does $V_{\text{dipole}}$ behave for (i) a surrounding **conducting
+    metal ('tin-foil' boundary, $\varepsilon \to \infty$)** versus (ii) a surrounding **vacuum (insulator in vacuum, $\varepsilon
+    = 1$)**?
+  hint_markdown: Evaluate $\frac{2\pi}{(2\varepsilon + 1)\Omega}$ as $\varepsilon \to \infty$ and at $\varepsilon = 1$.
+  options:
+  - id: a
+    text: For a conducting boundary (ε → ∞), V_dipole = 0; for vacuum boundary conditions (ε = 1), V_dipole = (2π / 3Ω) |∑
+      μ_i|².
+  - id: b
+    text: For a conducting boundary (ε → ∞), V_dipole → ∞; for vacuum (ε = 1), V_dipole = 0.
+  - id: c
+    text: In both cases, V_dipole = (4π / Ω) |∑ μ_i|².
+  - id: d
+    text: V_dipole is negative in vacuum and positive in a conductor.
+  correct: a
+  rationale_markdown: When surrounded by a perfect conductor ('tin-foil' BCs, $\varepsilon \to \infty$), induced surface charges
+    neutralize any macroscopic surface depolarization field so $V_{\text{dipole}} = 0$. In vacuum ($\varepsilon = 1$), $2\varepsilon
+    + 1 = 3$, yielding the depolarization energy $V_{\text{dipole}} = \frac{2\pi}{3\Omega}|\sum_i \boldsymbol{\mu}_i|^2$.
+- id: q21_ewald_dipole_term_numeric
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_ewald_summation_method
+  prompt_markdown: A cubic simulation box of volume $\Omega = 100\text{ nm}^3$ with **vacuum boundary conditions** ($\varepsilon
+    = 1$) has an instantaneous total dipole moment of magnitude $|\sum_i \boldsymbol{\mu}_i| = 15.0$ (in reduced charge$\cdot\text{nm}$
+    units). Calculate the surface dipole energy $V_{\text{dipole}} = \frac{2\pi}{(2\varepsilon + 1)\Omega}\left|\sum_i \boldsymbol{\mu}_i\right|^2$
+    (round to 3 decimal places).
+  hint_markdown: Evaluate the prefactor for vacuum conditions ($\varepsilon = 1$) and scale by the square of the total dipole
+    moment divided by box volume.
+  correct:
+    value: 4.712
+    tolerance: 0.01
+  rationale_markdown: With $\varepsilon = 1$ and $\Omega = 100$, $V_{\text{dipole}} = \frac{2\pi}{3 \times 100} (15.0)^2 =
+    \frac{2\pi}{300} \times 225 = 1.5\pi \approx 4.7124$.
+- id: q22_ewald_kspace_damping_numeric
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by:
+  - sec_ewald_summation_method
+  - concept_ewald_splitting
+  prompt_markdown: In reciprocal space, the Ewald long-range potential is damped by the Gaussian factor $e^{-k^2 / (4\kappa^2)}$.
+    If $\kappa = 1.5\text{ nm}^{-1}$, what is the value of the Gaussian damping factor $e^{-k^2 / (4\kappa^2)}$ at wavevector
+    magnitude $k = 3.0\text{ nm}^{-1}$ (round to 3 decimal places)?
+  hint_markdown: Evaluate the dimensionless exponent using the given wavevector magnitude and screening parameter.
+  correct:
+    value: 0.368
+    tolerance: 0.005
+  rationale_markdown: Since $k^2 / (4\kappa^2) = 3.0^2 / (4 \times 1.5^2) = 9.0 / 9.0 = 1.0$, the Gaussian factor is $e^{-1}
+    \approx 0.3679 \approx 0.368$.
+- id: sec_kspace_algorithm_natoli_and_scaling
+  type: markdown_section
+  title: 4. Fast k-Space Evaluation, Natoli–Ceperley Optimal Breakup, and O(N^(3/2)) vs. PME vs. FMM
+  body_markdown: "### Optimizing Breakup: The Natoli–Ceperley (1995) Method\nIn the conventional Gaussian Ewald breakup, truncating\
+    \ $v_{\\text{short}}(r)$ at $r = L/2$ leaves a small residual jump $v_{\\text{short}}(L/2) = \\frac{2q_1 q_2}{L}\\text{erfc}(\\\
+    kappa L/2) \\ne 0$, and the Gaussian is not the mathematically optimal splitting function for a given $(r_c, k_c)$ budget.\n\
+    \n**Natoli and Ceperley (1995)** showed how to achieve machine-precision accuracy with minimal $k$-vectors by expanding\
+    \ the short-range (or long-range) potential in a set of local basis functions (e.g., polynomial splines $h_n(r)$ that\
+    \ vanish smoothly at $r_c = L/2$):\n\n$$v_{\\text{short}}(r) = \\sum_{n} c_n h_n(r)$$\n\n1. Require $h_n(r)$ to satisfy\
+    \ the boundary conditions ($v_{\\text{short}}(r_c) = v'_{\\text{short}}(r_c) = 0$).\n2. Choose a desired reciprocal-space\
+    \ cutoff $k_c$.\n3. Write down the mean-square $\\chi^2$ error coming from neglecting higher wavevectors $|\\mathbf{k}|\
+    \ > k_c$ and **minimize $\\chi^2$ with respect to the expansion coefficients $c_n$**. As shown on Slide 17, the Natoli–Ceperley\
+    \ optimized breakup reduces the error $\\ln[\\chi/(e^2/L)]$ by several orders of magnitude compared to classic Gaussian\
+    \ Ewald at the same $k_c r_c$!\n\n---\n\n### Look at $k$-Space: Factoring the Double Sum & Avoiding Complex Exponentiation\n\
+    Naively, the reciprocal-space sum $\\frac{1}{2}\\sum_{\\mathbf{k}} \\sum_{i \\ne j} q_i q_j e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i\
+    \ - \\mathbf{r}_j)} v_{\\mathbf{k}}$ looks like an $\\mathcal{O}(M_k N^2)$ calculation for $M_k$ wavevectors. However,\
+    \ we can factor the double sum over $(i, j)$ into the product of **single-particle structure factors** $\\rho_{\\mathbf{k}}$:\n\
+    \n$$V_{\\text{long}} = \\frac{1}{2}\\sum_{\\mathbf{k}} \\left[\\sum_{i=1}^N q_i e^{i\\mathbf{k}\\cdot\\mathbf{r}_i}\\\
+    right]\\left[\\sum_{j=1}^N q_j e^{-i\\mathbf{k}\\cdot\\mathbf{r}_j}\\right] v_{\\mathbf{k}} + C = \\frac{1}{2}\\sum_{\\\
+    mathbf{k}} \\rho_{\\mathbf{k}} \\rho_{-\\mathbf{k}} v_{\\mathbf{k}} + C$$\n\n* **Hermitian Symmetry ($\\rho_{-\\mathbf{k}}\
+    \ = \\rho_{\\mathbf{k}}^*$):** Because particle positions $\\mathbf{r}_i$ are real, $\\rho_{-\\mathbf{k}} = \\rho_{\\\
+    mathbf{k}}^*$, so we only need to compute half of the $\\mathbf{k}$-space sphere!\n* **Linear Scaling in $N$ per $\\mathbf{k}$-vector\
+    \ ($\\mathcal{O}(N M_k)$):** Computing $\\rho_{\\mathbf{k}} = \\sum_{i=1}^N q_i e^{i\\mathbf{k}\\cdot\\mathbf{r}_i}$ for\
+    \ $M_k$ wavevectors takes **$\\mathcal{O}(N M_k)$** operations instead of $\\mathcal{O}(N^2 M_k)$.\n* **Fast Single-Particle\
+    \ MC Updates ($\\mathcal{O}(M_k)$):** If only one or a few particles move (as in Monte Carlo), we do not recompute $\\\
+    rho_{\\mathbf{k}}$ from scratch! We simply update $\\Delta \\rho_{\\mathbf{k}} = q_i (e^{i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\\
+    text{new}}} - e^{i\\mathbf{k}\\cdot\\mathbf{r}_i^{\\text{old}}})$ in $\\mathcal{O}(M_k)$ time.\n* **Recursive Complex\
+    \ Multiplication Trick:** Calling `exp(i k·r)` or `sin`/`cos` from scratch for every $(i, \\mathbf{k})$ pair is slow.\
+    \ Instead, for $\\mathbf{k} = \\left(m_1 \\frac{2\\pi}{L_x}, m_2 \\frac{2\\pi}{L_y}, m_3 \\frac{2\\pi}{L_z}\\right)$,\
+    \ we factor:\n  $$e^{i\\mathbf{k}\\cdot\\mathbf{r}_i} = \\left[e^{i\\frac{2\\pi}{L_x}r_{ix}}\\right]^{m_1} \\left[e^{i\\\
+    frac{2\\pi}{L_y}r_{iy}}\\right]^{m_2} \\left[e^{i\\frac{2\\pi}{L_z}r_{iz}}\\right]^{m_3}$$\n  For each particle $i$, we\
+    \ compute the fundamental base phase $C_j = \\exp(i k_{0j} r_{ij}) = (\\cos(k_{0j}r_{ij}), \\sin(k_{0j}r_{ij}))$ only\
+    \ **3 times** ($\\mathcal{O}(N)$ total), generate integer powers $C_{j,m} = (C_j)^m$ iteratively by fast **complex multiplication**\
+    \ $e^{i m k_0 x} = e^{i(m-1)k_0 x}\\cdot e^{i k_0 x}$, and multiply the three Cartesian factors together!\n\n---\n\n###\
+    \ Derivation of Optimal Ewald $\\mathcal{O}(N^{3/2})$ Scaling vs. PME $\\mathcal{O}(N\\ln N)$ vs. FMM $\\mathcal{O}(N)$\n\
+    At fixed liquid density $\\rho = N / \\Omega$ ($\\Omega = L^3 \\propto N$) and fixed target accuracy $\\epsilon = e^{-p}$:\n\
+    * **Real-space work:** Cutoff $r_c \\sim \\sqrt{p}/\\kappa$. Using a neighbor list, each of the $N$ particles interacts\
+    \ with $\\frac{4}{3}\\pi\\rho r_c^3$ neighbors:\n  $$W_{\\text{real}} \\propto N \\rho r_c^3 \\propto \\frac{N^2}{\\Omega\
+    \ \\kappa^3}$$\n* **Reciprocal-space work:** Cutoff $k_c \\sim 2\\kappa\\sqrt{p}$. The number of discrete $\\mathbf{k}$-vectors\
+    \ inside radius $k_c$ is $M_k \\propto \\Omega k_c^3 \\propto \\Omega \\kappa^3$. Summing $\\rho_{\\mathbf{k}}$ over $N$\
+    \ particles for each of the $M_k$ wavevectors costs:\n  $$W_{\\text{recip}} \\propto N M_k \\propto N \\Omega \\kappa^3$$\n\
+    \n#### Balancing Real and Reciprocal Work\n* **Unoptimized $\\kappa$ (fixing $r_c = L/2$, $\\kappa \\propto 1/L \\propto\
+    \ N^{-1/3}$):** Then $W_{\\text{real}} \\propto \\mathcal{O}(N^2)$ and $W_{\\text{recip}} \\propto \\mathcal{O}(N)$, so\
+    \ unoptimized Ewald scales as **$\\mathcal{O}(N^2)$**!\n* **Optimized $\\kappa$:** Setting $W_{\\text{real}} \\sim W_{\\\
+    text{recip}}$ requires:\n  $$\\frac{N^2}{\\Omega \\kappa^3} \\sim N \\Omega \\kappa^3 \\implies \\kappa_{\\text{opt}}\
+    \ \\propto \\frac{N^{1/6}}{\\Omega^{1/3}} = \\frac{N^{1/6}}{L} \\propto \\rho^{1/3} N^{-1/6}$$\n  Substituting $\\Omega\
+    \ \\kappa_{\\text{opt}}^3 \\propto N^{1/2}$ into both work expressions gives the celebrated **Optimal Ewald complexity**:\n\
+    \  $$W_{\\text{real}} \\sim W_{\\text{recip}} \\sim N \\cdot N^{1/2} = \\mathcal{O}(N^{3/2}), \\qquad M_k \\propto \\\
+    mathcal{O}(N^{1/2})$$\n  *(Slide 21 step breakdown at optimal $\\kappa$: 1. Base $\\exp(ik_0 x_i)$ is $\\mathcal{O}(N)$;\
+    \ 2. Powers & products $\\mathcal{O}(N^{3/2})$; 3. Sum over particles for $\\rho_{\\mathbf{k}}$ is $\\mathcal{O}(N^{3/2})$;\
+    \ 4. Sum over $\\mathbf{k}$ for potential is $\\mathcal{O}(M_k) = \\mathcal{O}(N^{1/2})$; 5. Forces via gradients $\\\
+    mathcal{O}(N^{3/2})$; 6. Self/constant terms $\\mathcal{O}(1)$. Code verification check: a unit-charge simple cubic lattice\
+    \ in a neutralizing background has Wigner energy $V = -1.4186487 / a$.)*\n\n#### Faster Asymptotic Methods for Large $N$\n\
+    1. **Particle-Mesh / Particle-Cell Methods (Hockney PPPM, Darden PME — $\\mathcal{O}(N \\ln N)$):**\n   Instead of evaluating\
+    \ $\\rho_{\\mathbf{k}}$ by direct $\\mathcal{O}(N M_k)$ summation, charges are interpolated onto a 3D regular grid and\
+    \ Poisson's equation is solved in $k$-space using the **3D Fast Fourier Transform (FFT)**, reducing reciprocal-space cost\
+    \ to **$\\mathcal{O}(N \\ln N)$**.\n2. **Fast Multipole Method (Greengard & Rokhlin FMM — $\\mathcal{O}(N)$):**\n   Divides\
+    \ space recursively into an octree of cells, computes multipole (monopole, dipole, quadrupole, $\\dots$) moments of each\
+    \ cell, and translates moments hierarchically between parent supercells and child cells, achieving true linear **$\\mathcal{O}(N)$**\
+    \ complexity for very large $N$.\n\n---\n\n### Artifacts of Periodic Image Potentials in Inhomogeneous / Slab Systems\n\
+    On Slide 23 (\"Problems with Image potential\"): Ewald summation assumes the simulation cell is replicated periodically\
+    \ in all 3 directions to infinity. For an **inhomogeneous system** such as a **2D charged surface, membrane, or liquid–vapor\
+    \ interface (charge layer)**, 3D periodic images impose an artificial long-range crystal lattice of parallel dipole layers!\
+    \ Whereas a real nearby fluid would be **anticorrelated** (screening the local dipole), periodic images are **perfectly\
+    \ correlated** replicas, artificially **penalizing** localized dipole fluctuations unless a 2D slab dipole correction\
+    \ or vacuum gap is applied.\n"
+- id: concept_electrostatic_scaling
+  type: concept_cell
+  title: 'Interactive Explorer: Electrostatic Solver Complexity — O(N²) vs. O(N^(3/2)) vs. O(N ln N) vs. O(N)'
+  description_markdown: Compare the per-step CPU time on log–log axes across five orders of magnitude in particle count $N$
+    ($10^2$ to $10^7$) for Direct/Unoptimized Ewald $\mathcal{O}(N^2)$, Optimized Ewald $\mathcal{O}(N^{3/2})$, Particle-Mesh
+    Ewald (PME/PPPM) $\mathcal{O}(N\ln N)$, and the Fast Multipole Method (FMM) $\mathcal{O}(N)$.
+  render_function: render_electrostatic_algorithm_scaling
+  layout: figure_left
+  controls:
+    log10_n:
+      kind: slider
+      label: Log₁₀(Particle Count N)
+      min: 2.0
+      max: 7.0
+      step: 0.5
+      default: 4.0
+      format: .1f
+    fmm_accuracy_p:
+      kind: slider
+      label: FMM Multipole Order p
+      min: 3
+      max: 10
+      step: 1
+      default: 6
+  takeaway_markdown: '**Key Takeaway:** Optimized Ewald ($\mathcal{O}(N^{3/2})$) has a tiny prefactor and excels for small
+    systems ($N \lesssim 10^3$), PME/PPPM ($\mathcal{O}(N\ln N)$) dominates intermediate biomolecular and materials simulations
+    ($10^3 \lesssim N \lesssim 10^5$), and FMM ($\mathcal{O}(N)$) wins at ultra-large scales ($N \gtrsim 10^5$–$10^6$) depending
+    on multipole order $p$.'
+- id: q23_kspace_factorization_trick
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: How does the Ewald algorithm avoid an $\mathcal{O}(N^2)$ double loop over particle pairs $(i, j)$ when
+    evaluating the reciprocal-space energy $V_{\text{long}}$ for a given wavevector $\mathbf{k}$?
+  hint_markdown: 'Check Slide 18 (''Look at k-space: the algorithm'').'
+  options:
+  - id: a
+    text: It factors exp(i k·(r_i - r_j)) into the single-particle sum ρ_k = ∑_i q_i exp(i k·r_i) and its complex conjugate
+      ρ_{-k} = ρ_k*, reducing the cost per k-vector from O(N²) to O(N).
+  - id: b
+    text: It truncates the sum over i and j after the first 10 particles in the array.
+  - id: c
+    text: It sets exp(i k·(r_i - r_j)) = 1 for all pairs in k-space.
+  - id: d
+    text: It uses a Verlet skin list in k-space so each particle only interacts with 12 k-vectors.
+  correct: a
+  rationale_markdown: Because $e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)} = e^{i\mathbf{k}\cdot\mathbf{r}_i} e^{-i\mathbf{k}\cdot\mathbf{r}_j}$,
+    the double sum factors into $\left(\sum_i q_i e^{i\mathbf{k}\cdot\mathbf{r}_i}\right)\left(\sum_j q_j e^{-i\mathbf{k}\cdot\mathbf{r}_j}\right)
+    = \rho_{\mathbf{k}}\rho_{-\mathbf{k}} = |\rho_{\mathbf{k}}|^2$, which takes only a single $\mathcal{O}(N)$ pass per $\mathbf{k}$-vector.
+- id: q24_rho_k_hermitian_symmetry
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: Because particle coordinates $\mathbf{r}_i$ and charges $q_i$ are real numbers, how is the structure factor
+    at $-\mathbf{k}$ related to $\rho_{\mathbf{k}} = \sum_{j=1}^N q_j e^{i\mathbf{k}\cdot\mathbf{r}_j}$, and what computational
+    savings does this provide?
+  hint_markdown: Take the complex conjugate of $\rho_{\mathbf{k}}$.
+  options:
+  - id: a
+    text: ρ_{-k} = ρ_k* (complex conjugate), so we only need to compute ρ_k over half of the reciprocal-space k-vectors.
+  - id: b
+    text: ρ_{-k} = -ρ_k, so ρ_k ρ_{-k} cancels to zero for every k.
+  - id: c
+    text: ρ_{-k} = 1 / ρ_k, so ρ_k ρ_{-k} = 1 identically.
+  - id: d
+    text: ρ_{-k} is independent of ρ_k and requires doubling the k-space cutoff.
+  correct: a
+  rationale_markdown: Taking the complex conjugate gives $\rho_{\mathbf{k}}^* = \sum_j q_j e^{-i\mathbf{k}\cdot\mathbf{r}_j}
+    = \rho_{-\mathbf{k}}$, cutting the number of required $\rho_{\mathbf{k}}$ evaluations in half.
+- id: q25_fast_complex_multiply_algorithm
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: When computing $e^{i\mathbf{k}\cdot\mathbf{r}_i}$ across hundreds of reciprocal lattice vectors $\mathbf{k}
+    = \left(m_1 \frac{2\pi}{L_x}, m_2 \frac{2\pi}{L_y}, m_3 \frac{2\pi}{L_z}\right)$, how do efficient Ewald codes avoid calling
+    slow trigonometric or complex exponential library functions inside the inner loop over $\mathbf{k}$?
+  hint_markdown: Check Slides 19–21 on factoring $e^{i\mathbf{k}\cdot\mathbf{r}}$ into powers of fundamental phases $[e^{i(2\pi/L_x)r_x}]^{m_1}$.
+  options:
+  - id: a
+    text: They compute the base phases exp(i k₀ x_i) = (cos(k₀ x_i), sin(k₀ x_i)) once per particle in O(N) time and generate
+      all higher harmonics m₁, m₂, m₃ and 3D products purely by fast complex multiplications.
+  - id: b
+    text: They replace exp(i k·r) with its first-order Taylor expansion 1 + i k·r for all k.
+  - id: c
+    text: They round all particle coordinates r_i to integers so exp(i k·r) is always ±1.
+  - id: d
+    text: They evaluate exp(i k·r) using a 100-term series of Bessel functions at each k-vector.
+  correct: a
+  rationale_markdown: By factoring $e^{i\mathbf{k}\cdot\mathbf{r}} = [e^{i(2\pi/L_x)r_x}]^{m_1}[e^{i(2\pi/L_y)r_y}]^{m_2}[e^{i(2\pi/L_z)r_z}]^{m_3}$,
+    an Ewald code evaluates `cos` and `sin` only 3 times per particle ($\mathcal{O}(N)$) and builds all powers $C_{j,m} =
+    C_j^m$ and 3D wavevectors via fast complex multiplications.
+- id: q26_single_particle_mc_ewald_update
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: In a Monte Carlo simulation of $N$ ions using Ewald summation with $M_k$ reciprocal-space wavevectors,
+    suppose a trial move displaces only **a single ion $i$** from $\mathbf{r}_i^{\text{old}}$ to $\mathbf{r}_i^{\text{new}}$.
+    How many operations are needed to update the reciprocal-space energy $V_{\text{long}}$?
+  hint_markdown: 'Look at the bottom of Slide 18: ''Changes due to moving a few particles can be calculated more quickly''.'
+  options:
+  - id: a
+    text: O(M_k) operations (or O(N^(1/2)) at optimal κ), by updating ρ_k^new = ρ_k^old + q_i [exp(i k·r_i^new) - exp(i k·r_i^old)]
+      for each k-vector without re-summing the other N - 1 particles.
+  - id: b
+    text: O(N² M_k) operations, because every pair distance r_jk must be Fourier transformed from scratch.
+  - id: c
+    text: O(N³) operations via Cholesky decomposition of the k-space matrix.
+  - id: d
+    text: Zero operations, because V_long does not depend on individual particle positions.
+  correct: a
+  rationale_markdown: Because $\rho_{\mathbf{k}} = \sum_j q_j e^{i\mathbf{k}\cdot\mathbf{r}_j}$ is an additive single-particle
+    sum, moving one particle $i$ only changes $\rho_{\mathbf{k}}$ by $\Delta\rho_{\mathbf{k}} = q_i(e^{i\mathbf{k}\cdot\mathbf{r}_i^{\text{new}}}
+    - e^{i\mathbf{k}\cdot\mathbf{r}_i^{\text{old}}})$, which costs $\mathcal{O}(M_k)$ instead of $\mathcal{O}(N M_k)$!
+- id: q27_natoli_ceperley_optimized_breakup
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: How does the **Natoli–Ceperley (1995) optimized breakup** improve upon the conventional Gaussian Ewald
+    splitting?
+  hint_markdown: 'Check Slide 17 (''Ewald: optimizing breakup'').'
+  options:
+  - id: a
+    text: It expands v_short(r) = ∑_n c_n h_n(r) in basis functions satisfying boundary conditions at r_c = L/2 and optimizes
+      the coefficients c_n to minimize the k-space truncation error from neglecting |k| > k_c.
+  - id: b
+    text: It replaces the Coulomb potential 1/r with a hard-sphere potential at all distances.
+  - id: c
+    text: It sets the k-space cutoff k_c = 0 so that no Fourier vectors are ever needed.
+  - id: d
+    text: It uses a wider Gaussian so that v_short(L/2) is maximized at the box boundary.
+  correct: a
+  rationale_markdown: Classic Gaussian Ewald leaves a nonzero boundary error $v_{\text{short}}(L/2) = \frac{2q_1q_2}{L}\text{erfc}(\kappa
+    L/2) \ne 0$ and uses a fixed Gaussian shape. Natoli & Ceperley expand $v_{\text{short}}(r) = \sum_n c_n h_n(r)$ in basis
+    functions that vanish smoothly at $L/2$ and variationally choose $c_n$ to minimize the error from neglected $|\mathbf{k}|
+    > k_c$ terms.
+- id: q28_optimal_ewald_complexity_derivation
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by:
+  - sec_kspace_algorithm_natoli_and_scaling
+  - concept_electrostatic_scaling
+  prompt_markdown: When simulating $N$ charges at constant density ($\Omega \propto N$), what is the per-step computational
+    complexity of the Ewald sum if (i) $\kappa$ is **not** re-optimized with $N$ ($r_c = L/2$ fixed fraction of box) versus
+    (ii) $\kappa$ **is** optimally tuned ($\kappa \propto N^{1/6}/L$) together with neighbor lists?
+  hint_markdown: Check Slide 20 ('Use neighbor tables and optimize κ, Ewald is O(N^(3/2)); If we do not reoptimize, then O(N²)').
+  options:
+  - id: a
+    text: O(N²) if κ is not re-optimized; O(N^(3/2)) when κ is optimally tuned and neighbor lists are used.
+  - id: b
+    text: O(N³) if κ is not re-optimized; O(N²) when κ is optimally tuned.
+  - id: c
+    text: O(N ln N) in both cases.
+  - id: d
+    text: O(N) if κ is not re-optimized; O(N^(3/2)) when κ is optimally tuned.
+  correct: a
+  rationale_markdown: If $\kappa \propto 1/L$ is not re-optimized as $N$ grows, the real-space cutoff $r_c = L/2$ encompasses
+    the entire box ($\mathcal{O}(N)$ neighbors per particle), giving $\mathcal{O}(N^2)$ scaling. Tuning $\kappa \propto N^{1/6}/L$
+    (so $r_c \propto N^{-1/6}L$ and $M_k \propto N^{1/2}$) balances real and $k$-space costs at $\mathcal{O}(N^{3/2})$.
+- id: q29_ewald_scaling_factor_numeric
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by:
+  - sec_kspace_algorithm_natoli_and_scaling
+  - concept_electrostatic_scaling
+  prompt_markdown: In an optimally tuned Ewald summation code whose CPU time per step scales as $\mathcal{O}(N^{3/2})$, by
+    what factor does the CPU time per step increase if the number of ions $N$ is increased by a factor of $4$ (e.g., from
+    $N = 1{,}000$ to $N = 4{,}000$ at constant density)?
+  hint_markdown: Raise the system size scaling ratio to the $3/2$ power.
+  correct:
+    value: 8.0
+    tolerance: 0.05
+  rationale_markdown: With $\mathcal{O}(N^{3/2})$ scaling, multiplying $N$ by $4$ increases the CPU cost by $4^{3/2} = 2^3
+    = 8.0$ (compared to $4^2 = 16$ for an unoptimized $\mathcal{O}(N^2)$ algorithm).
+- id: q30_ewald_step_by_step_complexities
+  type: problem
+  question_type: single_select
+  difficulty: hard
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: 'In an optimally tuned Ewald sum ($\mathcal{O}(N^{3/2})$ overall, where the number of $\mathbf{k}$-vectors
+    scales as $M_k \propto N^{1/2}$), what are the individual asymptotic scalings of: (1) computing the fundamental 1D phases
+    $\exp(ik_0 x_i)$ for all particles, (3) summing over all $N$ particles to get $\rho_{\mathbf{k}}$ for all $M_k$ wavevectors,
+    and (4) summing $|\rho_{\mathbf{k}}|^2 v_{\mathbf{k}}$ over the $M_k$ wavevectors to get the total reciprocal-space potential?'
+  hint_markdown: Check the right-hand column of Slide 21 ('How to do it').
+  options:
+  - id: a
+    text: Step (1) is O(N); Step (3) is O(N^(3/2)); Step (4) is O(N^(1/2)).
+  - id: b
+    text: Step (1) is O(N^(3/2)); Step (3) is O(N²); Step (4) is O(N).
+  - id: c
+    text: Step (1) is O(1); Step (3) is O(N); Step (4) is O(N^(3/2)).
+  - id: d
+    text: All three steps scale as O(N^(3/2)).
+  correct: a
+  rationale_markdown: 'As listed on Slide 21: (1) computing the 3 base phases $\exp(ik_0 x_i)$ per particle costs $\mathcal{O}(N)$;
+    (3) accumulating $\rho_{\mathbf{k}}$ over $N$ particles for $M_k \propto N^{1/2}$ wavevectors costs $N \times N^{1/2}
+    = \mathcal{O}(N^{3/2})$; and (4) summing $\rho_{\mathbf{k}}\rho_{-\mathbf{k}}v_{\mathbf{k}}$ over the $M_k$ wavevectors
+    costs $\mathcal{O}(M_k) = \mathcal{O}(N^{1/2})$.'
+- id: q31_pme_and_fmm_complexities
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by:
+  - sec_kspace_algorithm_natoli_and_scaling
+  - concept_electrostatic_scaling
+  prompt_markdown: What are the asymptotic CPU complexities for large $N$ of (i) **Particle-Cell / Particle-Mesh Ewald methods
+    (Hockney PPPM / PME)** that use Fast Fourier Transforms on a grid, and (ii) the **Fast Multipole Method (FMM)** that recursively
+    divides space into cells and translates multipole moments?
+  hint_markdown: Check Slide 22 ('Complexity of Fast Multipole').
+  options:
+  - id: a
+    text: Particle-Mesh / FFT methods scale as O(N ln N), and Fast Multipole Methods (FMM) scale as O(N).
+  - id: b
+    text: Particle-Mesh / FFT methods scale as O(N²), and Fast Multipole Methods scale as O(N^(3/2)).
+  - id: c
+    text: Both Particle-Mesh and Fast Multipole Methods scale as O(N^(1/2)).
+  - id: d
+    text: Particle-Mesh scales as O(N), and Fast Multipole scales as O(N³).
+  correct: a
+  rationale_markdown: Interpolating charges onto a mesh and using 3D FFTs (Hockney PPPM / PME) scales as $\mathcal{O}(N \ln
+    N)$, while hierarchical octree multipole expansion (Fast Multipole Method) achieves $\mathcal{O}(N)$ complexity for large
+    $N$.
+- id: q32_image_potential_slab_artifact
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: According to Slide 23 ('Problems with Image potential'), what physical artifact arises when standard 3D
+    periodic Ewald summation is applied to an inhomogeneous **charge layer or dipolar surface**?
+  hint_markdown: Compare how a real surrounding fluid responds to a local dipole/charge layer versus what periodic replicas
+    do.
+  options:
+  - id: a
+    text: 3D periodic images force the charge/dipole structure to repeat identically at large r (correlated replicas), whereas
+      a real nearby fluid would be anticorrelated (screening); thus such structures are artificially penalized.
+  - id: b
+    text: The Ewald sum sets all forces perpendicular to the layer to zero.
+  - id: c
+    text: The self-interaction term V_self becomes infinite whenever a surface is present.
+  - id: d
+    text: Periodic boundary conditions cause all ions to evaporate into vacuum immediately.
+  correct: a
+  rationale_markdown: Standard Ewald summation replicates the central cell's dipole/charge layer with identical orientation
+    across all periodic images. In reality, a nearby fluid would polarize in the opposite direction (anticorrelated screening),
+    so artificial periodic image alignment penalizes polarized surface structures.
+- id: q33_verlet_neighbor_count_numeric
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by:
+  - sec_pbc_tail_corrections_and_neighbor_lists
+  - concept_neighbor_skin
+  prompt_markdown: A 3D liquid has number density $\rho = 0.75\,\sigma^{-3}$. If a Verlet neighbor list is constructed with
+    potential cutoff $r_c = 2.5\,\sigma$ and skin depth $\Delta = 0.5\,\sigma$ (so $r_{\text{list}} = r_c + \Delta = 3.0\,\sigma$),
+    what is the average number of neighbors $m$ stored per particle (assuming $g(r) \approx 1$, round to 1 decimal place)?
+  hint_markdown: Calculate the expected number of particles inside a sphere of radius $r_c + \Delta$ at the given number density.
+  correct:
+    value: 84.8
+    tolerance: 0.3
+  rationale_markdown: With $r_{\text{list}} = 2.5 + 0.5 = 3.0\,\sigma$, the average number of particles inside the sphere
+    is $m = \frac{4}{3}\pi \rho r_{\text{list}}^3 = \frac{4}{3}\pi (0.75)(27) = 27\pi \approx 84.82$ neighbors per particle,
+    regardless of whether $N = 10^3$ or $N = 10^7$!
+- id: q34_cell_method_3d_neighbor_cells_numeric
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_pbc_tail_corrections_and_neighbor_lists
+  prompt_markdown: In the 3D linked-cell method, the simulation box is divided into cubic cells of side length $L_{\text{cell}}
+    > r_c + \Delta$. To find all neighbors of a particle within $r_c + \Delta$ (without using Newton's 3rd law half-shell
+    optimization), how many total cells must be searched for that particle (counting the particle's own cell plus all immediately
+    adjacent cells in 3D)?
+  hint_markdown: Consider a $3 \times 3 \times 3$ cube of cells centered on the particle's cell.
+  correct:
+    value: 27.0
+    tolerance: 0.1
+  rationale_markdown: In 3D, a cell and its nearest-neighbor cells (sharing a face, edge, or corner) form a $3 \times 3 \times
+    3$ block of $3^3 = 27$ cells (or $14$ cells if Newton's third law is used to search only half the stencil).
+- id: q35_ewald_real_space_erfc_cutoff_numeric
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by:
+  - sec_ewald_summation_method
+  - concept_ewald_splitting
+  prompt_markdown: In classic Ewald summation in a cubic box of length $L = 10.0\text{ Å}$, we choose $\kappa$ so that the
+    real-space screened potential $v_{\text{short}}(r) = \frac{q_1 q_2}{r}\text{erfc}(\kappa r)$ is negligible at the minimum-image
+    boundary $r = L/2 = 5.0\text{ Å}$. Using the asymptotic approximation $\text{erfc}(z) \approx \frac{e^{-z^2}}{z\sqrt{\pi}}$
+    for large $z$, estimate $\kappa$ (in $\text{Å}^{-1}$) required so that $z = \kappa(L/2) = 3.0$ (where $\text{erfc}(3.0)
+    \approx 2.2 \times 10^{-5}$).
+  hint_markdown: Divide the target dimensionless argument $z = 3.0$ by the minimum-image cutoff distance $L/2$.
+  correct:
+    value: 0.6
+    tolerance: 0.01
+  rationale_markdown: Setting $\kappa (L/2) = 3.0$ with $L/2 = 5.0\text{ Å}$ gives $\kappa = 3.0 / 5.0 = 0.60\text{ Å}^{-1}$.
+- id: q36_one_component_plasma_background
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_long_range_definition_and_stillinger_lovett
+  prompt_markdown: If you want to simulate a **one-component charged system** (such as an electron gas or a lattice of $+1$
+    ions with no counter-ions) in periodic boundary conditions, what must be added to prevent the electrostatic energy ($\mathbf{k}
+    = \mathbf{0}$ term) from diverging to infinity?
+  hint_markdown: Check Slide 2 and Slide 8 ('For one component system, need to add a background to make it neutral').
+  options:
+  - id: a
+    text: A uniform neutralizing background charge density of opposite sign (jellium background), which exactly cancels the
+      k = 0 divergence.
+  - id: b
+    text: A global Langevin friction term with ζ → ∞.
+  - id: c
+    text: An extra repulsive 1/r¹² Lennard-Jones core at r = 0.
+  - id: d
+    text: Nothing; the sum ∑_{L≠0} 1/|r - L| converges to zero on its own.
+  correct: a
+  rationale_markdown: A non-neutral periodic system has infinite total charge and an infinite $\mathbf{k} = \mathbf{0}$ Fourier
+    component ($\int 4\pi r^2 (\rho/r)\,dr = \infty$). Adding a uniform neutralizing background charge density cancels the
+    $\mathbf{k} = \mathbf{0}$ term and yields a well-defined finite energy (e.g., $-1.4186487/a$ for a simple cubic lattice).
+- id: q37_cubic_lattice_wigner_check
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: On Slide 21 ('How to do it'), what benchmark test is recommended to verify that a newly written 3D Ewald
+    summation code (including real-space, $k$-space, and constant self/background terms) is bug-free and independent of $\kappa$?
+  hint_markdown: 'Look at the last bullet of Slide 21 (''Checks: perfect cubic lattice...'').'
+  options:
+  - id: a
+    text: Compute the potential energy of a perfect simple cubic lattice of unit charges in a neutralizing background and
+      verify that V = -1.4186487 / a (independent of the choice of κ).
+  - id: b
+    text: Verify that the total electrostatic energy is proportional to κ³ when κ is varied.
+  - id: c
+    text: Check that setting all charges q_i = +1 gives V = +∞.
+  - id: d
+    text: Verify that the real-space term alone equals zero for any κ.
+  correct: a
+  rationale_markdown: A standard verification test for any Ewald code is to place unit point charges on a perfect simple cubic
+    lattice of spacing $a$ (with neutralizing background), check that the total energy matches the exact Wigner lattice constant
+    $V = -1.4186487 / a$, and confirm that $\partial V_{\text{total}} / \partial \kappa = 0$ over a range of $\kappa$.
+- id: q38_ewald_independence_of_kappa
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by:
+  - sec_ewald_summation_method
+  - concept_ewald_splitting
+  prompt_markdown: When both the real-space sum ($r < r_c$) and reciprocal-space sum ($|\mathbf{k}| < k_c$) are converged
+    to high accuracy, how should the **total** Ewald potential energy $V_{\text{Ewald}} = V_{\text{real}}(\kappa) + V_{\text{recip}}(\kappa)
+    + V_{\text{self}}(\kappa) + V_{\text{dipole}}$ depend on the screening parameter $\kappa$?
+  hint_markdown: Remember that $\kappa$ only controls how we split $\frac{1}{r} = \frac{\text{erfc}(\kappa r)}{r} + \frac{\text{erf}(\kappa
+    r)}{r}$.
+  options:
+  - id: a
+    text: V_Ewald is completely independent of κ (∂V_Ewald / ∂κ = 0), even though V_real, V_recip, and V_self each vary strongly
+      with κ.
+  - id: b
+    text: V_Ewald increases linearly with κ because V_self ∝ -κ.
+  - id: c
+    text: V_Ewald is proportional to 1/κ².
+  - id: d
+    text: V_Ewald oscillates sinusoidally with κ.
+  correct: a
+  rationale_markdown: Because $\text{erfc}(\kappa r) + \text{erf}(\kappa r) = 1$ is an exact identity for any $\kappa > 0$,
+    the exact total Ewald energy is invariant with respect to $\kappa$; $\kappa$ only shifts work between real space and reciprocal
+    space.
+- id: q39_fast_multipole_hierarchical_steps
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: Which sequence of steps describes how the **Fast Multipole Method (FMM)** achieves $\mathcal{O}(N)$ complexity
+    for long-range Coulomb interactions?
+  hint_markdown: Check the bullet points under 'Fast Multipole Methods are O(N) for large N' on Slide 22.
+  options:
+  - id: a
+    text: Divide space into cells recursively, compute the multipole (dipole, quadrupole, ...) moments of each small cell,
+      and apply translation rules relating supercell moments to smaller cell moments.
+  - id: b
+    text: Truncate the Coulomb potential at nearest neighbors and add a constant density tail correction.
+  - id: c
+    text: Diagonalize the 3N × 3N Oseen matrix via Cholesky decomposition at every timestep.
+  - id: d
+    text: Transform all coordinates into 1D chains and multiply by 2 ln 2.
+  correct: a
+  rationale_markdown: As outlined on Slide 22, FMM achieves $\mathcal{O}(N)$ scaling by recursively subdividing space into
+    a hierarchy of cells, computing multipole moments of each cell, and using exact multipole translation theorems to aggregate
+    far-field interactions at the supercell level.
+- id: q40_lj_total_tail_correction_zero_crossing_numeric
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_pbc_tail_corrections_and_neighbor_lists
+  prompt_markdown: 'For the full 12-6 Lennard-Jones potential $V_{\text{LJ}}(r) = 4\varepsilon[(\sigma/r)^{12} - (\sigma/r)^6]$
+    truncated at $r_c = 2.0\,\sigma$ in a 3D fluid of reduced density $\rho\sigma^3 = 0.75$ and $\varepsilon = 1.0$, calculate
+    the complete per-particle energy tail correction:
+
+
+    $$\frac{\Delta E_{\text{tail}}^{\text{LJ}}}{N} = \frac{8\pi\rho\varepsilon\sigma^3}{3}\left[ \frac{1}{3}\left(\frac{\sigma}{r_c}\right)^9
+    - \left(\frac{\sigma}{r_c}\right)^3 \right]$$
+
+
+    (Round to 3 decimal places; notice how small the $r^{-12}$ repulsive tail is compared to the $r^{-6}$ attractive tail
+    at $r_c = 2\sigma$!)'
+  hint_markdown: Substitute the density and cutoff ratio into the integrated Lennard-Jones tail formula.
+  correct:
+    value: -0.781
+    tolerance: 0.005
+  rationale_markdown: With $\frac{8\pi\rho\varepsilon\sigma^3}{3} = \frac{8\pi(0.75)}{3} = 2\pi \approx 6.283185$ and $\sigma/r_c
+    = 0.5$, the bracket is $\frac{1}{3}(0.5)^9 - (0.5)^3 = \frac{1}{1536} - \frac{1}{8} = -0.124349$. Multiplying by $2\pi$
+    gives $\Delta E_{\text{tail}}^{\text{LJ}}/N = -0.7813\,\varepsilon$.
+- id: q41_optimal_kspace_vectors_scaling_numeric
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: In an optimally tuned Ewald simulation ($\kappa \propto N^{1/6}/L$), the number of reciprocal-space wavevectors
+    $M_k$ inside the cutoff sphere $|\mathbf{k}| < k_c$ scales as $M_k \propto \Omega \kappa^3 \propto N^{1/2}$. If an optimal
+    Ewald simulation of $N_1 = 500$ ions uses $M_{k,1} = 120$ wavevectors, how many wavevectors $M_{k,2}$ should be used for
+    a system $9$ times larger ($N_2 = 4{,}500$ ions at the same density) to maintain optimal $\mathcal{O}(N^{3/2})$ balance?
+  hint_markdown: Scale the initial wavevector count by the square root of the system size expansion ratio.
+  correct:
+    value: 360.0
+    tolerance: 1.0
+  rationale_markdown: Because $M_k \propto N^{1/2}$ at optimal $\kappa$, increasing $N$ by a factor of $9$ increases the optimal
+    number of $\mathbf{k}$-vectors by $\sqrt{9} = 3$, giving $M_{k,2} = 3 \times 120 = 360$.
+- id: q42_long_range_and_ewald_synthesis_multiselect
+  type: problem
+  question_type: multi_select
+  difficulty: hard
+  taught_by:
+  - sec_pbc_tail_corrections_and_neighbor_lists
+  - sec_long_range_definition_and_stillinger_lovett
+  - sec_ewald_summation_method
+  - sec_kspace_algorithm_natoli_and_scaling
+  prompt_markdown: Which of the following statements about neighbor lists, long-range potentials, and Ewald summation are
+    true? *(Select all that apply.)*
+  hint_markdown: Check each statement against the 3D long-range criterion, Stillinger–Lovett screening, Ewald k-space factorization,
+    and linked-cell scaling.
+  options:
+  - id: a
+    text: Combining a linked-cell mesh (cell size L_cell > r_c + Δ) with a Verlet skin list reduces both force evaluation
+      and neighbor-table construction to O(N).
+  - id: b
+    text: In 3D, any potential decaying as r^(-ν) with ν ≤ 3 (including Coulomb 1/r and dipole 1/r³) is long-ranged because
+      ∫ r² r^(-ν) dr diverges.
+  - id: c
+    text: By factoring exp(i k·(r_i - r_j)) into single-particle sums ρ_k ρ_{-k} and tuning κ ∝ N^(1/6)/L, classic Ewald summation
+      achieves O(N^(3/2)) complexity.
+  - id: d
+    text: Truncating a 3D Coulomb potential sharply at r_c = L/2 satisfies Poisson's equation and preserves the Stillinger–Lovett
+      condition S(k) = c k².
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: 'Statements (a), (b), and (c) are core results of this lesson. Statement (d) is false: truncating $1/r$
+    at $L/2$ violates Poisson''s equation and destroys the Stillinger–Lovett screening condition $S(k) = c k^2$.'

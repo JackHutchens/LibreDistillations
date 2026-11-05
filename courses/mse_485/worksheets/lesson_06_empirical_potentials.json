@@ -88,7 +88,7 @@
           "sec_bo_and_atomic_units"
         ],
         "prompt_markdown": "In Hartree atomic units ($\\hbar = m_e = e = 1$), $1\\text{ Hartree (Ha)} = 27.211\\text{ eV}$. If an ab initio calculation reports a vacancy migration barrier of $\\Delta E = 0.050\\text{ Ha}$ in a metal, what is this barrier in $\\text{eV}$? (Enter a number to two decimal places, e.g., `1.36`.)\n",
-        "hint_markdown": "Multiply $0.050\\text{ Ha} \\times 27.211\\text{ eV/Ha}$.",
+        "hint_markdown": "Apply the Hartree-to-eV conversion factor to the given energy barrier.",
         "correct": {
           "value": 1.36,
           "tolerance": 0.02
@@ -299,8 +299,8 @@
           "sec_pair_potentials_lj_morse",
           "concept_lj_vs_morse"
         ],
-        "prompt_markdown": "For Argon, the Lennard-Jones diameter parameter (where $v(\\sigma) = 0$) is $\\sigma = 3.40\\text{ \u00c5}$. What is the equilibrium pair separation $r_{\\min} = 2^{1/6}\\sigma$ (in $\\text{\u00c5}$) where the potential reaches its minimum $v(r_{\\min}) = -\\varepsilon$ and the pair force vanishes? (Enter a value to two decimal places, e.g., `3.82`.)\n",
-        "hint_markdown": "Multiply $2^{1/6} \\approx 1.12246$ by $\\sigma = 3.40\\text{ \u00c5}$.",
+        "prompt_markdown": "For Argon, the Lennard-Jones diameter parameter (where $v(\\sigma) = 0$) is $\\sigma = 3.40\\text{ \u00c5}$. What is the equilibrium pair separation $r_{\\min}$ (in $\\text{\u00c5}$) where the potential reaches its minimum $v(r_{\\min}) = -\\varepsilon$ and the interatomic force vanishes? (Enter a value to two decimal places, e.g., `3.82`.)",
+        "hint_markdown": "Find the radial distance where the first derivative of the Lennard-Jones potential $dv/dr$ equals zero.",
         "correct": {
           "value": 3.82,
           "tolerance": 0.03
@@ -316,7 +316,7 @@
           "sec_pair_potentials_lj_morse"
         ],
         "prompt_markdown": "Evaluate the dimensionless Lennard-Jones pair force $F^* = F(r)\\frac{\\sigma}{\\varepsilon} = -\\frac{\\sigma}{\\varepsilon}\\frac{dv}{dr}$ at the zero-crossing distance $r = \\sigma$.\n",
-        "hint_markdown": "Use $F(r) = \\frac{24\\varepsilon}{r}[2(\\sigma/r)^{12} - (\\sigma/r)^6]$ and substitute $r = \\sigma$.",
+        "hint_markdown": "Differentiate the Lennard-Jones potential with respect to distance to obtain the force expression, then evaluate it at $r = \\sigma$.",
         "correct": {
           "value": 24.0,
           "tolerance": 0.1
@@ -363,7 +363,7 @@
           "sec_pair_potentials_lj_morse"
         ],
         "prompt_markdown": "According to the Lennard-Jones phase diagram table (Slide 9 of `05.potentials.pdf`), the triple-point temperature of the LJ fluid is $T_t^* = k_B T_t / \\varepsilon \\approx 0.70$. Given that Argon has well depth $\\varepsilon / k_B = 119.8\\text{ K}$, what is the predicted triple-point temperature $T_t$ of Argon in $\\text{K}$? (Enter a value to one decimal place, e.g., `83.9`.)\n",
-        "hint_markdown": "Compute $T_t = T_t^* \\times (\\varepsilon / k_B) = 0.70 \\times 119.8\\text{ K}$.",
+        "hint_markdown": "Convert the dimensionless reduced temperature into Kelvin using the characteristic energy well depth.",
         "correct": {
           "value": 83.9,
           "tolerance": 0.5
@@ -447,7 +447,7 @@
           "concept_lj_vs_morse"
         ],
         "prompt_markdown": "At the equilibrium distance $r_0$, the Lennard-Jones 12-6 potential has second derivative $v_{\\text{LJ}}''(r_0) = 72\\,\\varepsilon / r_0^2$, while the Morse potential has second derivative $v_{\\text{Morse}}''(r_0) = 2\\alpha^2 \\varepsilon$. What dimensionless value of $\\alpha r_0$ makes the Morse potential have the **exact same harmonic curvature (stiffness)** at $r = r_0$ as the Lennard-Jones 12-6 potential?\n",
-        "hint_markdown": "Set $2(\\alpha r_0)^2 = 72$ and solve for $\\alpha r_0 > 0$.",
+        "hint_markdown": "Equate the two second-derivative expressions at the equilibrium separation and solve for the dimensionless parameter combination.",
         "correct": {
           "value": 6.0,
           "tolerance": 0.05
@@ -632,8 +632,8 @@
           "sec_metals_and_eam",
           "concept_eam_metals"
         ],
-        "prompt_markdown": "In a crystal with nearest-neighbor coordination number $Z = 12$ modeled by a pure nearest-neighbor pair potential (where each bond has fixed energy $-\\epsilon_b$), the cohesive energy per bulk atom is $E_c = \\frac{1}{2} Z \\epsilon_b = 6\\epsilon_b$ (the factor of $1/2$ avoids double-counting bonds). To form one unrelaxed vacancy, you break $Z = 12$ bonds inside the bulk (cost $+12\\epsilon_b$) and place the removed atom onto a kink site on the surface where it forms on average $Z/2 = 6$ new bonds (gain $-6\\epsilon_b$). What is the resulting ratio $E_v / E_c$?\n",
-        "hint_markdown": "Compute $E_v = 12\\epsilon_b - 6\\epsilon_b = 6\\epsilon_b$ and divide by $E_c = 6\\epsilon_b$.",
+        "prompt_markdown": "In a crystal with nearest-neighbor coordination number $Z = 12$ modeled by a nearest-neighbor pair potential of bond energy $-\\epsilon_b$, calculate the unrelaxed vacancy formation energy ratio $E_v / E_c$, where $E_c$ is the bulk cohesive energy per atom and $E_v$ is the net energy cost of removing an atom from the bulk to a surface kink site.",
+        "hint_markdown": "Account for the bulk bonds broken to extract the atom versus the bonds reformed when re-adsorbing it at a kink site, and compare this net energy to the cohesive energy per atom.",
         "correct": {
           "value": 1.0,
           "tolerance": 0.02
@@ -649,8 +649,8 @@
           "sec_metals_and_eam",
           "concept_eam_metals"
         ],
-        "prompt_markdown": "Now repeat the unrelaxed FCC ($Z = 12$) vacancy formation energy calculation using the metallic square-root coordination model where an atom with $Z$ neighbors has binding energy $E(Z) = -E_c \\sqrt{Z / 12}$. When one bulk atom is removed and re-embedded with bulk coordination ($Z=12$), its $12$ former neighbors each drop from $Z = 12$ to $Z = 11$. Calculate the unrelaxed ratio:\n$$\\frac{E_v}{E_c} = 12\\left(1 - \\sqrt{\\frac{11}{12}}\\right)$$\n(Enter your answer to two decimal places, e.g., `0.51`.)\n",
-        "hint_markdown": "Compute $\\sqrt{11 / 12} \\approx 0.957427$, subtract from $1$, and multiply by $12$.",
+        "prompt_markdown": "Now consider the metallic square-root coordination model where an atom with local coordination $Z$ has binding energy $E(Z) = -E_c \\sqrt{Z / Z_0}$, with bulk FCC coordination $Z_0 = 12$. When one bulk atom is removed to a kink site with full bulk coordination, each of its 12 former nearest neighbors drops from $Z = 12$ to $Z = 11$. Calculate the resulting unrelaxed vacancy formation energy ratio $E_v / E_c$ to two decimal places (e.g., `0.51`).",
+        "hint_markdown": "Sum the change in binding energy across all undercoordinated neighbor atoms whose coordination was reduced, and express the total vacancy energy in units of $E_c$.",
         "correct": {
           "value": 0.51,
           "tolerance": 0.02
@@ -1009,8 +1009,8 @@
           "sec_covalent_organic_water_ionic",
           "concept_stillinger_weber"
         ],
-        "prompt_markdown": "Compare the angular factor $g(\\theta) = \\left(\\cos\\theta + \\frac{1}{3}\\right)^2$ in the Stillinger-Weber 3-body term at the close-packed triangle angle $\\theta = 60^\\circ$ ($\\cos 60^\\circ = 0.5$) versus the tetrahedral angle $\\theta = 109.47^\\circ$. What is the numerical value of $\\left(\\cos 60^\\circ + \\frac{1}{3}\\right)^2$? (Enter a decimal to three places, e.g., `0.694`.)\n",
-        "hint_markdown": "Compute $(1/2 + 1/3)^2 = (5/6)^2 = 25/36$.",
+        "prompt_markdown": "In the Stillinger-Weber 3-body potential, the angular penalty factor is given by $g(\\theta) = \\left(\\cos\\theta + \\frac{1}{3}\\right)^2$, which vanishes at the tetrahedral angle $\\theta \\approx 109.47^\\circ$. What is the value of this angular factor $g(\\theta)$ at an angle of $\\theta = 60^\\circ$, characteristic of close-packed triangular configurations? (Enter a decimal to three places, e.g., `0.694`.)",
+        "hint_markdown": "Evaluate the angular function using the cosine of an equilateral triangular bond angle.",
         "correct": {
           "value": 0.694,
           "tolerance": 0.005
@@ -1275,8 +1275,8 @@
         "taught_by": [
           "sec_covalent_organic_water_ionic"
         ],
-        "prompt_markdown": "In a Core-Shell model for an $\\text{O}^{2-}$ anion, the valence shell carries charge $q_s = -2.0\\,e$ and is connected to the core by a harmonic spring with constant $k_s = 20.0\\text{ eV/\u00c5}^2$. If a local electric field of magnitude $|\\mathbf{E}| = 0.50\\text{ V/\u00c5}$ acts on the ion, by what distance $d = |q_s \\mathbf{E}| / k_s$ (in $\\text{\u00c5}$) does the shell displace relative to the core?\n",
-        "hint_markdown": "Note that $|q_s E| = 2.0\\,e \\times 0.50\\text{ V/\u00c5} = 1.0\\text{ eV/\u00c5}$, then divide by $k_s = 20.0\\text{ eV/\u00c5}^2$.",
+        "prompt_markdown": "In a Core-Shell model for an $\\text{O}^{2-}$ anion, the valence shell carries charge $q_s = -2.0\\,e$ and is connected to the core by a harmonic spring with constant $k_s = 20.0\\text{ eV/\u00c5}^2$. If a local electric field of magnitude $|\\mathbf{E}| = 0.50\\text{ V/\u00c5}$ acts on the ion, by what distance $d$ (in $\\text{\u00c5}$) does the shell displace relative to the core in static equilibrium?",
+        "hint_markdown": "Balance the electrostatic force exerted on the shell charge by the local electric field against the restoring harmonic spring force.",
         "correct": {
           "value": 0.05,
           "tolerance": 0.002
@@ -1358,7 +1358,7 @@
           "sec_covalent_organic_water_ionic"
         ],
         "prompt_markdown": "Examine the sample LAMMPS input script on Slide 34 of `05.potentials.pdf`:\n```text\nunits         lj\nboundary      p p p\natom_style    atomic\nlattice       fcc 1.0\nregion        box block 0 6 0 6 0 6 units lattice\ncreate_box    1 box\ncreate_atoms  1 box\n```\nSince a conventional FCC unit cell contains $4$ atoms and `region box block 0 6 0 6 0 6 units lattice` creates a $6 \\times 6 \\times 6$ supercell of FCC unit cells under 3D periodic boundary conditions (`p p p`), how many total atoms $N$ are created by `create_atoms 1 box`?\n",
-        "hint_markdown": "Multiply $4$ atoms per FCC unit cell by $6^3$ unit cells.",
+        "hint_markdown": "Determine the total number of unit cells defined by the bounding box block along the three coordinate axes and multiply by the atom count per conventional FCC unit cell.",
         "correct": {
           "value": 864,
           "tolerance": 0.5

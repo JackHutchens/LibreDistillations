@@ -230,17 +230,17 @@ worksheet:
       text_markdown: The mass of the electron.
       text: The mass of the electron.
     correct: a
-    hint_markdown: 'Recall Vineyard''s 1957 formula: $\nu_0 = \prod_{i=1}^{3N} \nu_i^{\text{min}} / \prod_{j=1}^{3N-1} \nu_j^{\text{saddle}}$.'
+    hint_markdown: Compare the vibrational normal-mode spectrum of the stable potential energy minimum with the non-imaginary normal modes of the transition saddle point.
     rationale_markdown: George Vineyard derived in 1957 that in the harmonic approximation, the attempt frequency $\nu_0 = \frac{\prod_{i=1}^{3N} \nu_i^{\text{min}}}{\prod_{j=1}^{3N-1} \nu_j^{\text{saddle}}}$ represents the ratio of partition function vibrational curvatures at the minimum vs the saddle point (where one imaginary mode along the reaction coordinate is removed).
   - id: q24_03
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_kmc_motivation_and_tst
-    prompt_markdown: An atom hops across a surface with activation barrier $E_a = 0.50\text{ eV}$ and attempt frequency $\nu_0 = 10^{13}\text{ s}^{-1}$ at temperature $T = 500\text{ K}$ ($k_B T = 0.043087\text{ eV}$). Calculate the transition rate $k = \nu_0 e^{-E_a / k_B T}$ in hops per second ($\text{s}^{-1}$) in scientific notation (enter the mantissa $M$ where $k = M \times 10^7$).
+    prompt_markdown: An atom hops across a surface with activation barrier $E_a = 0.50\text{ eV}$ and attempt frequency $\nu_0 = 10^{13}\text{ s}^{-1}$ at temperature $T = 500\text{ K}$ ($k_B T = 0.043087\text{ eV}$). According to transition state theory, calculate the transition rate $k$ in hops per second ($\text{s}^{-1}$) in scientific notation (enter the mantissa $M$ where $k = M \times 10^7$).
     correct: 9.07
     tolerance: 0.2
-    hint_markdown: Compute $\beta E_a = 0.50 / 0.043087 \approx 11.604$. Then evaluate $10^{13} \times e^{-11.604}$.
+    hint_markdown: Evaluate the Arrhenius factor using the thermal energy $k_B T$ and scale by the vibrational attempt frequency.
     rationale_markdown: $E_a / k_B T = 0.50 / 0.043087 = 11.6044$. $e^{-11.6044} \approx 9.074 \times 10^{-6}$. Then $k = 10^{13} \times (9.074 \times 10^{-6}) = 9.074 \times 10^7\text{ s}^{-1}$.
   - id: q24_04
     type: problem
@@ -295,7 +295,7 @@ worksheet:
     correct: 0.0002
     tolerance: 1.0e-05
     unit: s
-    hint_markdown: Notice that $\ln(1/e) = -1.0$. Calculate $-(-1.0) / 5000$.
+    hint_markdown: Apply the inversion method for exponentially distributed waiting times given the total escape rate and uniform random deviate.
     rationale_markdown: $\Delta t = -\ln(0.367879) / 5000 = -(-1.0) / 5000 = 1 / 5000 = 0.0002\text{ s}$ ($0.2\text{ ms}$).
   - id: q24_07
     type: problem
@@ -317,7 +317,7 @@ worksheet:
       text_markdown: All three pathways have identical probability
       text: All three pathways have identical probability
     correct: a
-    hint_markdown: 'Remember the Arrhenius dependence: $r \propto e^{-E_a / k_B T}$.'
+    hint_markdown: Consider how transition probability scales exponentially with activation barrier height under Arrhenius kinetics.
     rationale_markdown: Because the rate depends exponentially on $-E_a / k_B T$, the pathway with the lowest activation barrier ($E_1 = 0.45\text{ eV}$) has the highest rate $r_1$, and therefore occupies the largest slice of the cumulative roulette wheel.
   - id: q24_08
     type: problem
@@ -378,7 +378,7 @@ worksheet:
     prompt_markdown: A state has two outbound transitions with rates $r_1 = 300\text{ s}^{-1}$ and $r_2 = 700\text{ s}^{-1}$. What is the probability $P_1$ that transition 1 occurs?
     correct: 0.3
     tolerance: 0.01
-    hint_markdown: Divide $r_1$ by the total rate $R = r_1 + r_2$.
+    hint_markdown: Normalize the rate of the designated pathway by the total escape rate from the current state.
     rationale_markdown: $R = 300 + 700 = 1000\text{ s}^{-1}$. Then $P_1 = 300 / 1000 = 0.30$ (30%).
   - id: sec_adsorption_desorption_kinetics
     type: markdown_section
@@ -482,21 +482,21 @@ worksheet:
     question_type: numeric
     difficulty: easy
     taught_by: sec_adsorption_desorption_kinetics
-    prompt_markdown: In surface kinetics with adsorption rate $r_A = 1.5\text{ s}^{-1}$ and desorption rate $r_D = 0.5\text{ s}^{-1}$, calculate the steady-state equilibrium coverage $\theta_{\text{eq}} = \frac{r_A}{r_A + r_D}$.
+    prompt_markdown: In surface kinetics with adsorption rate $r_A = 1.5\text{ s}^{-1}$ and desorption rate $r_D = 0.5\text{ s}^{-1}$, calculate the steady-state equilibrium coverage $\theta_{\text{eq}}$.
     correct: 0.75
     tolerance: 0.01
-    hint_markdown: Evaluate $1.5 / (1.5 + 0.5)$.
+    hint_markdown: Set the net rate of coverage change to zero by balancing the rates of site adsorption and desorption.
     rationale_markdown: $\theta_{\text{eq}} = 1.5 / (1.5 + 0.5) = 1.5 / 2.0 = 0.75$ (75% coverage).
   - id: q24_12
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_adsorption_desorption_kinetics
-    prompt_markdown: For the same system ($r_A = 1.5\text{ s}^{-1}, r_D = 0.5\text{ s}^{-1}$), what is the characteristic relaxation time constant $\tau_{\text{relax}} = \frac{1}{r_A + r_D}$ in seconds?
+    prompt_markdown: For the same system ($r_A = 1.5\text{ s}^{-1}, r_D = 0.5\text{ s}^{-1}$), what is the characteristic exponential relaxation time constant $\tau_{\text{relax}}$ in seconds?
     correct: 0.5
     tolerance: 0.01
     unit: s
-    hint_markdown: Compute $1 / (1.5 + 0.5)$.
+    hint_markdown: Determine the inverse of the sum of forward and reverse kinetic rates governing the approach to steady-state coverage.
     rationale_markdown: $\tau_{\text{relax}} = 1 / (1.5 + 0.5) = 1 / 2.0 = 0.50\text{ s}$.
   - id: q24_13
     type: problem
@@ -540,7 +540,7 @@ worksheet:
       text_markdown: $0.95$
       text: $0.95$
     correct: a
-    hint_markdown: Compute $\theta(0.5) = 0.75 + (0.10 - 0.75)e^{-(2.0)(0.5)} = 0.75 - 0.65 e^{-1}$.
+    hint_markdown: Integrate the first-order linear relaxation differential equation for the coverage deficit relative to equilibrium.
     rationale_markdown: $\theta(0.5) = 0.75 - 0.65 \times 0.367879 = 0.75 - 0.239 = 0.511 \approx 0.51$.
   - id: q24_15
     type: problem
@@ -562,7 +562,7 @@ worksheet:
       text_markdown: It eliminates the need for random numbers.
       text: It eliminates the need for random numbers.
     correct: a
-    hint_markdown: See slide 7 of 21.KMC.pdf on Trotter's formula.
+    hint_markdown: Examine how operator splitting allows a composite continuous-time generator to be approximated as a sequence of independent local Poisson generators.
     rationale_markdown: As shown in the lecture notes, Trotter's formula allows the global transition generator $\mathcal{L} = \sum_k \mathcal{L}_k$ to be factored into independent sub-generators over small time slices $\Delta t$, justifying treating competing Poisson processes as independent channels.
   - id: q24_16
     type: problem
@@ -609,17 +609,17 @@ worksheet:
       text_markdown: $\theta_{\text{eq}}$ oscillates wildly
       text: $\theta_{\text{eq}}$ oscillates wildly
     correct: b
-    hint_markdown: Take the limit of $\frac{r_A}{r_A + r_D}$ as $r_A \to \infty$.
+    hint_markdown: Analyze the steady-state site balance when the rate of arrival completely overwhelms the desorption rate.
     rationale_markdown: As $r_A \to \infty$, $\theta_{\text{eq}} = \frac{r_A}{r_A + r_D} = \frac{1}{1 + r_D/r_A} \to 1.0$. All available surface sites become occupied, forming a complete saturated monolayer.
   - id: q24_18
     type: problem
     question_type: numeric
     difficulty: hard
     taught_by: sec_adsorption_desorption_kinetics
-    prompt_markdown: On a surface of $N_{\text{sites}} = 100$, the equilibrium coverage is $\theta_{\text{eq}} = 0.50$. Calculate the expected standard deviation of coverage fluctuations $\sigma_\theta = \sqrt{\frac{\theta_{\text{eq}}(1 - \theta_{\text{eq}})}{N_{\text{sites}}}}$ to 3 decimal places.
+    prompt_markdown: On a surface of $N_{\text{sites}} = 100$, the equilibrium coverage is $\theta_{\text{eq}} = 0.50$. Assuming independent site occupations under binomial statistics, calculate the expected standard deviation of fractional coverage fluctuations $\sigma_\theta$ to 3 decimal places.
     correct: 0.05
     tolerance: 0.002
-    hint_markdown: Evaluate $\sqrt{(0.50 \times 0.50) / 100}$.
+    hint_markdown: Apply the binomial variance formula for fractional site occupancy normalized by total site count.
     rationale_markdown: $\sigma_\theta = \sqrt{\frac{0.25}{100}} = \sqrt{0.0025} = 0.050$ (5% coverage fluctuation).
   - id: q24_19
     type: problem
@@ -641,7 +641,7 @@ worksheet:
       text_markdown: It remains strictly constant.
       text: It remains strictly constant.
     correct: b
-    hint_markdown: Compute the ratio $e^{-E_a / k_B T_2} / e^{-E_a / k_B T_1}$.
+    hint_markdown: Evaluate how the exponential Arrhenius activation factor responds when the thermal denominator in the exponent is doubled.
     rationale_markdown: The ratio is $e^{-0.60/0.0517} / e^{-0.60/0.02585} = e^{-11.605} / e^{-23.21} = e^{+11.605} \approx 1.1 \times 10^5$. Doubling temperature accelerates the rate by over five orders of magnitude!
   - id: q24_20
     type: problem
@@ -663,7 +663,7 @@ worksheet:
       text_markdown: $1\text{ femtosecond } (10^{-15}\text{ s})$
       text: $1\text{ femtosecond } (10^{-15}\text{ s})$
     correct: a
-    hint_markdown: Recall $\langle \Delta t \rangle = 1/R$.
+    hint_markdown: Relate the first moment of an exponential Poisson distribution to the total escape frequency.
     rationale_markdown: $\langle \Delta t \rangle = 1 / R = 1 / 10^6 = 10^{-6}\text{ s} = 1\,\mu\text{s}$.
   - id: sec_superbasin_and_flickering_bottleneck
     type: markdown_section
@@ -775,17 +775,17 @@ worksheet:
       text_markdown: The master equation fails to conserve total probability.
       text: The master equation fails to conserve total probability.
     correct: b
-    hint_markdown: Think about what happens to $R_{\text{total}}$ and $\Delta t = 1/R_{\text{total}}$ when one rate is $10^6$ times faster than all other escape routes.
+    hint_markdown: Consider the consequence for simulation efficiency when the total escape rate is dominated by a rapid, reversible low-barrier process.
     rationale_markdown: When two states have a very low barrier between them, the fast hopping rate dominates $R_{\text{total}}$. KMC selects these fast moves almost 100% of the time, each advancing physical time by an infinitesimally small $\Delta t$, stalling the simulation in a localized superbasin.
   - id: q24_22
     type: problem
     question_type: numeric
     difficulty: hard
     taught_by: sec_superbasin_and_flickering_bottleneck
-    prompt_markdown: At $T = 500\text{ K}$ ($k_B T = 0.043087\text{ eV}$), a dimer has a flickering barrier $E_{\text{flicker}} = 0.20\text{ eV}$ and an escape barrier $E_{\text{escape}} = 0.70\text{ eV}$. What is the expected number of flickering hops $N_{\text{flicker}} \approx e^{(E_{\text{escape}} - E_{\text{flicker}})/k_B T}$ before escaping the trap? (Enter to nearest 1000).
+    prompt_markdown: At $T = 500\text{ K}$ ($k_B T = 0.043087\text{ eV}$), a dimer has a flickering barrier $E_{\text{flicker}} = 0.20\text{ eV}$ and an escape barrier $E_{\text{escape}} = 0.70\text{ eV}$. Assuming equal attempt frequencies, what is the expected number of flickering hops before escaping the trap? (Enter to nearest 1000).
     correct: 109000.0
     tolerance: 5000.0
-    hint_markdown: Compute $\Delta E = 0.70 - 0.20 = 0.50\text{ eV}$. Evaluate $e^{0.50 / 0.043087}$.
+    hint_markdown: Determine the ratio of the fast intra-basin rate to the slow basin escape rate governed by the barrier difference.
     rationale_markdown: $\Delta E / k_B T = 0.50 / 0.043087 \approx 11.6044$. $e^{11.6044} \approx 109,578 \approx 109,000$ hops.
   - id: q24_23
     type: problem
@@ -814,7 +814,7 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: concept_superbasin_flickering_trap
-    prompt_markdown: In the concept cell, in the 'landscape' view, what happens to the ratio $r_{\text{flicker}} / r_{\text{escape}}$ as the temperature $T$ is decreased from 800 K to 300 K?
+    prompt_markdown: What happens to the ratio of the intra-trap flickering rate to the escape rate $r_{\text{flicker}} / r_{\text{escape}}$ as temperature $T$ is decreased from 800 K to 300 K?
     options:
     - id: a
       text_markdown: The ratio drops to 1.
@@ -829,7 +829,7 @@ worksheet:
       text_markdown: Both rates become identical.
       text: Both rates become identical.
     correct: b
-    hint_markdown: Recall $r_{\text{flicker}} / r_{\text{escape}} = e^{\Delta E / k_B T}$. What happens as $T$ drops?
+    hint_markdown: Consider the Arrhenius ratio for two competing processes with differing activation barriers as thermal energy decreases.
     rationale_markdown: Because $e^{\Delta E / k_B T}$ has $T$ in the denominator of the exponent, lowering temperature exponentially amplifies the rate ratio. At low temperatures, the trap becomes extremely severe, requiring millions of hops per escape.
   - id: q24_25
     type: problem
@@ -909,7 +909,7 @@ worksheet:
     correct: 500.0
     tolerance: 5.0
     unit: s
-    hint_markdown: Multiply the number of steps by the mean time step $\langle \Delta t \rangle = 1/\langle R \rangle$.
+    hint_markdown: Relate the total elapsed physical time to the cumulative sum of expected increments for the given average transition rate.
     rationale_markdown: $\langle \Delta t \rangle = 1 / 200\text{ s}^{-1} = 0.005\text{ s}$. Total time is $100,000 \times 0.005\text{ s} = 500.0\text{ s}$ (over 8 minutes of physical time!).
   - id: q24_29
     type: problem
@@ -953,7 +953,7 @@ worksheet:
       text_markdown: $\mathbf{N} = \det(\mathbf{Q}) \mathbf{I}$
       text: $\mathbf{N} = \det(\mathbf{Q}) \mathbf{I}$
     correct: a
-    hint_markdown: Recall the geometric series $\sum_{k=0}^\infty \mathbf{Q}^k = (\mathbf{I} - \mathbf{Q})^{-1}$ for transient Markov chains.
+    hint_markdown: Sum the powers of the transient transition matrix representing the probability of remaining within the basin after successive steps.
     rationale_markdown: In absorbing Markov chain theory, the expected number of visits to transient states before absorption into an exit state is given by the geometric series $\sum_{k=0}^\infty \mathbf{Q}^k = (\mathbf{I} - \mathbf{Q})^{-1} = \mathbf{N}$, known as the fundamental matrix.
   - id: q24_31
     type: problem
@@ -982,10 +982,10 @@ worksheet:
     question_type: numeric
     difficulty: easy
     taught_by: sec_adsorption_desorption_kinetics
-    prompt_markdown: If a surface starts fully empty ($\theta_0 = 0$), $r_A = 2.0\text{ s}^{-1}$, and $r_D = 0.0\text{ s}^{-1}$ (irreversible adsorption), what is the coverage $\theta(t)$ at $t = 0.5\text{ s}$? (Recall $\theta(t) = 1 - e^{-r_A t}$ and $e^{-1} \approx 0.368$).
+    prompt_markdown: If a surface starts fully empty ($\theta_0 = 0$), with adsorption rate $r_A = 2.0\text{ s}^{-1}$ and zero desorption ($r_D = 0.0\text{ s}^{-1}$, irreversible adsorption), what is the fractional coverage $\theta(t)$ at $t = 0.5\text{ s}$? (Recall $e^{-1} \approx 0.368$).
     correct: 0.632
     tolerance: 0.01
-    hint_markdown: Evaluate $1 - e^{-(2.0)(0.5)} = 1 - e^{-1}$.
+    hint_markdown: Integrate the rate equation for irreversible first-order site filling over the elapsed time interval.
     rationale_markdown: $\theta(0.5) = 1 - e^{-1.0} = 1 - 0.367879 = 0.6321 \approx 0.632$ (63.2%).
   - id: q24_33
     type: problem
@@ -1029,18 +1029,18 @@ worksheet:
       text_markdown: $\frac{W(A \to B)}{W(B \to A)} = 0$
       text: $\frac{W(A \to B)}{W(B \to A)} = 0$
     correct: a
-    hint_markdown: Detailed balance requires $\pi(A) W(A \to B) = \pi(B) W(B \to A)$, where $\pi(s) \propto e^{-\beta E_s}$.
+    hint_markdown: Equate the microscopic probability flux between two configurations using their canonical Boltzmann equilibrium weights.
     rationale_markdown: 'Detailed balance states that at thermodynamic equilibrium, the probability flux between any two states must balance exactly: $\pi(A) W(A \to B) = \pi(B) W(B \to A)$. Substituting the Boltzmann distribution $\pi(s) = e^{-\beta E_s} / Z$ yields $W(A \to B) / W(B \to A) = e^{-\beta(E_B - E_A)}$.'
   - id: q24_35
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_master_equation_and_bkl
-    prompt_markdown: Two states $A$ and $B$ have energies $E_A = 0.0\text{ eV}$ and $E_B = 0.10\text{ eV}$ at $T = 300\text{ K}$ ($k_B T = 0.02585\text{ eV}$). If the forward transition rate is $W(A \to B) = 100\text{ s}^{-1}$, calculate the reverse transition rate $W(B \to A) = W(A \to B) e^{\beta(E_B - E_A)}$ in $\text{s}^{-1}$ to the nearest integer.
+    prompt_markdown: Two states $A$ and $B$ have energies $E_A = 0.0\text{ eV}$ and $E_B = 0.10\text{ eV}$ at $T = 300\text{ K}$ ($k_B T = 0.02585\text{ eV}$). If the forward transition rate is $W(A \to B) = 100\text{ s}^{-1}$, calculate the reverse transition rate $W(B \to A)$ in $\text{s}^{-1}$ to the nearest integer.
     correct: 4790.0
     tolerance: 50.0
     unit: s^-1
-    hint_markdown: Compute $100 \times e^{0.10 / 0.02585} = 100 \times e^{3.8685}$.
+    hint_markdown: Apply the condition of detailed balance using the energy difference between states $A$ and $B$.
     rationale_markdown: $e^{0.10 / 0.02585} = e^{3.86847} \approx 47.87$. Then $W(B \to A) = 100 \times 47.87 \approx 4787 \approx 4790\text{ s}^{-1}$.
   - id: q24_36
     type: problem
@@ -1091,11 +1091,11 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_kmc_motivation_and_tst
-    prompt_markdown: In transition state theory, if the attempt frequency is $\nu_0 = 5.0 \times 10^{12}\text{ s}^{-1}$ and the activation barrier is $E_a = 0.30\text{ eV}$ at $T = 300\text{ K}$ ($k_B T = 0.02585\text{ eV}$), what is the mean waiting time $\tau = 1/k$ in microseconds ($\mu\text{s}$)?
+    prompt_markdown: In transition state theory, if the attempt frequency is $\nu_0 = 5.0 \times 10^{12}\text{ s}^{-1}$ and the activation barrier is $E_a = 0.30\text{ eV}$ at $T = 300\text{ K}$ ($k_B T = 0.02585\text{ eV}$), what is the mean waiting time $\tau$ for this transition in microseconds ($\mu\text{s}$)?
     correct: 0.022
     tolerance: 0.5
     unit: microseconds
-    hint_markdown: Compute $k = \nu_0 e^{-E_a / k_B T}$ in s^-1, then invert to get $\tau$ and convert to $\mu\text{s}$ ($1\text{ s} = 10^6\,\mu\text{s}$).
+    hint_markdown: Determine the transition rate from the Arrhenius relation, invert to obtain the mean waiting time, and convert to microsecond units.
     rationale_markdown: $E_a / k_B T = 0.30 / 0.02585 = 11.6054$. $e^{-11.6054} \approx 9.117 \times 10^{-6}$. Then $k = 5 \times 10^{12} \times (9.117 \times 10^{-6}) = 4.558 \times 10^7\text{ s}^{-1}$. The mean waiting time is $\tau = 1/k = 2.194 \times 10^{-8}\text{ s} = 0.0219\,\mu\text{s} \approx 0.022\,\mu\text{s}$.
   - id: q24_39
     type: problem
@@ -1171,9 +1171,9 @@ worksheet:
     question_type: numeric
     difficulty: easy
     taught_by: sec_poisson_clock_and_sampling
-    prompt_markdown: A radioactive decay or atomic desorption process has a single transition channel with rate $r = 10.0\text{ s}^{-1}$ ($R_{\text{total}} = 10.0\text{ s}^{-1}$). If $u = 0.50$, calculate the sampled Poisson waiting time $\Delta t = -\frac{\ln(0.50)}{10.0}$ in seconds to 3 decimal places.
+    prompt_markdown: A radioactive decay or atomic desorption process has a single transition channel with rate $r = 10.0\text{ s}^{-1}$ ($R_{\text{total}} = 10.0\text{ s}^{-1}$). If the uniform random deviate drawn is $u = 0.50$, calculate the sampled Poisson waiting time $\Delta t$ in seconds to 3 decimal places.
     correct: 0.069
     tolerance: 0.002
     unit: s
-    hint_markdown: Recall $\ln(0.50) = -\ln(2) \approx -0.69315$.
+    hint_markdown: Apply the standard exponential random variate inversion formula using the given random deviate and escape rate.
     rationale_markdown: $\Delta t = -(-0.69315) / 10.0 = 0.69315 / 10.0 = 0.0693 \approx 0.069\text{ s}$.

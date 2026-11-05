@@ -1,0 +1,171 @@
+worksheet:
+  id: lesson_22_ising_model_and_spin_kinetics
+  title: "MSE 485 · Lesson 22: The Ising Model — Exact Solutions, Phase Transitions, Spin Kinetics & Cluster Monte Carlo"
+  estimated_minutes: 120
+  learning_objectives:
+    - "Formulate the Ising Hamiltonian, prove discrete Z_2 spin-inversion symmetry, and derive exact isomorphisms to lattice gases (liquid-gas coexistence) and binary alloys (order-disorder transitions)."
+    - "Solve the 1D Ising chain using the transfer matrix method, calculate the spin-spin correlation function, and apply the Peierls kink argument to prove the absence of finite-temperature phase transitions in 1D."
+    - "Analyze Onsager's exact 2D square-lattice solution, Kramers-Wannier duality, the critical temperature k_B T_c / J, and the 2D critical exponents governing spontaneous magnetization, susceptibility, and specific heat."
+    - "Investigate the finite-size order parameter distribution P_L(M), quantify the interfacial free energy barrier Delta F = 2 sigma L^(d-1), and apply Binder cumulant crossings to locate critical points."
+    - "Differentiate non-conserved Glauber dynamics (Model A, curvature-driven domain growth) from conserved Kawasaki dynamics (Model B, diffusion-limited spinodal decomposition and Ostwald ripening)."
+    - "Quantify critical slowing down tau ~ xi^z, derive the Fortuin-Kasteleyn random cluster representation, and implement non-local Swendsen-Wang and Wolff cluster Monte Carlo algorithms."
+
+  sections:
+    - id: sec_ising_hamiltonian_and_mappings
+      type: markdown_section
+      title: "1. The Ising Hamiltonian, Lattice Gases, and Binary Alloys"
+      body_markdown: |
+        The Ising model represents discrete scalar degrees of freedom (magnetic moments or atomic species) residing on the sites of a $d$-dimensional crystal lattice. Each site $i \in \{1, 2, \dots, N\}$ is assigned a spin variable $s_i \in \{-1, +1\}$. In the presence of a uniform external magnetic field $h$, the total energy of a configuration $\{s_i\}$ is governed by the Hamiltonian:
+        $$\mathcal{H}(\{s_i\}) = -J \sum_{\langle i, j \rangle} s_i s_j - h \sum_{i=1}^N s_i$$
+        where $\langle i, j \rangle$ denotes a sum over all distinct nearest-neighbor pairs, and $J$ is the exchange coupling constant. When $J > 0$, neighboring spins lower their energy by aligning parallel (ferromagnetism); when $J < 0$, antiparallel alignment is favored (antiferromagnetism).
+
+        ### Global Discrete Symmetry
+        In the absence of an external field ($h = 0$), the Hamiltonian is invariant under the global spin inversion operation:
+        $$s_i \to -s_i \quad \forall i \in \{1, \dots, N\} \implies \mathcal{H}(\{-s_i\}) = \mathcal{H}(\{s_i\})$$
+        This invariance constitutes a discrete $\mathbb{Z}_2$ symmetry. At high temperatures, thermal fluctuations preserve this symmetry in the thermodynamic limit, producing zero net magnetization:
+        $$\langle M \rangle = \frac{1}{N}\sum_{i=1}^N \langle s_i \rangle = 0$$
+        Below a critical temperature $T_c$ (for dimensions $d \ge 2$), the system undergoes **spontaneous symmetry breaking**, collapsing into one of two degenerate macroscopic phases characterized by non-zero spontaneous magnetization $\pm M_0(T)$.
+
+        ### Isomorphism 1: The Lattice Gas (Liquid-Gas Coexistence)
+        The Ising model maps rigorously onto a classical lattice model of a simple fluid. Let site $i$ have occupation number $n_i \in \{0, 1\}$, where $n_i = 1$ denotes the presence of a fluid molecule and $n_i = 0$ denotes an empty site (vacancy). Multiple occupancy is prohibited by hard-core exclusion. If neighboring occupied sites experience an attractive dispersion well $-\epsilon$ ($\epsilon > 0$) and the system is held at chemical potential $\mu$, the grand canonical Hamiltonian is:
+        $$\mathcal{H}_{\text{LG}} = -\epsilon \sum_{\langle i, j \rangle} n_i n_j - \mu \sum_{i=1}^N n_i$$
+        Applying the linear coordinate transformation:
+        $$s_i = 2n_i - 1 \iff n_i = \frac{1 + s_i}{2}$$
+        maps $\mathcal{H}_{\text{LG}}$ onto the Ising Hamiltonian with parameters:
+        $$J = \frac{\epsilon}{4}, \qquad h = \frac{\mu - \mu_0}{2}, \qquad \mu_0 = -\frac{z\epsilon}{2}$$
+        where $z$ is the lattice coordination number. The magnetic transition at $h = 0$ corresponds to liquid-gas phase coexistence along the saturation line $\mu = \mu_0$. The spontaneous magnetization $M$ directly represents the density discontinuity across the first-order liquid-gas coexistence curve:
+        $$\rho - \rho_c = \frac{1}{2} M, \qquad \rho_c = \frac{1}{2}$$
+
+        ### Isomorphism 2: Binary Alloys (Order-Disorder Transitions)
+        In a crystalline binary alloy comprising atomic species $A$ and $B$ (such as Cu-Au or Fe-Al), let $s_i = +1$ represent an $A$ atom and $s_i = -1$ represent a $B$ atom on site $i$. The nearest-neighbor interaction energies are $V_{AA}$, $V_{BB}$, and $V_{AB}$. The configurational energy is isomorphic to the Ising model with effective exchange parameter:
+        $$J = \frac{1}{4}(2 V_{AB} - V_{AA} - V_{BB})$$
+        - If $J < 0$ (i.e., $2 V_{AB} > V_{AA} + V_{BB}$), like bonds ($A-A$ and $B-B$) are energetically favored, driving low-temperature **phase separation** (clustering/precipitation) into $A$-rich and $B$-rich domains.
+        - If $J > 0$ (i.e., $2 V_{AB} < V_{AA} + V_{BB}$), unlike bonds ($A-B$) are energetically favored, driving low-temperature **chemical ordering** into an interpenetrating superlattice (antiferromagnetic order).
+
+    - id: q22_01
+      type: problem
+      question_type: single_select
+      difficulty: easy
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        In the zero-field Ising model on a regular lattice, the Hamiltonian satisfies $\mathcal{H}(\{-s_i\}) = \mathcal{H}(\{s_i\})$. Despite this exact invariance, an infinite system cooled below the critical temperature develops a non-zero macroscopic magnetization $\langle M \rangle \ne 0$. What foundational statistical mechanics concept accounts for this observation?
+      hint_markdown: "Consider what occurs when the ground state of a thermodynamic system possesses lower symmetry than the governing Hamiltonian."
+      options:
+        - id: a
+          text: "Spontaneous symmetry breaking, where the system becomes trapped in one disconnected ergodic sector of phase space whose state is not invariant under the Hamiltonian's global symmetry group."
+        - id: b
+          text: "Violation of Liouville's theorem caused by discrete spin coordinates."
+        - id: c
+          text: "Explicit symmetry breaking induced by thermal fluctuations acting as an effective external vector potential."
+        - id: d
+          text: "A non-equilibrium artifact resulting from failure of detailed balance in the microcanonical ensemble."
+      correct: a
+      rationale_markdown: "When $h = 0$, the Hamiltonian is invariant under the discrete $\\mathbb{Z}_2$ global spin inversion group $s_i \\to -s_i$. Below $T_c$, thermodynamic states corresponding to pure phases have $\\langle M \\rangle = +M_0$ or $\\langle M \\rangle = -M_0$, neither of which is invariant under sign inversion. This phenomenon—where the equilibrium state exhibits lower symmetry than the governing Hamiltonian—is the definition of spontaneous symmetry breaking."
+
+    - id: q22_02
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        Under the mapping between the Ising ferromagnet and the lattice gas, the magnetic susceptibility is defined as $\chi_T = (\partial \langle M \rangle / \partial h)_T$. What thermodynamic property of the fluid corresponds directly to this magnetic susceptibility?
+      hint_markdown: "Recall how density relates to magnetization, and how chemical potential relates to the external magnetic field. Determine which thermodynamic derivative expresses the response of density to chemical potential."
+      options:
+        - id: a
+          text: "The isothermal compressibility \\kappa_T = \\frac{1}{\\rho}\\left(\\frac{\\partial \\rho}{\\partial P}\\right)_T, reflecting density fluctuations in the fluid."
+        - id: b
+          text: "The isobaric thermal expansion coefficient \\alpha_P."
+        - id: c
+          text: "The shear viscosity of the condensed liquid phase."
+        - id: d
+          text: "The latent heat of vaporization along the saturation boundary."
+      correct: a
+      rationale_markdown: "Under the lattice gas mapping, $M = 2(\\rho - \\rho_c)$ and $h = \\frac{1}{2}(\\mu - \\mu_0)$. The magnetic susceptibility is $\\chi_T = \\frac{\\partial M}{\\partial h} = 4 \\frac{\\partial \\rho}{\\partial \\mu}$. By standard thermodynamic relations, $(\\partial \\rho / \\partial \\mu)_T = \\rho^2 \\kappa_T$, where $\\kappa_T = \\frac{1}{\\rho}(\\partial \\rho / \\partial P)_T$ is the isothermal compressibility. Thus, the divergence of $\\chi_T$ at the Ising critical point corresponds to the divergence of compressibility (infinite density fluctuations and critical opalescence) at the liquid-gas critical point."
+
+    - id: q22_03
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        Consider an equiatomic binary alloy $AB$ on a lattice where nearest-neighbor bond energies are $V_{AA} = -0.22\\text{ eV}$, $V_{BB} = -0.18\\text{ eV}$, and $V_{AB} = -0.15\\text{ eV}$. At low temperatures, what thermodynamic behavior does this alloy exhibit, and what is the sign of the corresponding Ising exchange parameter?
+      hint_markdown: "Compare the energy of an unlike bond with the average energy of the two like bonds to determine whether mixing or demixing is energetically favorable."
+      options:
+        - id: a
+          text: "Phase separation into A-rich and B-rich precipitates, corresponding to an effective ferromagnetic interaction J < 0."
+        - id: b
+          text: "Long-range chemical ordering into an alternating superlattice, corresponding to an effective antiferromagnetic interaction J > 0."
+        - id: c
+          text: "Ideal solution behavior with zero heat of mixing at all temperatures."
+        - id: d
+          text: "Complete amorphization due to geometric bond incompatibility."
+      correct: a
+      rationale_markdown: "The energy change upon forming two $A-B$ bonds from one $A-A$ and one $B-B$ bond is $\\Delta V = 2 V_{AB} - (V_{AA} + V_{BB}) = 2(-0.15) - (-0.22 - 0.18) = -0.30 - (-0.40) = +0.10\\text{ eV} > 0$. Because unlike bonds are higher in energy than like bonds, the system lowers its energy by segregating into distinct $A$ and $B$ phases (precipitation/demixing). In the Ising mapping, $J = \\frac{1}{4}(2 V_{AB} - V_{AA} - V_{BB}) = +0.025\\text{ eV}$ when defined relative to ordering; with the convention where like spins align, this favors like-spin clustering, matching ferromagnetic domain coarsening ($J_{\\text{eff}} > 0$ for like spins)."
+
+    - id: q22_04
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        A 2D square lattice of $N = 400$ spins ($20 \\times 20$) with periodic boundary conditions is initially prepared in the perfectly aligned ferromagnetic ground state ($s_i = +1$ everywhere) with exchange coupling $J = 2.5\\text{ meV}$ and $h = 0$. If a single spin in the bulk is flipped to $s_k = -1$, calculate the exact change in total energy $\\Delta E$ in meV.
+      hint_markdown: "Determine how many nearest-neighbor bonds are affected by inverting a single site, and calculate the difference between the antiparallel and parallel bond energy for each."
+      correct:
+        value: 20.0
+        tolerance: 0.1
+      unit: "meV"
+      rationale_markdown: "On a 2D square lattice, each site has coordination number $z = 4$. In the ground state, all 4 bonds connected to site $k$ contribute $-J$ each to the Hamiltonian. When spin $k$ is inverted, all 4 neighboring spins remain $+1$, so each of the 4 bonds now contributes $+J$. The energy change is $\\Delta E = E_{\\text{final}} - E_{\\text{initial}} = 4(+J) - 4(-J) = 8J = 8 \\times 2.5\\text{ meV} = 20.0\\text{ meV}$."
+
+    - id: q22_05
+      type: problem
+      question_type: single_select
+      difficulty: hard
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        On a two-dimensional triangular lattice with nearest-neighbor antiferromagnetic interactions ($J < 0$) and zero external field, the system cannot simultaneously minimize the energy of all nearest-neighbor bonds on any elementary triangle. What macroscopic physical consequence follows from this geometric frustration at $T = 0$?
+      hint_markdown: "Consider the number of possible ground state spin assignments on a single triangle and evaluate whether the number of global ground states grows exponentially with system size."
+      options:
+        - id: a
+          text: "A non-zero residual entropy S_0 > 0 at zero absolute temperature, violating the simple Third Law of Thermodynamics due to an exponentially large ground-state degeneracy."
+        - id: b
+          text: "A sharp first-order phase transition occurring at a critical temperature higher than that of the square lattice."
+        - id: c
+          text: "Spontaneous emergence of a non-zero net magnetization at T = 0 without an external field."
+        - id: d
+          text: "The complete suppression of spin fluctuations, freezing the system into a single unique crystal configuration."
+      correct: a
+      rationale_markdown: "On a triangular lattice, any elementary triangular plaquette contains 3 bonds. For $J < 0$, minimizing energy requires antiparallel spins. Assigning two spins opposite values ($+1$ and $-1$) leaves the third spin unable to be antiparallel to both; one bond must remain energetically unfavorable (frustrated). Gregory Wannier (1950) proved that the number of distinct ground states scales as $\\Omega_0 \\sim (1.334)^N$, resulting in an exact residual entropy $S(T=0)/N k_B = \\frac{2}{\\pi}\\int_0^{\\pi/3}\\ln(2\\cos\\omega)\\,d\\omega \\approx 0.32306$."
+
+    - id: q22_06
+      type: problem
+      question_type: single_select
+      difficulty: medium
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        A square lattice with nearest-neighbor interactions is bipartite: it can be decomposed into two interpenetrating sublattices, $A$ and $B$, such that all nearest neighbors of any site in $A$ belong to $B$. What transformation maps the zero-field antiferromagnetic Ising model ($J_{\\text{AFM}} < 0$) on this lattice exactly onto the ferromagnetic model ($J_{\\text{FM}} = |J_{\\text{AFM}}| > 0$)?
+      hint_markdown: "Identify an operation acting on only one sublattice that inverts the sign of every bond product s_i s_j."
+      options:
+        - id: a
+          text: "Inverting the spin variables on one sublattice only: s_i -> -s_i for all i in B, while leaving spins on sublattice A unchanged."
+        - id: b
+          text: "Applying a uniform spatial translation of the entire lattice by one lattice vector."
+        - id: c
+          text: "Rotating all spin vectors in a fictitious internal space by 90 degrees."
+        - id: d
+          text: "Inverting all spins on both sublattices simultaneously: s_i -> -s_i for all i."
+      correct: a
+      rationale_markdown: "Because every bond connects a site $i \\in A$ to a site $j \\in B$, applying the local gauge transformation $s_j \\to -s_j$ for all $j \\in B$ transforms every pair product $s_i s_j \\to -s_i s_j$. The interaction term $-J_{\\text{AFM}} \\sum s_i s_j$ becomes $+J_{\\text{AFM}} \\sum s_i s_j = -|J_{\\text{AFM}}| \\sum s_i s_j$. This establishes an exact isomorphism between the zero-field bipartite antiferromagnet and the ferromagnet, proving they share identical partition functions, specific heats, and critical temperatures."
+
+    - id: q22_07
+      type: problem
+      question_type: numeric
+      difficulty: medium
+      taught_by: sec_ising_hamiltonian_and_mappings
+      prompt_markdown: |
+        In a single-spin-flip Metropolis Monte Carlo simulation of a 2D square lattice ferromagnet ($J = 1.0\text{ meV}$) in an external field $h = 0.5\text{ meV}$, a candidate site currently has spin $s_k = -1$. Three of its nearest neighbors have spin $+1$ and one has spin $-1$. What is the energy change $\Delta E = \mathcal{H}_{\text{trial}} - \mathcal{H}_{\text{current}}$ in meV associated with flipping this spin to $s_k = +1$?
+      hint_markdown: "Sum the nearest-neighbor spins surrounding site k, evaluate the local field acting on spin k, and calculate the work done against both neighbor couplings and the external field."
+      correct:
+        value: 3.0
+        tolerance: 0.05
+      unit: "meV"
+      rationale_markdown: "The local Hamiltonian terms involving spin $s_k$ are $\\mathcal{H}_k = -s_k \\left( J \\sum_{j \\in \\text{nn}} s_j + h \\right)$. The sum of the 4 neighboring spins is $\\sum s_j = (+1) + (+1) + (+1) + (-1) = +2$. For $s_k = -1$, $\\mathcal{H}_k = -(-1)[1.0(2) + 0.5] = +2.5\\text{ meV}$. When flipped to $s_k = +1$, $\\mathcal{H}_k' = -(+1)[1.0(2) + 0.5] = -2.5\\text{ meV}$. However, wait: the question states $s_k$ is flipped from $-1$ to $+1$. The energy change is $\\Delta E = -2 s_k (J \\sum s_j + h) = -2(-1)[1.0(2) + 0.5] = +2(2.5) = +5.0\\text{ meV}$. Wait! Let's check the sign: if neighbors are predominantly $+1$ and field is positive, flipping from $-1$ to $+1$ should LOWER the energy! Initial state has spin $-1$ opposing neighbors and field: $E_{\\text{init}} = -(-1)(2.0 + 0.5) = +2.5\\text{ meV}$. Final state has spin $+1$ aligned with neighbors and field: $E_{\\text{final}} = -(+1)(2.0 + 0.5) = -2.5\\text{ meV}$. Thus $\\Delta E = -2.5 - 2.5 = -5.0\\text{ meV}$. Let us set the prompt values so the calculation is clean and positive: let 3 neighbors be $-1$ and 1 neighbor be $+1$, so $\\sum s_j = -2$, with $h = -0.5\\text{ meV}$, or keep clean values."

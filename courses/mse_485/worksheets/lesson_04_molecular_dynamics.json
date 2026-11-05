@@ -326,7 +326,7 @@
         "correct": 1.04,
         "tolerance": 0.001,
         "unit": "nm",
-        "hint_markdown": "Use $x(\\Delta t) = x(0) + v(0)\\Delta t + \\frac{1}{2}a(0)\\Delta t^2$.",
+        "hint_markdown": "Apply the first update step of the Velocity Verlet position algorithm using the initial position, velocity, and current acceleration.",
         "rationale_markdown": "$x(0.1) = 1.0 + (0.5)(0.1) + 0.5(-2.0)(0.1)^2 = 1.0 + 0.05 - 0.01 = 1.04\\text{ nm}$."
       },
       {
@@ -339,7 +339,7 @@
         "correct": 0.3,
         "tolerance": 0.001,
         "unit": "nm/ps",
-        "hint_markdown": "Use $v(\\Delta t) = v(0) + \\frac{1}{2}(a(0) + a(\\Delta t))\\Delta t$.",
+        "hint_markdown": "Evaluate the velocity update by integrating the average of the initial and final accelerations across the timestep.",
         "rationale_markdown": "$v(0.1) = 0.5 + 0.5(-2.0 - 2.0)(0.1) = 0.5 - 0.2 = 0.30\\text{ nm/ps}$."
       },
       {
@@ -484,7 +484,7 @@
           }
         ],
         "correct": "b",
-        "hint_markdown": "Examine the condition $\\frac{1}{4}\\omega^2 \\Delta t^2 = 1 \\implies \\omega \\Delta t = 2$.",
+        "hint_markdown": "Identify the critical value of the dimensionless product of frequency and timestep where the shadow Hamiltonian denominator passes through zero.",
         "rationale_markdown": "When $\\omega \\Delta t = 2$ (corresponding to $\\Delta t = 2/\\omega = T_{\\text{vib}}/\\pi$), the denominator goes to zero. The eigenvalues of the symplectic step matrix become complex unimodular or real unstable, the shadow Hamiltonian diverges, and the numerical trajectory undergoes catastrophic resonance explosion."
       },
       {
@@ -628,7 +628,7 @@
         "prompt_markdown": "For a standard Lennard-Jones potential $V(r) = 4\\epsilon \\left[ (\\sigma/r)^{12} - (\\sigma/r)^6 \\right]$ with $\\epsilon = 1.0$ and $\\sigma = 1.0$, calculate the unshifted potential value $V(r_c)$ at cutoff $r_c = 2.5\\sigma$. (Enter as a signed decimal to 4 decimal places).",
         "correct": -0.0163,
         "tolerance": 0.001,
-        "hint_markdown": "Calculate $(1/2.5)^{12} - (1/2.5)^6$ and multiply by 4.",
+        "hint_markdown": "Evaluate the raw Lennard-Jones potential energy directly at the cutoff distance in units of the well depth.",
         "rationale_markdown": "$r = 2.5 \\implies r^{-6} = (1/2.5)^6 = 1/244.140625 \\approx 0.004096$. Then $r^{-12} = (0.004096)^2 \\approx 0.00001678$. Thus $V(2.5) = 4(0.00001678 - 0.004096) = 4(-0.0040792) = -0.016317 \\approx -0.0163\\epsilon$."
       },
       {
@@ -872,7 +872,7 @@
           }
         ],
         "correct": "b",
-        "hint_markdown": "Check the criteria for an integrator in slide 7 of 04.MD.pdf.",
+        "hint_markdown": "Divide the characteristic vibrational oscillation period by the required discretization samples per cycle.",
         "rationale_markdown": "Slide 7 specifies: 'Adjust to get energy conservation to 1% of kinetic energy.' Fluctuations below ~1% of kinetic energy ensure that statistical ensemble averages are unaffected by discretization error."
       },
       {
@@ -955,7 +955,7 @@
         "correct": 200.0,
         "tolerance": 0.1,
         "unit": "ps",
-        "hint_markdown": "Multiply steps by $\\Delta t$ and convert fs to ps ($1000\\text{ fs} = 1\\text{ ps}$).",
+        "hint_markdown": "Compute the accumulated physical time from the total step count and step duration, converting units appropriately.",
         "rationale_markdown": "$100,000 \\times 2.0\\text{ fs} = 200,000\\text{ fs} = 200.0\\text{ ps}$."
       },
       {
@@ -1146,7 +1146,7 @@
         "prompt_markdown": "A simulation of $N = 10,000$ atoms uses a naive $\\mathcal{O}(N^2)$ pair loop. If the system size is increased to $N = 50,000$ atoms, by what factor does the pair calculation time increase?",
         "correct": 25.0,
         "tolerance": 0.5,
-        "hint_markdown": "Calculate $(50,000 / 10,000)^2$.",
+        "hint_markdown": "Consider how the operation count of an unindexed all-pairs loop scales with the ratio of particle numbers.",
         "rationale_markdown": "Because the calculation scales as $N^2$, $(50,000 / 10,000)^2 = 5^2 = 25.0$. The computational time increases by a factor of 25."
       },
       {
@@ -1258,7 +1258,7 @@
         "correct": 64.5,
         "tolerance": 2.0,
         "unit": "ps",
-        "hint_markdown": "Solve for $t$: $t = \\frac{1}{\\lambda} \\ln(\\delta / \\delta_0)$.",
+        "hint_markdown": "Relate the elapsed time to the initial separation, target separation, and exponential growth rate via the Lyapunov divergence relation.",
         "rationale_markdown": "$t = \\frac{1}{0.5} \\ln(0.1 / 10^{-15}) = 2 \\times \\ln(10^{14}) = 2 \\times (14 \\times 2.302585) = 2 \\times 32.236 = 64.47\\text{ ps}$."
       },
       {
@@ -1406,7 +1406,7 @@
         "prompt_markdown": "A cubic simulation box of edge length $L = 5.0\\text{ nm}$ contains particles interacting via a potential with cutoff $r_c = 1.2\\text{ nm}$. If the box is subdivided into linked cells of equal size $d \\ge r_c$, what is the maximum integer number of cell divisions $M$ along each dimension (such that $L/M \\ge r_c$)?",
         "correct": 4.0,
         "tolerance": 0.01,
-        "hint_markdown": "We need $d = L/M \\ge r_c \\implies M \\le L / r_c$.",
+        "hint_markdown": "Determine the maximum integer division of the box edge that ensures each subcell width remains at least as large as the potential cutoff distance.",
         "rationale_markdown": "$M \\le 5.0 / 1.2 = 4.167$. Since $M$ must be an integer, the maximum number of cell divisions along each axis is $M = 4$ (giving cell width $d = 5.0 / 4 = 1.25\\text{ nm} \\ge 1.2\\text{ nm}$)."
       }
     ]

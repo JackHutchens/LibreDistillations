@@ -140,7 +140,7 @@
         "difficulty": "medium",
         "taught_by": "sec_menus_of_moves",
         "prompt_markdown": "Suppose two move operators $P_A$ and $P_B$ on a 3-state system with uniform target distribution $\\pi = (1/3, 1/3, 1/3)$ are given by the symmetric permutation-mixing matrices:\n$$P_A = \\begin{pmatrix} 0.5 & 0.5 & 0 \\\\ 0.5 & 0.5 & 0 \\\\ 0 & 0 & 1 \\end{pmatrix}, \\qquad P_B = \\begin{pmatrix} 1 & 0 & 0 \\\\ 0 & 0.5 & 0.5 \\\\ 0 & 0.5 & 0.5 \\end{pmatrix}$$\nConsider the composite sequential transition matrix $P_{\\text{seq}} = P_A P_B$. What is the transition probability $P_{\\text{seq}}(1 \\to 3)$ from state $1$ to state $3$ in a single $(A, B)$ cycle?\n",
-        "hint_markdown": "Multiply the first row of $P_A$, $(0.5, 0.5, 0)$, by the third column of $P_B$, $(0, 0.5, 0.5)^T$.",
+        "hint_markdown": "Perform matrix multiplication to find the $(1, 3)$ element of the composite product matrix $P_A P_B$.",
         "correct": {
           "value": 0.25,
           "tolerance": 0.001
@@ -182,8 +182,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_menus_of_moves",
-        "prompt_markdown": "In an $N$-particle fluid ($N \\gg 1$), one 'pass' (or 'sweep') consists of $N$ single-particle trial moves. If you choose a particle index uniformly at random on each of the $N$ steps (instead of cycling sequentially $1, 2, \\dots, N$), what fraction of the $N$ particles are **not** attempted at all during a single pass in the large-$N$ limit $\\lim_{N\\to\\infty}(1 - 1/N)^N$?",
-        "hint_markdown": "Evaluate $e^{-1} \\approx 0.3679$.",
+        "prompt_markdown": "In an $N$-particle fluid ($N \\gg 1$), one pass consists of $N$ single-particle trial moves. If a particle index is chosen uniformly at random with replacement on each of the $N$ attempts, what fraction of the $N$ particles are **not** attempted at all during a single pass in the thermodynamic limit $N \\to \\infty$?",
+        "hint_markdown": "Calculate the probability that a specific particle is missed across $N$ independent random selections with replacement as $N \\to \\infty$.",
         "correct": {
           "value": 0.3679,
           "tolerance": 0.002
@@ -276,7 +276,7 @@
           "concept_preferential_surface"
         ],
         "prompt_markdown": "In a preferential sampling simulation of $N = 500$ atoms, the current normalization sum of selection weights is $H(\\mathbf{R}) = \\sum_{j=1}^N h(z_j) = 40.0$. Atom $i$ is selected at height $z_i$ where $h(z_i) = 0.80$, and is proposed to move to height $z_i'$ where $h(z_i') = 0.30$. What is the new normalization sum $H(\\mathbf{R}')$ in the trial configuration?\n",
-        "hint_markdown": "Use the $\\mathcal{O}(1)$ update identity $H(\\mathbf{R}') = H(\\mathbf{R}) - h(z_i) + h(z_i')$.",
+        "hint_markdown": "Account for the replacement of the moved particle's old weight with its new weight in the cumulative sum.",
         "correct": {
           "value": 39.5,
           "tolerance": 0.01
@@ -293,7 +293,7 @@
           "concept_preferential_surface"
         ],
         "prompt_markdown": "Using the numbers from the previous question ($H(\\mathbf{R}) = 40.0$, $h(z_i) = 0.80$, $H(\\mathbf{R}') = 39.5$, $h(z_i') = 0.30$), suppose the trial move from $z_i$ to $z_i'$ has zero potential energy change ($\\Delta V = V(\\mathbf{R}') - V(\\mathbf{R}) = 0$). What is the exact Metropolis\u2013Hastings acceptance probability\n$$A(\\mathbf{R} \\to \\mathbf{R}') = \\min\\!\\left\\{1,\\; \\frac{T(\\mathbf{R}' \\to \\mathbf{R})}{T(\\mathbf{R} \\to \\mathbf{R}')} e^{-\\beta \\Delta V}\\right\\} = \\min\\!\\left\\{1,\\; \\frac{h(z_i')/H(\\mathbf{R}')}{h(z_i)/H(\\mathbf{R})}\\right\\}$$\nfor this surface-to-bulk move?\n",
-        "hint_markdown": "Evaluate $(0.30 / 39.5) / (0.80 / 40.0) = (0.30 / 0.80) \\times (40.0 / 39.5)$.",
+        "hint_markdown": "Evaluate the ratio of reverse to forward selection probabilities using the individual weights and their respective partition sums.",
         "correct": {
           "value": 0.3797,
           "tolerance": 0.002
@@ -544,7 +544,7 @@
         "difficulty": "medium",
         "taught_by": "sec_heat_bath_mc",
         "prompt_markdown": "Consider a 3-state site variable $s_i \\in \\{1, 2, 3\\}$ on a crystal lattice (with all surrounding sites held fixed). In this local environment, the three states have relative Boltzmann weights $\\pi(1) = 2.0$, $\\pi(2) = 3.0$, and $\\pi(3) = 5.0$. Using the single-site **Heat-Bath** algorithm, what is the probability $P(s_i \\to 3)$ that site $i$ is placed in state $3$ on the next step?\n",
-        "hint_markdown": "Compute $C = \\pi(1) + \\pi(2) + \\pi(3)$ and evaluate $T(s_i \\to 3) = \\pi(3) / C$ (since $C(s) = C(s')$, $A = 1$).",
+        "hint_markdown": "Normalize the Boltzmann weight of the target state over the sum of weights of all accessible local states.",
         "correct": {
           "value": 0.5,
           "tolerance": 0.001
@@ -558,7 +558,7 @@
         "difficulty": "hard",
         "taught_by": "sec_heat_bath_mc",
         "prompt_markdown": "Suppose a particle on a 1D lattice can hop to any site $s'$ within a moving window $\\mathcal{N}(s) = \\{s-1, s, s+1\\}$ centered on its current site $s$. Because the window shifts when the particle moves from $s$ to $s' = s+1$, the local normalization sum changes from $C(s) = \\pi(s-1) + \\pi(s) + \\pi(s+1) = 6.0$ to $C(s') = \\pi(s) + \\pi(s+1) + \\pi(s+2) = 8.0$. What is the Heat-Bath acceptance probability $A(s \\to s')$ for this move?\n",
-        "hint_markdown": "Use $A(s \\to s') = \\min\\!\\left(1,\\, C(s)/C(s')\\right)$.",
+        "hint_markdown": "Evaluate the acceptance probability ratio using the local normalization partition sums for the initial and final neighborhoods.",
         "correct": {
           "value": 0.75,
           "tolerance": 0.001
@@ -575,7 +575,7 @@
           "concept_heat_bath"
         ],
         "prompt_markdown": "In a 2D Ising model with energy $E = -J \\sum_{\\langle ij \\rangle} \\sigma_i \\sigma_j$, a spin $\\sigma_i$ experiences a dimensionless local field $\\beta h_{\\text{loc}} = \\beta J \\sum_{j \\in nn(i)} \\sigma_j = +0.50$ (so its local Boltzmann weight is $\\propto e^{+0.50\\,\\sigma_i}$ for $\\sigma_i \\in \\{-1, +1\\}$). Under the **Heat-Bath** update rule, what is the probability of setting $\\sigma_i' = +1$?\n",
-        "hint_markdown": "Compute $\\frac{e^{+0.50}}{e^{+0.50} + e^{-0.50}} = \\frac{1}{1 + e^{-1.0}}$.",
+        "hint_markdown": "Normalize the Boltzmann weight for the spin-up state over the two possible orientations $\\sigma_i \\in \\{-1, +1\\}$.",
         "correct": {
           "value": 0.7311,
           "tolerance": 0.002
@@ -681,8 +681,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_force_bias_mc",
-        "prompt_markdown": "In a 1D Force-Bias move on $\\delta x \\in [-\\Delta/2, +\\Delta/2]$ with $\\Delta = 1.0\\text{ \u00c5}$ and $\\lambda \\beta F_x = 2.0\\text{ \u00c5}^{-1}$, the normalization constant is:\n$$C(x) = \\int_{-0.5}^{+0.5} e^{2.0\\,\\delta x}\\, d(\\delta x) = \\frac{e^{+1.0} - e^{-1.0}}{2.0} = \\sinh(1.0)$$\nWhat is the numerical value of $C(x)$?\n",
-        "hint_markdown": "Evaluate $\\sinh(1.0) = (e^1 - e^{-1})/2$.",
+        "prompt_markdown": "In a 1D Force-Bias move on $\\delta x \\in [-\\Delta/2, +\\Delta/2]$ with interval width $\\Delta = 1.0\\text{ \u00c5}$ and force-bias parameter $\\lambda \\beta F_x = 2.0\\text{ \u00c5}^{-1}$, what is the numerical value of the proposal normalization constant $C(x) = \\int_{-\\Delta/2}^{+\\Delta/2} e^{\\lambda\\beta F_x\\,\\delta x}\\, d(\\delta x)$?",
+        "hint_markdown": "Integrate the exponential force-bias factor over the symmetric displacement interval $[-\\Delta/2, +\\Delta/2]$.",
         "correct": {
           "value": 1.1752,
           "tolerance": 0.002
@@ -696,7 +696,7 @@
         "difficulty": "medium",
         "taught_by": "sec_force_bias_mc",
         "prompt_markdown": "In a 1D Force-Bias step from $x \\to x'$ with displacement $\\delta x = x' - x = +0.20\\text{ \u00c5}$, suppose $\\beta = 1.0$, $\\lambda = 0.5$, the initial force is $F(x) = +3.0$, the final force is $F(x') = +1.0$, and the normalization ratio is $C(x)/C(x') = 1.10$. What is the reverse-to-forward proposal ratio:\n$$\\frac{T(x' \\to x)}{T(x \\to x')} = \\frac{C(x)}{C(x')} \\exp\\!\\big[-\\lambda\\beta\\big(F(x) + F(x')\\big)(x' - x)\\big]$$\n",
-        "hint_markdown": "Notice that in the reverse move $x' \\to x$, the displacement is $x - x' = -\\delta x$, so $T(x'\\to x) \\propto \\exp[-\\lambda\\beta F(x')\\delta x]$. Evaluate $1.10 \\times \\exp[-0.5 \\times 1.0 \\times (3.0 + 1.0) \\times 0.20]$.",
+        "hint_markdown": "Evaluate the product of the normalization ratio and the exponential of the sum of forward and reverse biasing forces.",
         "correct": {
           "value": 0.7374,
           "tolerance": 0.002
@@ -930,7 +930,7 @@
           "concept_smart_mc_asymmetry"
         ],
         "prompt_markdown": "Consider a 1D particle at $x = 0$ in a harmonic potential $V(x) = \\frac{1}{2}k x^2$ with spring constant $k = 2.0$ (so $V(x) = x^2$ and force $F(x) = -V'(x) = -2x$) at $\\beta = 1.0$ and Smart MC parameter $\\tau = 0.25$. Suppose the particle proposes a step from $x = 0$ to $x' = 1.0$:\n- $V(x) = 0$, $V(x') = 1.0 \\implies \\Delta V = +1.0$\n- $F(x) = 0$, $F(x') = -2.0$\n- $\\Delta x = x' - x = +1.0$\n\nUsing the Smart MC acceptance formula from slide 13:\n$$A(x \\to x') = \\min\\!\\left\\{1,\\; \\exp\\!\\left(-\\beta\\left[\\Delta V + \\frac{F(x') + F(x)}{2}\\left(\\Delta x + \\frac{\\tau\\beta}{2}\\big(F(x') - F(x)\\big)\\right)\\right]\\right)\\right\\}$$\nwhat is the Smart MC acceptance probability $A(0 \\to 1.0)$?\n",
-        "hint_markdown": "Compute $\\frac{F(x')+F(x)}{2} = -1.0$, $\\frac{\\tau\\beta}{2}(F(x')-F(x)) = 0.125(-2.0) = -0.25$, so the bracket is $1.0 + (-1.0)(1.0 - 0.25) = 0.25$. Then evaluate $\\exp(-0.25)$.",
+        "hint_markdown": "Evaluate the terms inside the exponent of the Smart MC acceptance formula using the initial and final forces and the potential energy difference.",
         "correct": {
           "value": 0.7788,
           "tolerance": 0.002
@@ -1062,8 +1062,8 @@
           "sec_smart_mc_and_brownian",
           "concept_smart_vs_metropolis_efficiency"
         ],
-        "prompt_markdown": "To fairly compare a 1D uniform cube move $\\delta x \\in [-\\Delta/2, +\\Delta/2]$ (which has variance $\\langle \\delta x^2 \\rangle_{\\text{cube}} = \\Delta^2 / 12$) against a 1D Smart MC Gaussian noise step $\\delta_x$ (which has variance $\\langle \\delta_x^2 \\rangle_{\\text{Smart}} = 2\\tau$) in the liquid Argon benchmarks (slides 11\u201312), we match their bare step variances:\n$$\\frac{\\Delta^2}{12} = 2\\tau \\quad \\Longrightarrow \\quad \\Delta = \\sqrt{24\\tau}$$\nIf $\\tau / \\sigma^2 = 0.0024$, what is the equivalent dimensionless cube width $\\Delta / \\sigma$?\n",
-        "hint_markdown": "Compute $\\sqrt{24 \\times 0.0024} = \\sqrt{0.0576}$.",
+        "prompt_markdown": "To fairly compare a 1D uniform cube move $\\delta x \\in [-\\Delta/2, +\\Delta/2]$ against a 1D Smart MC Gaussian noise step $\\delta_x$ with variance $2\\tau$, we match their bare step variances. If $\\tau / \\sigma^2 = 0.0024$, what is the equivalent dimensionless cube width $\\Delta / \\sigma$?",
+        "hint_markdown": "Equate the variance of a uniform distribution of width $\\Delta$ to the Gaussian noise variance $2\\tau$ and solve for $\\Delta$.",
         "correct": {
           "value": 0.24,
           "tolerance": 0.001

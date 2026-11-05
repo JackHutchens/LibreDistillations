@@ -310,7 +310,8 @@ worksheet:
     prompt_markdown: In a liquid Argon simulation with Lyapunov exponent $\lambda = 2.0\text{ ps}^{-1}$, two runs differ by
       a numerical roundoff error of $\varepsilon_0 = 10^{-14}\sigma$. At what time $t^*$ (in picoseconds) will their trajectory
       separation grow to the interatomic spacing $\sigma$?
-    hint_markdown: Use t* = ln(1 / eps_0) / lambda = ln(10^14) / 2.0.
+    hint_markdown: Relate the exponential separation rate of chaotic trajectories to the initial perturbation magnitude and
+      the macroscopic divergence threshold.
     correct:
       value: 16.12
       tolerance: 0.2
@@ -451,7 +452,7 @@ worksheet:
     - id: d
       text: Lambda_He is 100 times larger.
     correct: a
-    hint_markdown: Lambda is proportional to 1 / sqrt(m).
+    hint_markdown: Recall how thermal momentum scales with atomic mass in the de Broglie wavelength definition.
     rationale_markdown: Since $\Lambda = \sqrt{h^2 / (2\pi m k_B T)} \propto m^{-1/2}$, we have $\Lambda_{\text{He}} / \Lambda_{\text{Ar}}
       = \sqrt{m_{\text{Ar}} / m_{\text{He}}} = \sqrt{40 / 4} = \sqrt{10} \approx 3.162$. Helium's light mass makes its quantum
       delocalization over 3 times larger, explaining why Helium remains a quantum liquid down to absolute zero.
@@ -496,7 +497,8 @@ worksheet:
     - id: d
       text: sigma_E / <E> decays as 1/N^2.
     correct: a
-    hint_markdown: Variance <Delta E^2> = k_B T^2 C_V, and C_V is extensive (~ N).
+    hint_markdown: Relate total energy variance to the constant-volume heat capacity via canonical partition function derivatives,
+      and consider how extensive quantities scale with system size.
     rationale_markdown: The canonical variance is $\langle \Delta E^2 \rangle = k_B T^2 C_V$. Because $C_V \propto N$ and
       $\langle E \rangle \propto N$, the root-mean-square relative fluctuation is $\frac{\sigma_E}{\langle E \rangle} = \frac{\sqrt{k_B
       T^2 C_V}}{\langle E \rangle} \propto \frac{\sqrt{N}}{N} = \frac{1}{\sqrt{N}}$. For macroscopic $N \sim 10^{23}$, relative
@@ -589,7 +591,8 @@ worksheet:
     - id: d
       text: The kinetic energy was measured incorrectly.
     correct: a
-    hint_markdown: P = P_id + P_vir. If P < P_id, what is the sign of P_vir?
+    hint_markdown: Consider whether attractive intermolecular forces act to increase or decrease the total pressure relative
+      to a non-interacting gas at the same density.
     rationale_markdown: Since $P = \rho k_B T + P_{\text{vir}}$, having $P < \rho k_B T$ requires $P_{\text{vir}} < 0$. Intermolecular
       attractions produce forces directed toward each other ($\mathbf{r}_{ij} \cdot \mathbf{F}_{ij} < 0$), acting like an
       internal tension that reduces the outward pressure exerted on the box.
@@ -667,8 +670,9 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_equipartition_and_virial
-    prompt_markdown: If interatomic forces are set to zero ($\mathbf{F}_{ij} = 0$, non-interacting ideal gas), what does the
-      Clausius virial pressure formula reduce to?
+    prompt_markdown: In the macroscopic virial equation of state, total pressure is decomposed into kinetic and configurational
+      pair contributions. When intermolecular interactions vanish identically (non-interacting particles), which thermodynamic
+      relation is recovered?
     options:
     - id: a
       text: P = rho * k_B * T (the ideal gas law P V = N k_B T).
@@ -679,7 +683,8 @@ worksheet:
     - id: d
       text: P = 3 / (2 k_B T).
     correct: a
-    hint_markdown: Evaluate P = rho k_B T + (1/3V) <sum r_ij . F_ij> with F_ij = 0.
+    hint_markdown: Consider the contribution of interatomic forces to the internal virial stress when the potential energy
+      is identically zero.
     rationale_markdown: When interatomic forces $\mathbf{F}_{ij} = 0$, the internal virial vanishes, yielding $P = \rho k_B
       T = \frac{N k_B T}{V} \implies P V = N k_B T$, which is exactly the ideal gas law.
   - id: q20_momentum_maxwell_boltzmann
@@ -767,7 +772,8 @@ worksheet:
     - id: d
       text: F = dZ / dT
     correct: a
-    hint_markdown: Recall F = -k_B T ln Z.
+    hint_markdown: Recall the fundamental thermodynamic bridge relation connecting the canonical partition function to thermodynamic
+      free energy.
     rationale_markdown: 'The bridge between statistical mechanics and thermodynamics in the canonical ensemble is $F = -k_B
       T \ln Z$. From $F$, all other thermodynamic variables follow: $P = -(\partial F/\partial V)_{N,T}$, $S = -(\partial
       F/\partial T)_{N,V}$, and $\mu = (\partial F/\partial N)_{V,T}$.'
@@ -799,7 +805,8 @@ worksheet:
     taught_by: sec_chaos_and_lyapunov
     prompt_markdown: If a system has a maximum Lyapunov exponent $\lambda = 1.0\text{ ps}^{-1}$, by what multiplicative factor
       does an initial perturbation grow after $\Delta t = 6.908\text{ ps}$ (before saturation)?
-    hint_markdown: Compute exp(lambda * Delta t) with lambda * Delta t = 6.908.
+    hint_markdown: Apply the definition of the maximal Lyapunov exponent to find the growth factor of an infinitesimal phase-space
+      displacement over the specified time interval.
     correct:
       value: 1000
       tolerance: 5.0
@@ -811,9 +818,9 @@ worksheet:
     difficulty: medium
     taught_by: sec_ensembles_and_partition_function
     prompt_markdown: In a canonical simulation of $N = 1000$ atoms at $T = 300\text{ K}$, the constant-volume heat capacity
-      is $C_V = 3000\, k_B$ (Dulong-Petit limit). Using $k_B = 1.38065 \times 10^{-23}\text{ J/K}$, what is the root-mean-square
-      energy fluctuation $\sigma_E = \sqrt{\langle \Delta E^2 \rangle}$ in units of $10^{-20}\text{ J}$?
-    hint_markdown: sigma_E = sqrt(k_B * T^2 * C_V) = k_B * T * sqrt(C_V / k_B).
+      is $C_V = 3000\, k_B$ (Dulong–Petit limit). Calculate the root-mean-square total energy fluctuation $\sigma_E$ (in $\text{eV}$).
+    hint_markdown: Relate the total energy variance to temperature and heat capacity in the canonical ensemble, and convert
+      the resulting energy scale to electron-volts.
     correct:
       value: 22.68
       tolerance: 0.5
@@ -974,7 +981,8 @@ worksheet:
     taught_by: sec_equipartition_and_virial
     prompt_markdown: An MD simulation of liquid argon at density $\rho^* = 0.84$ and temperature $T^* = 1.0$ yields a measured
       total pressure $P^* = 2.52$. What is the compressibility factor $Z = P / (\rho k_B T)$?
-    hint_markdown: Z = P* / (rho* * T*).
+    hint_markdown: Recall how the dimensionless compressibility factor measures the ratio of total measured pressure to the
+      kinetic ideal-gas pressure.
     correct:
       value: 3.0
       tolerance: 0.05
@@ -1052,7 +1060,8 @@ worksheet:
     prompt_markdown: If a simulation of $N = 100$ particles has total kinetic energy $K = 1500\text{ K} \times k_B$, and the
       total linear momentum is conserved ($\sum \mathbf{p}_i = \mathbf{0}$), what is the correct kinetic temperature $T =
       \frac{2 K}{(3N-3) k_B}$ rounded to two decimal places?
-    hint_markdown: Divide 2 * 1500 by (3*100 - 3) = 297.
+    hint_markdown: Apply the equipartition theorem to the true number of independent quadratic kinetic degrees of freedom
+      in the system after removing center-of-mass constraints.
     correct:
       value: 10.1
       tolerance: 0.05

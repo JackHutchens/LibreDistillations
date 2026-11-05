@@ -150,7 +150,7 @@
       "difficulty": "easy",
       "taught_by": "sec_multiscale_continuum_and_mc_dynamics",
       "prompt_markdown": "A colloidal simulation box contains $N_{\\text{solute}} = 400$ heavy polymer beads and $N_{\\text{solvent}} = 9{,}600$ explicit solvent atoms ($N_{\\text{total}} = 10{,}000$). If short-range neighbor-list force evaluations scale linearly with the total number of particles $N$, what percentage of the per-step force-evaluation CPU time is eliminated when the explicit solvent is replaced by an implicit Brownian bath (assuming the per-particle cost for the remaining $400$ beads is unchanged)? Enter your answer as a percentage between 0 and 100.",
-      "hint_markdown": "Compute $(N_{\\text{total}} - N_{\\text{solute}}) / N_{\\text{total}} \\times 100$.",
+      "hint_markdown": "Determine the fraction of total particle count represented by the solvent particles and express as a percentage.",
       "correct": {
         "value": 96.0,
         "tolerance": 0.1
@@ -257,7 +257,7 @@
       "difficulty": "medium",
       "taught_by": "sec_smoluchowski_and_moments",
       "prompt_markdown": "A colloidal particle diffuses in 1D near a wall with a position-dependent diffusivity $D(x) = D_0 (1 + 0.5 x^2)$ where $D_0 = 2.0\\text{ nm}^2/\\text{ns}$ and $x$ is in $\\text{nm}$. At position $x = 3.0\\text{ nm}$, the conservative force is $F(x) = -0.4\\,k_B T/\\text{nm}$ (so $\\beta F(3.0) = -0.4\\text{ nm}^{-1}$). Calculate the exact Smoluchowski mean drift velocity $\\langle dx/dt \\rangle|_{t=0} = \\frac{dD}{dx} + \\beta D(x) F(x)$ at $x = 3.0\\text{ nm}$ in $\\text{nm/ns}$.",
-      "hint_markdown": "First evaluate $dD/dx = D_0 x$ at $x=3.0$, then evaluate $D(3.0) = 2.0(1 + 0.5 \\times 9) = 11.0$, and sum $dD/dx + D(3.0)\\beta F(3.0)$.",
+      "hint_markdown": "Differentiate the diffusion coefficient with respect to $x$ and add the force-driven drift velocity.",
       "correct": {
         "value": 1.6,
         "tolerance": 0.05
@@ -270,8 +270,8 @@
       "question_type": "numeric",
       "difficulty": "easy",
       "taught_by": "sec_smoluchowski_and_moments",
-      "prompt_markdown": "In 3D isotropic Brownian dynamics with scalar diffusivity $D = 1.25\\text{ nm}^2/\\text{ns}$, what is the short-time mean-square displacement $\\langle |\\mathbf{r}(\\Delta t) - \\mathbf{r}(0)|^2 \\rangle = 6 D \\Delta t$ (in $\\text{nm}^2$) of the Gaussian noise step over a time interval $\\Delta t = 0.40\\text{ ns}$?",
-      "hint_markdown": "Each of the 3 Cartesian components has variance $2 D \\Delta t$, so the 3D mean-square displacement is $6 D \\Delta t$.",
+      "prompt_markdown": "In 3D isotropic Brownian dynamics with scalar diffusivity $D = 1.25\\text{ nm}^2/\\text{ns}$, what is the short-time mean-square displacement $\\langle |\\mathbf{r}(\\Delta t) - \\mathbf{r}(0)|^2 \\rangle$ (in $\\text{nm}^2$) of the stochastic displacement step over a time interval $\\Delta t = 0.40\\text{ ns}$?",
+      "hint_markdown": "Sum the diffusion variance contributions across all three spatial dimensions.",
       "correct": {
         "value": 3.0,
         "tolerance": 0.05
@@ -457,7 +457,7 @@
       "difficulty": "hard",
       "taught_by": "sec_trotter_and_smart_mc",
       "prompt_markdown": "Consider a 1D Smart Monte Carlo step with $\\beta = 1$ and $\\tau = D\\Delta t = 0.20$ in a harmonic potential $V(x) = \\frac{1}{2}k x^2$ with spring constant $k = 2.0$ (so $F(x) = -2x$). Starting from the minimum $x = 0.0$ (where $V(0.0) = 0.0$ and $F(0.0) = 0.0$), a trial move lands at $x' = 1.0$ (where $V(1.0) = 1.0$ and $F(1.0) = -2.0$). Using the Smart MC acceptance formula:\n\n$$A(x \\to x') = \\min\\left(1,\\; \\exp\\left\\{ -\\beta\\left[ V(x') - V(x) + \\frac{F(x') + F(x)}{2}\\left( (x' - x) + \\frac{\\tau\\beta}{2}(F(x') - F(x)) \\right) \\right] \\right\\}\\right)$$\n\ncalculate the acceptance probability $A(0.0 \\to 1.0)$ (round to 3 decimal places).",
-      "hint_markdown": "Substitute $V(x')-V(x) = +1.0$, $(F(x')+F(x))/2 = -1.0$, $x'-x = +1.0$, and $(\\tau\\beta/2)(F(x')-F(x)) = 0.10 \\times (-2.0 - 0.0) = -0.20$.",
+      "hint_markdown": "Evaluate the terms in the Smart MC acceptance exponent using the harmonic potential energies and forces at the initial and trial endpoints.",
       "correct": {
         "value": 0.819,
         "tolerance": 0.005
@@ -577,8 +577,8 @@
         "sec_hydrodynamic_interactions_oseen",
         "concept_oseen_coupling"
       ],
-      "prompt_markdown": "Two identical spherical colloids of hydrodynamic radius $r_0 = 50\\text{ nm}$ have a single-particle Stokes\u2013Einstein diffusivity $D_0 = \\frac{k_B T}{6\\pi\\eta r_0} = 4.0\\text{ }\\mu\\text{m}^2/\\text{s}$. When their center-to-center separation is $r_{12} = 300\\text{ nm}$ ($r_{12}/r_0 = 6$), what is the longitudinal Oseen cross-diffusivity $D_{12,\\parallel} = \\frac{k_B T}{4\\pi\\eta r_{12}} = \\frac{3 r_0}{2 r_{12}} D_0$ in $\\mu\\text{m}^2/\\text{s}$?",
-      "hint_markdown": "Substitute $r_0 / r_{12} = 1/6$ into $D_{12,\\parallel} = \\frac{3}{2}(r_0 / r_{12}) D_0$.",
+      "prompt_markdown": "Two identical spherical colloids of hydrodynamic radius $r_0 = 50\\text{ nm}$ have single-particle Stokes\u2013Einstein diffusivity $D_0 = 4.0\\text{ }\\mu\\text{m}^2/\\text{s}$. When their center-to-center separation is $r_{12} = 300\\text{ nm}$, what is the longitudinal Oseen cross-diffusivity $D_{12,\\parallel}$ in $\\mu\\text{m}^2/\\text{s}$?",
+      "hint_markdown": "Relate the longitudinal Oseen tensor prefactor to the single-particle Stokes-Einstein diffusivity via the ratio of hydrodynamic radius to interparticle distance.",
       "correct": {
         "value": 1.0,
         "tolerance": 0.02
@@ -786,8 +786,8 @@
         "sec_langevin_dynamics_and_fdt",
         "concept_langevin_regimes"
       ],
-      "prompt_markdown": "In a Langevin simulation run in reduced units where particle mass $m = 2.0$, thermal energy $k_B T = 1.5$, and friction coefficient $\\zeta = 0.50\\text{ }\tau_0^{-1}$, what is the long-time self-diffusion coefficient $D = \\frac{k_B T}{m\\zeta}$?",
-      "hint_markdown": "Compute $D = 1.5 / (2.0 \\times 0.50)$.",
+      "prompt_markdown": "In a Langevin simulation run in reduced units where particle mass $m = 2.0$, thermal energy $k_B T = 1.5$, and friction coefficient $\\zeta = 0.50\\text{ }\\tau_0^{-1}$, what is the asymptotic long-time self-diffusion coefficient $D$?",
+      "hint_markdown": "Relate the self-diffusion coefficient to the thermal energy, particle mass, and friction coefficient via the Einstein relation.",
       "correct": {
         "value": 1.5,
         "tolerance": 0.02
@@ -801,7 +801,7 @@
       "difficulty": "medium",
       "taught_by": "sec_langevin_dynamics_and_fdt",
       "prompt_markdown": "When integrating the 1D Langevin momentum equation $\\Delta p = F\\Delta t - \\zeta p \\Delta t + \\Delta W_p$ over a small timestep $\\Delta t = 0.01$, the discrete momentum kick $\\Delta W_p = \\int_t^{t+\\Delta t} p_{\\text{solvent}}(t')\\,dt'$ has variance $\\langle (\\Delta W_p)^2 \\rangle = 2 m k_B T \\zeta \\Delta t$. For $m = 1.0$, $k_B T = 2.0$, and $\\zeta = 4.0$, what is the standard deviation $\\sigma_{\\Delta W_p} = \\sqrt{2 m k_B T \\zeta \\Delta t}$ of the Gaussian momentum kick per step?",
-      "hint_markdown": "Evaluate $\\sqrt{2 \\times 1.0 \\times 2.0 \\times 4.0 \\times 0.01}$.",
+      "hint_markdown": "Take the square root of the discrete momentum kick variance to obtain the standard deviation.",
       "correct": {
         "value": 0.4,
         "tolerance": 0.01
@@ -1007,7 +1007,7 @@
       "difficulty": "medium",
       "taught_by": "sec_dpd_and_hydrodynamics",
       "prompt_markdown": "A DPD simulation is parameterized with pairwise friction coefficient $\\gamma = 4.5$ and thermal energy $k_B T = 1.0$ (in reduced DPD units). According to the DPD fluctuation\u2013dissipation theorem $\\sigma^2 = 2 \\gamma k_B T$, what must the random force noise amplitude $\\sigma$ be set to?",
-      "hint_markdown": "Compute $\\sigma = \\sqrt{2 \\gamma k_B T} = \\sqrt{2 \\times 4.5 \\times 1.0}$.",
+      "hint_markdown": "Solve the Espa\u00f1ol-Warren fluctuation-dissipation relation for the noise amplitude $\\sigma$.",
       "correct": {
         "value": 3.0,
         "tolerance": 0.02
@@ -1021,7 +1021,7 @@
       "difficulty": "easy",
       "taught_by": "sec_dpd_and_hydrodynamics",
       "prompt_markdown": "Using the randomized force cutoff function $\\omega(r) = (1 - r/r_c)^2$ for $r < r_c$ (from Slide 18) with $r_c = 1.0$ and $k_B T = 1.5$, calculate the variance $\\langle \\zeta^2 \\rangle = 2 k_B T \\omega^2(r_{ij})$ for a pair of DPD beads separated by $r_{ij} = 0.50$.",
-      "hint_markdown": "First compute $\\omega(0.50) = (1 - 0.50)^2 = 0.25$, then square it to get $\\omega^2(0.50) = 0.0625$, and multiply by $2 k_B T = 3.0$.",
+      "hint_markdown": "Evaluate the spatial weight function at the specified separation and scale by $2 k_B T$.",
       "correct": {
         "value": 0.1875,
         "tolerance": 0.002
@@ -1171,7 +1171,7 @@
       "difficulty": "easy",
       "taught_by": "sec_hydrodynamic_interactions_oseen",
       "prompt_markdown": "Because Cholesky decomposition of the $3N \\times 3N$ Oseen diffusion tensor scales as $\\mathcal{O}(N^3)$, by what factor does the Cholesky CPU cost per step increase if the number of colloidal particles $N$ is quadrupled from $N = 250$ to $N = 1{,}000$?",
-      "hint_markdown": "Compute $(1000 / 250)^3 = 4^3$.",
+      "hint_markdown": "Cube the ratio of the new particle count to the old particle count based on the cubic scaling of dense Cholesky decomposition.",
       "correct": {
         "value": 64.0,
         "tolerance": 0.1

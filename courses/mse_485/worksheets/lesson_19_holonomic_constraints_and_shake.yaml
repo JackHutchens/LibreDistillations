@@ -1,1104 +1,1468 @@
 id: lesson_19_holonomic_constraints_and_shake
-title: "Lesson 19: Holonomic Constraints, Rigid Bodies & The SHAKE Algorithm"
+title: 'Lesson 19: Holonomic Constraints, Rigid Bodies & The SHAKE Algorithm'
 estimated_minutes: 120
 learning_objectives:
-  - Explain why high-frequency intramolecular bond stretches create a severe molecular dynamics (MD) timestep bottleneck and why they are quantum-mechanically frozen at room temperature ($\hbar\omega \gg k_B T$).
-  - Analyze the statistical-mechanical difference between a stiff harmonic spring ($k_{\mathrm{bond}}\to\infty$) and a holonomic rigid constraint ($\sigma(\mathbf{R})=0, \dot{\sigma}(\mathbf{R})=0$) via the phase-space metric determinant and Fixman potential.
-  - Compare generalized coordinate representations for rigid molecules, contrasting the gimbal-lock coordinate singularity ($\frac{1}{\sin\theta}\to\infty$) of Euler angles against globally smooth 4-component unit quaternions.
-  - Derive and apply the Method of Lagrange Multipliers and the SHAKE algorithm (Ryckaert, Ciccotti & Berendsen 1977) within Verlet integration, including time-reversible projection along old bond vectors $\mathbf{r}_{ij}(t)$ and iterative Gauss–Seidel/Newton relaxation.
-  - Formulate the $N_e(N_e+1)/2$ holonomic wave-function orthonormality constraints $S_{ij} = \langle\phi_i|\phi_j\rangle - \delta_{ij} = 0$ in Car–Parrinello Ab Initio Molecular Dynamics (CPMD) and solve them via iterative matrix SHAKE.
-
+- Explain why high-frequency intramolecular bond stretches create a severe molecular dynamics (MD) timestep bottleneck and
+  why they are quantum-mechanically frozen at room temperature ($\hbar\omega \gg k_B T$).
+- Analyze the statistical-mechanical difference between a stiff harmonic spring ($k_{\mathrm{bond}}\to\infty$) and a holonomic
+  rigid constraint ($\sigma(\mathbf{R})=0, \dot{\sigma}(\mathbf{R})=0$) via the phase-space metric determinant and Fixman
+  potential.
+- Compare generalized coordinate representations for rigid molecules, contrasting the gimbal-lock coordinate singularity ($\frac{1}{\sin\theta}\to\infty$)
+  of Euler angles against globally smooth 4-component unit quaternions.
+- Derive and apply the Method of Lagrange Multipliers and the SHAKE algorithm (Ryckaert, Ciccotti & Berendsen 1977) within
+  Verlet integration, including time-reversible projection along old bond vectors $\mathbf{r}_{ij}(t)$ and iterative Gauss–Seidel/Newton
+  relaxation.
+- Formulate the $N_e(N_e+1)/2$ holonomic wave-function orthonormality constraints $S_{ij} = \langle\phi_i|\phi_j\rangle -
+  \delta_{ij} = 0$ in Car–Parrinello Ab Initio Molecular Dynamics (CPMD) and solve them via iterative matrix SHAKE.
 sections:
-  - id: sec_19_1_timescales_and_motivation
-    type: markdown_section
-    title: "1. Intramolecular Timescale Separation & Quantum Freezing of Fast Vibrations"
-    body_markdown: |
-      In molecular liquids, polymers, and biomolecular systems, atomic motions span many orders of magnitude in timescale:
+- id: sec_19_1_timescales_and_motivation
+  type: markdown_section
+  title: 1. Intramolecular Timescale Separation & Quantum Freezing of Fast Vibrations
+  body_markdown: 'In molecular liquids, polymers, and biomolecular systems, atomic motions span many orders of magnitude in
+    timescale:
 
-      1. **Covalent bond-stretching vibrations** (e.g., $\mathrm{O{-}H}$, $\mathrm{C{-}H}$, $\mathrm{C{=}O}$): highest frequencies ($\tilde{\nu} \approx 1600\text{–}3600\,\mathrm{cm}^{-1}$), corresponding to vibrational periods of only $T_{\mathrm{vib}} \approx 9\text{–}20\,\mathrm{fs}$ and excitation energies $\hbar\omega / k_B \approx 2300\text{–}5200\,\mathrm{K}$, far above room temperature ($300\,\mathrm{K}$).
-      2. **Bond-angle bending & molecular rotations**: intermediate timescales ($\sim 50\text{–}500\,\mathrm{fs}$).
-      3. **Internal torsional / dihedral reorientation**: barrier-crossing events ($\sim 1\text{–}100\,\mathrm{ps}$).
-      4. **Translational diffusion, conformational folding, and phase transitions (melting)**: long collective timescales ($\sim 100\,\mathrm{ps}\text{–}\mu\mathrm{s}$).
 
-      ### Why Constrain Bond Lengths in Classical MD?
-      - **The Timestep Bottleneck:** Accurate Verlet integration requires roughly $15\text{–}20$ steps per shortest vibrational period ($\Delta t \approx T_{\mathrm{vib}}/20 \approx 0.5\text{–}1.0\,\mathrm{fs}$). Yet high-frequency bond stretches are dynamically **decoupled** from slower diffusive and conformational modes and rarely affect long-time transport or structural properties.
-      - **Quantum Freezing ($\hbar\omega \gg k_B T$):** For a $\mathrm{C{-}H}$ or $\mathrm{O{-}H}$ stretch with $\tilde{\nu} \approx 3000\,\mathrm{cm}^{-1}$, the vibrational quantum is $\hbar\omega \approx 0.37\,\mathrm{eV}$, so the characteristic vibrational temperature is $\Theta_{\mathrm{vib}} = \hbar\omega / k_B \approx 4300\,\mathrm{K}$. At $T = 300\,\mathrm{K}$, the mean Bose–Einstein occupancy is $\langle n\rangle = (e^{\hbar\omega/k_B T} - 1)^{-1} \approx 6\times 10^{-7}$. Physically, the bond is locked in its quantum ground state ($n=0$) rather than oscillating with classical equipartition energy $k_B T$!
-      - **Force-Field Simplification & Efficiency:** Replacing stiff harmonic springs with rigid holonomic bond constraints eliminates the need to parameterize high-frequency stretching force constants and allows a **$3\text{–}5\times$ larger MD timestep** ($\Delta t \approx 2\text{–}5\,\mathrm{fs}$).
+    1. **Covalent bond-stretching vibrations** (e.g., $\mathrm{O{-}H}$, $\mathrm{C{-}H}$, $\mathrm{C{=}O}$): highest frequencies
+    ($\tilde{\nu} \approx 1600\text{–}3600\,\mathrm{cm}^{-1}$), corresponding to vibrational periods of only $T_{\mathrm{vib}}
+    \approx 9\text{–}20\,\mathrm{fs}$ and excitation energies $\hbar\omega / k_B \approx 2300\text{–}5200\,\mathrm{K}$, far
+    above room temperature ($300\,\mathrm{K}$).
 
-  - id: concept_19_1_timescales
-    type: concept_cell
-    title: "Interactive Explorer: Vibrational Quantum Occupancy & MD Timestep Limits"
-    description_markdown: |
-      Adjust the temperature $T$ and vibrational wavenumber $\tilde{\nu}$ to inspect the dimensionless quantum ratio $\hbar\omega / k_B T$, the quantum vs. classical vibrational heat capacity $C_{\mathrm{vib}}/k_B$, and the maximum stable Verlet timestep $\Delta t \approx T_{\mathrm{vib}}/20$.
-    render_function: render_timescale_and_quantum_freeze
-    layout: figure_left
-    controls:
-      temperature_K:
-        kind: slider
-        label: "Temperature T (K)"
-        min: 100.0
-        max: 1500.0
-        step: 50.0
-        default: 300.0
-      wavenumber_cm:
-        kind: slider
-        label: "Vibrational Wavenumber ν̃ (cm⁻¹)"
-        min: 200.0
-        max: 3800.0
-        step: 100.0
-        default: 3000.0
-      view_mode:
-        kind: dropdown
-        label: "Display Mode"
-        default: "quantum_ratio"
-        options:
-          - label: "Quantum Heat Capacity & Occupancy vs. ν̃"
-            value: "quantum_ratio"
-          - label: "Maximum Stable MD Timestep Δt by Mode"
-            value: "timestep_bars"
-    takeaway_markdown: |
-      **Key Takeaway:** High-frequency covalent stretches ($\tilde{\nu} > 2500\,\mathrm{cm}^{-1}$) have $\hbar\omega / k_B T > 12$ at $300\,\mathrm{K}$, meaning they are quantum-mechanically frozen in their ground state while dictating a tiny $\sim 0.5\,\mathrm{fs}$ classical MD timestep if left unconstrained.
+    2. **Bond-angle bending & molecular rotations**: intermediate timescales ($\sim 50\text{–}500\,\mathrm{fs}$).
 
-  - id: q19_01
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_19_1_timescales_and_motivation
-    prompt_markdown: |
-      In an all-atom molecular dynamics simulation of liquid water or an alkane polymer at $T = 300\,\mathrm{K}$, which physical degree of freedom sets the strictest upper bound on the integration timestep $\Delta t$ if no constraints are applied?
-    hint_markdown: >-
-      Recall that Verlet stability is governed by the highest natural frequency $\\omega_{\\max}$ in the system ($\\omega_{\\max}\\Delta t < 2$).
-    options:
-      - id: a
-        text: "Intramolecular covalent bond-stretching vibrations (e.g., O–H or C–H stretches with periods ~10 fs)"
-      - id: b
-        text: "Dihedral angle (torsional) barrier crossings along the polymer backbone (~10–100 ps)"
-      - id: c
-        text: "Center-of-mass translational diffusion of molecules across the periodic box (~ns)"
-      - id: d
-        text: "Collective density fluctuations associated with melting or crystallization"
-    correct: a
-    rationale_markdown: |
-      The stability and accuracy of a Verlet integrator are limited by the fastest oscillatory mode in the system ($\Delta t \lesssim T_{\min}/20$). Light-atom covalent bond stretches ($\mathrm{O{-}H}$, $\mathrm{C{-}H}$) have vibrational periods around $9\text{–}11\,\mathrm{fs}$, requiring $\Delta t \approx 0.5\,\mathrm{fs}$ unless constrained.
+    3. **Internal torsional / dihedral reorientation**: barrier-crossing events ($\sim 1\text{–}100\,\mathrm{ps}$).
 
-  - id: q19_02
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: concept_19_1_timescales
-    prompt_markdown: |
-      A covalent $\mathrm{C{-}H}$ stretching mode has a vibrational wavenumber of $\tilde{\nu} = 3000\,\mathrm{cm}^{-1}$. Using the fundamental constant ratio $hc / k_B = 1.4388\,\mathrm{cm\cdot K}$, calculate the dimensionless quantum parameter $x = \frac{\hbar\omega}{k_B T}$ at room temperature ($T = 300\,\mathrm{K}$). (Report your answer to 2 decimal places.)
-    hint_markdown: >-
-      Compute $\\Theta_{\\mathrm{vib}} = (hc/k_B)\\tilde{\\nu}$ in Kelvin first, then divide by $T = 300\\,\\mathrm{K}$.
-    correct:
-      value: 14.39
-      tolerance: 0.05
-    rationale_markdown: |
-      The characteristic vibrational temperature is $\Theta_{\mathrm{vib}} = \frac{\hbar\omega}{k_B} = \frac{hc}{k_B}\tilde{\nu} = (1.4388\,\mathrm{cm\cdot K})(3000\,\mathrm{cm}^{-1}) = 4316.4\,\mathrm{K}$. Dividing by $T = 300\,\mathrm{K}$ gives $x = \frac{\hbar\omega}{k_B T} = \frac{4316.4}{300} = 14.388 \approx 14.39$. Because $x \gg 1$, the mode is deep in the quantum ground-state regime.
+    4. **Translational diffusion, conformational folding, and phase transitions (melting)**: long collective timescales ($\sim
+    100\,\mathrm{ps}\text{–}\mu\mathrm{s}$).
 
-  - id: q19_03
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_1_timescales_and_motivation
-    prompt_markdown: |
-      Why is freezing a high-frequency bond stretch ($\hbar\omega \gg k_B T$) via a holonomic constraint often physically *more* realistic at room temperature than simulating it as a classical flexible harmonic spring?
-    hint_markdown: >-
-      Compare classical equipartition energy $k_B T$ with the quantum occupancy $\\langle n\\rangle = (e^{\\hbar\\omega/k_B T}-1)^{-1}$.
-    options:
-      - id: a
-        text: "A classical harmonic spring artificially populates the mode with $k_B T$ of thermal energy, whereas quantum mechanically the bond is frozen in its $n=0$ vibrational ground state with almost zero thermal excitation"
-      - id: b
-        text: "Quantum mechanics forbids covalent bonds from having zero-point energy, so bond lengths are strictly constant in nature"
-      - id: c
-        text: "Classical springs violate conservation of total linear momentum in periodic boundary conditions"
-      - id: d
-        text: "High-frequency vibrations couple strongly to center-of-mass translation and cause immediate crystallization"
-    correct: a
-    rationale_markdown: |
-      In classical statistical mechanics, equipartition assigns an average energy of $k_B T$ to every quadratic harmonic mode regardless of how high its frequency $\omega$ is. In reality, when $\hbar\omega \gg k_B T$, the excited vibrational states ($n \ge 1$) are thermally inaccessible ($\langle n\rangle \sim e^{-\hbar\omega/k_B T} \ll 1$), so locking the bond in its ground state via a constraint better reflects its lack of thermal excitation and avoids spurious classical energy transfer.
 
-  - id: q19_04
-    type: problem
-    question_type: multi_select
-    difficulty: easy
-    taught_by: sec_19_1_timescales_and_motivation
-    prompt_markdown: |
-      Select **all** valid advantages of replacing stiff intramolecular bond-stretching potentials with holonomic constraints in a molecular dynamics simulation:
-    hint_markdown: "Check the lecture slide on 'Constraints in MD': consider timestep size, force-field construction, and quantum behavior."
-    options:
-      - id: a
-        text: >-
-          Allows a 3–5× larger integration timestep $\\Delta t$ by removing the fastest vibrational frequencies
-      - id: b
-        text: "Simplifies the construction of the empirical force field by eliminating stiff bond-stretching parameters"
-      - id: c
-        text: >-
-          Avoids unphysical classical thermal excitation of quantum-frozen high-frequency stretches ($\\hbar\\omega \\gg k_B T$)
-      - id: d
-        text: "Eliminates the need to compute non-bonded intermolecular Lennard-Jones or Coulomb forces"
-    correct: [a, b, c]
-    rationale_markdown: |
-      Holonomic bond constraints remove the $\sim 10\,\mathrm{fs}$ vibrational bottleneck (allowing a $3\text{–}5\times$ larger $\Delta t$), simplify potential construction, and better represent quantum-frozen modes. Non-bonded intermolecular forces between atoms on different molecules must still be computed at every MD step.
+    ### Why Constrain Bond Lengths in Classical MD?
 
-  - id: q19_05
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: concept_19_1_timescales
-    prompt_markdown: |
-      In an unconstrained alkane simulation, the $\mathrm{C{-}H}$ stretch ($\tilde{\nu} = 3000\,\mathrm{cm}^{-1}$, period $T_{\mathrm{vib}} \approx 11.1\,\mathrm{fs}$) restricts the timestep to $\Delta t_{\mathrm{unc}} = 0.55\,\mathrm{fs}$. If constraining all covalent bond lengths shifts the highest remaining frequency to the $\mathrm{C{-}C{-}C}$ bond-angle bend ($\tilde{\nu} = 750\,\mathrm{cm}^{-1}$), by what multiplicative factor does the maximum stable timestep $\Delta t$ increase?
-    hint_markdown: >-
-      Since $T_{\\mathrm{vib}} \\propto 1/\\tilde{\\nu}$, the maximum stable timestep scales inversely with the highest active wavenumber $\\tilde{\\nu}_{\\max}$.
-    correct:
-      value: 4.0
-      tolerance: 0.05
-    rationale_markdown: |
-      Because $\Delta t_{\max} \propto T_{\min} \propto 1/\tilde{\nu}_{\max}$, lowering the highest active vibrational wavenumber from $3000\,\mathrm{cm}^{-1}$ to $750\,\mathrm{cm}^{-1}$ increases the maximum stable timestep by a factor of $\frac{3000}{750} = 4.0$ (from $0.55\,\mathrm{fs}$ to $2.20\,\mathrm{fs}$).
+    - **The Timestep Bottleneck:** Accurate Verlet integration requires roughly $15\text{–}20$ steps per shortest vibrational
+    period ($\Delta t \approx T_{\mathrm{vib}}/20 \approx 0.5\text{–}1.0\,\mathrm{fs}$). Yet high-frequency bond stretches
+    are dynamically **decoupled** from slower diffusive and conformational modes and rarely affect long-time transport or
+    structural properties.
 
-  - id: sec_19_2_ensemble_metric_fixman
-    type: markdown_section
-    title: "2. Effects on the Statistical Ensemble: Stiff Springs vs. Holonomic Constraints"
-    body_markdown: |
-      A crucial warning in molecular simulations (first analyzed by Gibbs and Fixman, 1974):
-      > **Taking the limit of a stiff harmonic spring ($k_{\mathrm{bond}} \to \infty$) does NOT yield the exact same equilibrium configurational distribution as simulating dynamics on a holonomically constrained surface ($\sigma(\mathbf{R}) = 0$ and $\dot{\sigma}(\mathbf{R}) = 0$)!**
+    - **Quantum Freezing ($\hbar\omega \gg k_B T$):** For a $\mathrm{C{-}H}$ or $\mathrm{O{-}H}$ stretch with $\tilde{\nu}
+    \approx 3000\,\mathrm{cm}^{-1}$, the vibrational quantum is $\hbar\omega \approx 0.37\,\mathrm{eV}$, so the characteristic
+    vibrational temperature is $\Theta_{\mathrm{vib}} = \hbar\omega / k_B \approx 4300\,\mathrm{K}$. At $T = 300\,\mathrm{K}$,
+    the mean Bose–Einstein occupancy is $\langle n\rangle = (e^{\hbar\omega/k_B T} - 1)^{-1} \approx 6\times 10^{-7}$. Physically,
+    the bond is locked in its quantum ground state ($n=0$) rather than oscillating with classical equipartition energy $k_B
+    T$!
 
-      ### Why Do the Ensembles Differ? (The Metric Tensor / Jacobian Effect)
-      Suppose we transform from $3N$ Cartesian coordinates $\mathbf{R}$ to generalized coordinates $\mathbf{q} = (\mathbf{u}, \boldsymbol{\sigma})$, where $\mathbf{u}$ are the $3N - n_c$ unconstrained internal/translational coordinates and $\boldsymbol{\sigma} = (\sigma_1, \dots, \sigma_{n_c})$ are the $n_c$ constraint coordinates. The kinetic energy is:
-      $$K = \frac{1}{2}\dot{\mathbf{R}}^T \mathbf{M} \dot{\mathbf{R}} = \frac{1}{2}\dot{\mathbf{q}}^T \mathbf{G}(\mathbf{q})\dot{\mathbf{q}} = \frac{1}{2}\mathbf{p}_q^T \mathbf{G}^{-1}(\mathbf{q})\mathbf{p}_q$$
-      where $\mathbf{G}(\mathbf{q}) = \mathbf{J}^T \mathbf{M} \mathbf{J}$ is the covariant **mass-metric tensor** and $\det\mathbf{G}(\mathbf{q}) \propto (\det\mathbf{J})^2$.
+    - **Force-Field Simplification & Efficiency:** Replacing stiff harmonic springs with rigid holonomic bond constraints
+    eliminates the need to parameterize high-frequency stretching force constants and allows a **$3\text{–}5\times$ larger
+    MD timestep** ($\Delta t \approx 2\text{–}5\,\mathrm{fs}$).
 
-      1. **Stiff Harmonic Spring Limit ($k_{\mathrm{bond}} \to \infty$):**
-         Both the constraint coordinate $\boldsymbol{\sigma}$ and its conjugate momentum $\mathbf{p}_\sigma$ remain active degrees of freedom in the $6N$-dimensional phase space. Integrating over *all* $3N$ momenta $\mathbf{p}_q$ produces $(\det\mathbf{G})^{1/2}$, which **exactly cancels** the coordinate Jacobian $\det\mathbf{J} \propto (\det\mathbf{G})^{1/2}$! In the limit $k_{\mathrm{bond}} \to \infty$, $\sigma_k \to 0$ with uniform kinetic weight. For a triatomic molecule $\mathrm{A{-}B{-}C}$ with no bending potential ($V(\theta)=0$), the bond-angle distribution is purely geometric:
-         $$P_{\mathrm{spring}}(\theta) = \frac{1}{2}\sin\theta$$
-      2. **Holonomic Rigid Constraint ($\sigma_k(\mathbf{R}) = 0$ AND $\dot{\sigma}_k(\mathbf{R}) = 0$):**
-         A true mechanical constraint sets the velocity $\dot{\boldsymbol{\sigma}} = \mathbf{0}$, which is **not** equivalent to setting the conjugate momentum $\mathbf{p}_\sigma = \mathbf{0}$ cleanly without coupling, so integrating out only the $3N - n_c$ unconstrained momenta $\mathbf{p}_u$ on the submanifold $\boldsymbol{\sigma}=\mathbf{0}$ leaves behind an uncancelled mass-metric determinant factor $|\det \mathbf{M}_{\mathrm{sub}}(\mathbf{u})|^{1/2} \propto |\det \mathbf{Z}(\mathbf{R})|^{-1/2}$, where:
-         $$Z_{kl}(\mathbf{R}) = \sum_{i=1}^N \frac{1}{m_i} \nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}) \cdot \nabla_{\mathbf{r}_i}\sigma_l(\mathbf{R})$$
-         For a symmetric triatomic molecule ($\mathrm{A{-}B{-}C}$) with outer masses $m$ and central mass $m_B$ (defining $\gamma = \frac{m}{m + m_B}$, so $\gamma = \frac{1}{2}$ for equal masses), the two bond constraints share the central atom $\mathrm{B}$, giving:
-         $$P_{\mathrm{rigid}}(\theta) \propto \sin\theta \sqrt{1 - \gamma^2\cos^2\theta}$$
-         Because $\sqrt{1 - \gamma^2\cos^2\theta}$ is maximized at $\theta = 90^\circ$ and minimized at $\theta = 0^\circ, 180^\circ$, **holonomic bond constraints bias the triatomic angle toward perpendicular ($\theta=90^\circ$) configurations!**
+    '
+- id: concept_19_1_timescales
+  type: concept_cell
+  title: 'Interactive Explorer: Vibrational Quantum Occupancy & MD Timestep Limits'
+  description_markdown: 'Adjust the temperature $T$ and vibrational wavenumber $\tilde{\nu}$ to inspect the dimensionless
+    quantum ratio $\hbar\omega / k_B T$, the quantum vs. classical vibrational heat capacity $C_{\mathrm{vib}}/k_B$, and the
+    maximum stable Verlet timestep $\Delta t \approx T_{\mathrm{vib}}/20$.
 
-      ### The Fixman Compensating Potential
-      If one wishes a holonomically constrained MD simulation to sample the exact stiff-spring equilibrium distribution $P_{\mathrm{spring}}(\mathbf{u})$, one adds the **Fixman potential** to the Hamiltonian:
-      $$U_{\mathrm{Fixman}}(\mathbf{R}) = \frac{1}{2}k_B T \ln\det\mathbf{Z}(\mathbf{R}) = -\frac{1}{2}k_B T \ln(1 - \gamma^2\cos^2\theta)$$
-      Note that for a single isolated diatomic molecule (only 1 bond constraint) or a completely rigid molecule, $\det\mathbf{Z}$ is a constant independent of internal angles, so there is **no** metric tensor distortion!
+    '
+  render_function: render_timescale_and_quantum_freeze
+  layout: figure_left
+  controls:
+    temperature_K:
+      kind: slider
+      label: Temperature T (K)
+      min: 100.0
+      max: 1500.0
+      step: 50.0
+      default: 300.0
+    wavenumber_cm:
+      kind: slider
+      label: Vibrational Wavenumber ν̃ (cm⁻¹)
+      min: 200.0
+      max: 3800.0
+      step: 100.0
+      default: 3000.0
+    view_mode:
+      kind: dropdown
+      label: Display Mode
+      default: quantum_ratio
+      options:
+      - label: Quantum Heat Capacity & Occupancy vs. ν̃
+        value: quantum_ratio
+      - label: Maximum Stable MD Timestep Δt by Mode
+        value: timestep_bars
+  takeaway_markdown: '**Key Takeaway:** High-frequency covalent stretches ($\tilde{\nu} > 2500\,\mathrm{cm}^{-1}$) have $\hbar\omega
+    / k_B T > 12$ at $300\,\mathrm{K}$, meaning they are quantum-mechanically frozen in their ground state while dictating
+    a tiny $\sim 0.5\,\mathrm{fs}$ classical MD timestep if left unconstrained.
 
-  - id: concept_19_2_ensemble_metric
-    type: concept_cell
-    title: "Interactive Explorer: Stiff-Spring vs. Rigid-Constraint Bond Angle Distribution"
-    description_markdown: |
-      Vary the outer-to-central atomic mass ratio $m / m_B$ of a triatomic molecule $\mathrm{A{-}B{-}C}$ to see how the shared central atom couples the two bond constraints and distorts the equilibrium bond-angle probability density $P_{\mathrm{rigid}}(\theta)$ relative to the stiff-spring limit $P_{\mathrm{spring}}(\theta) = \frac{1}{2}\sin\theta$.
-    render_function: render_stiff_spring_vs_rigid_ensemble
-    layout: figure_left
-    controls:
-      mass_ratio_m_over_mB:
-        kind: slider
-        label: "Mass Ratio m_outer / m_central (m / m_B)"
-        min: 0.05
-        max: 5.0
-        step: 0.05
-        default: 1.0
-      plot_mode:
-        kind: dropdown
-        label: "Plot View"
-        default: "distributions"
-        options:
-          - label: "Angle Probability Densities P_spring(θ) vs. P_rigid(θ)"
-            value: "distributions"
-          - label: "Metric Determinant Factor & Fixman Potential U_Fixman(θ)"
-            value: "metric_and_fixman"
-    takeaway_markdown: |
-      **Key Takeaway:** Because bond constraints are non-linear in Cartesian coordinates and share atoms, suppressing motion normal to the constraint surface changes the phase-space volume element by $\sqrt{1 - \gamma^2\cos^2\theta}$. Only when the central atom is infinitely heavy ($m/m_B \to 0 \implies \gamma \to 0$) do the two bond constraints decouple!
+    '
+- id: q19_01
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_19_1_timescales_and_motivation
+  prompt_markdown: 'In an all-atom molecular dynamics simulation of liquid water or an alkane polymer at $T = 300\,\mathrm{K}$,
+    which physical degree of freedom sets the strictest upper bound on the integration timestep $\Delta t$ if no constraints
+    are applied?
 
-  - id: q19_06
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_2_ensemble_metric_fixman
-    prompt_markdown: |
-      What is the fundamental statistical-mechanical reason that a molecular dynamics trajectory on a holonomically constrained surface ($\sigma(\mathbf{R}) = 0, \dot{\sigma}(\mathbf{R}) = 0$) generates a different equilibrium configurational distribution than a flexible bond model in the stiff-spring limit ($k_{\mathrm{bond}} \to \infty$)?
-    hint_markdown: >-
-      Consider what happens when you integrate over the momenta in generalized coordinates when $\\dot{\\sigma} = 0$ is enforced vs. when $\\dot{\\sigma}$ fluctuates thermally in a harmonic well.
-    options:
-      - id: a
-        text: >-
-          Constraints are non-linear in Cartesian coordinates, so setting the velocity normal to the constraint surface to zero ($\\dot{\\sigma}=0$) removes the momentum-space Gaussian integral factor that would otherwise cancel the configuration-dependent Jacobian metric determinant
-      - id: b
-        text: >-
-          The Verlet algorithm violates conservation of total energy whenever spring constants exceed $10^3\\,\\text{eV/Å}^2$
-      - id: c
-        text: "Stiff harmonic springs change the molecular stoichiometry, whereas holonomic constraints conserve particle number"
-      - id: d
-        text: "Holonomic constraints continuously inject kinetic energy into the system via non-conservative friction"
-    correct: a
-    rationale_markdown: |
-      In unconstrained generalized coordinates, integrating over all $3N$ momenta yields $(\det\mathbf{G})^{1/2}$, canceling the coordinate transformation Jacobian $\det\mathbf{J}$. When $\dot{\boldsymbol{\sigma}}=\mathbf{0}$ is imposed holonomically, the momentum integral is restricted to the $3N-n_c$ tangent space on the constraint manifold, leaving an uncancelled configuration-dependent metric determinant factor $|\det\mathbf{Z}(\mathbf{R})|^{-1/2}$.
+    '
+  hint_markdown: Recall that Verlet stability is governed by the highest natural frequency $\\omega_{\\max}$ in the system
+    ($\\omega_{\\max}\\Delta t < 2$).
+  options:
+  - id: a
+    text: Intramolecular covalent bond-stretching vibrations (e.g., O–H or C–H stretches with periods ~10 fs)
+  - id: b
+    text: Dihedral angle (torsional) barrier crossings along the polymer backbone (~10–100 ps)
+  - id: c
+    text: Center-of-mass translational diffusion of molecules across the periodic box (~ns)
+  - id: d
+    text: Collective density fluctuations associated with melting or crystallization
+  correct: a
+  rationale_markdown: 'The stability and accuracy of a Verlet integrator are limited by the fastest oscillatory mode in the
+    system ($\Delta t \lesssim T_{\min}/20$). Light-atom covalent bond stretches ($\mathrm{O{-}H}$, $\mathrm{C{-}H}$) have
+    vibrational periods around $9\text{–}11\,\mathrm{fs}$, requiring $\Delta t \approx 0.5\,\mathrm{fs}$ unless constrained.
 
-  - id: q19_07
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: concept_19_2_ensemble_metric
-    prompt_markdown: |
-      Consider a homonuclear triatomic molecule ($\mathrm{A{-}A{-}A}$, equal atomic masses $m_1=m_2=m_3=m$, so $\gamma = \frac{m}{m+m} = \frac{1}{2}$) with zero bending potential ($V(\theta)=0$). Compared to the stiff-spring distribution $P_{\mathrm{spring}}(\theta) = \frac{1}{2}\sin\theta$, how does the holonomically constrained rigid-bond distribution $P_{\mathrm{rigid}}(\theta) \propto \sin\theta\sqrt{1 - \frac{1}{4}\cos^2\theta}$ behave?
-    hint_markdown: >-
-      Evaluate $\\sqrt{1 - \\frac{1}{4}\\cos^2\\theta}$ at $\\theta = 90^\\circ$ ($\\cos\\theta = 0$) versus $\\theta = 0^\\circ, 180^\\circ$ ($\\cos^2\\theta = 1$).
-    options:
-      - id: a
-        text: >-
-          It enhances the probability of right-angle configurations ($\\theta = 90^\\circ$) relative to collinear configurations ($\\theta = 0^\\circ, 180^\\circ$)
-      - id: b
-        text: >-
-          It enhances the probability of collinear configurations ($\\theta = 0^\\circ, 180^\\circ$) relative to right-angle configurations ($\\theta = 90^\\circ$)
-      - id: c
-        text: >-
-          It is identical to $P_{\\mathrm{spring}}(\\theta)$ at all angles $\\theta$
-      - id: d
-        text: >-
-          It forces the bond angle $\\theta$ to remain fixed at its initial value $\\theta(0)$
-    correct: a
-    rationale_markdown: |
-      The metric factor $\sqrt{1 - \frac{1}{4}\cos^2\theta}$ equals $1$ at $\theta = 90^\circ$ ($\cos 90^\circ = 0$) and drops to $\sqrt{3/4} \approx 0.866$ as $\theta \to 0^\circ$ or $180^\circ$ ($\cos^2\theta \to 1$). Thus, right-angle configurations are statistically favored over collinear ones in the rigid-bond ensemble.
+    '
+- id: q19_02
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: concept_19_1_timescales
+  prompt_markdown: 'A covalent $\mathrm{C{-}H}$ stretching mode has a vibrational wavenumber of $\tilde{\nu} = 3000\,\mathrm{cm}^{-1}$.
+    Using the fundamental constant ratio $hc / k_B = 1.4388\,\mathrm{cm\cdot K}$, calculate the dimensionless quantum parameter
+    $x = \frac{\hbar\omega}{k_B T}$ at room temperature ($T = 300\,\mathrm{K}$). (Report your answer to 2 decimal places.)
 
-  - id: q19_08
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: concept_19_2_ensemble_metric
-    prompt_markdown: |
-      For the equal-mass triatomic chain ($\gamma = 0.5$) with holonomic bond constraints $\sigma_{12} = r_{12}^2 - d^2 = 0$ and $\sigma_{23} = r_{23}^2 - d^2 = 0$, compute the ratio of the metric determinant weighting factor at $\theta = 90^\circ$ to that at $\theta \to 0^\circ$:
-      $$\frac{|\det\mathbf{M}(90^\circ)|^{1/2}}{|\det\mathbf{M}(0^\circ)|^{1/2}} = \frac{1}{\sqrt{1 - \gamma^2}}$$
-      (Report your numerical answer to 4 decimal places.)
-    hint_markdown: >-
-      Substitute $\\gamma^2 = (0.5)^2 = 0.25$ into $1 / \\sqrt{1 - \\gamma^2} = 1 / \\sqrt{0.75}$.
-    correct:
-      value: 1.1547
-      tolerance: 0.002
-    rationale_markdown: |
-      With $\gamma = \frac{1}{2}$, $\gamma^2 = \frac{1}{4} = 0.25$. Therefore, $\frac{1}{\sqrt{1 - 0.25}} = \frac{1}{\sqrt{0.75}} = \frac{2}{\sqrt{3}} \approx 1.1547$, a $15.5\%$ relative statistical bias between perpendicular and collinear bond angles!
+    '
+  hint_markdown: Relate the characteristic vibrational temperature to the wavenumber and evaluate the ratio relative to the
+    thermal energy.
+  correct:
+    value: 14.39
+    tolerance: 0.05
+  rationale_markdown: 'The characteristic vibrational temperature is $\Theta_{\mathrm{vib}} = \frac{\hbar\omega}{k_B} = \frac{hc}{k_B}\tilde{\nu}
+    = (1.4388\,\mathrm{cm\cdot K})(3000\,\mathrm{cm}^{-1}) = 4316.4\,\mathrm{K}$. Dividing by $T = 300\,\mathrm{K}$ gives
+    $x = \frac{\hbar\omega}{k_B T} = \frac{4316.4}{300} = 14.388 \approx 14.39$. Because $x \gg 1$, the mode is deep in the
+    quantum ground-state regime.
 
-  - id: q19_09
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: concept_19_2_ensemble_metric
-    prompt_markdown: |
-      In the triatomic molecule $\mathrm{A{-}B{-}C}$ with two constrained bonds ($\mathrm{A{-}B}$ and $\mathrm{B{-}C}$), in what physical mass limit does the metric-tensor ensemble bias vanish ($\gamma = \frac{m_{\mathrm{outer}}}{m_{\mathrm{outer}} + m_{\mathrm{central}}} \to 0$) so that $P_{\mathrm{rigid}}(\theta) = P_{\mathrm{spring}}(\theta)$?
-    hint_markdown: >-
-      Use the Mass Ratio slider in the interactive explorer above: what happens as $m_{\\mathrm{outer}} / m_{\\mathrm{central}} \\to 0$?
-    options:
-      - id: a
-        text: >-
-          When the central shared atom B is much heavier than the outer atoms A and C ($m_B \\gg m_A, m_C$)
-      - id: b
-        text: >-
-          When the central shared atom B is much lighter than the outer atoms A and C ($m_B \\ll m_A, m_C$)
-      - id: c
-        text: "When all three atoms have equal mass ($m_A = m_B = m_C$)"
-      - id: d
-        text: "The metric bias is a universal geometric constant independent of atomic masses"
-    correct: a
-    rationale_markdown: |
-      The coupling between the two bond constraints arises because both bonds pull on the shared central atom $\mathrm{B}$ (off-diagonal element $Z_{12} \propto \frac{1}{m_B}\mathbf{r}_{12}\cdot\mathbf{r}_{23}$). When $m_B \to \infty$, $\gamma = \frac{m}{m + m_B} \to 0$, atom $\mathrm{B}$ acts as an immovable pivot, the two constraints kinetically decouple, and the metric factor $\sqrt{1 - \gamma^2\cos^2\theta} \to 1$.
+    '
+- id: q19_03
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_1_timescales_and_motivation
+  prompt_markdown: 'Why is freezing a high-frequency bond stretch ($\hbar\omega \gg k_B T$) via a holonomic constraint often
+    physically *more* realistic at room temperature than simulating it as a classical flexible harmonic spring?
 
-  - id: q19_10
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_19_2_ensemble_metric_fixman
-    prompt_markdown: |
-      For which of the following molecular systems does imposing holonomic bond-length constraints introduce **zero** configuration-dependent metric determinant bias (i.e., $\det\mathbf{Z}(\mathbf{R})$ is strictly constant across all allowed configurations)?
-    hint_markdown: >-
-      Check whether the constraint matrix $\\mathbf{Z}(\\mathbf{R})$ depends on any unconstrained internal angles.
-    options:
-      - id: a
-        text: >-
-          A fluid of diatomic molecules (e.g., $\\mathrm{N_2}$) or fully rigid triatomic molecules (where both bonds AND the bond angle are fixed)
-      - id: b
-        text: >-
-          A linear alkane chain ($\\mathrm{C}_n\\mathrm{H}_{2n+2}$ with $n \\ge 3$) with fixed bond lengths and flexible bond angles
-      - id: c
-        text: >-
-          A flexible-angle triatomic molecule ($\\mathrm{A{-}B{-}C}$) with two fixed bond lengths and unconstrained angle $\\theta$
-      - id: d
-        text: "A flexible bead-rod polymer chain of 50 monomers connected by rigid rods"
-    correct: a
-    rationale_markdown: |
-      In a diatomic molecule ($\sigma = r_{12}^2 - d^2 = 0$), the $1\times 1$ matrix $Z_{11} = 4 d^2 (m_1^{-1} + m_2^{-1})$ is a constant on the constraint surface $r_{12}=d$. Similarly, in a *completely* rigid triatomic molecule (all 3 interatomic distances fixed), there are no unconstrained internal angles $\theta$, so $\det\mathbf{Z}$ is constant. Only *partially* rigid molecules with coupled constraints and flexible angles have a configuration-dependent $\det\mathbf{Z}(\theta)$.
+    '
+  hint_markdown: Compare classical equipartition energy $k_B T$ with the quantum occupancy $\\langle n\\rangle = (e^{\\hbar\\omega/k_B
+    T}-1)^{-1}$.
+  options:
+  - id: a
+    text: A classical harmonic spring artificially populates the mode with $k_B T$ of thermal energy, whereas quantum mechanically
+      the bond is frozen in its $n=0$ vibrational ground state with almost zero thermal excitation
+  - id: b
+    text: Quantum mechanics forbids covalent bonds from having zero-point energy, so bond lengths are strictly constant in
+      nature
+  - id: c
+    text: Classical springs violate conservation of total linear momentum in periodic boundary conditions
+  - id: d
+    text: High-frequency vibrations couple strongly to center-of-mass translation and cause immediate crystallization
+  correct: a
+  rationale_markdown: 'In classical statistical mechanics, equipartition assigns an average energy of $k_B T$ to every quadratic
+    harmonic mode regardless of how high its frequency $\omega$ is. In reality, when $\hbar\omega \gg k_B T$, the excited
+    vibrational states ($n \ge 1$) are thermally inaccessible ($\langle n\rangle \sim e^{-\hbar\omega/k_B T} \ll 1$), so locking
+    the bond in its ground state via a constraint better reflects its lack of thermal excitation and avoids spurious classical
+    energy transfer.
 
-  - id: q19_11
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_19_2_ensemble_metric_fixman
-    prompt_markdown: |
-      Suppose you run a holonomically constrained MD simulation of a polymer chain (using SHAKE to freeze bond lengths) and want the trajectory to sample the exact same equilibrium configurational distribution as a flexible polymer in the stiff-spring limit ($k_{\mathrm{bond}}\to\infty$). How can this be achieved mathematically?
-    hint_markdown: >-
-      Recall Fixman's theorem (1974) regarding the compensating potential $U_{\\mathrm{Fixman}}(\\mathbf{R})$.
-    options:
-      - id: a
-        text: >-
-          Add the Fixman compensating potential $U_{\\mathrm{Fixman}}(\\mathbf{R}) = \\frac{1}{2}k_B T \\ln\\det\\mathbf{Z}(\\mathbf{R})$ to the system Hamiltonian
-      - id: b
-        text: >-
-          Reduce the SHAKE convergence tolerance $\\varepsilon$ from $10^{-6}$ to $10^{-14}$
-      - id: c
-        text: >-
-          Halve the integration timestep $\\Delta t$ while keeping the potential energy unchanged
-      - id: d
-        text: "Switch from periodic boundary conditions to hard spherical wall boundaries"
-    correct: a
-    rationale_markdown: |
-      Because the rigid-constraint configurational density contains an extra factor of $(\det\mathbf{Z}(\mathbf{R}))^{-1/2}$, adding the Fixman potential $U_{\mathrm{Fixman}}(\mathbf{R}) = \frac{1}{2}k_B T \ln\det\mathbf{Z}(\mathbf{R})$ contributes a Boltzmann factor $e^{-\beta U_{\mathrm{Fixman}}} = (\det\mathbf{Z}(\mathbf{R}))^{-1/2}$ (with the appropriate sign depending on whether $\mathbf{G}_{\mathrm{sub}}$ or $\mathbf{Z}=\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^T$ is used) that exactly cancels the metric determinant distortion.
+    '
+- id: q19_04
+  type: problem
+  question_type: multi_select
+  difficulty: easy
+  taught_by: sec_19_1_timescales_and_motivation
+  prompt_markdown: 'Select **all** valid advantages of replacing stiff intramolecular bond-stretching potentials with holonomic
+    constraints in a molecular dynamics simulation:
 
-  - id: sec_19_3_rigid_bodies_quaternions
-    type: markdown_section
-    title: "3. Constrained Coordinate Systems: Linear Molecules, Euler Angles & Quaternions"
-    body_markdown: |
-      Instead of enforcing constraints in Cartesian coordinates, can we simply rewrite the equations of motion directly in **generalized (internal) coordinates** that automatically satisfy the constraints?
+    '
+  hint_markdown: 'Check the lecture slide on ''Constraints in MD'': consider timestep size, force-field construction, and
+    quantum behavior.'
+  options:
+  - id: a
+    text: Allows a 3–5× larger integration timestep $\\Delta t$ by removing the fastest vibrational frequencies
+  - id: b
+    text: Simplifies the construction of the empirical force field by eliminating stiff bond-stretching parameters
+  - id: c
+    text: Avoids unphysical classical thermal excitation of quantum-frozen high-frequency stretches ($\\hbar\\omega \\gg k_B
+      T$)
+  - id: d
+    text: Eliminates the need to compute non-bonded intermolecular Lennard-Jones or Coulomb forces
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: 'Holonomic bond constraints remove the $\sim 10\,\mathrm{fs}$ vibrational bottleneck (allowing a $3\text{–}5\times$
+    larger $\Delta t$), simplify potential construction, and better represent quantum-frozen modes. Non-bonded intermolecular
+    forces between atoms on different molecules must still be computed at every MD step.
 
-      ### Linear and Completely Rigid Molecules
-      - **Linear Molecule (e.g., $\mathrm{CO_2}$, $\mathrm{N_2}$):** Has $3N$ Cartesian coordinates reduced to **5 degrees of freedom per molecule**: 3 coordinates for the Center of Mass ($\mathbf{R}_{\mathrm{COM}}$, which moves via $\mathbf{F}_{\mathrm{tot}} = M\ddot{\mathbf{R}}_{\mathrm{COM}}$) and 2 rotational coordinates represented by a unit orientation vector $\hat{\mathbf{u}}$ ($|\hat{\mathbf{u}}|=1$), which rotates under applied torque $\boldsymbol{\tau}$.
-      - **General 3D Rigid Nonlinear Molecule (e.g., rigid $\mathrm{H_2O}$, benzene):** Has **6 degrees of freedom per molecule**: 3 translational ($\mathbf{R}_{\mathrm{COM}}$) and 3 rotational orientation angles.
+    '
+- id: q19_05
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: concept_19_1_timescales
+  prompt_markdown: 'In an unconstrained alkane simulation, the $\mathrm{C{-}H}$ stretch ($\tilde{\nu} = 3000\,\mathrm{cm}^{-1}$,
+    period $T_{\mathrm{vib}} \approx 11.1\,\mathrm{fs}$) restricts the timestep to $\Delta t_{\mathrm{unc}} = 0.55\,\mathrm{fs}$.
+    If constraining all covalent bond lengths shifts the highest remaining frequency to the $\mathrm{C{-}C{-}C}$ bond-angle
+    bend ($\tilde{\nu} = 750\,\mathrm{cm}^{-1}$), by what multiplicative factor does the maximum stable timestep $\Delta t$
+    increase?
 
-      ### The Fatal Flaw of Euler Angles: Coordinate Singularity (Gimbal Lock)
-      If we represent the 3D orientation of a rigid body using the three **Euler angles** $(\phi, \theta, \psi)$ (precession, nutation/tilt from the $z$-axis, and body spin), the kinematic equations relating $(\dot{\phi}, \dot{\theta}, \dot{\psi})$ to the angular velocity $\boldsymbol{\omega}$ contain factors of $\frac{1}{\sin\theta}$:
-      $$\dot{\phi} = \frac{\omega_x\sin\psi + \omega_y\cos\psi}{\sin\theta}, \qquad \dot{\psi} = \omega_z - \cot\theta\,(\omega_x\sin\psi + \omega_y\cos\psi)$$
-      When the molecular axis aligns with the laboratory $z$-axis (**the North or South Pole**, $\theta \to 0$ or $\theta \to \pi$), $\sin\theta \to 0$! At the pole, $\phi$ and $\psi$ become degenerate (**gimbal lock**), and $\dot{\phi}, \dot{\psi} \to \infty$, causing numerical integration to blow up even though the physical motion is completely smooth!
+    '
+  hint_markdown: Since $T_{\\mathrm{vib}} \\propto 1/\\tilde{\\nu}$, the maximum stable timestep scales inversely with the
+    highest active wavenumber $\\tilde{\\nu}_{\\max}$.
+  correct:
+    value: 4.0
+    tolerance: 0.05
+  rationale_markdown: 'Because $\Delta t_{\max} \propto T_{\min} \propto 1/\tilde{\nu}_{\max}$, lowering the highest active
+    vibrational wavenumber from $3000\,\mathrm{cm}^{-1}$ to $750\,\mathrm{cm}^{-1}$ increases the maximum stable timestep
+    by a factor of $\frac{3000}{750} = 4.0$ (from $0.55\,\mathrm{fs}$ to $2.20\,\mathrm{fs}$).
 
-      ### The Solution: 4-Component Unit Quaternions (Evans 1977)
-      To eliminate coordinate singularities everywhere on the rotation group $SO(3)$, we parameterize orientation using a **4-component unit quaternion** $\mathbf{Q} = (q_0, q_1, q_2, q_3)$ subject to a **single normalization constraint**:
-      $$q_0^2 + q_1^2 + q_2^2 + q_3^2 = 1$$
-      In terms of a rotation by angle $\alpha$ about a unit axis $\hat{\mathbf{n}}$, $q_0 = \cos(\alpha/2)$ and $(q_1, q_2, q_3) = \hat{\mathbf{n}}\sin(\alpha/2)$. The quaternion time derivatives are linear, bilinear, and **completely free of $\frac{1}{\sin\theta}$ singularities**:
-      $$\begin{pmatrix}\dot{q}_0 \\ \dot{q}_1 \\ \dot{q}_2 \\ \dot{q}_3\end{pmatrix} = \frac{1}{2}\begin{pmatrix} 0 & -\omega_{bx} & -\omega_{by} & -\omega_{bz} \\ \omega_{bx} & 0 & \omega_{bz} & -\omega_{by} \\ \omega_{by} & -\omega_{bz} & 0 & \omega_{bx} \\ \omega_{bz} & \omega_{by} & -\omega_{bx} & 0 \end{pmatrix}\begin{pmatrix}q_0 \\ q_1 \\ q_2 \\ q_3\end{pmatrix}$$
+    '
+- id: sec_19_2_ensemble_metric_fixman
+  type: markdown_section
+  title: '2. Effects on the Statistical Ensemble: Stiff Springs vs. Holonomic Constraints'
+  body_markdown: "A crucial warning in molecular simulations (first analyzed by Gibbs and Fixman, 1974):\n> **Taking the limit\
+    \ of a stiff harmonic spring ($k_{\\mathrm{bond}} \\to \\infty$) does NOT yield the exact same equilibrium configurational\
+    \ distribution as simulating dynamics on a holonomically constrained surface ($\\sigma(\\mathbf{R}) = 0$ and $\\dot{\\\
+    sigma}(\\mathbf{R}) = 0$)!**\n\n### Why Do the Ensembles Differ? (The Metric Tensor / Jacobian Effect)\nSuppose we transform\
+    \ from $3N$ Cartesian coordinates $\\mathbf{R}$ to generalized coordinates $\\mathbf{q} = (\\mathbf{u}, \\boldsymbol{\\\
+    sigma})$, where $\\mathbf{u}$ are the $3N - n_c$ unconstrained internal/translational coordinates and $\\boldsymbol{\\\
+    sigma} = (\\sigma_1, \\dots, \\sigma_{n_c})$ are the $n_c$ constraint coordinates. The kinetic energy is:\n$$K = \\frac{1}{2}\\\
+    dot{\\mathbf{R}}^T \\mathbf{M} \\dot{\\mathbf{R}} = \\frac{1}{2}\\dot{\\mathbf{q}}^T \\mathbf{G}(\\mathbf{q})\\dot{\\\
+    mathbf{q}} = \\frac{1}{2}\\mathbf{p}_q^T \\mathbf{G}^{-1}(\\mathbf{q})\\mathbf{p}_q$$\nwhere $\\mathbf{G}(\\mathbf{q})\
+    \ = \\mathbf{J}^T \\mathbf{M} \\mathbf{J}$ is the covariant **mass-metric tensor** and $\\det\\mathbf{G}(\\mathbf{q})\
+    \ \\propto (\\det\\mathbf{J})^2$.\n\n1. **Stiff Harmonic Spring Limit ($k_{\\mathrm{bond}} \\to \\infty$):**\n   Both\
+    \ the constraint coordinate $\\boldsymbol{\\sigma}$ and its conjugate momentum $\\mathbf{p}_\\sigma$ remain active degrees\
+    \ of freedom in the $6N$-dimensional phase space. Integrating over *all* $3N$ momenta $\\mathbf{p}_q$ produces $(\\det\\\
+    mathbf{G})^{1/2}$, which **exactly cancels** the coordinate Jacobian $\\det\\mathbf{J} \\propto (\\det\\mathbf{G})^{1/2}$!\
+    \ In the limit $k_{\\mathrm{bond}} \\to \\infty$, $\\sigma_k \\to 0$ with uniform kinetic weight. For a triatomic molecule\
+    \ $\\mathrm{A{-}B{-}C}$ with no bending potential ($V(\\theta)=0$), the bond-angle distribution is purely geometric:\n\
+    \   $$P_{\\mathrm{spring}}(\\theta) = \\frac{1}{2}\\sin\\theta$$\n2. **Holonomic Rigid Constraint ($\\sigma_k(\\mathbf{R})\
+    \ = 0$ AND $\\dot{\\sigma}_k(\\mathbf{R}) = 0$):**\n   A true mechanical constraint sets the velocity $\\dot{\\boldsymbol{\\\
+    sigma}} = \\mathbf{0}$, which is **not** equivalent to setting the conjugate momentum $\\mathbf{p}_\\sigma = \\mathbf{0}$\
+    \ cleanly without coupling, so integrating out only the $3N - n_c$ unconstrained momenta $\\mathbf{p}_u$ on the submanifold\
+    \ $\\boldsymbol{\\sigma}=\\mathbf{0}$ leaves behind an uncancelled mass-metric determinant factor $|\\det \\mathbf{M}_{\\\
+    mathrm{sub}}(\\mathbf{u})|^{1/2} \\propto |\\det \\mathbf{Z}(\\mathbf{R})|^{-1/2}$, where:\n   $$Z_{kl}(\\mathbf{R}) =\
+    \ \\sum_{i=1}^N \\frac{1}{m_i} \\nabla_{\\mathbf{r}_i}\\sigma_k(\\mathbf{R}) \\cdot \\nabla_{\\mathbf{r}_i}\\sigma_l(\\\
+    mathbf{R})$$\n   For a symmetric triatomic molecule ($\\mathrm{A{-}B{-}C}$) with outer masses $m$ and central mass $m_B$\
+    \ (defining $\\gamma = \\frac{m}{m + m_B}$, so $\\gamma = \\frac{1}{2}$ for equal masses), the two bond constraints share\
+    \ the central atom $\\mathrm{B}$, giving:\n   $$P_{\\mathrm{rigid}}(\\theta) \\propto \\sin\\theta \\sqrt{1 - \\gamma^2\\\
+    cos^2\\theta}$$\n   Because $\\sqrt{1 - \\gamma^2\\cos^2\\theta}$ is maximized at $\\theta = 90^\\circ$ and minimized\
+    \ at $\\theta = 0^\\circ, 180^\\circ$, **holonomic bond constraints bias the triatomic angle toward perpendicular ($\\\
+    theta=90^\\circ$) configurations!**\n\n### The Fixman Compensating Potential\nIf one wishes a holonomically constrained\
+    \ MD simulation to sample the exact stiff-spring equilibrium distribution $P_{\\mathrm{spring}}(\\mathbf{u})$, one adds\
+    \ the **Fixman potential** to the Hamiltonian:\n$$U_{\\mathrm{Fixman}}(\\mathbf{R}) = \\frac{1}{2}k_B T \\ln\\det\\mathbf{Z}(\\\
+    mathbf{R}) = -\\frac{1}{2}k_B T \\ln(1 - \\gamma^2\\cos^2\\theta)$$\nNote that for a single isolated diatomic molecule\
+    \ (only 1 bond constraint) or a completely rigid molecule, $\\det\\mathbf{Z}$ is a constant independent of internal angles,\
+    \ so there is **no** metric tensor distortion!\n"
+- id: concept_19_2_ensemble_metric
+  type: concept_cell
+  title: 'Interactive Explorer: Stiff-Spring vs. Rigid-Constraint Bond Angle Distribution'
+  description_markdown: 'Vary the outer-to-central atomic mass ratio $m / m_B$ of a triatomic molecule $\mathrm{A{-}B{-}C}$
+    to see how the shared central atom couples the two bond constraints and distorts the equilibrium bond-angle probability
+    density $P_{\mathrm{rigid}}(\theta)$ relative to the stiff-spring limit $P_{\mathrm{spring}}(\theta) = \frac{1}{2}\sin\theta$.
 
-      ### Why Not Use Generalized Coordinates for Partially Rigid Molecules?
-      1. For **partially rigid molecules** (like polymers with fixed bond lengths but flexible bond angles and torsions), deriving and inverting the $M(\mathbf{q})\ddot{\mathbf{q}}$ mass matrix in generalized coordinates becomes algebraically intractable and scales as $\mathcal{O}(n_c^3)$ per molecule.
-      2. **Reducing the number of degrees of freedom (D.O.F.) does NOT *per se* save computer time**, because CPU time is dominated by the $\mathcal{O}(N^2)$ or $\mathcal{O}(N)$ pairwise intermolecular force evaluation in Cartesian coordinates, and transforming back and forth between curvilinear generalized coordinates and Cartesian positions adds heavy trigonometric overhead.
+    '
+  render_function: render_stiff_spring_vs_rigid_ensemble
+  layout: figure_left
+  controls:
+    mass_ratio_m_over_mB:
+      kind: slider
+      label: Mass Ratio m_outer / m_central (m / m_B)
+      min: 0.05
+      max: 5.0
+      step: 0.05
+      default: 1.0
+    plot_mode:
+      kind: dropdown
+      label: Plot View
+      default: distributions
+      options:
+      - label: Angle Probability Densities P_spring(θ) vs. P_rigid(θ)
+        value: distributions
+      - label: Metric Determinant Factor & Fixman Potential U_Fixman(θ)
+        value: metric_and_fixman
+  takeaway_markdown: '**Key Takeaway:** Because bond constraints are non-linear in Cartesian coordinates and share atoms,
+    suppressing motion normal to the constraint surface changes the phase-space volume element by $\sqrt{1 - \gamma^2\cos^2\theta}$.
+    Only when the central atom is infinitely heavy ($m/m_B \to 0 \implies \gamma \to 0$) do the two bond constraints decouple!
 
-  - id: concept_19_3_quaternions
-    type: concept_cell
-    title: "Interactive Explorer: Euler-Angle Gimbal Lock vs. Unit Quaternion Smoothness"
-    description_markdown: |
-      Decrease the closest-approach tilt angle $\theta_{\min}$ toward the North Pole ($\theta \to 0^\circ$) to observe the $\frac{1}{\sin\theta}$ divergence of the Euler precession rate $|\dot{\phi}(t)|$ compared against the constant, bounded norm $\|\dot{\mathbf{Q}}\| = \frac{1}{2}\|\boldsymbol{\omega}\|$ of the 4-component unit quaternion.
-    render_function: render_euler_gimbal_vs_quaternion
-    layout: figure_left
-    controls:
-      min_tilt_deg:
-        kind: slider
-        label: "Closest Approach to North Pole θ_min (deg)"
-        min: 0.5
-        max: 45.0
-        step: 0.5
-        default: 5.0
-      omega_perp:
-        kind: slider
-        label: "Angular Speed ω_⊥ (ps⁻¹)"
-        min: 0.5
-        max: 3.0
-        step: 0.25
-        default: 1.0
-    takeaway_markdown: |
-      **Key Takeaway:** Euler angles fail near $\theta = 0^\circ$ or $180^\circ$ because $\dot{\phi} \propto 1/\sin\theta \to \infty$ (the North/South Pole coordinate singularity). Unit quaternions embed $SO(3)$ smoothly onto the 4D unit hypersphere $S^3$ with $\|\dot{\mathbf{Q}}\| = \frac{1}{2}\|\boldsymbol{\omega}\|$ everywhere.
+    '
+- id: q19_06
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_2_ensemble_metric_fixman
+  prompt_markdown: 'What is the fundamental statistical-mechanical reason that a molecular dynamics trajectory on a holonomically
+    constrained surface ($\sigma(\mathbf{R}) = 0, \dot{\sigma}(\mathbf{R}) = 0$) generates a different equilibrium configurational
+    distribution than a flexible bond model in the stiff-spring limit ($k_{\mathrm{bond}} \to \infty$)?
 
-  - id: q19_12
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_19_3_rigid_bodies_quaternions
-    prompt_markdown: |
-      How many independent mechanical degrees of freedom does a single rigid **linear** molecule (such as $\mathrm{N_2}$ or $\mathrm{CO_2}$ with fixed bond lengths and collinear geometry) possess in 3D space?
-    hint_markdown: >-
-      Count the Center of Mass (C.O.M.) translational coordinates plus the independent angles needed to specify a 3D unit vector $\\hat{\\mathbf{u}}$.
-    correct:
-      value: 5
-      tolerance: 0.01
-    rationale_markdown: |
-      A rigid linear molecule in 3D requires 3 coordinates for its center of mass $\mathbf{R}_{\mathrm{COM}} = (X, Y, Z)$ and 2 spherical angles $(\theta, \phi)$ (or a 3D unit vector $\hat{\mathbf{u}}$ with 1 constraint $|\hat{\mathbf{u}}|^2 = 1$) to specify its orientation axis, totaling $3 + 2 = 5$ degrees of freedom.
+    '
+  hint_markdown: Consider what happens when you integrate over the momenta in generalized coordinates when $\\dot{\\sigma}
+    = 0$ is enforced vs. when $\\dot{\\sigma}$ fluctuates thermally in a harmonic well.
+  options:
+  - id: a
+    text: Constraints are non-linear in Cartesian coordinates, so setting the velocity normal to the constraint surface to
+      zero ($\\dot{\\sigma}=0$) removes the momentum-space Gaussian integral factor that would otherwise cancel the configuration-dependent
+      Jacobian metric determinant
+  - id: b
+    text: The Verlet algorithm violates conservation of total energy whenever spring constants exceed $10^3\\,\\text{eV/Å}^2$
+  - id: c
+    text: Stiff harmonic springs change the molecular stoichiometry, whereas holonomic constraints conserve particle number
+  - id: d
+    text: Holonomic constraints continuously inject kinetic energy into the system via non-conservative friction
+  correct: a
+  rationale_markdown: 'In unconstrained generalized coordinates, integrating over all $3N$ momenta yields $(\det\mathbf{G})^{1/2}$,
+    canceling the coordinate transformation Jacobian $\det\mathbf{J}$. When $\dot{\boldsymbol{\sigma}}=\mathbf{0}$ is imposed
+    holonomically, the momentum integral is restricted to the $3N-n_c$ tangent space on the constraint manifold, leaving an
+    uncancelled configuration-dependent metric determinant factor $|\det\mathbf{Z}(\mathbf{R})|^{-1/2}$.
 
-  - id: q19_13
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: concept_19_3_quaternions
-    prompt_markdown: |
-      Why is it dangerous to integrate the rotational equations of motion of a rigid 3D molecule directly in Euler angles $(\phi, \theta, \psi)$ during a molecular dynamics simulation?
-    hint_markdown: >-
-      Inspect the denominator of $\\dot{\\phi} = (\\omega_x\\sin\\psi + \\omega_y\\cos\\psi)/\\sin\\theta$ as the molecule tilts toward the $z$-axis.
-    options:
-      - id: a
-        text: >-
-          When the nutation angle approaches the poles ($\\theta \\to 0$ or $\\pi$), $\\sin\\theta \\to 0$ and the angular rates $\\dot{\\phi}, \\dot{\\psi} \\propto 1/\\sin\\theta$ diverge (gimbal lock coordinate singularity)
-      - id: b
-        text: >-
-          Euler angles cannot represent rotations larger than $90^\\circ$ in three dimensions
-      - id: c
-        text: "Euler angles require 9 independent parameters per molecule, tripling memory usage"
-      - id: d
-        text: "Euler angles only apply to monatomic noble gases and cannot describe polyatomic molecules"
-    correct: a
-    rationale_markdown: |
-      Just like longitude is undefined at the Earth's North and South Poles, the Euler angles $\phi$ and $\psi$ become degenerate when $\theta = 0$ or $\pi$. The kinematic equations contain $1/\sin\theta$, causing $\dot{\phi}$ and $\dot{\psi}$ to blow up whenever thermal tumbling carries a molecule near the $z$-axis.
+    '
+- id: q19_07
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: concept_19_2_ensemble_metric
+  prompt_markdown: 'Consider a homonuclear triatomic molecule ($\mathrm{A{-}A{-}A}$, equal atomic masses $m_1=m_2=m_3=m$,
+    so $\gamma = \frac{m}{m+m} = \frac{1}{2}$) with zero bending potential ($V(\theta)=0$). Compared to the stiff-spring distribution
+    $P_{\mathrm{spring}}(\theta) = \frac{1}{2}\sin\theta$, how does the holonomically constrained rigid-bond distribution
+    $P_{\mathrm{rigid}}(\theta) \propto \sin\theta\sqrt{1 - \frac{1}{4}\cos^2\theta}$ behave?
 
-  - id: q19_14
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: concept_19_3_quaternions
-    prompt_markdown: |
-      A rigid molecule rotating with transverse angular speed $\omega_\perp = 1.5\,\mathrm{ps}^{-1}$ tumbles close to the North Pole at a tilt angle of $\theta_{\min} = 2.0^\circ$. What is the peak Euler precession rate $|\dot{\phi}_{\max}| = \frac{\omega_\perp}{\sin\theta_{\min}}$ in $\mathrm{ps}^{-1}$? (Report your answer to 1 decimal place.)
-    hint_markdown: >-
-      Convert $2.0^\\circ$ to radians ($2\\pi/180 \\approx 0.03490\\,\\mathrm{rad}$), compute $\\sin(2.0^\\circ)$, and divide $1.5$ by that value.
-    correct:
-      value: 43.0
-      tolerance: 0.3
-    rationale_markdown: |
-      Since $\sin(2.0^\circ) \approx 0.0348995$, the peak Euler rate is $|\dot{\phi}_{\max}| = \frac{1.5\,\mathrm{ps}^{-1}}{0.0348995} \approx 42.98\,\mathrm{ps}^{-1} \approx 43.0\,\mathrm{ps}^{-1}$—nearly $29\times$ larger than the true physical angular speed!
+    '
+  hint_markdown: Evaluate $\\sqrt{1 - \\frac{1}{4}\\cos^2\\theta}$ at $\\theta = 90^\\circ$ ($\\cos\\theta = 0$) versus $\\theta
+    = 0^\\circ, 180^\\circ$ ($\\cos^2\\theta = 1$).
+  options:
+  - id: a
+    text: It enhances the probability of right-angle configurations ($\\theta = 90^\\circ$) relative to collinear configurations
+      ($\\theta = 0^\\circ, 180^\\circ$)
+  - id: b
+    text: It enhances the probability of collinear configurations ($\\theta = 0^\\circ, 180^\\circ$) relative to right-angle
+      configurations ($\\theta = 90^\\circ$)
+  - id: c
+    text: It is identical to $P_{\\mathrm{spring}}(\\theta)$ at all angles $\\theta$
+  - id: d
+    text: It forces the bond angle $\\theta$ to remain fixed at its initial value $\\theta(0)$
+  correct: a
+  rationale_markdown: 'The metric factor $\sqrt{1 - \frac{1}{4}\cos^2\theta}$ equals $1$ at $\theta = 90^\circ$ ($\cos 90^\circ
+    = 0$) and drops to $\sqrt{3/4} \approx 0.866$ as $\theta \to 0^\circ$ or $180^\circ$ ($\cos^2\theta \to 1$). Thus, right-angle
+    configurations are statistically favored over collinear ones in the rigid-bond ensemble.
 
-  - id: q19_15
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_3_rigid_bodies_quaternions
-    prompt_markdown: |
-      How do 4-component **unit quaternions** $\mathbf{Q} = (q_0, q_1, q_2, q_3)$ represent the 3 rotational degrees of freedom of a rigid 3D molecule without coordinate singularities?
-    hint_markdown: >-
-      How many components does $\\mathbf{Q}$ have, and what algebraic condition reduces 4 components to 3 independent rotational degrees of freedom?
-    options:
-      - id: a
-        text: >-
-          They use 4 smoothly varying parameters subject to the single normalization constraint $q_0^2 + q_1^2 + q_2^2 + q_3^2 = 1$, giving linear, singularity-free kinematic equations $\\dot{\\mathbf{Q}} = \\frac{1}{2}\\mathbf{W}(\\boldsymbol{\\omega})\\mathbf{Q}$ everywhere
-      - id: b
-        text: "They replace the 3 rotational angles with 4 independent translational coordinates in 4D Euclidean space"
-      - id: c
-        text: >-
-          They restrict the molecule so that its tilt angle $\\theta$ can never move outside the interval $[45^\\circ, 135^\\circ]$
-      - id: d
-        text: "They set the angular momentum of the molecule identically to zero at every timestep"
-    correct: a
-    rationale_markdown: |
-      No 3-parameter chart can cover the rotation group $SO(3)$ without a coordinate singularity. By embedding orientation on the unit 3-sphere $S^3 \subset \mathbb{R}^4$ via four components $(q_0, q_1, q_2, q_3)$ with one holonomic constraint $\sum_{m=0}^3 q_m^2 = 1$ ($4 - 1 = 3$ D.O.F.), the kinematic matrix $\frac{1}{2}\mathbf{W}(\boldsymbol{\omega})$ is purely linear and orthogonal, completely avoiding any $1/\sin\theta$ division.
+    '
+- id: q19_08
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: concept_19_2_ensemble_metric
+  prompt_markdown: 'For the equal-mass triatomic chain ($\gamma = 0.5$) with holonomic bond constraints $\sigma_{12} = r_{12}^2
+    - d^2 = 0$ and $\sigma_{23} = r_{23}^2 - d^2 = 0$, compute the ratio of the metric determinant weighting factor at $\theta
+    = 90^\circ$ to that at $\theta \to 0^\circ$:
 
-  - id: q19_16
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_3_rigid_bodies_quaternions
-    prompt_markdown: |
-      Why does reducing the number of degrees of freedom (D.O.F.) by switching to generalized internal coordinates **not** *per se* save computer time in a molecular dynamics simulation of partially rigid molecules?
-    hint_markdown: "Consider both where intermolecular forces are evaluated and the complexity of the equations of motion in curvilinear generalized coordinates."
-    options:
-      - id: a
-        text: "Non-bonded intermolecular forces still require all Cartesian atomic positions, and solving the coupled generalized-coordinate equations of motion for partially rigid molecules is algebraically complex and computationally expensive"
-      - id: b
-        text: >-
-          Generalized coordinates force the timestep $\\Delta t$ to be $100\\times$ smaller than in Cartesian coordinates
-      - id: c
-        text: "Generalized coordinates cannot be stored in floating-point arrays on modern CPUs"
-      - id: d
-        text: "Generalized coordinates double the number of pairwise Lennard-Jones interactions in the liquid"
-    correct: a
-    rationale_markdown: |
-      As emphasized in the lecture notes, putting constraints in "by hand" via generalized coordinates is difficult for partially rigid molecules (the coupled mass-metric matrix must be inverted at every step), and intermolecular forces still depend on the Cartesian positions of all atoms. Working directly in Cartesian coordinates with SHAKE is far simpler, more flexible, and faster.
+    $$\frac{|\det\mathbf{M}(90^\circ)|^{1/2}}{|\det\mathbf{M}(0^\circ)|^{1/2}} = \frac{1}{\sqrt{1 - \gamma^2}}$$
 
-  - id: sec_19_4_shake_algorithm
-    type: markdown_section
-    title: "4. The SHAKE Algorithm: Holonomic Constraints in Cartesian Verlet Dynamics"
-    body_markdown: |
-      Introduced by **Ryckaert, Ciccotti & Berendsen (1977)**, the **SHAKE algorithm** works directly with **Cartesian atomic coordinates**: at each timestep, the dynamics first move forward *without* constraints, and the algorithm then iteratively readjusts atomic positions to satisfy all constraints $\sigma_k(\mathbf{R}) = 0$.
+    (Report your numerical answer to 4 decimal places.)
 
-      ### 1. Quadratic Form of Bond Constraints & Constrained Equations of Motion
-      For a fixed bond length $a_{ij}$ between atoms $i$ and $j$, we write the holonomic constraint in **squared form** (avoiding costly square roots and keeping $\nabla\sigma$ linear!):
-      $$\sigma_k(\mathbf{R}) = |\mathbf{r}_i - \mathbf{r}_j|^2 - a_{ij}^2 = r_{ij}^2 - a_{ij}^2 = 0$$
-      whose gradients with respect to $\mathbf{r}_i$ and $\mathbf{r}_j$ are simply:
-      $$\nabla_{\mathbf{r}_i}\sigma_k = 2(\mathbf{r}_i - \mathbf{r}_j) = -\nabla_{\mathbf{r}_j}\sigma_k$$
-      From Hamilton's principle of least action with Lagrange multipliers $\lambda_k(t)$, the constrained Cartesian equation of motion is:
-      $$m_i \mathbf{a}_i(t) = m_i \ddot{\mathbf{r}}_i(t) = \mathbf{F}_i(t) - \sum_{k=1}^{n_c} \lambda_k(t)\,\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))$$
-      > **Why not solve the analytical differential equation for $\lambda_k(t)$ from $\ddot{\sigma}_k = 0$?**
-      > Because finite-timestep numerical integration errors ($\mathcal{O}(h^4)$ per step) accumulate rapidly, causing the trajectory to **drift away from the constraint surface** ($\sigma_k(\mathbf{R}) \ne 0$). Instead, SHAKE determines $\lambda_k(t)$ algebraically at every step so that $\sigma_k[\mathbf{R}(t+h)] = 0$ is satisfied to machine precision!
+    '
+  hint_markdown: Evaluate the metric determinant ratio at the given mass-coupling parameter $\gamma = 0.5$.
+  correct:
+    value: 1.1547
+    tolerance: 0.002
+  rationale_markdown: 'With $\gamma = \frac{1}{2}$, $\gamma^2 = \frac{1}{4} = 0.25$. Therefore, $\frac{1}{\sqrt{1 - 0.25}}
+    = \frac{1}{\sqrt{0.75}} = \frac{2}{\sqrt{3}} \approx 1.1547$, a $15.5\%$ relative statistical bias between perpendicular
+    and collinear bond angles!
 
-      ### 2. Verlet Integration with SHAKE & Time Reversibility
-      Inserting the total force into the Verlet algorithm with timestep $h = \Delta t$:
-      $$\mathbf{r}_i(t+h) = \underbrace{2\mathbf{r}_i(t) - \mathbf{r}_i(t-h) + \frac{h^2}{m_i}\mathbf{F}_i(t)}_{\equiv\,\mathbf{r}_i^{\mathrm{unc}}(t+h)\text{ (unconstrained Verlet step)}} - \frac{h^2}{m_i}\sum_{k=1}^{n_c} \lambda_k(t)\,\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))$$
-      Notice a crucial design feature: the constraint force direction $\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t)) = 2(\mathbf{r}_i(t) - \mathbf{r}_j(t))$ is evaluated at the **old configuration $\mathbf{R}(t)$** (the midpoint of the Verlet step from $t-h$ to $t+h$), while the multiplier $\lambda_k(t)$ is chosen so that the **new configuration $\mathbf{R}(t+h)$** satisfies $\sigma_k(\mathbf{R}(t+h)) = 0$.
-      - Evaluating $\nabla\sigma_k$ at $\mathbf{R}(t)$ ensures that the constraint update is symmetric under $t-h \leftrightarrow t+h$, making the SHAKE-Verlet algorithm **strictly time-reversible and symplectic**!
+    '
+- id: q19_09
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: concept_19_2_ensemble_metric
+  prompt_markdown: 'In the triatomic molecule $\mathrm{A{-}B{-}C}$ with two constrained bonds ($\mathrm{A{-}B}$ and $\mathrm{B{-}C}$),
+    in what physical mass limit does the metric-tensor ensemble bias vanish ($\gamma = \frac{m_{\mathrm{outer}}}{m_{\mathrm{outer}}
+    + m_{\mathrm{central}}} \to 0$) so that $P_{\mathrm{rigid}}(\theta) = P_{\mathrm{spring}}(\theta)$?
 
-      ### 3. Single Constraint vs. Multiple Coupled Constraints (Iterative Newton / Gauss–Seidel Cycle)
-      Define $\mathbf{R}_0 \equiv \mathbf{R}^{\mathrm{unc}}(t+h)$ and $\mathbf{G}_{0,i} \equiv \frac{h^2}{m_i}\nabla_{\mathbf{r}_i}\sigma(\mathbf{R}(t))$. We want $\sigma(\mathbf{R}_0 - \lambda\mathbf{G}_0) = 0$. Since $\sigma$ is quadratic in $\mathbf{R}$, this is a non-linear equation in $\lambda$. Expanding to first order about iterate $\lambda_n$ (Newton's method):
-      $$0 \approx \sigma(\mathbf{R}_n) - (\lambda_{n+1} - \lambda_n)\,\nabla\sigma(\mathbf{R}_n)\cdot\mathbf{G}_0 \implies \delta\lambda = \lambda_{n+1} - \lambda_n = \frac{\sigma(\mathbf{R}_n)}{\nabla\sigma(\mathbf{R}_n)\cdot\mathbf{G}_0}$$
-      For **multiple constraints** $\sigma_k$, adjusting bond $k$ moves shared atoms and perturbs adjacent bonds. SHAKE loops cyclically over all constraints $k = 1, \dots, n_c$, updating the positions of the atoms in constraint $k$ at each inner step:
-      $$\mathbf{r}_i^{\mathrm{new}}(t+h) = \mathbf{r}_i(t+h) - \frac{\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))\,\sigma_k(\mathbf{R}(t+h))}{\sum_j \frac{m_i}{m_j}\,\nabla_{\mathbf{r}_j}\sigma_k(\mathbf{R}(t+h))\cdot\nabla_{\mathbf{r}_j}\sigma_k(\mathbf{R}(t))}$$
-      Specifically, for a bond constraint $\sigma_k = |\mathbf{r}_{ij}|^2 - a_{ij}^2$ between atoms $i$ and $j$, with $\nabla_{\mathbf{r}_i}\sigma_k = 2\mathbf{r}_{ij}$, the linearized SHAKE update shifts atoms $i$ and $j$ along the old bond vector $\mathbf{r}_{ij}(t)$ by:
-      $$\delta\mathbf{r}_i = -\frac{g_k}{m_i}\mathbf{r}_{ij}(t), \qquad \delta\mathbf{r}_j = +\frac{g_k}{m_j}\mathbf{r}_{ij}(t), \qquad g_k = \frac{|\mathbf{r}_{ij}^{\mathrm{cur}}(t+h)|^2 - a_{ij}^2}{2\left(\frac{1}{m_i} + \frac{1}{m_j}\right)\mathbf{r}_{ij}^{\mathrm{cur}}(t+h)\cdot\mathbf{r}_{ij}(t)}$$
-      We sweep over all constraints $\sigma_k$ until $\max_k |\sigma_k(\mathbf{R}(t+h))| < \varepsilon$.
+    '
+  hint_markdown: 'Use the Mass Ratio slider in the interactive explorer above: what happens as $m_{\\mathrm{outer}} / m_{\\mathrm{central}}
+    \\to 0$?'
+  options:
+  - id: a
+    text: When the central shared atom B is much heavier than the outer atoms A and C ($m_B \\gg m_A, m_C$)
+  - id: b
+    text: When the central shared atom B is much lighter than the outer atoms A and C ($m_B \\ll m_A, m_C$)
+  - id: c
+    text: When all three atoms have equal mass ($m_A = m_B = m_C$)
+  - id: d
+    text: The metric bias is a universal geometric constant independent of atomic masses
+  correct: a
+  rationale_markdown: 'The coupling between the two bond constraints arises because both bonds pull on the shared central
+    atom $\mathrm{B}$ (off-diagonal element $Z_{12} \propto \frac{1}{m_B}\mathbf{r}_{12}\cdot\mathbf{r}_{23}$). When $m_B
+    \to \infty$, $\gamma = \frac{m}{m + m_B} \to 0$, atom $\mathrm{B}$ acts as an immovable pivot, the two constraints kinetically
+    decouple, and the metric factor $\sqrt{1 - \gamma^2\cos^2\theta} \to 1$.
 
-      ### 4. Computational Cost & Efficiency of SHAKE
-      - Typically, one must iterate the SHAKE Newton cycle **about 25 times** per MD step.
-      - However, **because the expensive intermolecular force $\mathbf{F}_i(t)$ is NEVER re-evaluated inside the SHAKE loop** (only simple geometric dot products of constraint bonds are computed!), the entire SHAKE cycle takes only **$\sim 25\%$ of the total CPU time**, while enabling a $3\text{–}5\times$ larger timestep $\Delta t$—yielding a massive net speedup!
+    '
+- id: q19_10
+  type: problem
+  question_type: single_select
+  difficulty: hard
+  taught_by: sec_19_2_ensemble_metric_fixman
+  prompt_markdown: 'For which of the following molecular systems does imposing holonomic bond-length constraints introduce
+    **zero** configuration-dependent metric determinant bias (i.e., $\det\mathbf{Z}(\mathbf{R})$ is strictly constant across
+    all allowed configurations)?
 
-  - id: concept_19_4_shake_tracer
-    type: concept_cell
-    title: "Interactive Explorer: Step-by-Step SHAKE Relaxation on a Coupled Triatomic Molecule"
-    description_markdown: |
-      Step through the SHAKE Gauss–Seidel sweeps ($m = 0, 1, \dots, 15$) for a coupled triatomic molecule ($\mathrm{A{-}B{-}C}$). Observe how projecting bond $1\text{–}2$ and bond $2\text{–}3$ along their old reference directions $\mathbf{r}_{12}(t)$ and $\mathbf{r}_{23}(t)$ causes exponential decay of the constraint residuals $|\sigma_k^{(m)}|$ without re-evaluating intermolecular forces.
-    render_function: render_shake_iteration_tracer
-    layout: figure_left
-    controls:
-      shake_iterations:
-        kind: slider
-        label: "SHAKE Sweep Number m"
-        min: 0
-        max: 15
-        step: 1
-        default: 4
-      initial_distortion:
-        kind: slider
-        label: "Unconstrained Step Distortion"
-        min: 0.05
-        max: 0.45
-        step: 0.05
-        default: 0.25
-      panel_mode:
-        kind: dropdown
-        label: "Visualization Panel"
-        default: "residuals"
-        options:
-          - label: "Log-Residual Convergence |σ_k^(m)| vs. Sweep m"
-            value: "residuals"
-          - label: "2D Molecular Geometry & Projection Vectors"
-            value: "geometry"
-    takeaway_markdown: |
-      **Key Takeaway:** Because atom 2 is shared between bond 1–2 and bond 2–3, satisfying $\sigma_{23}=0$ slightly perturbs $\sigma_{12}$. Cycling through all constraints via linearized Newton updates drives both residuals below $\varepsilon = 10^{-8}\,\text{Å}^2$ in a handful of sweeps while conserving center-of-mass momentum.
+    '
+  hint_markdown: Check whether the constraint matrix $\\mathbf{Z}(\\mathbf{R})$ depends on any unconstrained internal angles.
+  options:
+  - id: a
+    text: A fluid of diatomic molecules (e.g., $\\mathrm{N_2}$) or fully rigid triatomic molecules (where both bonds AND the
+      bond angle are fixed)
+  - id: b
+    text: A linear alkane chain ($\\mathrm{C}_n\\mathrm{H}_{2n+2}$ with $n \\ge 3$) with fixed bond lengths and flexible bond
+      angles
+  - id: c
+    text: A flexible-angle triatomic molecule ($\\mathrm{A{-}B{-}C}$) with two fixed bond lengths and unconstrained angle
+      $\\theta$
+  - id: d
+    text: A flexible bead-rod polymer chain of 50 monomers connected by rigid rods
+  correct: a
+  rationale_markdown: 'In a diatomic molecule ($\sigma = r_{12}^2 - d^2 = 0$), the $1\times 1$ matrix $Z_{11} = 4 d^2 (m_1^{-1}
+    + m_2^{-1})$ is a constant on the constraint surface $r_{12}=d$. Similarly, in a *completely* rigid triatomic molecule
+    (all 3 interatomic distances fixed), there are no unconstrained internal angles $\theta$, so $\det\mathbf{Z}$ is constant.
+    Only *partially* rigid molecules with coupled constraints and flexible angles have a configuration-dependent $\det\mathbf{Z}(\theta)$.
 
-  - id: q19_17
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      In the SHAKE algorithm, why do we write a bond-length constraint between atoms $i$ and $j$ as $\sigma(\mathbf{R}) = |\mathbf{r}_i - \mathbf{r}_j|^2 - a^2 = 0$ rather than $|\mathbf{r}_i - \mathbf{r}_j| - a = 0$?
-    hint_markdown: >-
-      Compute the gradient $\\nabla_{\\mathbf{r}_i}(r_{ij}^2 - a^2)$ versus $\\nabla_{\\mathbf{r}_i}(r_{ij} - a)$.
-    options:
-      - id: a
-        text: >-
-          Its gradient $\\nabla_{\\mathbf{r}_i}\\sigma = 2(\\mathbf{r}_i - \\mathbf{r}_j)$ is purely linear in Cartesian coordinates and avoids evaluating costly square roots
-      - id: b
-        text: >-
-          The linear distance $|\mathbf{r}_i - \mathbf{r}_j| - a = 0$ is non-holonomic and depends on atomic velocities
-      - id: c
-        text: "Squared bond lengths are invariant under non-uniform scaling of temperature"
-      - id: d
-        text: "Only squared constraints conserve total charge in ionic crystals"
-    correct: a
-    rationale_markdown: |
-      Writing $\sigma(\mathbf{R}) = r_{ij}^2 - a^2 = 0$ makes the constraint gradient $\nabla_{\mathbf{r}_i}\sigma = 2(\mathbf{r}_i - \mathbf{r}_j) = -\nabla_{\mathbf{r}_j}\sigma$ a simple vector difference with no square root ($\sqrt{\cdot}$) evaluations required in either $\sigma$ or $\nabla\sigma$.
+    '
+- id: q19_11
+  type: problem
+  question_type: single_select
+  difficulty: hard
+  taught_by: sec_19_2_ensemble_metric_fixman
+  prompt_markdown: 'Suppose you run a holonomically constrained MD simulation of a polymer chain (using SHAKE to freeze bond
+    lengths) and want the trajectory to sample the exact same equilibrium configurational distribution as a flexible polymer
+    in the stiff-spring limit ($k_{\mathrm{bond}}\to\infty$). How can this be achieved mathematically?
 
-  - id: q19_18
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      In analytical mechanics, one can differentiate the constraint $\sigma(\mathbf{R}(t)) = 0$ twice with respect to time ($\ddot{\sigma} = 0$) to obtain an explicit formula for the Lagrange multiplier $\lambda(t)$ at time $t$ and simply integrate $m\mathbf{a}(t) = \mathbf{F}(t) - \lambda(t)\nabla\sigma(\mathbf{R}(t))$ forward. Why does the SHAKE algorithm **not** determine $\lambda(t)$ this way?
-    hint_markdown: "Look at the lecture slide 'SHAKE algorithm': what happens when finite-timestep numerical integration errors accumulate?"
-    options:
-      - id: a
-        text: >-
-          Because finite-timestep numerical integration errors accumulate at every step, causing the trajectory to steadily drift away from the constraint surface $\\sigma(\\mathbf{R}) = 0$
-      - id: b
-        text: >-
-          Because $\\sigma(\\mathbf{R}) = r_{ij}^2 - a^2$ is not differentiable with respect to Cartesian coordinates
-      - id: c
-        text: "Because Hamilton's principle is invalid when intermolecular forces are non-linear"
-      - id: d
-        text: >-
-          Because $\\lambda(t)$ is always identically zero for covalent bonds
-    correct: a
-    rationale_markdown: |
-      Even if $\sigma(0)=0$ and $\dot{\sigma}(0)=0$ initially, integrating $\ddot{\sigma}=0$ numerically with finite timestep $h$ incurs local truncation errors ($\sim\mathcal{O}(h^4)$), causing $\sigma(\mathbf{R}(t))$ to random-walk and drift off the constraint manifold. SHAKE prevents any drift by solving directly for $\lambda(t)$ such that $\sigma[\mathbf{R}(t+h)] = 0$ at the new timestep!
+    '
+  hint_markdown: Recall Fixman's theorem (1974) regarding the compensating potential $U_{\\mathrm{Fixman}}(\\mathbf{R})$.
+  options:
+  - id: a
+    text: Add the Fixman compensating potential $U_{\\mathrm{Fixman}}(\\mathbf{R}) = \\frac{1}{2}k_B T \\ln\\det\\mathbf{Z}(\\mathbf{R})$
+      to the system Hamiltonian
+  - id: b
+    text: Reduce the SHAKE convergence tolerance $\\varepsilon$ from $10^{-6}$ to $10^{-14}$
+  - id: c
+    text: Halve the integration timestep $\\Delta t$ while keeping the potential energy unchanged
+  - id: d
+    text: Switch from periodic boundary conditions to hard spherical wall boundaries
+  correct: a
+  rationale_markdown: 'Because the rigid-constraint configurational density contains an extra factor of $(\det\mathbf{Z}(\mathbf{R}))^{-1/2}$,
+    adding the Fixman potential $U_{\mathrm{Fixman}}(\mathbf{R}) = \frac{1}{2}k_B T \ln\det\mathbf{Z}(\mathbf{R})$ contributes
+    a Boltzmann factor $e^{-\beta U_{\mathrm{Fixman}}} = (\det\mathbf{Z}(\mathbf{R}))^{-1/2}$ (with the appropriate sign depending
+    on whether $\mathbf{G}_{\mathrm{sub}}$ or $\mathbf{Z}=\mathbf{J}\mathbf{M}^{-1}\mathbf{J}^T$ is used) that exactly cancels
+    the metric determinant distortion.
 
-  - id: q19_19
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      In the SHAKE-Verlet update equation
-      $$\mathbf{R}_{\mathrm{new}}(t+h) = 2\mathbf{R}(t) - \mathbf{R}(t-h) + \frac{h^2}{m}\mathbf{F}(t) - \frac{h^2}{m}\lambda(t)\,\nabla\sigma(\mathbf{R}(t)),$$
-      at which time argument is the constraint gradient direction $\nabla\sigma$ evaluated, and at which time argument is the constraint condition $\sigma = 0$ enforced?
-    hint_markdown: >-
-      Check the argument of $\\nabla\\sigma(\\mathbf{R}, t)$ versus $\\sigma[\\mathbf{R}(t+h)] = 0$ on slide 5 of the lecture notes.
-    options:
-      - id: a
-        text: >-
-          The gradient direction $\\nabla\\sigma$ is evaluated at the old configuration $\\mathbf{R}(t)$, while $\\lambda(t)$ is solved so that the constraint $\\sigma[\\mathbf{R}(t+h)] = 0$ holds at the new configuration $\\mathbf{R}(t+h)$
-      - id: b
-        text: >-
-          Both $\\nabla\\sigma$ and $\\sigma=0$ are evaluated at the old configuration $\\mathbf{R}(t)$
-      - id: c
-        text: >-
-          The gradient direction $\\nabla\\sigma$ is evaluated at $\\mathbf{R}(t-h)$, while $\\sigma=0$ is enforced at $\\mathbf{R}(t)$
-      - id: d
-        text: >-
-          Both $\\nabla\\sigma$ and $\\sigma=0$ are evaluated at the unconstrained midpoint $\\frac{1}{2}[\\mathbf{R}(t)+\\mathbf{R}(t-h)]$
-    correct: a
-    rationale_markdown: |
-      In Verlet integration, $t$ is the central time between $t-h$ and $t+h$. The constraint force $- \lambda(t)\nabla\sigma(\mathbf{R}(t))$ acts at time $t$ (along the old bond vectors $\mathbf{r}_{ij}(t)$), while the scalar magnitude $\lambda(t)$ is chosen so that the resulting positions at $t+h$ satisfy $\sigma[\mathbf{R}(t+h)] = 0$. Evaluating the force direction at time $t$ guarantees exact time-reversibility!
+    '
+- id: sec_19_3_rigid_bodies_quaternions
+  type: markdown_section
+  title: '3. Constrained Coordinate Systems: Linear Molecules, Euler Angles & Quaternions'
+  body_markdown: 'Instead of enforcing constraints in Cartesian coordinates, can we simply rewrite the equations of motion
+    directly in **generalized (internal) coordinates** that automatically satisfy the constraints?
 
-  - id: q19_20
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      Why is it critical that SHAKE applies the constraint position correction $\delta\mathbf{r}_i = -\frac{h^2}{m_i}\sum_k \lambda_k \nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))$ along the **old** bond directions $\mathbf{r}_{ij}(t)$ rather than along the unconstrained predicted directions $\mathbf{r}_{ij}^{\mathrm{unc}}(t+h)$?
-    hint_markdown: >-
-      Think about reversing time ($t-h \\leftrightarrow t+h$) in the Verlet step centered at $\\mathbf{R}(t)$.
-    options:
-      - id: a
-        text: >-
-          Because $\\mathbf{R}(t)$ is the time-symmetric midpoint between $\\mathbf{R}(t-h)$ and $\\mathbf{R}(t+h)$, using $\\nabla\\sigma(\\mathbf{R}(t))$ preserves the exact time-reversibility and symplectic structure of the Verlet integrator
-      - id: b
-        text: >-
-          Because the unconstrained positions $\\mathbf{r}_i^{\\mathrm{unc}}(t+h)$ always have zero norm
-      - id: c
-        text: >-
-          Because evaluating $\\nabla\\sigma$ at $\\mathbf{r}^{\\mathrm{unc}}(t+h)$ would violate conservation of total linear momentum
-      - id: d
-        text: >-
-          Because $\\nabla\\sigma(\\mathbf{R}(t))$ is perpendicular to the covalent bond vector $\\mathbf{r}_{ij}(t)$
-    correct: a
-    rationale_markdown: |
-      In the Verlet step linking $\mathbf{R}(t-h)$, $\mathbf{R}(t)$, and $\mathbf{R}(t+h)$, the configuration $\mathbf{R}(t)$ is invariant under time reversal ($h \to -h$, swapping $\mathbf{R}(t-h) \leftrightarrow \mathbf{R}(t+h)$). Applying the constraint force along $\nabla\sigma(\mathbf{R}(t))$ ensures that running the SHAKE-Verlet step backward from $\mathbf{R}(t+h)$ through $\mathbf{R}(t)$ lands back on $\mathbf{R}(t-h)$ with the exact same $\lambda(t)$, preventing secular energy drift.
 
-  - id: q19_21
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      Why is the SHAKE equation $\sigma(\mathbf{R}_0 - \lambda \mathbf{G}_0) = 0$ non-linear in the Lagrange multiplier $\lambda$ even for a single isolated diatomic bond constraint $\sigma(\mathbf{R}) = |\mathbf{r}_1 - \mathbf{r}_2|^2 - a^2 = 0$?
-    hint_markdown: >-
-      Substitute $\\mathbf{r}_{12}(t+h) = \\mathbf{r}_{12}^{\\mathrm{unc}} - \\lambda \\mathbf{g}_{12}$ into $|\\mathbf{r}_{12}(t+h)|^2 - a^2 = 0$ and expand the dot product.
-    options:
-      - id: a
-        text: >-
-          Because squaring the updated bond vector $|\\mathbf{r}_{12}^{\\mathrm{unc}} - \\lambda \\mathbf{g}_{12}|^2 = a^2$ produces a quadratic term $+\\lambda^2 |\\mathbf{g}_{12}|^2$ in $\\lambda$
-      - id: b
-        text: >-
-          Because the atomic masses $m_1$ and $m_2$ depend exponentially on $\\lambda$
-      - id: c
-        text: >-
-          Because the Lennard-Jones potential $4\\epsilon[(\\sigma/r)^{12} - (\\sigma/r)^6]$ is a 12th-degree polynomial in $\\lambda$
-      - id: d
-        text: >-
-          Because the target bond length $a$ oscillates sinusoidally with $\\lambda$
-    correct: a
-    rationale_markdown: |
-      Substituting $\mathbf{R}(t+h) = \mathbf{R}_0 - \lambda\mathbf{G}_0$ into $\sigma(\mathbf{R}) = r_{12}^2 - a^2 = 0$ gives $|\mathbf{r}_{12,0} - \lambda\mathbf{g}_{12,0}|^2 - a^2 = (r_{12,0}^2 - a^2) - 2\lambda\,\mathbf{r}_{12,0}\cdot\mathbf{g}_{12,0} + \lambda^2 |\mathbf{g}_{12,0}|^2 = 0$, which is quadratic in $\lambda$. In SHAKE, the $\mathcal{O}(\lambda^2)$ term is handled by linearized Newton iteration $\lambda_{n+1} = \lambda_n + \frac{\sigma_n}{\mathbf{G}_0\cdot\nabla\sigma_n}$.
+    ### Linear and Completely Rigid Molecules
 
-  - id: q19_22
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      Consider a homonuclear diatomic molecule ($m_1 = m_2 = 1$) with target bond length $a = 1.00\,\text{Å}$. At time $t$, the bond vector is $\mathbf{r}_{12}(t) = (1.00, 0, 0)\,\text{Å}$. After the unconstrained Verlet step, the predicted bond vector is $\mathbf{r}_{12}^{\mathrm{unc}}(t+h) = (1.10, 0, 0)\,\text{Å}$.
-      Using the linearized SHAKE formula
-      $$g = \frac{|\mathbf{r}_{12}^{\mathrm{unc}}|^2 - a^2}{2\left(\frac{1}{m_1} + \frac{1}{m_2}\right)\mathbf{r}_{12}^{\mathrm{unc}}\cdot\mathbf{r}_{12}(t)},$$
-      calculate the scalar displacement magnitude $|\delta\mathbf{r}_1| = \frac{g}{m_1}|\mathbf{r}_{12}(t)|$ (in $\text{Å}$) applied to atom 1 in the first Newton iteration. (Report your answer to 4 decimal places.)
-    hint_markdown: "Compute the numerator $1.10^2 - 1.00^2 = 0.21$, and divide by $2(1 + 1)(1.10)(1.00) = 4.40$."
-    correct:
-      value: 0.0477
-      tolerance: 0.0005
-    rationale_markdown: |
-      Here $\sigma_0 = |\mathbf{r}_{12}^{\mathrm{unc}}|^2 - a^2 = 1.10^2 - 1.00^2 = 1.21 - 1.00 = 0.21\,\text{Å}^2$. The denominator is $2(1 + 1)(1.10 \times 1.00) = 4.40\,\text{Å}^2$. Thus $g = \frac{0.21}{4.40} = 0.047727 \approx 0.0477\,\text{Å}$. Notice that atoms 1 and 2 each shift inward by $0.0477\,\text{Å}$, reducing the bond length from $1.10\,\text{Å}$ to $1.0045\,\text{Å}$ after a single linearized step (and converging to $1.0000\,\text{Å}$ on the next iteration!).
+    - **Linear Molecule (e.g., $\mathrm{CO_2}$, $\mathrm{N_2}$):** Has $3N$ Cartesian coordinates reduced to **5 degrees of
+    freedom per molecule**: 3 coordinates for the Center of Mass ($\mathbf{R}_{\mathrm{COM}}$, which moves via $\mathbf{F}_{\mathrm{tot}}
+    = M\ddot{\mathbf{R}}_{\mathrm{COM}}$) and 2 rotational coordinates represented by a unit orientation vector $\hat{\mathbf{u}}$
+    ($|\hat{\mathbf{u}}|=1$), which rotates under applied torque $\boldsymbol{\tau}$.
 
-  - id: q19_23
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      When SHAKE applies a bond constraint correction between atom $i$ (mass $m_i$) and atom $j$ (mass $m_j$):
-      $$\delta\mathbf{r}_i = -\frac{h^2 \lambda_{ij}}{m_i}\nabla_{\mathbf{r}_i}\sigma_{ij}(\mathbf{R}(t)), \qquad \delta\mathbf{r}_j = -\frac{h^2 \lambda_{ij}}{m_j}\nabla_{\mathbf{r}_j}\sigma_{ij}(\mathbf{R}(t)),$$
-      how does this position shift affect the center of mass $\mathbf{R}_{\mathrm{COM}} = \frac{m_i\mathbf{r}_i + m_j\mathbf{r}_j}{m_i + m_j}$ of the pair, and how do the individual atomic shifts scale with mass?
-    hint_markdown: >-
-      Use Newton's third law symmetry $\\nabla_{\\mathbf{r}_i}\\sigma_{ij} = -\\nabla_{\\mathbf{r}_j}\\sigma_{ij}$ to compute $m_i\\delta\\mathbf{r}_i + m_j\\delta\\mathbf{r}_j$.
-    options:
-      - id: a
-        text: >-
-          The center of mass $\\mathbf{R}_{\\mathrm{COM}}$ is strictly unchanged ($m_i\\delta\\mathbf{r}_i + m_j\\delta\\mathbf{r}_j = \\mathbf{0}$), and each atom's displacement magnitude is inversely proportional to its mass ($|\\delta\\mathbf{r}_i| \\propto 1/m_i$)
-      - id: b
-        text: "Both atoms shift by the exact same distance regardless of their masses, shifting the center of mass toward the heavier atom"
-      - id: c
-        text: "Only the lighter atom moves while the heavier atom is held fixed in space"
-      - id: d
-        text: >-
-          Each atom's displacement is directly proportional to its mass ($|\\delta\\mathbf{r}_i| \\propto m_i$)
-    correct: a
-    rationale_markdown: |
-      Because $\nabla_{\mathbf{r}_i}\sigma_{ij} = 2(\mathbf{r}_i - \mathbf{r}_j) = -\nabla_{\mathbf{r}_j}\sigma_{ij}$, the mass-weighted sum of position shifts vanishes identically: $m_i\delta\mathbf{r}_i + m_j\delta\mathbf{r}_j = -h^2\lambda_{ij}(\nabla_{\mathbf{r}_i}\sigma_{ij} + \nabla_{\mathbf{r}_j}\sigma_{ij}) = \mathbf{0}$. Moreover, $|\delta\mathbf{r}_i| / |\delta\mathbf{r}_j| = m_j / m_i$; for example, in an $\mathrm{O{-}H}$ bond ($m_{\mathrm{O}}=16, m_{\mathrm{H}}=1$), the hydrogen atom moves $16\times$ farther than the oxygen atom during a SHAKE update!
+    - **General 3D Rigid Nonlinear Molecule (e.g., rigid $\mathrm{H_2O}$, benzene):** Has **6 degrees of freedom per molecule**:
+    3 translational ($\mathbf{R}_{\mathrm{COM}}$) and 3 rotational orientation angles.
 
-  - id: q19_24
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      During a SHAKE update of a covalent $\mathrm{O{-}H}$ bond ($m_{\mathrm{O}} = 16.0\,\mathrm{u}$, $m_{\mathrm{H}} = 1.0\,\mathrm{u}$), the oxygen atom is displaced by $|\delta\mathbf{r}_{\mathrm{O}}| = 0.005\,\text{Å}$ along the old bond vector. By what distance $|\delta\mathbf{r}_{\mathrm{H}}|$ (in $\text{Å}$) is the hydrogen atom displaced in the opposite direction? (Report your answer to 2 decimal places.)
-    hint_markdown: >-
-      Use conservation of the center of mass: $m_{\\mathrm{H}}|\\delta\\mathbf{r}_{\\mathrm{H}}| = m_{\\mathrm{O}}|\\delta\\mathbf{r}_{\\mathrm{O}}|$.
-    correct:
-      value: 0.08
-      tolerance: 0.002
-    rationale_markdown: |
-      From $m_{\mathrm{H}}|\delta\mathbf{r}_{\mathrm{H}}| = m_{\mathrm{O}}|\delta\mathbf{r}_{\mathrm{O}}|$, we have $|\delta\mathbf{r}_{\mathrm{H}}| = \frac{16.0}{1.0}\times 0.005\,\text{Å} = 0.080\,\text{Å}$.
 
-  - id: q19_25
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: concept_19_4_shake_tracer
-    prompt_markdown: |
-      In a molecule with multiple constraints (such as liquid water with 3 interatomic distance constraints per molecule, or a polymer chain), why must SHAKE loop cyclically over all constraints $\sigma_k$ many times rather than solving each constraint $\sigma_k = 0$ just once?
-    hint_markdown: "Watch atom 2 in the Interactive SHAKE Tracer when constraint 2–3 is updated right after constraint 1–2."
-    options:
-      - id: a
-        text: >-
-          Adjacent constraints share common atoms, so shifting atomic positions to satisfy constraint $\\sigma_k = 0$ perturbs the lengths of neighboring bonds that were just satisfied, plus each individual bond equation is quadratic in $\\lambda_k$
-      - id: b
-        text: "The target bond lengths $a_k$ change randomly at every iteration of the SHAKE loop"
-      - id: c
-        text: "The intermolecular Lennard-Jones forces must be recomputed 25 times per timestep inside the SHAKE loop"
-      - id: d
-        text: "Python and Fortran loops require at least 25 iterations to flush CPU cache lines"
-    correct: a
-    rationale_markdown: |
-      When two constraints share an atom (e.g., atom $\mathrm{B}$ in $\mathrm{A{-}B{-}C}$), moving atom $\mathrm{B}$ to satisfy $\sigma_{BC}=0$ alters $\mathbf{r}_B$ and therefore changes $|\mathbf{r}_A - \mathbf{r}_B|^2 - a_{AB}^2$, violating $\sigma_{AB}=0$. Cyclic Gauss–Seidel/Newton relaxation iteratively eliminates both this inter-bond coupling and the quadratic $\mathcal{O}(\lambda^2)$ nonlinearity until all $|\sigma_k| < \varepsilon$ simultaneously.
+    ### The Fatal Flaw of Euler Angles: Coordinate Singularity (Gimbal Lock)
 
-  - id: q19_26
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      According to the lecture notes, one typically has to iterate the SHAKE Newton cycle about **25 times** per MD step, yet this takes only about **25% of the total CPU time**. Why is 25 iterations of SHAKE so cheap compared to a single unconstrained MD step?
-    hint_markdown: "What is the most computationally expensive part of an MD step, and is it repeated inside the SHAKE loop?"
-    options:
-      - id: a
-        text: >-
-          Because the expensive intermolecular forces $\\mathbf{F}_i(t)$ are NOT re-evaluated during the SHAKE iterations—only simple local bond constraint vectors are updated
-      - id: b
-        text: "Because SHAKE only updates 1% of the molecules in the simulation box at each timestep"
-      - id: c
-        text: "Because SHAKE runs in integer arithmetic without any floating-point divisions"
-      - id: d
-        text: "Because SHAKE skips the Verlet predictor step entirely"
-    correct: a
-    rationale_markdown: |
-      In molecular dynamics, $75\text{–}90\%$ of CPU time is spent evaluating pairwise non-bonded intermolecular forces $\mathbf{F}_i(t)$ (Lennard-Jones, Ewald/PME electrostatics). $\mathbf{F}_i(t)$ is computed **only once** per timestep during the unconstrained Verlet predictor step; the 25 SHAKE iterations only compute fast $\mathcal{O}(n_c)$ local dot products along intramolecular bonds!
+    If we represent the 3D orientation of a rigid body using the three **Euler angles** $(\phi, \theta, \psi)$ (precession,
+    nutation/tilt from the $z$-axis, and body spin), the kinematic equations relating $(\dot{\phi}, \dot{\theta}, \dot{\psi})$
+    to the angular velocity $\boldsymbol{\omega}$ contain factors of $\frac{1}{\sin\theta}$:
 
-  - id: q19_27
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      Suppose an unconstrained MD simulation takes $1.00\,\mathrm{ms}$ of CPU time per timestep with $\Delta t_{\mathrm{unc}} = 1.0\,\mathrm{fs}$. When SHAKE is turned on to freeze bond lengths, the SHAKE cycle adds an extra $\frac{1}{3}$ ($33.33\%$) to the per-step CPU time (so SHAKE accounts for $\frac{0.3333}{1.3333} = 25\%$ of the new total step time of $1.3333\,\mathrm{ms}$), while allowing the timestep to increase to $\Delta t_{\mathrm{SHAKE}} = 4.0\,\mathrm{fs}$.
-      What is the net **overall computational speedup factor** (simulated physical time per unit CPU wall-clock time) achieved by using SHAKE? (Report your answer to 1 decimal place.)
-    hint_markdown: >-
-      Divide the timestep gain factor ($\\Delta t_{\\mathrm{SHAKE}} / \\Delta t_{\\mathrm{unc}} = 4.0$) by the relative per-step CPU cost factor ($1.3333 / 1.00$).
-    correct:
-      value: 3.0
-      tolerance: 0.05
-    rationale_markdown: |
-      Each SHAKE step advances physical time by $4.0\times$ as much as an unconstrained step while costing $\frac{4}{3} \approx 1.3333\times$ as much CPU time per step. Thus, the net speedup in simulated physical time per second of CPU time is $\frac{4.0}{4/3} = 3.0\times$.
+    $$\dot{\phi} = \frac{\omega_x\sin\psi + \omega_y\cos\psi}{\sin\theta}, \qquad \dot{\psi} = \omega_z - \cot\theta\,(\omega_x\sin\psi
+    + \omega_y\cos\psi)$$
 
-  - id: q19_28
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      To make a nonlinear triatomic molecule such as water ($\mathrm{H_2O}$) **completely rigid** in Cartesian coordinates using the SHAKE algorithm (without introducing generalized coordinates or quaternions), how many holonomic distance constraints $\sigma_k(\mathbf{R}) = 0$ must be applied per water molecule?
-    hint_markdown: >-
-      A nonlinear 3-atom molecule has $3 \\times 3 = 9$ Cartesian coordinates and 6 rigid-body degrees of freedom (3 translational + 3 rotational).
-    options:
-      - id: a
-        text: "3 distance constraints (the two O–H covalent bond lengths plus the H–H distance, which fixes the H–O–H angle)"
-      - id: b
-        text: "2 distance constraints (only the two O–H covalent bond lengths)"
-      - id: c
-        text: "1 distance constraint (the center-of-mass radius of gyration)"
-      - id: d
-        text: "6 distance constraints (all permutations of pairs)"
-    correct: a
-    rationale_markdown: |
-      A 3-atom molecule has $3N = 9$ Cartesian coordinates, while a completely rigid nonlinear 3D body has 6 degrees of freedom (3 translation + 3 rotation). Therefore, $9 - 6 = 3$ holonomic distance constraints are needed: fixing $r_{\mathrm{OH_1}}$, $r_{\mathrm{OH_2}}$, and the inter-hydrogen distance $r_{\mathrm{H_1 H_2}}$ creates a rigid triangle!
+    When the molecular axis aligns with the laboratory $z$-axis (**the North or South Pole**, $\theta \to 0$ or $\theta \to
+    \pi$), $\sin\theta \to 0$! At the pole, $\phi$ and $\psi$ become degenerate (**gimbal lock**), and $\dot{\phi}, \dot{\psi}
+    \to \infty$, causing numerical integration to blow up even though the physical motion is completely smooth!
 
-  - id: q19_29
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      Why cannot a **linear** triatomic molecule (such as $\mathrm{CO_2}$, with bond angle $\theta = 180^\circ$) be made completely rigid solely by applying 3 pairwise SHAKE distance constraints ($r_{\mathrm{CO_1}} = d$, $r_{\mathrm{CO_2}} = d$, and $r_{\mathrm{O_1 O_2}} = 2d$) on its 3 atoms?
-    hint_markdown: >-
-      At $\\theta = 180^\\circ$, all three bond vectors $\\mathbf{r}_{\\mathrm{CO_1}}$, $\\mathbf{r}_{\\mathrm{CO_2}}$, and $\\mathbf{r}_{\\mathrm{O_1 O_2}}$ are collinear! How many independent degrees of freedom does a linear molecule have?
-    options:
-      - id: a
-        text: >-
-          A linear molecule has 5 degrees of freedom (requiring $9 - 5 = 4$ constraints), and at $\\theta = 180^\\circ$ the gradient of $r_{\\mathrm{O_1 O_2}}$ is linearly dependent on $\\mathbf{r}_{\\mathrm{CO_1}}$ and $\\mathbf{r}_{\\mathrm{CO_2}}$ (zero force perpendicular to the molecular axis), making the SHAKE matrix singular
-      - id: b
-        text: "Carbon atoms are heavier than oxygen atoms, which reverses the sign of the Lagrange multipliers"
-      - id: c
-        text: "SHAKE can only be applied to molecules that possess a permanent electric dipole moment"
-      - id: d
-        text: >-
-          The bond length of $\\mathrm{CO_2}$ exceeds half the periodic simulation box length
-    correct: a
-    rationale_markdown: |
-      A rigid linear molecule has 5 D.O.F. ($9 - 5 = 4$ constraints needed: 2 bond lengths + 2 orthogonal bending directions). Worse still, when $\mathrm{O_1{-}C{-}O_2}$ are collinear, $\mathbf{r}_{\mathrm{O_1 O_2}} = \mathbf{r}_{\mathrm{CO_2}} - \mathbf{r}_{\mathrm{CO_1}}$ lies entirely along the molecular axis, so none of the three distance gradients $\nabla\sigma_k$ has any component perpendicular to the axis to restore bending perturbations, rendering the $3\times 3$ SHAKE constraint Jacobian singular!
 
-  - id: q19_30
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      Select **all** statements that accurately compare the **generalized-coordinate approach** (e.g., Euler angles / quaternions) with the **Cartesian SHAKE approach** for constrained molecular dynamics:
-    hint_markdown: "Review slide 7 ('Advantages of SHAKE') and slide 3 ('Constrained coordinates')."
-    options:
-      - id: a
-        text: "Generalized coordinates work well for completely rigid molecules, whereas an iterative method like SHAKE is needed when molecules are partially rigid / partially constrained (e.g., flexible polymers with rigid bonds)"
-      - id: b
-        text: "SHAKE works directly in Cartesian coordinates, making it easy to add or remove arbitrary bond or angle constraints without re-deriving the equations of motion"
-      - id: c
-        text: >-
-          Generalized coordinates require careful handling of coordinate singularities (such as the North Pole $\\theta=0$ in spherical/Euler angles)
-      - id: d
-        text: "Generalized coordinates eliminate the need to compute intermolecular forces between different molecules"
-    correct: [a, b, c]
-    rationale_markdown: |
-      Generalized coordinates (such as COM + unit vector for linear molecules, or COM + quaternions for rigid bodies) are convenient for *completely rigid* molecules once coordinate singularities are avoided, whereas SHAKE's direct Cartesian formulation provides unmatched flexibility for *partially constrained* molecules (such as alkane chains or proteins with rigid bond lengths and flexible torsions).
+    ### The Solution: 4-Component Unit Quaternions (Evans 1977)
 
-  - id: sec_19_5_cpmd_orthonormality
-    type: markdown_section
-    title: "5. Constraints in Ab Initio (Car–Parrinello) Molecular Dynamics (CPMD)"
-    body_markdown: |
-      Holonomic constraints play an equally foundational role in **Ab Initio Molecular Dynamics (Car–Parrinello MD, 1985)**, where we combine quantum-mechanical Density Functional Theory (DFT) for the electrons with classical MD for the ions.
+    To eliminate coordinate singularities everywhere on the rotation group $SO(3)$, we parameterize orientation using a **4-component
+    unit quaternion** $\mathbf{Q} = (q_0, q_1, q_2, q_3)$ subject to a **single normalization constraint**:
 
-      ### 1. Dynamical Electronic Wave Functions & Orthonormality Constraints
-      In Car–Parrinello MD, instead of diagonalizing the Kohn–Sham Hamiltonian from scratch at every ionic step, the single-particle electronic orbitals $\{\phi_i(\mathbf{r})\}_{i=1}^N$ are treated as fictitious classical dynamical fields with fictitious mass $\mu$ that evolve via MD equations of motion alongside the ions.
-      - Because electrons are fermions obeying the Pauli exclusion principle, the $N$ single-particle electronic wave functions must remain **mutually orthonormal** at every timestep:
-        $$S_{ij} = \langle \phi_j | \phi_i \rangle = \int d\mathbf{r}\,\phi_j^*(\mathbf{r})\phi_i(\mathbf{r}) = \delta_{ij}$$
-      - Expanding each orbital in a basis of $M$ functions $\{f_\alpha(\mathbf{r})\}_{\alpha=1}^M$:
-        $$\phi_j(\mathbf{r}) = \sum_{\alpha=1}^M c_{j\alpha}\,f_\alpha(\mathbf{r})$$
-        where $\mathbf{c}$ is an $N \times M$ coefficient matrix ($N$ occupied orbitals, $M$ basis functions), the orthonormality condition becomes the matrix holonomic constraint:
-        $$\mathbf{c}^*\,\mathbf{T}\,\mathbf{c}^T = \mathbf{I}_{N\times N}, \qquad \text{where } T_{\alpha\beta} = \int d\mathbf{r}\,f_\alpha^*(\mathbf{r})f_\beta(\mathbf{r}) \text{ is the basis overlap matrix.}$$
-        (For an orthonormal plane-wave basis, $T_{\alpha\beta} = \delta_{\alpha\beta}$, so $\mathbf{c}^*\mathbf{c}^T = \mathbf{I}$.)
+    $$q_0^2 + q_1^2 + q_2^2 + q_3^2 = 1$$
 
-      ### 2. Counting the Orthonormality Constraints
-      How many independent holonomic constraints are contained in $S_{ij} = \langle \phi_j | \phi_i \rangle = \delta_{ij}$ for $N$ real (or Hermitian-symmetric) orbitals?
-      - There are $N$ **normalization** constraints on the diagonal ($i = j$): $\langle \phi_i | \phi_i \rangle = 1$.
-      - There are $\frac{N(N-1)}{2}$ **orthogonality** constraints off the diagonal ($i < j$): $\langle \phi_j | \phi_i \rangle = 0$.
-      - Total number of independent holonomic constraints:
-        $$n_c = N + \frac{N(N-1)}{2} = \frac{N(N+1)}{2}$$
+    In terms of a rotation by angle $\alpha$ about a unit axis $\hat{\mathbf{n}}$, $q_0 = \cos(\alpha/2)$ and $(q_1, q_2,
+    q_3) = \hat{\mathbf{n}}\sin(\alpha/2)$. The quaternion time derivatives are linear, bilinear, and **completely free of
+    $\frac{1}{\sin\theta}$ singularities**:
 
-      ### 3. Enforcing Wave-Function Orthogonality with SHAKE
-      Just as in atomic SHAKE, we advance the orbital coefficients $\phi_i(\mathbf{r}, t+h)$ with an unconstrained Verlet step and then apply an iterative SHAKE projection using an $N\times N$ Hermitian matrix of Lagrange multipliers $\Lambda_{ij}$ to enforce $\langle \phi_j | \phi_i \rangle = \delta_{ij}$:
-      $$\phi_i \longleftarrow \phi_i - \frac{1}{2}\sum_{j \ne i} \phi_j \langle \phi_j | \phi_i \rangle \quad (\text{plus diagonal normalization } \phi_i \leftarrow \phi_i / \|\phi_i\|)$$
-      This iterative matrix SHAKE loop rapidly orthogonalizes all $N$ electronic wave functions at every MD step without requiring an $\mathcal{O}(M^3)$ full Hamiltonian diagonalization!
+    $$\begin{pmatrix}\dot{q}_0 \\ \dot{q}_1 \\ \dot{q}_2 \\ \dot{q}_3\end{pmatrix} = \frac{1}{2}\begin{pmatrix} 0 & -\omega_{bx}
+    & -\omega_{by} & -\omega_{bz} \\ \omega_{bx} & 0 & \omega_{bz} & -\omega_{by} \\ \omega_{by} & -\omega_{bz} & 0 & \omega_{bx}
+    \\ \omega_{bz} & \omega_{by} & -\omega_{bx} & 0 \end{pmatrix}\begin{pmatrix}q_0 \\ q_1 \\ q_2 \\ q_3\end{pmatrix}$$
 
-  - id: q19_31
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      In Car–Parrinello Ab Initio Molecular Dynamics (CPMD), how are the ions and electrons propagated, and why do holonomic constraints enter the electronic equations of motion?
-    hint_markdown: "Review slide 8 ('Ab Initio (Car-Parrinello) MD')."
-    options:
-      - id: a
-        text: >-
-          Both the ions (classical nuclei) and the single-particle Kohn–Sham electronic orbitals $\\phi_i(\\mathbf{r})$ are propagated using MD equations of motion, and holonomic constraints $S_{ij} = \\langle\\phi_j|\\phi_i\\rangle = \\delta_{ij}$ are required to keep the electronic wave functions orthonormal
-      - id: b
-        text: >-
-          Electrons are fused rigidly to the nearest atomic nucleus at a fixed distance of $0.529\\,\\text{Å}$ using classical bond SHAKE
-      - id: c
-        text: "The ionic positions are held strictly frozen while electrons diffuse across the periodic box"
-      - id: d
-        text: >-
-          Holonomic constraints force all $N$ electrons to collapse into the lowest single-particle orbital $\\phi_1(\\mathbf{r})$
-    correct: a
-    rationale_markdown: |
-      In Car–Parrinello MD, the single-particle electronic wave functions $\phi_i(\mathbf{r})$ are evolved dynamically via fictitious classical MD equations alongside the ions. Without the $N(N+1)/2$ holonomic orthonormality constraints $\langle\phi_j|\phi_i\rangle = \delta_{ij}$, all orbitals would collapse onto the single lowest-energy state $\phi_1$, violating the Pauli exclusion principle!
 
-  - id: q19_32
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      For an electronic system described by $N$ occupied single-particle wave functions $\{\phi_1(\mathbf{r}), \dots, \phi_N(\mathbf{r})\}$, how many independent holonomic constraints are imposed by the orthonormality condition $S_{ij} = \langle\phi_j | \phi_i\rangle = \delta_{ij}$?
-    hint_markdown: "Count the $N$ diagonal normalization conditions ($i=j$) plus the $N(N-1)/2$ upper-triangular orthogonality conditions ($i < j$)."
-    options:
-      - id: a
-        text: >-
-          $\\frac{N(N+1)}{2}$
-      - id: b
-        text: "$N$"
-      - id: c
-        text: "$3N - 6$"
-      - id: d
-        text: "$N!$"
-    correct: a
-    rationale_markdown: |
-      Because the overlap matrix $S_{ij} = \langle\phi_j|\phi_i\rangle$ is symmetric (or Hermitian), there are $N$ diagonal normalization constraints ($\langle\phi_i|\phi_i\rangle = 1$) and $N(N-1)/2$ independent off-diagonal orthogonality constraints ($\langle\phi_j|\phi_i\rangle = 0$ for $j < i$), giving $N + \frac{N(N-1)}{2} = \frac{N(N+1)}{2}$ constraints in total.
+    ### Why Not Use Generalized Coordinates for Partially Rigid Molecules?
 
-  - id: q19_33
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      A Car–Parrinello MD simulation of a 64-atom silicon supercell (with 4 valence electrons per Si atom, doubly occupied spin-restricted orbitals) tracks $N = 128$ occupied Kohn–Sham spatial orbitals $\phi_i(\mathbf{r})$. How many total holonomic orthonormality constraints $\frac{N(N+1)}{2}$ must the electronic SHAKE algorithm satisfy at every timestep?
-    hint_markdown: >-
-      Evaluate $128 \\times 129 / 2$.
-    correct:
-      value: 8256
-      tolerance: 0.1
-    rationale_markdown: |
-      For $N = 128$ orbitals, the number of independent orthonormality constraints is $\frac{N(N+1)}{2} = \frac{128 \times 129}{2} = 64 \times 129 = 8256$ constraints (consisting of $128$ normalization conditions and $8128$ pairwise orthogonality conditions).
+    1. For **partially rigid molecules** (like polymers with fixed bond lengths but flexible bond angles and torsions), deriving
+    and inverting the $M(\mathbf{q})\ddot{\mathbf{q}}$ mass matrix in generalized coordinates becomes algebraically intractable
+    and scales as $\mathcal{O}(n_c^3)$ per molecule.
 
-  - id: q19_34
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      When the $N$ electronic wave functions are expanded in a non-orthogonal basis $\{f_\alpha(\mathbf{r})\}_{\alpha=1}^M$ as $\phi_j(\mathbf{r}) = \sum_{\alpha=1}^M c_{j\alpha} f_\alpha(\mathbf{r})$ with basis overlap matrix $T_{\alpha\beta} = \int d\mathbf{r}\,f_\alpha^*(\mathbf{r})f_\beta(\mathbf{r})$, how is the wave-function orthonormality constraint $S_{ij} = \langle\phi_j | \phi_i\rangle = \delta_{ij}$ expressed in matrix form for the $N\times M$ coefficient matrix $\mathbf{c}$?
-    hint_markdown: >-
-      Substitute $\\phi_j = \\sum_\\alpha c_{j\\alpha} f_\\alpha$ into $\\int d\\mathbf{r}\\,\\phi_j^*(\\mathbf{r})\\phi_i(\\mathbf{r}) = \\delta_{ij}$.
-    options:
-      - id: a
-        text: >-
-          $\\mathbf{c}^*\\,\\mathbf{T}\\,\\mathbf{c}^T = \\mathbf{I}_{N\\times N}$
-      - id: b
-        text: >-
-          $\\mathbf{c} + \\mathbf{T} = \\mathbf{0}$
-      - id: c
-        text: >-
-          $\\det(\\mathbf{c}) = 1$
-      - id: d
-        text: >-
-          $\\mathrm{Tr}(\\mathbf{T}) = N$
-    correct: a
-    rationale_markdown: |
-      Substituting the basis expansion into $S_{ji} = \int d\mathbf{r}\,\phi_j^*(\mathbf{r})\phi_i(\mathbf{r})$ yields $\sum_{\alpha,\beta} c_{j\alpha}^* \left(\int d\mathbf{r}\,f_\alpha^*(\mathbf{r})f_\beta(\mathbf{r})\right) c_{i\beta} = \sum_{\alpha,\beta} c_{j\alpha}^* T_{\alpha\beta} c_{i\beta} = (\mathbf{c}^*\mathbf{T}\mathbf{c}^T)_{ji} = \delta_{ji}$, or $\mathbf{c}^*\mathbf{T}\mathbf{c}^T = \mathbf{I}$.
+    2. **Reducing the number of degrees of freedom (D.O.F.) does NOT *per se* save computer time**, because CPU time is dominated
+    by the $\mathcal{O}(N^2)$ or $\mathcal{O}(N)$ pairwise intermolecular force evaluation in Cartesian coordinates, and transforming
+    back and forth between curvilinear generalized coordinates and Cartesian positions adds heavy trigonometric overhead.
 
-  - id: q19_35
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      In the first-order iterative SHAKE orthogonalization step for two normalized orbitals $\phi_i$ and $\phi_j$ ($i \ne j$) that have acquired a small non-zero overlap $\epsilon_{ji} = \langle\phi_j | \phi_i\rangle \ll 1$ during an unconstrained CPMD Verlet step:
-      $$\phi_i^{\mathrm{new}} = \phi_i - \frac{1}{2}\sum_{j \ne i} \phi_j \langle \phi_j | \phi_i \rangle,$$
-      why does a factor of $\frac{1}{2}$ appear in front of the overlap $\langle\phi_j | \phi_i\rangle$?
-    hint_markdown: >-
-      Compute the new overlap $\\langle \\phi_j^{\\mathrm{new}} | \\phi_i^{\\mathrm{new}} \\rangle$ to first order in $\\epsilon_{ji}$ when BOTH $\\phi_i$ and $\\phi_j$ are updated symmetrically!
-    options:
-      - id: a
-        text: >-
-          Because both $\\phi_i$ and $\\phi_j$ are updated symmetrically (each subtracting $\\frac{1}{2}\\epsilon_{ji}$ of the other), their combined first-order overlap change is $-\\frac{1}{2}\\langle\\phi_j|\\phi_i\\rangle - \\frac{1}{2}\\langle\\phi_j|\\phi_i\\rangle = -\\langle\\phi_j|\\phi_i\\rangle$, canceling the overlap to $\\mathcal{O}(\\epsilon^2)$
-      - id: b
-        text: "Because each electron has intrinsic spin quantum number $s = 1/2$"
-      - id: c
-        text: >-
-          Because kinetic energy in atomic units has a prefactor of $1/2$ ($-\\frac{1}{2}\\nabla^2$)
-      - id: d
-        text: >-
-          Because only half of the orbitals in a metal are occupied at $T = 0\\,\\mathrm{K}$
-    correct: a
-    rationale_markdown: |
-      Since $\phi_i$ and $\phi_j$ have equal fictitious mass $\mu$, symmetric orthogonalization subtracts $\frac{1}{2}\phi_j\langle\phi_j|\phi_i\rangle$ from $\phi_i$ and $\frac{1}{2}\phi_i\langle\phi_i|\phi_j\rangle$ from $\phi_j$. Taking the inner product $\langle\phi_j^{\mathrm{new}}|\phi_i^{\mathrm{new}}\rangle = \langle\phi_j|\phi_i\rangle - \frac{1}{2}\langle\phi_j|\phi_j\rangle\langle\phi_j|\phi_i\rangle - \frac{1}{2}\langle\phi_j|\phi_i\rangle\langle\phi_i|\phi_i\rangle + \mathcal{O}(\epsilon^2) = 0 + \mathcal{O}(\epsilon^2)$.
+    '
+- id: concept_19_3_quaternions
+  type: concept_cell
+  title: 'Interactive Explorer: Euler-Angle Gimbal Lock vs. Unit Quaternion Smoothness'
+  description_markdown: 'Decrease the closest-approach tilt angle $\theta_{\min}$ toward the North Pole ($\theta \to 0^\circ$)
+    to observe the $\frac{1}{\sin\theta}$ divergence of the Euler precession rate $|\dot{\phi}(t)|$ compared against the constant,
+    bounded norm $\|\dot{\mathbf{Q}}\| = \frac{1}{2}\|\boldsymbol{\omega}\|$ of the 4-component unit quaternion.
 
-  - id: q19_36
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      Suppose two normalized trial wave functions $\phi_1$ and $\phi_2$ ($\langle\phi_1|\phi_1\rangle = \langle\phi_2|\phi_2\rangle = 1$) have a small initial overlap $\epsilon = \langle\phi_2|\phi_1\rangle = 0.10$ after an unconstrained CPMD step. After applying **one** symmetric SHAKE orthogonalization iteration:
-      $$\phi_1^{(1)} = \phi_1 - \frac{1}{2}\epsilon\,\phi_2, \qquad \phi_2^{(1)} = \phi_2 - \frac{1}{2}\epsilon\,\phi_1,$$
-      what is the remaining overlap $\langle\phi_2^{(1)} | \phi_1^{(1)}\rangle$ before re-normalization? (Hint: expand $\langle \phi_2 - \frac{1}{2}\epsilon\phi_1 | \phi_1 - \frac{1}{2}\epsilon\phi_2\rangle$ exactly in powers of $\epsilon$. Report your answer to 5 decimal places.)
-    hint_markdown: >-
-      Notice that the $\\mathcal{O}(\\epsilon)$ terms cancel: $\\epsilon - \\frac{1}{2}\\epsilon - \\frac{1}{2}\\epsilon + \\frac{1}{4}\\epsilon^2 \\langle\\phi_1|\\phi_2\\rangle = \\frac{1}{4}\\epsilon^3$.
-    correct:
-      value: 0.00025
-      tolerance: 0.00002
-    rationale_markdown: |
-      Expanding the inner product gives:
-      $$\langle\phi_2^{(1)}|\phi_1^{(1)}\rangle = \langle\phi_2|\phi_1\rangle - \frac{1}{2}\epsilon\langle\phi_2|\phi_2\rangle - \frac{1}{2}\epsilon\langle\phi_1|\phi_1\rangle + \frac{1}{4}\epsilon^2\langle\phi_1|\phi_2\rangle = \epsilon - \frac{1}{2}\epsilon(1) - \frac{1}{2}\epsilon(1) + \frac{1}{4}\epsilon^3 = \frac{1}{4}\epsilon^3.$$
-      For $\epsilon = 0.10$, the residual overlap after just one iteration is $\frac{1}{4}(0.10)^3 = 0.00025$ ($2.5\times 10^{-4}$), demonstrating the rapid convergence of iterative SHAKE!
+    '
+  render_function: render_euler_gimbal_vs_quaternion
+  layout: figure_left
+  controls:
+    min_tilt_deg:
+      kind: slider
+      label: Closest Approach to North Pole θ_min (deg)
+      min: 0.5
+      max: 45.0
+      step: 0.5
+      default: 5.0
+    omega_perp:
+      kind: slider
+      label: Angular Speed ω_⊥ (ps⁻¹)
+      min: 0.5
+      max: 3.0
+      step: 0.25
+      default: 1.0
+  takeaway_markdown: '**Key Takeaway:** Euler angles fail near $\theta = 0^\circ$ or $180^\circ$ because $\dot{\phi} \propto
+    1/\sin\theta \to \infty$ (the North/South Pole coordinate singularity). Unit quaternions embed $SO(3)$ smoothly onto the
+    4D unit hypersphere $S^3$ with $\|\dot{\mathbf{Q}}\| = \frac{1}{2}\|\boldsymbol{\omega}\|$ everywhere.
 
-  - id: q19_37
-    type: problem
-    question_type: single_select
-    difficulty: hard
-    taught_by: sec_19_4_shake_algorithm
-    prompt_markdown: |
-      What happens in the SHAKE algorithm if the unconstrained Verlet step $\mathbf{R}^{\mathrm{unc}}(t+h)$ is so large (e.g., due to an excessively large timestep $\Delta t$ or an atomic core overlap) that the predicted bond vector $\mathbf{r}_{ij}^{\mathrm{unc}}(t+h)$ becomes nearly perpendicular to the old bond vector $\mathbf{r}_{ij}(t)$, i.e., $\mathbf{r}_{ij}^{\mathrm{unc}}(t+h)\cdot\mathbf{r}_{ij}(t) \to 0$?
-    hint_markdown: >-
-      Inspect the denominator $\\sum_j \\frac{m_i}{m_j}\\nabla_j\\sigma_k(\\mathbf{R}(t+h))\\cdot\\nabla_j\\sigma_k(\\mathbf{R}(t)) \\propto \\mathbf{r}_{ij}^{\\mathrm{cur}}(t+h)\\cdot\\mathbf{r}_{ij}(t)$ of the SHAKE update formula.
-    options:
-      - id: a
-        text: >-
-          The denominator $\\nabla\\sigma_k(\\mathbf{R}(t+h))\\cdot\\nabla\\sigma_k(\\mathbf{R}(t))$ vanishes, causing the Newton step $\\delta\\lambda_k$ to diverge and the SHAKE iteration to fail to converge
-      - id: b
-        text: "SHAKE converges in a single step because perpendicular vectors are automatically normalized"
-      - id: c
-        text: >-
-          The Lagrange multiplier $\\lambda_k$ goes to zero and the bond length remains unchanged
-      - id: d
-        text: "The molecule spontaneously converts into an ideal gas with zero potential energy"
-    correct: a
-    rationale_markdown: |
-      Because SHAKE displaces atoms along the *old* bond direction $\mathbf{r}_{ij}(t)$ to fix the length of $\mathbf{r}_{ij}(t+h)$, the linearized Newton denominator contains the dot product $\mathbf{r}_{ij}(t+h)\cdot\mathbf{r}_{ij}(t)$. If a bond rotates by $\sim 90^\circ$ in a single step (or stretches past the saddle point of the quadratic equation in $\lambda$), the projection vanishes and SHAKE fails to converge—a classic diagnostic of an unstable MD timestep or bad initial geometry.
+    '
+- id: q19_12
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_19_3_rigid_bodies_quaternions
+  prompt_markdown: 'How many independent mechanical degrees of freedom does a single rigid **linear** molecule (such as $\mathrm{N_2}$
+    or $\mathrm{CO_2}$ with fixed bond lengths and collinear geometry) possess in 3D space?
 
-  - id: q19_38
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by:
-      - sec_19_1_timescales_and_motivation
-      - sec_19_2_ensemble_metric_fixman
-      - sec_19_3_rigid_bodies_quaternions
-      - sec_19_4_shake_algorithm
-      - sec_19_5_cpmd_orthonormality
-    prompt_markdown: |
-      **Lesson 19 Synthesis:** Select **all** true statements regarding holonomic constraints in atomic-scale simulations:
-    hint_markdown: "Verify each statement against the five main topics of the lecture: timescales, ensemble metric effects, coordinate systems, SHAKE, and CPMD."
-    options:
-      - id: a
-        text: >-
-          Holonomic bond constraints change the equilibrium Gibbs ensemble relative to the stiff-spring limit ($k\\to\\infty$) whenever constraints are coupled and nonlinear in Cartesian coordinates
-      - id: b
-        text: >-
-          Unit quaternions $(q_0, q_1, q_2, q_3)$ with $\\sum_{m=0}^3 q_m^2 = 1$ avoid the polar gimbal-lock singularity ($\\theta=0,\\pi$) that plagues Euler angles
-      - id: c
-        text: >-
-          SHAKE enforces $\\sigma_k(\\mathbf{R}(t+h)) = 0$ iteratively in Cartesian coordinates without re-evaluating the intermolecular forces $\\mathbf{F}_i(t)$ inside the constraint loop
-      - id: d
-        text: >-
-          In Car–Parrinello MD, SHAKE enforces $\\frac{N(N+1)}{2}$ holonomic orthonormality constraints $S_{ij} = \\langle\\phi_j|\\phi_i\\rangle = \\delta_{ij}$ on the $N$ electronic wave functions
-    correct: [a, b, c, d]
-    rationale_markdown: |
-      All four statements summarize the core principles of Lesson 19:
-      - **(A)** Coupled nonlinear constraints alter the configurational phase-space volume element via the mass-metric determinant (Fixman effect).
-      - **(B)** 4-component unit quaternions eliminate the $1/\sin\theta$ coordinate singularity of Euler angles.
-      - **(C)** SHAKE iteratively adjusts Cartesian positions along old bond vectors $\mathbf{r}_{ij}(t)$ to satisfy $\sigma_k(\mathbf{R}(t+h)) = 0$ without recalculating expensive intermolecular forces.
-      - **(D)** Car–Parrinello ab initio MD uses SHAKE to maintain the $\frac{N(N+1)}{2}$ wave-function orthonormality conditions $\langle\phi_j|\phi_i\rangle = \delta_{ij}$.
+    '
+  hint_markdown: Count the Center of Mass (C.O.M.) translational coordinates plus the independent angles needed to specify
+    a 3D unit vector $\\hat{\\mathbf{u}}$.
+  correct:
+    value: 5
+    tolerance: 0.01
+  rationale_markdown: 'A rigid linear molecule in 3D requires 3 coordinates for its center of mass $\mathbf{R}_{\mathrm{COM}}
+    = (X, Y, Z)$ and 2 spherical angles $(\theta, \phi)$ (or a 3D unit vector $\hat{\mathbf{u}}$ with 1 constraint $|\hat{\mathbf{u}}|^2
+    = 1$) to specify its orientation axis, totaling $3 + 2 = 5$ degrees of freedom.
+
+    '
+- id: q19_13
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: concept_19_3_quaternions
+  prompt_markdown: 'Why is it dangerous to integrate the rotational equations of motion of a rigid 3D molecule directly in
+    Euler angles $(\phi, \theta, \psi)$ during a molecular dynamics simulation?
+
+    '
+  hint_markdown: Inspect the denominator of $\\dot{\\phi} = (\\omega_x\\sin\\psi + \\omega_y\\cos\\psi)/\\sin\\theta$ as the
+    molecule tilts toward the $z$-axis.
+  options:
+  - id: a
+    text: When the nutation angle approaches the poles ($\\theta \\to 0$ or $\\pi$), $\\sin\\theta \\to 0$ and the angular
+      rates $\\dot{\\phi}, \\dot{\\psi} \\propto 1/\\sin\\theta$ diverge (gimbal lock coordinate singularity)
+  - id: b
+    text: Euler angles cannot represent rotations larger than $90^\\circ$ in three dimensions
+  - id: c
+    text: Euler angles require 9 independent parameters per molecule, tripling memory usage
+  - id: d
+    text: Euler angles only apply to monatomic noble gases and cannot describe polyatomic molecules
+  correct: a
+  rationale_markdown: 'Just like longitude is undefined at the Earth''s North and South Poles, the Euler angles $\phi$ and
+    $\psi$ become degenerate when $\theta = 0$ or $\pi$. The kinematic equations contain $1/\sin\theta$, causing $\dot{\phi}$
+    and $\dot{\psi}$ to blow up whenever thermal tumbling carries a molecule near the $z$-axis.
+
+    '
+- id: q19_14
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: concept_19_3_quaternions
+  prompt_markdown: A rigid molecule rotating with transverse angular speed $\omega_\perp = 1.5\,\mathrm{ps}^{-1}$ tumbles
+    close to the North Pole at a tilt angle of $\theta_{\min} = 2.0^\circ$. What is the peak Euler precession rate $|\dot{\phi}_{\max}|$
+    in $\mathrm{ps}^{-1}$? (Report your answer to 1 decimal place.)
+  hint_markdown: Relate the precession rate to the transverse angular velocity and the sine of the nutation angle.
+  correct:
+    value: 43.0
+    tolerance: 0.3
+  rationale_markdown: 'Since $\sin(2.0^\circ) \approx 0.0348995$, the peak Euler rate is $|\dot{\phi}_{\max}| = \frac{1.5\,\mathrm{ps}^{-1}}{0.0348995}
+    \approx 42.98\,\mathrm{ps}^{-1} \approx 43.0\,\mathrm{ps}^{-1}$—nearly $29\times$ larger than the true physical angular
+    speed!
+
+    '
+- id: q19_15
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_3_rigid_bodies_quaternions
+  prompt_markdown: 'How do 4-component **unit quaternions** $\mathbf{Q} = (q_0, q_1, q_2, q_3)$ represent the 3 rotational
+    degrees of freedom of a rigid 3D molecule without coordinate singularities?
+
+    '
+  hint_markdown: How many components does $\\mathbf{Q}$ have, and what algebraic condition reduces 4 components to 3 independent
+    rotational degrees of freedom?
+  options:
+  - id: a
+    text: They use 4 smoothly varying parameters subject to the single normalization constraint $q_0^2 + q_1^2 + q_2^2 + q_3^2
+      = 1$, giving linear, singularity-free kinematic equations $\\dot{\\mathbf{Q}} = \\frac{1}{2}\\mathbf{W}(\\boldsymbol{\\omega})\\mathbf{Q}$
+      everywhere
+  - id: b
+    text: They replace the 3 rotational angles with 4 independent translational coordinates in 4D Euclidean space
+  - id: c
+    text: They restrict the molecule so that its tilt angle $\\theta$ can never move outside the interval $[45^\\circ, 135^\\circ]$
+  - id: d
+    text: They set the angular momentum of the molecule identically to zero at every timestep
+  correct: a
+  rationale_markdown: 'No 3-parameter chart can cover the rotation group $SO(3)$ without a coordinate singularity. By embedding
+    orientation on the unit 3-sphere $S^3 \subset \mathbb{R}^4$ via four components $(q_0, q_1, q_2, q_3)$ with one holonomic
+    constraint $\sum_{m=0}^3 q_m^2 = 1$ ($4 - 1 = 3$ D.O.F.), the kinematic matrix $\frac{1}{2}\mathbf{W}(\boldsymbol{\omega})$
+    is purely linear and orthogonal, completely avoiding any $1/\sin\theta$ division.
+
+    '
+- id: q19_16
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_3_rigid_bodies_quaternions
+  prompt_markdown: 'Why does reducing the number of degrees of freedom (D.O.F.) by switching to generalized internal coordinates
+    **not** *per se* save computer time in a molecular dynamics simulation of partially rigid molecules?
+
+    '
+  hint_markdown: Consider both where intermolecular forces are evaluated and the complexity of the equations of motion in
+    curvilinear generalized coordinates.
+  options:
+  - id: a
+    text: Non-bonded intermolecular forces still require all Cartesian atomic positions, and solving the coupled generalized-coordinate
+      equations of motion for partially rigid molecules is algebraically complex and computationally expensive
+  - id: b
+    text: Generalized coordinates force the timestep $\\Delta t$ to be $100\\times$ smaller than in Cartesian coordinates
+  - id: c
+    text: Generalized coordinates cannot be stored in floating-point arrays on modern CPUs
+  - id: d
+    text: Generalized coordinates double the number of pairwise Lennard-Jones interactions in the liquid
+  correct: a
+  rationale_markdown: 'As emphasized in the lecture notes, putting constraints in "by hand" via generalized coordinates is
+    difficult for partially rigid molecules (the coupled mass-metric matrix must be inverted at every step), and intermolecular
+    forces still depend on the Cartesian positions of all atoms. Working directly in Cartesian coordinates with SHAKE is far
+    simpler, more flexible, and faster.
+
+    '
+- id: sec_19_4_shake_algorithm
+  type: markdown_section
+  title: '4. The SHAKE Algorithm: Holonomic Constraints in Cartesian Verlet Dynamics'
+  body_markdown: 'Introduced by **Ryckaert, Ciccotti & Berendsen (1977)**, the **SHAKE algorithm** works directly with **Cartesian
+    atomic coordinates**: at each timestep, the dynamics first move forward *without* constraints, and the algorithm then
+    iteratively readjusts atomic positions to satisfy all constraints $\sigma_k(\mathbf{R}) = 0$.
+
+
+    ### 1. Quadratic Form of Bond Constraints & Constrained Equations of Motion
+
+    For a fixed bond length $a_{ij}$ between atoms $i$ and $j$, we write the holonomic constraint in **squared form** (avoiding
+    costly square roots and keeping $\nabla\sigma$ linear!):
+
+    $$\sigma_k(\mathbf{R}) = |\mathbf{r}_i - \mathbf{r}_j|^2 - a_{ij}^2 = r_{ij}^2 - a_{ij}^2 = 0$$
+
+    whose gradients with respect to $\mathbf{r}_i$ and $\mathbf{r}_j$ are simply:
+
+    $$\nabla_{\mathbf{r}_i}\sigma_k = 2(\mathbf{r}_i - \mathbf{r}_j) = -\nabla_{\mathbf{r}_j}\sigma_k$$
+
+    From Hamilton''s principle of least action with Lagrange multipliers $\lambda_k(t)$, the constrained Cartesian equation
+    of motion is:
+
+    $$m_i \mathbf{a}_i(t) = m_i \ddot{\mathbf{r}}_i(t) = \mathbf{F}_i(t) - \sum_{k=1}^{n_c} \lambda_k(t)\,\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))$$
+
+    > **Why not solve the analytical differential equation for $\lambda_k(t)$ from $\ddot{\sigma}_k = 0$?**
+
+    > Because finite-timestep numerical integration errors ($\mathcal{O}(h^4)$ per step) accumulate rapidly, causing the trajectory
+    to **drift away from the constraint surface** ($\sigma_k(\mathbf{R}) \ne 0$). Instead, SHAKE determines $\lambda_k(t)$
+    algebraically at every step so that $\sigma_k[\mathbf{R}(t+h)] = 0$ is satisfied to machine precision!
+
+
+    ### 2. Verlet Integration with SHAKE & Time Reversibility
+
+    Inserting the total force into the Verlet algorithm with timestep $h = \Delta t$:
+
+    $$\mathbf{r}_i(t+h) = \underbrace{2\mathbf{r}_i(t) - \mathbf{r}_i(t-h) + \frac{h^2}{m_i}\mathbf{F}_i(t)}_{\equiv\,\mathbf{r}_i^{\mathrm{unc}}(t+h)\text{
+    (unconstrained Verlet step)}} - \frac{h^2}{m_i}\sum_{k=1}^{n_c} \lambda_k(t)\,\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))$$
+
+    Notice a crucial design feature: the constraint force direction $\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t)) = 2(\mathbf{r}_i(t)
+    - \mathbf{r}_j(t))$ is evaluated at the **old configuration $\mathbf{R}(t)$** (the midpoint of the Verlet step from $t-h$
+    to $t+h$), while the multiplier $\lambda_k(t)$ is chosen so that the **new configuration $\mathbf{R}(t+h)$** satisfies
+    $\sigma_k(\mathbf{R}(t+h)) = 0$.
+
+    - Evaluating $\nabla\sigma_k$ at $\mathbf{R}(t)$ ensures that the constraint update is symmetric under $t-h \leftrightarrow
+    t+h$, making the SHAKE-Verlet algorithm **strictly time-reversible and symplectic**!
+
+
+    ### 3. Single Constraint vs. Multiple Coupled Constraints (Iterative Newton / Gauss–Seidel Cycle)
+
+    Define $\mathbf{R}_0 \equiv \mathbf{R}^{\mathrm{unc}}(t+h)$ and $\mathbf{G}_{0,i} \equiv \frac{h^2}{m_i}\nabla_{\mathbf{r}_i}\sigma(\mathbf{R}(t))$.
+    We want $\sigma(\mathbf{R}_0 - \lambda\mathbf{G}_0) = 0$. Since $\sigma$ is quadratic in $\mathbf{R}$, this is a non-linear
+    equation in $\lambda$. Expanding to first order about iterate $\lambda_n$ (Newton''s method):
+
+    $$0 \approx \sigma(\mathbf{R}_n) - (\lambda_{n+1} - \lambda_n)\,\nabla\sigma(\mathbf{R}_n)\cdot\mathbf{G}_0 \implies \delta\lambda
+    = \lambda_{n+1} - \lambda_n = \frac{\sigma(\mathbf{R}_n)}{\nabla\sigma(\mathbf{R}_n)\cdot\mathbf{G}_0}$$
+
+    For **multiple constraints** $\sigma_k$, adjusting bond $k$ moves shared atoms and perturbs adjacent bonds. SHAKE loops
+    cyclically over all constraints $k = 1, \dots, n_c$, updating the positions of the atoms in constraint $k$ at each inner
+    step:
+
+    $$\mathbf{r}_i^{\mathrm{new}}(t+h) = \mathbf{r}_i(t+h) - \frac{\nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))\,\sigma_k(\mathbf{R}(t+h))}{\sum_j
+    \frac{m_i}{m_j}\,\nabla_{\mathbf{r}_j}\sigma_k(\mathbf{R}(t+h))\cdot\nabla_{\mathbf{r}_j}\sigma_k(\mathbf{R}(t))}$$
+
+    Specifically, for a bond constraint $\sigma_k = |\mathbf{r}_{ij}|^2 - a_{ij}^2$ between atoms $i$ and $j$, with $\nabla_{\mathbf{r}_i}\sigma_k
+    = 2\mathbf{r}_{ij}$, the linearized SHAKE update shifts atoms $i$ and $j$ along the old bond vector $\mathbf{r}_{ij}(t)$
+    by:
+
+    $$\delta\mathbf{r}_i = -\frac{g_k}{m_i}\mathbf{r}_{ij}(t), \qquad \delta\mathbf{r}_j = +\frac{g_k}{m_j}\mathbf{r}_{ij}(t),
+    \qquad g_k = \frac{|\mathbf{r}_{ij}^{\mathrm{cur}}(t+h)|^2 - a_{ij}^2}{2\left(\frac{1}{m_i} + \frac{1}{m_j}\right)\mathbf{r}_{ij}^{\mathrm{cur}}(t+h)\cdot\mathbf{r}_{ij}(t)}$$
+
+    We sweep over all constraints $\sigma_k$ until $\max_k |\sigma_k(\mathbf{R}(t+h))| < \varepsilon$.
+
+
+    ### 4. Computational Cost & Efficiency of SHAKE
+
+    - Typically, one must iterate the SHAKE Newton cycle **about 25 times** per MD step.
+
+    - However, **because the expensive intermolecular force $\mathbf{F}_i(t)$ is NEVER re-evaluated inside the SHAKE loop**
+    (only simple geometric dot products of constraint bonds are computed!), the entire SHAKE cycle takes only **$\sim 25\%$
+    of the total CPU time**, while enabling a $3\text{–}5\times$ larger timestep $\Delta t$—yielding a massive net speedup!
+
+    '
+- id: concept_19_4_shake_tracer
+  type: concept_cell
+  title: 'Interactive Explorer: Step-by-Step SHAKE Relaxation on a Coupled Triatomic Molecule'
+  description_markdown: 'Step through the SHAKE Gauss–Seidel sweeps ($m = 0, 1, \dots, 15$) for a coupled triatomic molecule
+    ($\mathrm{A{-}B{-}C}$). Observe how projecting bond $1\text{–}2$ and bond $2\text{–}3$ along their old reference directions
+    $\mathbf{r}_{12}(t)$ and $\mathbf{r}_{23}(t)$ causes exponential decay of the constraint residuals $|\sigma_k^{(m)}|$
+    without re-evaluating intermolecular forces.
+
+    '
+  render_function: render_shake_iteration_tracer
+  layout: figure_left
+  controls:
+    shake_iterations:
+      kind: slider
+      label: SHAKE Sweep Number m
+      min: 0
+      max: 15
+      step: 1
+      default: 4
+    initial_distortion:
+      kind: slider
+      label: Unconstrained Step Distortion
+      min: 0.05
+      max: 0.45
+      step: 0.05
+      default: 0.25
+    panel_mode:
+      kind: dropdown
+      label: Visualization Panel
+      default: residuals
+      options:
+      - label: Log-Residual Convergence |σ_k^(m)| vs. Sweep m
+        value: residuals
+      - label: 2D Molecular Geometry & Projection Vectors
+        value: geometry
+  takeaway_markdown: '**Key Takeaway:** Because atom 2 is shared between bond 1–2 and bond 2–3, satisfying $\sigma_{23}=0$
+    slightly perturbs $\sigma_{12}$. Cycling through all constraints via linearized Newton updates drives both residuals below
+    $\varepsilon = 10^{-8}\,\text{Å}^2$ in a handful of sweeps while conserving center-of-mass momentum.
+
+    '
+- id: q19_17
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'In the SHAKE algorithm, why do we write a bond-length constraint between atoms $i$ and $j$ as $\sigma(\mathbf{R})
+    = |\mathbf{r}_i - \mathbf{r}_j|^2 - a^2 = 0$ rather than $|\mathbf{r}_i - \mathbf{r}_j| - a = 0$?
+
+    '
+  hint_markdown: Compute the gradient $\\nabla_{\\mathbf{r}_i}(r_{ij}^2 - a^2)$ versus $\\nabla_{\\mathbf{r}_i}(r_{ij} - a)$.
+  options:
+  - id: a
+    text: Its gradient $\\nabla_{\\mathbf{r}_i}\\sigma = 2(\\mathbf{r}_i - \\mathbf{r}_j)$ is purely linear in Cartesian coordinates
+      and avoids evaluating costly square roots
+  - id: b
+    text: The linear distance $|\mathbf{r}_i - \mathbf{r}_j| - a = 0$ is non-holonomic and depends on atomic velocities
+  - id: c
+    text: Squared bond lengths are invariant under non-uniform scaling of temperature
+  - id: d
+    text: Only squared constraints conserve total charge in ionic crystals
+  correct: a
+  rationale_markdown: 'Writing $\sigma(\mathbf{R}) = r_{ij}^2 - a^2 = 0$ makes the constraint gradient $\nabla_{\mathbf{r}_i}\sigma
+    = 2(\mathbf{r}_i - \mathbf{r}_j) = -\nabla_{\mathbf{r}_j}\sigma$ a simple vector difference with no square root ($\sqrt{\cdot}$)
+    evaluations required in either $\sigma$ or $\nabla\sigma$.
+
+    '
+- id: q19_18
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'In analytical mechanics, one can differentiate the constraint $\sigma(\mathbf{R}(t)) = 0$ twice with respect
+    to time ($\ddot{\sigma} = 0$) to obtain an explicit formula for the Lagrange multiplier $\lambda(t)$ at time $t$ and simply
+    integrate $m\mathbf{a}(t) = \mathbf{F}(t) - \lambda(t)\nabla\sigma(\mathbf{R}(t))$ forward. Why does the SHAKE algorithm
+    **not** determine $\lambda(t)$ this way?
+
+    '
+  hint_markdown: 'Look at the lecture slide ''SHAKE algorithm'': what happens when finite-timestep numerical integration errors
+    accumulate?'
+  options:
+  - id: a
+    text: Because finite-timestep numerical integration errors accumulate at every step, causing the trajectory to steadily
+      drift away from the constraint surface $\\sigma(\\mathbf{R}) = 0$
+  - id: b
+    text: Because $\\sigma(\\mathbf{R}) = r_{ij}^2 - a^2$ is not differentiable with respect to Cartesian coordinates
+  - id: c
+    text: Because Hamilton's principle is invalid when intermolecular forces are non-linear
+  - id: d
+    text: Because $\\lambda(t)$ is always identically zero for covalent bonds
+  correct: a
+  rationale_markdown: 'Even if $\sigma(0)=0$ and $\dot{\sigma}(0)=0$ initially, integrating $\ddot{\sigma}=0$ numerically
+    with finite timestep $h$ incurs local truncation errors ($\sim\mathcal{O}(h^4)$), causing $\sigma(\mathbf{R}(t))$ to random-walk
+    and drift off the constraint manifold. SHAKE prevents any drift by solving directly for $\lambda(t)$ such that $\sigma[\mathbf{R}(t+h)]
+    = 0$ at the new timestep!
+
+    '
+- id: q19_19
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'In the SHAKE-Verlet update equation
+
+    $$\mathbf{R}_{\mathrm{new}}(t+h) = 2\mathbf{R}(t) - \mathbf{R}(t-h) + \frac{h^2}{m}\mathbf{F}(t) - \frac{h^2}{m}\lambda(t)\,\nabla\sigma(\mathbf{R}(t)),$$
+
+    at which time argument is the constraint gradient direction $\nabla\sigma$ evaluated, and at which time argument is the
+    constraint condition $\sigma = 0$ enforced?
+
+    '
+  hint_markdown: Check the argument of $\\nabla\\sigma(\\mathbf{R}, t)$ versus $\\sigma[\\mathbf{R}(t+h)] = 0$ on slide 5
+    of the lecture notes.
+  options:
+  - id: a
+    text: The gradient direction $\\nabla\\sigma$ is evaluated at the old configuration $\\mathbf{R}(t)$, while $\\lambda(t)$
+      is solved so that the constraint $\\sigma[\\mathbf{R}(t+h)] = 0$ holds at the new configuration $\\mathbf{R}(t+h)$
+  - id: b
+    text: Both $\\nabla\\sigma$ and $\\sigma=0$ are evaluated at the old configuration $\\mathbf{R}(t)$
+  - id: c
+    text: The gradient direction $\\nabla\\sigma$ is evaluated at $\\mathbf{R}(t-h)$, while $\\sigma=0$ is enforced at $\\mathbf{R}(t)$
+  - id: d
+    text: Both $\\nabla\\sigma$ and $\\sigma=0$ are evaluated at the unconstrained midpoint $\\frac{1}{2}[\\mathbf{R}(t)+\\mathbf{R}(t-h)]$
+  correct: a
+  rationale_markdown: 'In Verlet integration, $t$ is the central time between $t-h$ and $t+h$. The constraint force $- \lambda(t)\nabla\sigma(\mathbf{R}(t))$
+    acts at time $t$ (along the old bond vectors $\mathbf{r}_{ij}(t)$), while the scalar magnitude $\lambda(t)$ is chosen
+    so that the resulting positions at $t+h$ satisfy $\sigma[\mathbf{R}(t+h)] = 0$. Evaluating the force direction at time
+    $t$ guarantees exact time-reversibility!
+
+    '
+- id: q19_20
+  type: problem
+  question_type: single_select
+  difficulty: hard
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'Why is it critical that SHAKE applies the constraint position correction $\delta\mathbf{r}_i = -\frac{h^2}{m_i}\sum_k
+    \lambda_k \nabla_{\mathbf{r}_i}\sigma_k(\mathbf{R}(t))$ along the **old** bond directions $\mathbf{r}_{ij}(t)$ rather
+    than along the unconstrained predicted directions $\mathbf{r}_{ij}^{\mathrm{unc}}(t+h)$?
+
+    '
+  hint_markdown: Think about reversing time ($t-h \\leftrightarrow t+h$) in the Verlet step centered at $\\mathbf{R}(t)$.
+  options:
+  - id: a
+    text: Because $\\mathbf{R}(t)$ is the time-symmetric midpoint between $\\mathbf{R}(t-h)$ and $\\mathbf{R}(t+h)$, using
+      $\\nabla\\sigma(\\mathbf{R}(t))$ preserves the exact time-reversibility and symplectic structure of the Verlet integrator
+  - id: b
+    text: Because the unconstrained positions $\\mathbf{r}_i^{\\mathrm{unc}}(t+h)$ always have zero norm
+  - id: c
+    text: Because evaluating $\\nabla\\sigma$ at $\\mathbf{r}^{\\mathrm{unc}}(t+h)$ would violate conservation of total linear
+      momentum
+  - id: d
+    text: Because $\\nabla\\sigma(\\mathbf{R}(t))$ is perpendicular to the covalent bond vector $\\mathbf{r}_{ij}(t)$
+  correct: a
+  rationale_markdown: 'In the Verlet step linking $\mathbf{R}(t-h)$, $\mathbf{R}(t)$, and $\mathbf{R}(t+h)$, the configuration
+    $\mathbf{R}(t)$ is invariant under time reversal ($h \to -h$, swapping $\mathbf{R}(t-h) \leftrightarrow \mathbf{R}(t+h)$).
+    Applying the constraint force along $\nabla\sigma(\mathbf{R}(t))$ ensures that running the SHAKE-Verlet step backward
+    from $\mathbf{R}(t+h)$ through $\mathbf{R}(t)$ lands back on $\mathbf{R}(t-h)$ with the exact same $\lambda(t)$, preventing
+    secular energy drift.
+
+    '
+- id: q19_21
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'Why is the SHAKE equation $\sigma(\mathbf{R}_0 - \lambda \mathbf{G}_0) = 0$ non-linear in the Lagrange
+    multiplier $\lambda$ even for a single isolated diatomic bond constraint $\sigma(\mathbf{R}) = |\mathbf{r}_1 - \mathbf{r}_2|^2
+    - a^2 = 0$?
+
+    '
+  hint_markdown: Substitute $\\mathbf{r}_{12}(t+h) = \\mathbf{r}_{12}^{\\mathrm{unc}} - \\lambda \\mathbf{g}_{12}$ into $|\\mathbf{r}_{12}(t+h)|^2
+    - a^2 = 0$ and expand the dot product.
+  options:
+  - id: a
+    text: Because squaring the updated bond vector $|\\mathbf{r}_{12}^{\\mathrm{unc}} - \\lambda \\mathbf{g}_{12}|^2 = a^2$
+      produces a quadratic term $+\\lambda^2 |\\mathbf{g}_{12}|^2$ in $\\lambda$
+  - id: b
+    text: Because the atomic masses $m_1$ and $m_2$ depend exponentially on $\\lambda$
+  - id: c
+    text: Because the Lennard-Jones potential $4\\epsilon[(\\sigma/r)^{12} - (\\sigma/r)^6]$ is a 12th-degree polynomial in
+      $\\lambda$
+  - id: d
+    text: Because the target bond length $a$ oscillates sinusoidally with $\\lambda$
+  correct: a
+  rationale_markdown: 'Substituting $\mathbf{R}(t+h) = \mathbf{R}_0 - \lambda\mathbf{G}_0$ into $\sigma(\mathbf{R}) = r_{12}^2
+    - a^2 = 0$ gives $|\mathbf{r}_{12,0} - \lambda\mathbf{g}_{12,0}|^2 - a^2 = (r_{12,0}^2 - a^2) - 2\lambda\,\mathbf{r}_{12,0}\cdot\mathbf{g}_{12,0}
+    + \lambda^2 |\mathbf{g}_{12,0}|^2 = 0$, which is quadratic in $\lambda$. In SHAKE, the $\mathcal{O}(\lambda^2)$ term is
+    handled by linearized Newton iteration $\lambda_{n+1} = \lambda_n + \frac{\sigma_n}{\mathbf{G}_0\cdot\nabla\sigma_n}$.
+
+    '
+- id: q19_22
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'Consider a homonuclear diatomic molecule ($m_1 = m_2 = 1$) with target bond length $a = 1.00\,\text{Å}$.
+    At time $t$, the bond vector is $\mathbf{r}_{12}(t) = (1.00, 0, 0)\,\text{Å}$. After the unconstrained Verlet step, the
+    predicted bond vector is $\mathbf{r}_{12}^{\mathrm{unc}}(t+h) = (1.10, 0, 0)\,\text{Å}$.
+
+    Using the linearized SHAKE formula
+
+    $$g = \frac{|\mathbf{r}_{12}^{\mathrm{unc}}|^2 - a^2}{2\left(\frac{1}{m_1} + \frac{1}{m_2}\right)\mathbf{r}_{12}^{\mathrm{unc}}\cdot\mathbf{r}_{12}(t)},$$
+
+    calculate the scalar displacement magnitude $|\delta\mathbf{r}_1| = \frac{g}{m_1}|\mathbf{r}_{12}(t)|$ (in $\text{Å}$)
+    applied to atom 1 in the first Newton iteration. (Report your answer to 4 decimal places.)
+
+    '
+  hint_markdown: Evaluate the numerator from the squared distance discrepancy and divide by the denominator evaluated with
+    the predicted and old bond vectors.
+  correct:
+    value: 0.0477
+    tolerance: 0.0005
+  rationale_markdown: 'Here $\sigma_0 = |\mathbf{r}_{12}^{\mathrm{unc}}|^2 - a^2 = 1.10^2 - 1.00^2 = 1.21 - 1.00 = 0.21\,\text{Å}^2$.
+    The denominator is $2(1 + 1)(1.10 \times 1.00) = 4.40\,\text{Å}^2$. Thus $g = \frac{0.21}{4.40} = 0.047727 \approx 0.0477\,\text{Å}$.
+    Notice that atoms 1 and 2 each shift inward by $0.0477\,\text{Å}$, reducing the bond length from $1.10\,\text{Å}$ to $1.0045\,\text{Å}$
+    after a single linearized step (and converging to $1.0000\,\text{Å}$ on the next iteration!).
+
+    '
+- id: q19_23
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'When SHAKE applies a bond constraint correction between atom $i$ (mass $m_i$) and atom $j$ (mass $m_j$):
+
+    $$\delta\mathbf{r}_i = -\frac{h^2 \lambda_{ij}}{m_i}\nabla_{\mathbf{r}_i}\sigma_{ij}(\mathbf{R}(t)), \qquad \delta\mathbf{r}_j
+    = -\frac{h^2 \lambda_{ij}}{m_j}\nabla_{\mathbf{r}_j}\sigma_{ij}(\mathbf{R}(t)),$$
+
+    how does this position shift affect the center of mass $\mathbf{R}_{\mathrm{COM}} = \frac{m_i\mathbf{r}_i + m_j\mathbf{r}_j}{m_i
+    + m_j}$ of the pair, and how do the individual atomic shifts scale with mass?
+
+    '
+  hint_markdown: Use Newton's third law symmetry $\\nabla_{\\mathbf{r}_i}\\sigma_{ij} = -\\nabla_{\\mathbf{r}_j}\\sigma_{ij}$
+    to compute $m_i\\delta\\mathbf{r}_i + m_j\\delta\\mathbf{r}_j$.
+  options:
+  - id: a
+    text: The center of mass $\\mathbf{R}_{\\mathrm{COM}}$ is strictly unchanged ($m_i\\delta\\mathbf{r}_i + m_j\\delta\\mathbf{r}_j
+      = \\mathbf{0}$), and each atom's displacement magnitude is inversely proportional to its mass ($|\\delta\\mathbf{r}_i|
+      \\propto 1/m_i$)
+  - id: b
+    text: Both atoms shift by the exact same distance regardless of their masses, shifting the center of mass toward the heavier
+      atom
+  - id: c
+    text: Only the lighter atom moves while the heavier atom is held fixed in space
+  - id: d
+    text: Each atom's displacement is directly proportional to its mass ($|\\delta\\mathbf{r}_i| \\propto m_i$)
+  correct: a
+  rationale_markdown: 'Because $\nabla_{\mathbf{r}_i}\sigma_{ij} = 2(\mathbf{r}_i - \mathbf{r}_j) = -\nabla_{\mathbf{r}_j}\sigma_{ij}$,
+    the mass-weighted sum of position shifts vanishes identically: $m_i\delta\mathbf{r}_i + m_j\delta\mathbf{r}_j = -h^2\lambda_{ij}(\nabla_{\mathbf{r}_i}\sigma_{ij}
+    + \nabla_{\mathbf{r}_j}\sigma_{ij}) = \mathbf{0}$. Moreover, $|\delta\mathbf{r}_i| / |\delta\mathbf{r}_j| = m_j / m_i$;
+    for example, in an $\mathrm{O{-}H}$ bond ($m_{\mathrm{O}}=16, m_{\mathrm{H}}=1$), the hydrogen atom moves $16\times$ farther
+    than the oxygen atom during a SHAKE update!
+
+    '
+- id: q19_24
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'During a SHAKE update of a covalent $\mathrm{O{-}H}$ bond ($m_{\mathrm{O}} = 16.0\,\mathrm{u}$, $m_{\mathrm{H}}
+    = 1.0\,\mathrm{u}$), the oxygen atom is displaced by $|\delta\mathbf{r}_{\mathrm{O}}| = 0.005\,\text{Å}$ along the old
+    bond vector. By what distance $|\delta\mathbf{r}_{\mathrm{H}}|$ (in $\text{Å}$) is the hydrogen atom displaced in the
+    opposite direction? (Report your answer to 2 decimal places.)
+
+    '
+  hint_markdown: Balance the center of mass by scaling the oxygen displacement by the inverse mass ratio.
+  correct:
+    value: 0.08
+    tolerance: 0.002
+  rationale_markdown: 'From $m_{\mathrm{H}}|\delta\mathbf{r}_{\mathrm{H}}| = m_{\mathrm{O}}|\delta\mathbf{r}_{\mathrm{O}}|$,
+    we have $|\delta\mathbf{r}_{\mathrm{H}}| = \frac{16.0}{1.0}\times 0.005\,\text{Å} = 0.080\,\text{Å}$.
+
+    '
+- id: q19_25
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: concept_19_4_shake_tracer
+  prompt_markdown: 'In a molecule with multiple constraints (such as liquid water with 3 interatomic distance constraints
+    per molecule, or a polymer chain), why must SHAKE loop cyclically over all constraints $\sigma_k$ many times rather than
+    solving each constraint $\sigma_k = 0$ just once?
+
+    '
+  hint_markdown: Watch atom 2 in the Interactive SHAKE Tracer when constraint 2–3 is updated right after constraint 1–2.
+  options:
+  - id: a
+    text: Adjacent constraints share common atoms, so shifting atomic positions to satisfy constraint $\\sigma_k = 0$ perturbs
+      the lengths of neighboring bonds that were just satisfied, plus each individual bond equation is quadratic in $\\lambda_k$
+  - id: b
+    text: The target bond lengths $a_k$ change randomly at every iteration of the SHAKE loop
+  - id: c
+    text: The intermolecular Lennard-Jones forces must be recomputed 25 times per timestep inside the SHAKE loop
+  - id: d
+    text: Python and Fortran loops require at least 25 iterations to flush CPU cache lines
+  correct: a
+  rationale_markdown: 'When two constraints share an atom (e.g., atom $\mathrm{B}$ in $\mathrm{A{-}B{-}C}$), moving atom $\mathrm{B}$
+    to satisfy $\sigma_{BC}=0$ alters $\mathbf{r}_B$ and therefore changes $|\mathbf{r}_A - \mathbf{r}_B|^2 - a_{AB}^2$, violating
+    $\sigma_{AB}=0$. Cyclic Gauss–Seidel/Newton relaxation iteratively eliminates both this inter-bond coupling and the quadratic
+    $\mathcal{O}(\lambda^2)$ nonlinearity until all $|\sigma_k| < \varepsilon$ simultaneously.
+
+    '
+- id: q19_26
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'According to the lecture notes, one typically has to iterate the SHAKE Newton cycle about **25 times**
+    per MD step, yet this takes only about **25% of the total CPU time**. Why is 25 iterations of SHAKE so cheap compared
+    to a single unconstrained MD step?
+
+    '
+  hint_markdown: What is the most computationally expensive part of an MD step, and is it repeated inside the SHAKE loop?
+  options:
+  - id: a
+    text: Because the expensive intermolecular forces $\\mathbf{F}_i(t)$ are NOT re-evaluated during the SHAKE iterations—only
+      simple local bond constraint vectors are updated
+  - id: b
+    text: Because SHAKE only updates 1% of the molecules in the simulation box at each timestep
+  - id: c
+    text: Because SHAKE runs in integer arithmetic without any floating-point divisions
+  - id: d
+    text: Because SHAKE skips the Verlet predictor step entirely
+  correct: a
+  rationale_markdown: 'In molecular dynamics, $75\text{–}90\%$ of CPU time is spent evaluating pairwise non-bonded intermolecular
+    forces $\mathbf{F}_i(t)$ (Lennard-Jones, Ewald/PME electrostatics). $\mathbf{F}_i(t)$ is computed **only once** per timestep
+    during the unconstrained Verlet predictor step; the 25 SHAKE iterations only compute fast $\mathcal{O}(n_c)$ local dot
+    products along intramolecular bonds!
+
+    '
+- id: q19_27
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'Suppose an unconstrained MD simulation takes $1.00\,\mathrm{ms}$ of CPU time per timestep with $\Delta
+    t_{\mathrm{unc}} = 1.0\,\mathrm{fs}$. When SHAKE is turned on to freeze bond lengths, the SHAKE cycle adds an extra $\frac{1}{3}$
+    ($33.33\%$) to the per-step CPU time (so SHAKE accounts for $\frac{0.3333}{1.3333} = 25\%$ of the new total step time
+    of $1.3333\,\mathrm{ms}$), while allowing the timestep to increase to $\Delta t_{\mathrm{SHAKE}} = 4.0\,\mathrm{fs}$.
+
+    What is the net **overall computational speedup factor** (simulated physical time per unit CPU wall-clock time) achieved
+    by using SHAKE? (Report your answer to 1 decimal place.)
+
+    '
+  hint_markdown: Take the ratio of the timestep expansion factor to the per-step CPU wall-time increase factor.
+  correct:
+    value: 3.0
+    tolerance: 0.05
+  rationale_markdown: 'Each SHAKE step advances physical time by $4.0\times$ as much as an unconstrained step while costing
+    $\frac{4}{3} \approx 1.3333\times$ as much CPU time per step. Thus, the net speedup in simulated physical time per second
+    of CPU time is $\frac{4.0}{4/3} = 3.0\times$.
+
+    '
+- id: q19_28
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'To make a nonlinear triatomic molecule such as water ($\mathrm{H_2O}$) **completely rigid** in Cartesian
+    coordinates using the SHAKE algorithm (without introducing generalized coordinates or quaternions), how many holonomic
+    distance constraints $\sigma_k(\mathbf{R}) = 0$ must be applied per water molecule?
+
+    '
+  hint_markdown: A nonlinear 3-atom molecule has $3 \\times 3 = 9$ Cartesian coordinates and 6 rigid-body degrees of freedom
+    (3 translational + 3 rotational).
+  options:
+  - id: a
+    text: 3 distance constraints (the two O–H covalent bond lengths plus the H–H distance, which fixes the H–O–H angle)
+  - id: b
+    text: 2 distance constraints (only the two O–H covalent bond lengths)
+  - id: c
+    text: 1 distance constraint (the center-of-mass radius of gyration)
+  - id: d
+    text: 6 distance constraints (all permutations of pairs)
+  correct: a
+  rationale_markdown: 'A 3-atom molecule has $3N = 9$ Cartesian coordinates, while a completely rigid nonlinear 3D body has
+    6 degrees of freedom (3 translation + 3 rotation). Therefore, $9 - 6 = 3$ holonomic distance constraints are needed: fixing
+    $r_{\mathrm{OH_1}}$, $r_{\mathrm{OH_2}}$, and the inter-hydrogen distance $r_{\mathrm{H_1 H_2}}$ creates a rigid triangle!
+
+    '
+- id: q19_29
+  type: problem
+  question_type: single_select
+  difficulty: hard
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'Why cannot a **linear** triatomic molecule (such as $\mathrm{CO_2}$, with bond angle $\theta = 180^\circ$)
+    be made completely rigid solely by applying 3 pairwise SHAKE distance constraints ($r_{\mathrm{CO_1}} = d$, $r_{\mathrm{CO_2}}
+    = d$, and $r_{\mathrm{O_1 O_2}} = 2d$) on its 3 atoms?
+
+    '
+  hint_markdown: At $\\theta = 180^\\circ$, all three bond vectors $\\mathbf{r}_{\\mathrm{CO_1}}$, $\\mathbf{r}_{\\mathrm{CO_2}}$,
+    and $\\mathbf{r}_{\\mathrm{O_1 O_2}}$ are collinear! How many independent degrees of freedom does a linear molecule have?
+  options:
+  - id: a
+    text: A linear molecule has 5 degrees of freedom (requiring $9 - 5 = 4$ constraints), and at $\\theta = 180^\\circ$ the
+      gradient of $r_{\\mathrm{O_1 O_2}}$ is linearly dependent on $\\mathbf{r}_{\\mathrm{CO_1}}$ and $\\mathbf{r}_{\\mathrm{CO_2}}$
+      (zero force perpendicular to the molecular axis), making the SHAKE matrix singular
+  - id: b
+    text: Carbon atoms are heavier than oxygen atoms, which reverses the sign of the Lagrange multipliers
+  - id: c
+    text: SHAKE can only be applied to molecules that possess a permanent electric dipole moment
+  - id: d
+    text: The bond length of $\\mathrm{CO_2}$ exceeds half the periodic simulation box length
+  correct: a
+  rationale_markdown: 'A rigid linear molecule has 5 D.O.F. ($9 - 5 = 4$ constraints needed: 2 bond lengths + 2 orthogonal
+    bending directions). Worse still, when $\mathrm{O_1{-}C{-}O_2}$ are collinear, $\mathbf{r}_{\mathrm{O_1 O_2}} = \mathbf{r}_{\mathrm{CO_2}}
+    - \mathbf{r}_{\mathrm{CO_1}}$ lies entirely along the molecular axis, so none of the three distance gradients $\nabla\sigma_k$
+    has any component perpendicular to the axis to restore bending perturbations, rendering the $3\times 3$ SHAKE constraint
+    Jacobian singular!
+
+    '
+- id: q19_30
+  type: problem
+  question_type: multi_select
+  difficulty: medium
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'Select **all** statements that accurately compare the **generalized-coordinate approach** (e.g., Euler
+    angles / quaternions) with the **Cartesian SHAKE approach** for constrained molecular dynamics:
+
+    '
+  hint_markdown: Review slide 7 ('Advantages of SHAKE') and slide 3 ('Constrained coordinates').
+  options:
+  - id: a
+    text: Generalized coordinates work well for completely rigid molecules, whereas an iterative method like SHAKE is needed
+      when molecules are partially rigid / partially constrained (e.g., flexible polymers with rigid bonds)
+  - id: b
+    text: SHAKE works directly in Cartesian coordinates, making it easy to add or remove arbitrary bond or angle constraints
+      without re-deriving the equations of motion
+  - id: c
+    text: Generalized coordinates require careful handling of coordinate singularities (such as the North Pole $\\theta=0$
+      in spherical/Euler angles)
+  - id: d
+    text: Generalized coordinates eliminate the need to compute intermolecular forces between different molecules
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: 'Generalized coordinates (such as COM + unit vector for linear molecules, or COM + quaternions for rigid
+    bodies) are convenient for *completely rigid* molecules once coordinate singularities are avoided, whereas SHAKE''s direct
+    Cartesian formulation provides unmatched flexibility for *partially constrained* molecules (such as alkane chains or proteins
+    with rigid bond lengths and flexible torsions).
+
+    '
+- id: sec_19_5_cpmd_orthonormality
+  type: markdown_section
+  title: 5. Constraints in Ab Initio (Car–Parrinello) Molecular Dynamics (CPMD)
+  body_markdown: "Holonomic constraints play an equally foundational role in **Ab Initio Molecular Dynamics (Car–Parrinello\
+    \ MD, 1985)**, where we combine quantum-mechanical Density Functional Theory (DFT) for the electrons with classical MD\
+    \ for the ions.\n\n### 1. Dynamical Electronic Wave Functions & Orthonormality Constraints\nIn Car–Parrinello MD, instead\
+    \ of diagonalizing the Kohn–Sham Hamiltonian from scratch at every ionic step, the single-particle electronic orbitals\
+    \ $\\{\\phi_i(\\mathbf{r})\\}_{i=1}^N$ are treated as fictitious classical dynamical fields with fictitious mass $\\mu$\
+    \ that evolve via MD equations of motion alongside the ions.\n- Because electrons are fermions obeying the Pauli exclusion\
+    \ principle, the $N$ single-particle electronic wave functions must remain **mutually orthonormal** at every timestep:\n\
+    \  $$S_{ij} = \\langle \\phi_j | \\phi_i \\rangle = \\int d\\mathbf{r}\\,\\phi_j^*(\\mathbf{r})\\phi_i(\\mathbf{r}) =\
+    \ \\delta_{ij}$$\n- Expanding each orbital in a basis of $M$ functions $\\{f_\\alpha(\\mathbf{r})\\}_{\\alpha=1}^M$:\n\
+    \  $$\\phi_j(\\mathbf{r}) = \\sum_{\\alpha=1}^M c_{j\\alpha}\\,f_\\alpha(\\mathbf{r})$$\n  where $\\mathbf{c}$ is an $N\
+    \ \\times M$ coefficient matrix ($N$ occupied orbitals, $M$ basis functions), the orthonormality condition becomes the\
+    \ matrix holonomic constraint:\n  $$\\mathbf{c}^*\\,\\mathbf{T}\\,\\mathbf{c}^T = \\mathbf{I}_{N\\times N}, \\qquad \\\
+    text{where } T_{\\alpha\\beta} = \\int d\\mathbf{r}\\,f_\\alpha^*(\\mathbf{r})f_\\beta(\\mathbf{r}) \\text{ is the basis\
+    \ overlap matrix.}$$\n  (For an orthonormal plane-wave basis, $T_{\\alpha\\beta} = \\delta_{\\alpha\\beta}$, so $\\mathbf{c}^*\\\
+    mathbf{c}^T = \\mathbf{I}$.)\n\n### 2. Counting the Orthonormality Constraints\nHow many independent holonomic constraints\
+    \ are contained in $S_{ij} = \\langle \\phi_j | \\phi_i \\rangle = \\delta_{ij}$ for $N$ real (or Hermitian-symmetric)\
+    \ orbitals?\n- There are $N$ **normalization** constraints on the diagonal ($i = j$): $\\langle \\phi_i | \\phi_i \\rangle\
+    \ = 1$.\n- There are $\\frac{N(N-1)}{2}$ **orthogonality** constraints off the diagonal ($i < j$): $\\langle \\phi_j |\
+    \ \\phi_i \\rangle = 0$.\n- Total number of independent holonomic constraints:\n  $$n_c = N + \\frac{N(N-1)}{2} = \\frac{N(N+1)}{2}$$\n\
+    \n### 3. Enforcing Wave-Function Orthogonality with SHAKE\nJust as in atomic SHAKE, we advance the orbital coefficients\
+    \ $\\phi_i(\\mathbf{r}, t+h)$ with an unconstrained Verlet step and then apply an iterative SHAKE projection using an\
+    \ $N\\times N$ Hermitian matrix of Lagrange multipliers $\\Lambda_{ij}$ to enforce $\\langle \\phi_j | \\phi_i \\rangle\
+    \ = \\delta_{ij}$:\n$$\\phi_i \\longleftarrow \\phi_i - \\frac{1}{2}\\sum_{j \\ne i} \\phi_j \\langle \\phi_j | \\phi_i\
+    \ \\rangle \\quad (\\text{plus diagonal normalization } \\phi_i \\leftarrow \\phi_i / \\|\\phi_i\\|)$$\nThis iterative\
+    \ matrix SHAKE loop rapidly orthogonalizes all $N$ electronic wave functions at every MD step without requiring an $\\\
+    mathcal{O}(M^3)$ full Hamiltonian diagonalization!\n"
+- id: q19_31
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_19_5_cpmd_orthonormality
+  prompt_markdown: 'In Car–Parrinello Ab Initio Molecular Dynamics (CPMD), how are the ions and electrons propagated, and
+    why do holonomic constraints enter the electronic equations of motion?
+
+    '
+  hint_markdown: Review slide 8 ('Ab Initio (Car-Parrinello) MD').
+  options:
+  - id: a
+    text: Both the ions (classical nuclei) and the single-particle Kohn–Sham electronic orbitals $\\phi_i(\\mathbf{r})$ are
+      propagated using MD equations of motion, and holonomic constraints $S_{ij} = \\langle\\phi_j|\\phi_i\\rangle = \\delta_{ij}$
+      are required to keep the electronic wave functions orthonormal
+  - id: b
+    text: Electrons are fused rigidly to the nearest atomic nucleus at a fixed distance of $0.529\\,\\text{Å}$ using classical
+      bond SHAKE
+  - id: c
+    text: The ionic positions are held strictly frozen while electrons diffuse across the periodic box
+  - id: d
+    text: Holonomic constraints force all $N$ electrons to collapse into the lowest single-particle orbital $\\phi_1(\\mathbf{r})$
+  correct: a
+  rationale_markdown: 'In Car–Parrinello MD, the single-particle electronic wave functions $\phi_i(\mathbf{r})$ are evolved
+    dynamically via fictitious classical MD equations alongside the ions. Without the $N(N+1)/2$ holonomic orthonormality
+    constraints $\langle\phi_j|\phi_i\rangle = \delta_{ij}$, all orbitals would collapse onto the single lowest-energy state
+    $\phi_1$, violating the Pauli exclusion principle!
+
+    '
+- id: q19_32
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_5_cpmd_orthonormality
+  prompt_markdown: 'For an electronic system described by $N$ occupied single-particle wave functions $\{\phi_1(\mathbf{r}),
+    \dots, \phi_N(\mathbf{r})\}$, how many independent holonomic constraints are imposed by the orthonormality condition $S_{ij}
+    = \langle\phi_j | \phi_i\rangle = \delta_{ij}$?
+
+    '
+  hint_markdown: Count the $N$ diagonal normalization conditions ($i=j$) plus the $N(N-1)/2$ upper-triangular orthogonality
+    conditions ($i < j$).
+  options:
+  - id: a
+    text: $\\frac{N(N+1)}{2}$
+  - id: b
+    text: $N$
+  - id: c
+    text: $3N - 6$
+  - id: d
+    text: $N!$
+  correct: a
+  rationale_markdown: 'Because the overlap matrix $S_{ij} = \langle\phi_j|\phi_i\rangle$ is symmetric (or Hermitian), there
+    are $N$ diagonal normalization constraints ($\langle\phi_i|\phi_i\rangle = 1$) and $N(N-1)/2$ independent off-diagonal
+    orthogonality constraints ($\langle\phi_j|\phi_i\rangle = 0$ for $j < i$), giving $N + \frac{N(N-1)}{2} = \frac{N(N+1)}{2}$
+    constraints in total.
+
+    '
+- id: q19_33
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_19_5_cpmd_orthonormality
+  prompt_markdown: A Car–Parrinello MD simulation of a 64-atom silicon supercell (with 4 valence electrons per Si atom, doubly
+    occupied spin-restricted orbitals) tracks $N = 128$ occupied Kohn–Sham spatial orbitals $\phi_i(\mathbf{r})$. How many
+    total holonomic orthonormality constraints must the electronic SHAKE algorithm satisfy at every timestep?
+  hint_markdown: Sum the $N$ normalization conditions and the distinct pairwise orthogonality conditions among the $N$ orbitals.
+  correct:
+    value: 8256
+    tolerance: 0.1
+  rationale_markdown: 'For $N = 128$ orbitals, the number of independent orthonormality constraints is $\frac{N(N+1)}{2} =
+    \frac{128 \times 129}{2} = 64 \times 129 = 8256$ constraints (consisting of $128$ normalization conditions and $8128$
+    pairwise orthogonality conditions).
+
+    '
+- id: q19_34
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_5_cpmd_orthonormality
+  prompt_markdown: 'When the $N$ electronic wave functions are expanded in a non-orthogonal basis $\{f_\alpha(\mathbf{r})\}_{\alpha=1}^M$
+    as $\phi_j(\mathbf{r}) = \sum_{\alpha=1}^M c_{j\alpha} f_\alpha(\mathbf{r})$ with basis overlap matrix $T_{\alpha\beta}
+    = \int d\mathbf{r}\,f_\alpha^*(\mathbf{r})f_\beta(\mathbf{r})$, how is the wave-function orthonormality constraint $S_{ij}
+    = \langle\phi_j | \phi_i\rangle = \delta_{ij}$ expressed in matrix form for the $N\times M$ coefficient matrix $\mathbf{c}$?
+
+    '
+  hint_markdown: Substitute $\\phi_j = \\sum_\\alpha c_{j\\alpha} f_\\alpha$ into $\\int d\\mathbf{r}\\,\\phi_j^*(\\mathbf{r})\\phi_i(\\mathbf{r})
+    = \\delta_{ij}$.
+  options:
+  - id: a
+    text: $\\mathbf{c}^*\\,\\mathbf{T}\\,\\mathbf{c}^T = \\mathbf{I}_{N\\times N}$
+  - id: b
+    text: $\\mathbf{c} + \\mathbf{T} = \\mathbf{0}$
+  - id: c
+    text: $\\det(\\mathbf{c}) = 1$
+  - id: d
+    text: $\\mathrm{Tr}(\\mathbf{T}) = N$
+  correct: a
+  rationale_markdown: 'Substituting the basis expansion into $S_{ji} = \int d\mathbf{r}\,\phi_j^*(\mathbf{r})\phi_i(\mathbf{r})$
+    yields $\sum_{\alpha,\beta} c_{j\alpha}^* \left(\int d\mathbf{r}\,f_\alpha^*(\mathbf{r})f_\beta(\mathbf{r})\right) c_{i\beta}
+    = \sum_{\alpha,\beta} c_{j\alpha}^* T_{\alpha\beta} c_{i\beta} = (\mathbf{c}^*\mathbf{T}\mathbf{c}^T)_{ji} = \delta_{ji}$,
+    or $\mathbf{c}^*\mathbf{T}\mathbf{c}^T = \mathbf{I}$.
+
+    '
+- id: q19_35
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_19_5_cpmd_orthonormality
+  prompt_markdown: 'In the first-order iterative SHAKE orthogonalization step for two normalized orbitals $\phi_i$ and $\phi_j$
+    ($i \ne j$) that have acquired a small non-zero overlap $\epsilon_{ji} = \langle\phi_j | \phi_i\rangle \ll 1$ during an
+    unconstrained CPMD Verlet step:
+
+    $$\phi_i^{\mathrm{new}} = \phi_i - \frac{1}{2}\sum_{j \ne i} \phi_j \langle \phi_j | \phi_i \rangle,$$
+
+    why does a factor of $\frac{1}{2}$ appear in front of the overlap $\langle\phi_j | \phi_i\rangle$?
+
+    '
+  hint_markdown: Compute the new overlap $\\langle \\phi_j^{\\mathrm{new}} | \\phi_i^{\\mathrm{new}} \\rangle$ to first order
+    in $\\epsilon_{ji}$ when BOTH $\\phi_i$ and $\\phi_j$ are updated symmetrically!
+  options:
+  - id: a
+    text: Because both $\\phi_i$ and $\\phi_j$ are updated symmetrically (each subtracting $\\frac{1}{2}\\epsilon_{ji}$ of
+      the other), their combined first-order overlap change is $-\\frac{1}{2}\\langle\\phi_j|\\phi_i\\rangle - \\frac{1}{2}\\langle\\phi_j|\\phi_i\\rangle
+      = -\\langle\\phi_j|\\phi_i\\rangle$, canceling the overlap to $\\mathcal{O}(\\epsilon^2)$
+  - id: b
+    text: Because each electron has intrinsic spin quantum number $s = 1/2$
+  - id: c
+    text: Because kinetic energy in atomic units has a prefactor of $1/2$ ($-\\frac{1}{2}\\nabla^2$)
+  - id: d
+    text: Because only half of the orbitals in a metal are occupied at $T = 0\\,\\mathrm{K}$
+  correct: a
+  rationale_markdown: 'Since $\phi_i$ and $\phi_j$ have equal fictitious mass $\mu$, symmetric orthogonalization subtracts
+    $\frac{1}{2}\phi_j\langle\phi_j|\phi_i\rangle$ from $\phi_i$ and $\frac{1}{2}\phi_i\langle\phi_i|\phi_j\rangle$ from $\phi_j$.
+    Taking the inner product $\langle\phi_j^{\mathrm{new}}|\phi_i^{\mathrm{new}}\rangle = \langle\phi_j|\phi_i\rangle - \frac{1}{2}\langle\phi_j|\phi_j\rangle\langle\phi_j|\phi_i\rangle
+    - \frac{1}{2}\langle\phi_j|\phi_i\rangle\langle\phi_i|\phi_i\rangle + \mathcal{O}(\epsilon^2) = 0 + \mathcal{O}(\epsilon^2)$.
+
+    '
+- id: q19_36
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_19_5_cpmd_orthonormality
+  prompt_markdown: 'Suppose two normalized trial wave functions $\phi_1$ and $\phi_2$ ($\langle\phi_1|\phi_1\rangle = \langle\phi_2|\phi_2\rangle
+    = 1$) have a small initial overlap $\epsilon = \langle\phi_2|\phi_1\rangle = 0.10$ after an unconstrained CPMD step. After
+    applying **one** symmetric SHAKE orthogonalization iteration:
+
+    $$\phi_1^{(1)} = \phi_1 - \frac{1}{2}\epsilon\,\phi_2, \qquad \phi_2^{(1)} = \phi_2 - \frac{1}{2}\epsilon\,\phi_1,$$
+
+    what is the remaining overlap $\langle\phi_2^{(1)} | \phi_1^{(1)}\rangle$ before re-normalization? (Report your answer
+    to 5 decimal places, e.g., `0.00025`.)'
+  hint_markdown: Expand the inner product between the two updated trial states and observe which powers of $\epsilon$ survive
+    after first-order terms cancel.
+  correct:
+    value: 0.00025
+    tolerance: 2.0e-05
+  rationale_markdown: 'Expanding the inner product gives:
+
+    $$\langle\phi_2^{(1)}|\phi_1^{(1)}\rangle = \langle\phi_2|\phi_1\rangle - \frac{1}{2}\epsilon\langle\phi_2|\phi_2\rangle
+    - \frac{1}{2}\epsilon\langle\phi_1|\phi_1\rangle + \frac{1}{4}\epsilon^2\langle\phi_1|\phi_2\rangle = \epsilon - \frac{1}{2}\epsilon(1)
+    - \frac{1}{2}\epsilon(1) + \frac{1}{4}\epsilon^3 = \frac{1}{4}\epsilon^3.$$
+
+    For $\epsilon = 0.10$, the residual overlap after just one iteration is $\frac{1}{4}(0.10)^3 = 0.00025$ ($2.5\times 10^{-4}$),
+    demonstrating the rapid convergence of iterative SHAKE!
+
+    '
+- id: q19_37
+  type: problem
+  question_type: single_select
+  difficulty: hard
+  taught_by: sec_19_4_shake_algorithm
+  prompt_markdown: 'What happens in the SHAKE algorithm if the unconstrained Verlet step $\mathbf{R}^{\mathrm{unc}}(t+h)$
+    is so large (e.g., due to an excessively large timestep $\Delta t$ or an atomic core overlap) that the predicted bond
+    vector $\mathbf{r}_{ij}^{\mathrm{unc}}(t+h)$ becomes nearly perpendicular to the old bond vector $\mathbf{r}_{ij}(t)$,
+    i.e., $\mathbf{r}_{ij}^{\mathrm{unc}}(t+h)\cdot\mathbf{r}_{ij}(t) \to 0$?
+
+    '
+  hint_markdown: Inspect the denominator $\\sum_j \\frac{m_i}{m_j}\\nabla_j\\sigma_k(\\mathbf{R}(t+h))\\cdot\\nabla_j\\sigma_k(\\mathbf{R}(t))
+    \\propto \\mathbf{r}_{ij}^{\\mathrm{cur}}(t+h)\\cdot\\mathbf{r}_{ij}(t)$ of the SHAKE update formula.
+  options:
+  - id: a
+    text: The denominator $\\nabla\\sigma_k(\\mathbf{R}(t+h))\\cdot\\nabla\\sigma_k(\\mathbf{R}(t))$ vanishes, causing the
+      Newton step $\\delta\\lambda_k$ to diverge and the SHAKE iteration to fail to converge
+  - id: b
+    text: SHAKE converges in a single step because perpendicular vectors are automatically normalized
+  - id: c
+    text: The Lagrange multiplier $\\lambda_k$ goes to zero and the bond length remains unchanged
+  - id: d
+    text: The molecule spontaneously converts into an ideal gas with zero potential energy
+  correct: a
+  rationale_markdown: 'Because SHAKE displaces atoms along the *old* bond direction $\mathbf{r}_{ij}(t)$ to fix the length
+    of $\mathbf{r}_{ij}(t+h)$, the linearized Newton denominator contains the dot product $\mathbf{r}_{ij}(t+h)\cdot\mathbf{r}_{ij}(t)$.
+    If a bond rotates by $\sim 90^\circ$ in a single step (or stretches past the saddle point of the quadratic equation in
+    $\lambda$), the projection vanishes and SHAKE fails to converge—a classic diagnostic of an unstable MD timestep or bad
+    initial geometry.
+
+    '
+- id: q19_38
+  type: problem
+  question_type: multi_select
+  difficulty: medium
+  taught_by:
+  - sec_19_1_timescales_and_motivation
+  - sec_19_2_ensemble_metric_fixman
+  - sec_19_3_rigid_bodies_quaternions
+  - sec_19_4_shake_algorithm
+  - sec_19_5_cpmd_orthonormality
+  prompt_markdown: '**Lesson 19 Synthesis:** Select **all** true statements regarding holonomic constraints in atomic-scale
+    simulations:
+
+    '
+  hint_markdown: 'Verify each statement against the five main topics of the lecture: timescales, ensemble metric effects,
+    coordinate systems, SHAKE, and CPMD.'
+  options:
+  - id: a
+    text: Holonomic bond constraints change the equilibrium Gibbs ensemble relative to the stiff-spring limit ($k\\to\\infty$)
+      whenever constraints are coupled and nonlinear in Cartesian coordinates
+  - id: b
+    text: Unit quaternions $(q_0, q_1, q_2, q_3)$ with $\\sum_{m=0}^3 q_m^2 = 1$ avoid the polar gimbal-lock singularity ($\\theta=0,\\pi$)
+      that plagues Euler angles
+  - id: c
+    text: SHAKE enforces $\\sigma_k(\\mathbf{R}(t+h)) = 0$ iteratively in Cartesian coordinates without re-evaluating the
+      intermolecular forces $\\mathbf{F}_i(t)$ inside the constraint loop
+  - id: d
+    text: In Car–Parrinello MD, SHAKE enforces $\\frac{N(N+1)}{2}$ holonomic orthonormality constraints $S_{ij} = \\langle\\phi_j|\\phi_i\\rangle
+      = \\delta_{ij}$ on the $N$ electronic wave functions
+  correct:
+  - a
+  - b
+  - c
+  - d
+  rationale_markdown: 'All four statements summarize the core principles of Lesson 19:
+
+    - **(A)** Coupled nonlinear constraints alter the configurational phase-space volume element via the mass-metric determinant
+    (Fixman effect).
+
+    - **(B)** 4-component unit quaternions eliminate the $1/\sin\theta$ coordinate singularity of Euler angles.
+
+    - **(C)** SHAKE iteratively adjusts Cartesian positions along old bond vectors $\mathbf{r}_{ij}(t)$ to satisfy $\sigma_k(\mathbf{R}(t+h))
+    = 0$ without recalculating expensive intermolecular forces.
+
+    - **(D)** Car–Parrinello ab initio MD uses SHAKE to maintain the $\frac{N(N+1)}{2}$ wave-function orthonormality conditions
+    $\langle\phi_j|\phi_i\rangle = \delta_{ij}$.
+
+    '

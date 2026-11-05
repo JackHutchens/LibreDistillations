@@ -81,7 +81,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In a liquid of $N = 400$ atoms at inverse temperature $\\beta = (k_B T)^{-1} = 0.50\\,\\varepsilon^{-1}$, the static structure factor at wavevector $k_1$ has its main peak value $S(k_1) = 2.50$. Using the static linear response relation:\n$$\\left.\\frac{d\\langle \\rho_{-k_1} \\rangle}{d\\lambda_{k_1}}\\right|_{\\lambda=0} = -\\beta N S(k_1)$$\ncalculate the magnitude $\\left|\\frac{d\\langle \\rho_{-k_1}\\rangle}{d\\lambda_{k_1}}\\right|$ (in units of $\\varepsilon^{-1}$).\n",
-        "hint_markdown": "Multiply $\\beta N S(k_1) = 0.50 \\times 400 \\times 2.50$.",
+        "hint_markdown": "Evaluate the product of inverse temperature, total particle number, and the peak structure factor.",
         "correct": {
           "value": 500.0,
           "tolerance": 0.5
@@ -250,7 +250,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In the quantum Fluctuation-Dissipation Theorem (Slide 5), the prefactor relating $\\chi''(\\omega)$ to the correlation spectrum is $\\frac{1}{2\\hbar}(e^{\\beta\\hbar\\omega} - 1)$. In the classical / low-frequency limit where $\\beta\\hbar\\omega \\ll 1$, Taylor-expanding $e^{\\beta\\hbar\\omega} - 1 \\approx \\beta\\hbar\\omega$ reduces this prefactor to $\\frac{1}{2}\\beta\\omega$.\n\nWhat is the exact value of the dimensionless ratio $\\frac{(e^{\\beta\\hbar\\omega} - 1) / (2\\hbar)}{\\frac{1}{2}\\beta\\omega} = \\frac{e^x - 1}{x}$ when $x = \\beta\\hbar\\omega = 1.0$? (Round to two decimal places.)\n",
-        "hint_markdown": "Evaluate $e^1 - 1 = 2.71828 - 1$.",
+        "hint_markdown": "Compute the ratio $(e^x - 1)/x$ at the specified dimensionless argument.",
         "correct": {
           "value": 1.72,
           "tolerance": 0.02
@@ -264,7 +264,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In an inelastic neutron scattering experiment on liquid water (Slide 15), quantum detailed balance requires that the dynamical structure factor obey:\n$$\\frac{S(\\mathbf{k}, +\\omega)}{S(\\mathbf{k}, -\\omega)} = e^{+\\beta\\hbar\\omega}$$\nwhere $+\\omega$ corresponds to neutron energy loss (creating an excitation) and $-\\omega$ corresponds to neutron energy gain (absorbing a thermally populated excitation). If an excitation has energy $\\hbar\\omega = 2.0\\,k_B T$ ($\\beta\\hbar\\omega = 2.0$), what is the intensity ratio $S(\\mathbf{k}, +\\omega) / S(\\mathbf{k}, -\\omega)$? (Round to two decimal places.)\n",
-        "hint_markdown": "Compute $e^{2.0}$.",
+        "hint_markdown": "Apply the detailed balance relation using the ratio of excitation energy to thermal energy.",
         "correct": {
           "value": 7.39,
           "tolerance": 0.05
@@ -498,8 +498,8 @@
         "taught_by": "sec_diffusion_einstein_and_green_kubo",
         "difficulty": "easy",
         "question_type": "single_select",
-        "prompt_markdown": "In a $d$-dimensional isotropic fluid, the long-time mean-squared displacement grows as $\\langle |\\mathbf{r}(t) - \\mathbf{r}(0)|^2 \\rangle = 2 d D t$, while the Green-Kubo velocity autocorrelation integral is $D = \\frac{1}{d}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$. What are the correct prefactors $(2d, \\frac{1}{d})$ for a **2D monolayer** ($d=2$) vs. a **3D bulk fluid** ($d=3$)?\n",
-        "hint_markdown": "Substitute $d = 2$ and $d = 3$ into $2d$ and $1/d$.",
+        "prompt_markdown": "In a $d$-dimensional isotropic fluid, how do the geometric dimensionality prefactors relate the self-diffusion coefficient $D$ to the mean-squared displacement $\\langle |\\mathbf{r}(t) - \\mathbf{r}(0)|^2 \\rangle$ and the velocity autocorrelation integral $\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$ for a **2D monolayer** ($d=2$) versus a **3D bulk fluid** ($d=3$)?",
+        "hint_markdown": "Consider the number of independent spatial dimensions contributing to the total particle displacement and velocity vector dot product.",
         "options": [
           {
             "id": "a",
@@ -563,7 +563,7 @@
         "difficulty": "easy",
         "question_type": "numeric",
         "prompt_markdown": "In a 3D MD simulation of molten nickel (similar to Slide 11), the unwrapped mean-squared displacement increases linearly from $\\text{MSD}(2.0\\,\\text{ps}) = 6.2\\,\\text{\u00c5}^2$ to $\\text{MSD}(6.0\\,\\text{ps}) = 18.2\\,\\text{\u00c5}^2$. Calculate the self-diffusion coefficient $D$ in units of $\\text{\u00c5}^2/\\text{ps}$.\n",
-        "hint_markdown": "First compute the slope $\\Delta \\text{MSD} / \\Delta t = (18.2 - 6.2) / (6.0 - 2.0)$, then divide by $6$.",
+        "hint_markdown": "Relate the asymptotic linear growth rate of the 3D mean-squared displacement to the diffusion coefficient via the Einstein relation.",
         "correct": {
           "value": 0.5,
           "tolerance": 0.01
@@ -612,7 +612,7 @@
         "difficulty": "hard",
         "question_type": "numeric",
         "prompt_markdown": "Suppose a student forgets to unwrap periodic boundary crossings in a 3D cubic box of side length $L = 10.0\\,\\text{\u00c5}$ and computes the long-time limit of $\\langle |\\mathbf{r}_{\\text{wrapped}}(t) - \\mathbf{r}_{\\text{wrapped}}(0)|^2 \\rangle$, where $\\mathbf{r}_{\\text{wrapped}} \\in [0, L)^3$.\n\nAs $t \\to \\infty$, $\\mathbf{r}_{\\text{wrapped}}(t)$ and $\\mathbf{r}_{\\text{wrapped}}(0)$ become two independent, uniformly distributed points in $[0, L)^3$. Since for a single coordinate $x \\sim \\text{Uniform}(0, L)$ the mean-squared difference between two independent draws is $\\langle (x_1 - x_2)^2 \\rangle = 2 \\text{Var}(x) = 2(L^2 / 12) = L^2 / 6$, what plateau value (in $\\text{\u00c5}^2$) does the 3D wrapped MSD saturate to as $t \\to \\infty$?\n",
-        "hint_markdown": "Multiply the 1D variance $L^2 / 6$ by $3$ spatial dimensions: $3 \\times (L^2 / 6) = L^2 / 2$.",
+        "hint_markdown": "Sum the independent mean-squared coordinate separation across all three Cartesian directions.",
         "correct": {
           "value": 50.0,
           "tolerance": 0.5
@@ -629,7 +629,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "At lag time $t = 0$, the 3D velocity autocorrelation function $C_{vv}(0) = \\langle \\mathbf{v}_i(0)\\cdot\\mathbf{v}_i(0) \\rangle = \\langle v_i^2 \\rangle$ is fixed purely by equilibrium statistical mechanics (independent of density or interatomic forces!). For a classical particle of mass $m = 2.0$ (in reduced units) at temperature $k_B T = 1.5$, what is the exact value of $C_{vv}(0) = \\langle \\mathbf{v}_i(0)\\cdot\\mathbf{v}_i(0) \\rangle$?\n",
-        "hint_markdown": "By 3D equipartition, $\\frac{1}{2} m \\langle v^2 \\rangle = \\frac{3}{2} k_B T \\implies \\langle v^2 \\rangle = 3 k_B T / m$.",
+        "hint_markdown": "Relate the mean-squared velocity of a particle to the temperature and particle mass using equipartition across the three translational degrees of freedom.",
         "correct": {
           "value": 2.25,
           "tolerance": 0.01
@@ -646,7 +646,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In a moderately dilute 3D gas where the velocity autocorrelation function decays exponentially as:\n$$\\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0) \\rangle = \\left(\\frac{3 k_B T}{m}\\right) e^{-t / \\tau_c}$$\nwith $\\frac{k_B T}{m} = 1.20\\,\\text{\u00c5}^2/\\text{ps}^2$ and collision relaxation time $\\tau_c = 0.50\\,\\text{ps}$, calculate the self-diffusion coefficient $D$ (in $\\text{\u00c5}^2/\\text{ps}$) using the 3D Green-Kubo formula $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$.\n",
-        "hint_markdown": "Notice that the factors of $3$ cancel: $D = (k_B T / m) \\int_0^\\infty e^{-t/\\tau_c} dt = (k_B T / m) \\tau_c$.",
+        "hint_markdown": "Integrate the exponential correlation decay over positive time and apply the Green-Kubo prefactor.",
         "correct": {
           "value": 0.6,
           "tolerance": 0.01
@@ -727,7 +727,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In a defect-free harmonic crystalline solid at thermal equilibrium, atoms vibrate around fixed lattice sites without long-range diffusive hopping, so the mean-squared displacement saturates to a bounded constant $\\lim_{t\\to\\infty} \\langle |\\mathbf{r}_i(t) - \\mathbf{r}_i(0)|^2 \\rangle = 2\\langle u^2 \\rangle < \\infty$.\n\nWhat is the exact value of the Green-Kubo integral $\\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0) \\rangle dt$ in this crystalline solid?\n",
-        "hint_markdown": "Use the equivalence $D = \\lim_{t\\to\\infty} \\frac{\\text{MSD}(t)}{6t} = \\frac{1}{3}\\int_0^\\infty C_{vv}(t) dt$ when $\\text{MSD}(t)$ is bounded.",
+        "hint_markdown": "Consider the long-time growth rate of the mean-squared displacement in a system without macroscopic diffusion.",
         "correct": {
           "value": 0.0,
           "tolerance": 0.001
@@ -1036,8 +1036,8 @@
         ],
         "difficulty": "easy",
         "question_type": "numeric",
-        "prompt_markdown": "In a **3D** fluid ($d = 3$), the Alder\u2013Wainwright hydrodynamic long-time tail of the velocity autocorrelation function decays as a power law:\n$$C_{vv}(t) \\propto t^{-\\alpha} \\qquad (t \\to \\infty)$$\nWhat is the numerical value of the positive decay exponent $\\alpha = d / 2$ in 3D?\n",
-        "hint_markdown": "Evaluate $d / 2$ for $d = 3$.",
+        "prompt_markdown": "In a **3D** fluid ($d = 3$), the Alder\u2013Wainwright hydrodynamic long-time tail of the velocity autocorrelation function decays as a power law: $C_{vv}(t) \\propto t^{-\\alpha} \\qquad (t \\to \\infty)$. What is the numerical value of the positive decay exponent $\\alpha$ in 3D?",
+        "hint_markdown": "Relate the hydrodynamic vortex recirculation decay exponent to the spatial dimensionality of the fluid.",
         "correct": {
           "value": 1.5,
           "tolerance": 0.01
@@ -1114,8 +1114,8 @@
         "taught_by": "sec_synthesis_and_advanced_problems",
         "difficulty": "medium",
         "question_type": "numeric",
-        "prompt_markdown": "A liquid has self-diffusion coefficient $D = 0.25\\,\\text{\u00c5}^2/\\text{ps}$. At wavevector $k = 0.40\\,\\text{\u00c5}^{-1}$ in the diffusive regime where $F_s(k, t) = \\exp(-D k^2 t)$, what is the relaxation time $\\tau_k = \\frac{1}{D k^2}$ (in $\\text{ps}$) required for $F_s(k, t)$ to decay to $1/e$ of its initial value?\n",
-        "hint_markdown": "Compute $D k^2 = 0.25 \\times (0.40)^2 = 0.04\\,\\text{ps}^{-1}$, then take its reciprocal $1 / 0.04$.",
+        "prompt_markdown": "A liquid has self-diffusion coefficient $D = 0.25\\,\\text{\u00c5}^2/\\text{ps}$. At wavevector $k = 0.40\\,\\text{\u00c5}^{-1}$ in the diffusive regime where the self-intermediate scattering function follows $F_s(k, t) = \\exp(-D k^2 t)$, what is the relaxation time $\\tau_k$ (in $\\text{ps}$) required for $F_s(k, t)$ to decay to $1/e$ of its initial value?",
+        "hint_markdown": "Determine the characteristic time constant for an exponential decay governed by the diffusive wavevector decay rate.",
         "correct": {
           "value": 25.0,
           "tolerance": 0.2
@@ -1129,7 +1129,7 @@
         "difficulty": "hard",
         "question_type": "numeric",
         "prompt_markdown": "In an equilibrium MD simulation of a fluid in a periodic box of volume $\\Omega = 1000\\,\\text{\u00c5}^3$ at thermal energy $k_B T = 0.80$ (in reduced energy units), you integrate the off-diagonal stress autocorrelation function from $t = 0$ to $\\infty$:\n$$\\int_0^\\infty dt\\, \\left\\langle \\sigma_{xy}(t)\\, \\sigma_{xy}(0) \\right\\rangle = 0.0024$$\n(in reduced units of $\\text{pressure}^2 \\times \\text{time}$). Using the Green-Kubo formula $\\eta = \\frac{\\Omega}{k_B T}\\int_0^\\infty dt\\,\\langle \\sigma_{xy}(t)\\sigma_{xy}(0)\\rangle$, calculate the shear viscosity $\\eta$ in reduced units.\n",
-        "hint_markdown": "Multiply $(\\Omega / k_B T) = 1000 / 0.80 = 1250$ by $0.0024$.",
+        "hint_markdown": "Evaluate the Green-Kubo expression for shear viscosity using the simulation volume, thermal energy, and integrated stress correlation.",
         "correct": {
           "value": 3.0,
           "tolerance": 0.05
@@ -1146,7 +1146,7 @@
         "difficulty": "hard",
         "question_type": "numeric",
         "prompt_markdown": "In a 3D dense liquid, the velocity autocorrelation function $C_{vv}(t) = \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0) \\rangle$ has a positive initial lobe over $0 \\le t \\le t_1$ with area:\n$$\\int_0^{t_1} C_{vv}(t)\\, dt = +1.80\\,\\text{\u00c5}^2/\\text{ps}$$\nfollowed by a negative cage-backscattering lobe over $t > t_1$ with area:\n$$\\int_{t_1}^\\infty C_{vv}(t)\\, dt = -0.60\\,\\text{\u00c5}^2/\\text{ps}$$\nUsing the 3D Green-Kubo relation $D = \\frac{1}{3}\\int_0^\\infty C_{vv}(t)\\, dt$, what is the asymptotic self-diffusion coefficient $D$ in $\\text{\u00c5}^2/\\text{ps}$?\n",
-        "hint_markdown": "Sum the positive and negative areas $(+1.80 - 0.60) = 1.20$ and divide by $d = 3$.",
+        "hint_markdown": "Combine the integrals over the two time intervals to find the total area under the velocity autocorrelation curve before applying the Green-Kubo prefactor.",
         "correct": {
           "value": 0.4,
           "tolerance": 0.01
@@ -1163,7 +1163,7 @@
         "difficulty": "hard",
         "question_type": "single_select",
         "prompt_markdown": "The Green-Kubo formula for electrical conductivity substitutes the total electric current $\\mathbf{J}(t) = \\sum_{i=1}^N q_i \\mathbf{v}_i(t)$ into $\\sigma_{\\text{el}} = \\frac{1}{3\\Omega k_B T}\\int_0^\\infty dt\\, \\langle \\mathbf{J}(t)\\cdot\\mathbf{J}(0)\\rangle$. Expanding the double sum over ions $i$ and $j$ gives:\n$$\\sigma_{\\text{el}} = \\frac{1}{3\\Omega k_B T} \\sum_{i=1}^N q_i^2 \\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt + \\frac{1}{3\\Omega k_B T} \\sum_{i \\neq j} q_i q_j \\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_j(0)\\rangle dt$$\nIf distinct ions move independently so that the cross-velocity correlations $\\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_j(0)\\rangle = 0$ for $i \\neq j$, and all $N$ ions carry charge magnitude $|q_i| = q$ and have self-diffusion coefficient $D$, what does $\\sigma_{\\text{el}}$ simplify to?\n",
-        "hint_markdown": "Replace $\\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$ by $D$ and use $\\rho = N / \\Omega$.",
+        "hint_markdown": "Express the uncorrelated single-particle velocity integrals in terms of the self-diffusion coefficient and the ion number density.",
         "options": [
           {
             "id": "a",

@@ -39,7 +39,7 @@
         "difficulty": "easy",
         "taught_by": "sec_discrete_and_inverse_mapping",
         "prompt_markdown": "In a large lattice Kinetic Monte Carlo simulation, your cumulative probability table has $N = 1024$ possible discrete events. How many comparison steps are required to locate the selected event $c_{k-1} < u \\le c_k$ using **bisection (binary search)**, compared to $1024$ worst-case steps for a naive linear scan?\n",
-        "hint_markdown": "Compute $\\log_2(1024)$.",
+        "hint_markdown": "Consider how the search interval is halved at each step of a binary search until a single element remains.",
         "correct": {
           "value": 10,
           "tolerance": 0.1
@@ -52,8 +52,8 @@
         "question_type": "numeric",
         "difficulty": "easy",
         "taught_by": "sec_discrete_and_inverse_mapping",
-        "prompt_markdown": "You are sampling an exponential waiting-time distribution $p(x) = a e^{-ax}$ ($x > 0$) with rate parameter $a = 2.0\\text{ ps}^{-1}$ using the inverse mapping formula $x = -\\ln(u)/a$. If the uniform PRNG returns $u = e^{-3} \\approx 0.049787$, what waiting time $x$ (in $\\text{ps}$) is generated?\n",
-        "hint_markdown": "Substitute $\\ln(u) = -3$ and $a = 2.0$ into $x = -\\ln(u) / a$.",
+        "prompt_markdown": "You are sampling an exponential waiting-time distribution $p(x) = a e^{-ax}$ ($x > 0$) with rate parameter $a = 2.0\\text{ ps}^{-1}$ via inverse transform sampling. If the uniform PRNG returns $u = e^{-3} \\approx 0.049787$, what waiting time $x$ (in $\\text{ps}$) is generated?",
+        "hint_markdown": "Invert the cumulative distribution function of the exponential distribution and evaluate at the given deviate.",
         "correct": {
           "value": 1.5,
           "tolerance": 0.01
@@ -66,8 +66,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_discrete_and_inverse_mapping",
-        "prompt_markdown": "To sample the normalized power-law distribution $p(x) = (a + 1)x^a$ on $0 < x < 1$ with exponent $a = 2$ (so $p(x) = 3x^2$), you apply the inverse mapping $x = C^{-1}(u) = u^{1/(a+1)}$. If your uniform draw is $u = 0.125$, what value of $x$ is returned?\n",
-        "hint_markdown": "Compute $u^{1/(2+1)} = (0.125)^{1/3}$.",
+        "prompt_markdown": "To sample the normalized power-law distribution $p(x) = (a + 1)x^a$ on $0 < x < 1$ with exponent $a = 2$ (so $p(x) = 3x^2$), you apply inverse transform sampling. If your uniform draw is $u = 0.125$, what value of $x$ is returned?",
+        "hint_markdown": "Integrate the power-law density to find the CDF on $[0, 1]$, invert for $x(u)$, and evaluate at the given uniform draw.",
         "correct": {
           "value": 0.5,
           "tolerance": 0.005
@@ -81,7 +81,7 @@
         "difficulty": "medium",
         "taught_by": "sec_discrete_and_inverse_mapping",
         "prompt_markdown": "Suppose you want to sample a radial coordinate $r \\in [0, R]$ in 2D with probability density proportional to circumference, $p(r) = \\frac{2r}{R^2}$ for $0 \\le r \\le R$. What is the exact inverse mapping $r(u)$ in terms of a uniform random number $u \\in (0, 1)$?\n",
-        "hint_markdown": "Integrate $C(r) = \\int_0^r \\frac{2r'}{R^2} dr' = (r/R)^2 = u$ and solve for $r$.",
+        "hint_markdown": "Find the cumulative distribution function by integrating $p(r)$ from 0 to $r$, then equate to $u$ and invert.",
         "options": [
           {
             "id": "a",
@@ -110,7 +110,7 @@
         "difficulty": "medium",
         "taught_by": "sec_discrete_and_inverse_mapping",
         "prompt_markdown": "In the Poisson limit $P(n) = \\frac{\\nu^n e^{-\\nu}}{n!}$ of $N \\to \\infty$ trials with expected successes $\\nu = Np = 2.0$, what is the exact probability $P(n = 2)$ of observing $2$ events? (Enter as a decimal to 3 decimal places.)\n",
-        "hint_markdown": "Evaluate $\\frac{2^2 e^{-2}}{2!} = 2 e^{-2}$.",
+        "hint_markdown": "Evaluate the discrete Poisson distribution formula using the given mean event count.",
         "correct": {
           "value": 0.271,
           "tolerance": 0.003
@@ -262,8 +262,8 @@
           "sec_rejection_composition_and_normals",
           "concept_rejection_sampling"
         ],
-        "prompt_markdown": "You use von Neumann rejection sampling to draw from a target density $p(x)$ on $[0, 1]$ using a uniform proposal density $q(x) = 1$. If the maximum value of $p(x)$ on $[0, 1]$ is $p_{\\max} = 2.5$ and you choose the tightest valid envelope multiplier $a = 2.5$ so that $c(x) = p(x) / [a\\,q(x)] \\le 1$, what is the exact overall **acceptance probability (efficiency)** $1/a$? (Enter as a decimal.)\n",
-        "hint_markdown": "Compute $1 / a = 1 / 2.5$.",
+        "prompt_markdown": "You use von Neumann rejection sampling to draw from a target density $p(x)$ on $[0, 1]$ using a uniform proposal density $q(x) = 1$. If the maximum value of $p(x)$ on $[0, 1]$ is $p_{\\max} = 2.5$ and you choose the tightest valid envelope multiplier $a = 2.5$ so that $c(x) = p(x) / [a\\,q(x)] \\le 1$, what is the exact overall **acceptance efficiency** of the sampler? (Enter as a decimal.)",
+        "hint_markdown": "Relate the overall acceptance efficiency of von Neumann rejection sampling to the bounding envelope scale factor.",
         "correct": {
           "value": 0.4,
           "tolerance": 0.005
@@ -280,7 +280,7 @@
           "concept_rejection_sampling"
         ],
         "prompt_markdown": "Consider sampling the normalized Wigner semicircle distribution $p(x) = \\frac{8}{\\pi}\\sqrt{x(1-x)}$ on $[0, 1]$ using a uniform proposal $q(x) = 1$ (the first preset in the Rejection Sampling lab above). What is the minimum valid envelope constant $a_{\\min} = \\max_{x \\in [0,1]} [p(x) / q(x)]$ so that $c(x) \\le 1$ for all $x \\in [0, 1]$? (Enter to 3 decimal places.)\n",
-        "hint_markdown": "The peak of $x(1-x)$ occurs at $x = 0.5$, where $\\sqrt{x(1-x)} = 0.5$. Compute $(8/\\pi) \\times 0.5 = 4/\\pi$.",
+        "hint_markdown": "Find the maximum value of the semicircle target distribution on the interval by evaluating the peak of $x(1-x)$.",
         "correct": {
           "value": 1.273,
           "tolerance": 0.005
@@ -296,8 +296,8 @@
           "sec_rejection_composition_and_normals",
           "concept_rejection_sampling"
         ],
-        "prompt_markdown": "Suppose a 1D rejection sampler has a respectable acceptance efficiency of $1/a = 0.50$ ($50\\%$). If you apply the same independent factorized proposal envelope across $D = 10$ dimensions, what is the $10$-dimensional acceptance probability $(1/a)^{10}$, expressed as a **percentage**? (Enter the number of percent, e.g. enter `0.0977` for $0.0977\\%$.)\n",
-        "hint_markdown": "Compute $100 \\times (0.5)^{10} = 100 / 1024$.",
+        "prompt_markdown": "Suppose a 1D rejection sampler has an acceptance efficiency of $50\\%$. If you apply the same independent factorized proposal envelope across $D = 10$ dimensions, what is the $10$-dimensional acceptance probability, expressed as a **percentage**? (Enter the number of percent, e.g. enter `0.0977` for $0.0977\\%$.)",
+        "hint_markdown": "Multiply the independent per-dimension acceptance probabilities across all 10 spatial dimensions and express as a percentage.",
         "correct": {
           "value": 0.0977,
           "tolerance": 0.002
@@ -369,7 +369,7 @@
         "difficulty": "medium",
         "taught_by": "sec_rejection_composition_and_normals",
         "prompt_markdown": "Using the composition rule $x = \\max(u_1, u_2, u_3)$ ($k = 3$, which has PDF $P(x) = 3x^2$ on $[0, 1]$), what is the exact expected value $\\langle x \\rangle = \\int_0^1 x P(x)\\,dx$? (Enter as a decimal.)\n",
-        "hint_markdown": "Evaluate $\\int_0^1 3x^3 dx = 3/4$.",
+        "hint_markdown": "Integrate $x P(x)$ over the unit interval using the PDF of the maximum of three uniforms.",
         "correct": {
           "value": 0.75,
           "tolerance": 0.005
@@ -412,7 +412,7 @@
         "difficulty": "medium",
         "taught_by": "sec_rejection_composition_and_normals",
         "prompt_markdown": "In the lecture's **Polar Box\u2013Muller code** (slide 8 of `11.sampling.pdf`):\n```python\nwhile r2 > 0.25:\n    x, y = sprng() - 0.5, sprng() - 0.5\n    r2 = x*x + y*y\n```\npoints $(x, y)$ are sampled uniformly inside the $1 \\times 1$ square $[-0.5, 0.5]^2$ and accepted if they fall inside the circle of radius $R = 0.5$ ($r^2 \\le 0.25$). What is the probability $p_{\\text{accept}}$ that a single $(x, y)$ pair is accepted on any given iteration of the `while` loop? (Enter as a decimal to 3 decimal places.)\n",
-        "hint_markdown": "Divide the area of the circle $\\pi R^2 = \\pi (0.5)^2 = \\pi / 4$ by the area of the unit square $1^2 = 1$.",
+        "hint_markdown": "Compute the ratio of the area of the circular acceptance disk to the area of the bounding square domain.",
         "correct": {
           "value": 0.785,
           "tolerance": 0.005
@@ -494,7 +494,7 @@
           "concept_cholesky_gaussian"
         ],
         "prompt_markdown": "Suppose you want to generate a 2D correlated Gaussian $(x_1, x_2)$ with covariance matrix:\n$$\\mathbf{T} = \\begin{pmatrix} 4.0 & 2.4 \\\\ 2.4 & 2.25 \\end{pmatrix}$$\n($\\sigma_1 = 2.0$, $\\sigma_2 = 1.5$, $\\rho = 0.8$). You write the lower-triangular Cholesky factor as $\\mathbf{S} = \\begin{pmatrix} S_{11} & 0 \\\\ S_{21} & S_{22} \\end{pmatrix}$ with $S_{11}, S_{22} > 0$. From $\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$, we have $S_{11}^2 = 4.0 \\implies S_{11} = 2.0$ and $S_{11}S_{21} = 2.4 \\implies S_{21} = 1.2$. What is the value of the diagonal entry **$S_{22}$**? (You can also check this by setting $\\sigma_1=2.0, \\sigma_2=1.5$ in the Cholesky lab!)\n",
-        "hint_markdown": "Use the bottom-right equation of $\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$: $S_{21}^2 + S_{22}^2 = T_{22} = 2.25$.",
+        "hint_markdown": "Equate the $(2,2)$ element of the matrix product $\\mathbf{S}\\mathbf{S}^T$ to $T_{22}$ and solve for $S_{22}$.",
         "correct": {
           "value": 0.9,
           "tolerance": 0.01
@@ -627,7 +627,7 @@
         "difficulty": "medium",
         "taught_by": "sec_importance_sampling_and_variance_trap",
         "prompt_markdown": "Suppose introducing an importance sampling function $p(x)$ reduces the per-sample estimator variance $\\sigma^2$ by a factor of $10$ (from $\\sigma_0^2$ to $\\sigma_0^2 / 10$), while evaluating $p(x)$ increases the CPU time per step $\\tau_{\\text{step}}$ by a factor of $2$. By what factor $\\zeta_{\\text{new}} / \\zeta_{\\text{old}}$ does the overall simulation **efficiency** $\\zeta = 1/(v T)$ improve?\n",
-        "hint_markdown": "Compute $\\frac{\\zeta_{\\text{new}}}{\\zeta_{\\text{old}}} = \\frac{\\sigma_{\\text{old}}^2 \\tau_{\\text{old}}}{\\sigma_{\\text{new}}^2 \\tau_{\\text{new}}} = \\frac{1}{(1/10) \\times 2}$.",
+        "hint_markdown": "Evaluate the ratio of the efficiency figures of merit using the variance reduction factor and the per-step CPU time increase.",
         "correct": {
           "value": 5,
           "tolerance": 0.05
@@ -699,7 +699,7 @@
         "difficulty": "medium",
         "taught_by": "sec_importance_sampling_and_variance_trap",
         "prompt_markdown": "Suppose $f(x)$ is an oscillatory function on $[-1, 1]$ such that $\\int_{-1}^0 f(x)\\,dx = -5$ (where $f(x) \\le 0$) and $\\int_0^1 f(x)\\,dx = +7$ (where $f(x) \\ge 0$), so the true integral is $I = +2$ and $\\int_{-1}^1 |f(x)|\\,dx = 12$. If you were somehow able to sample from the **exact optimal distribution** $p^*(x) = |f(x)| / 12$, what would be the variance $\\sigma^2 = \\langle (f(x)/p^*(x) - I)^2 \\rangle_{p^*}$ of a single Monte Carlo draw?\n",
-        "hint_markdown": "With $p^*(x) = |f(x)| / 12$, the estimator $g(x) = f(x) / p^*(x) = 12\\,\\text{sign}(f(x))$ takes values $+12$ or $-12$, so $g(x)^2 = 144$ for every single point $x$! Compute $\\langle g^2 \\rangle - I^2 = 144 - 2^2$.",
+        "hint_markdown": "Determine the discrete values taken by the ratio $f(x)/p^*(x)$ for positive and negative regions of $f(x)$, and calculate $\\langle g^2 \\rangle - I^2$.",
         "options": [
           {
             "id": "a",
@@ -731,7 +731,7 @@
           "concept_importance_sampling_trap"
         ],
         "prompt_markdown": "In the lecture's Gaussian importance sampling example (slides 13\u201315 of `11.sampling.pdf`), we integrate $f(x) = \\frac{e^{-x^2/2}}{1+x^2}$ using the trial Gaussian density $p_a(x) = \\frac{e^{-x^2/(2a)}}{\\sqrt{2\\pi a}}$. The estimator variance is:\n$$\\sigma^2(a) = \\int_{-\\infty}^{\\infty} dx\\,\\frac{\\sqrt{2\\pi a}}{(1+x^2)^2}\\exp\\!\\left[-x^2\\left(1 - \\frac{1}{2a}\\right)\\right] - I^2$$\nWhat is the critical lower bound $a_{\\text{crit}}$ such that $\\sigma^2(a)$ is **finite** if and only if $a > a_{\\text{crit}}$?\n",
-        "hint_markdown": "For the Gaussian integral to converge at $x \\to \\pm\\infty$, the coefficient of $-x^2$ in the exponent must be strictly positive: $1 - \\frac{1}{2a} > 0$.",
+        "hint_markdown": "Determine the condition on the Gaussian exponent that prevents the integrand from diverging at asymptotic distances $\\pm\\infty$.",
         "correct": {
           "value": 0.5,
           "tolerance": 0.005
@@ -823,7 +823,7 @@
         "difficulty": "hard",
         "taught_by": "sec_importance_sampling_and_variance_trap",
         "prompt_markdown": "Let's calculate an exact variance reduction factor by hand! Suppose we want to integrate $f(x) = 3x^2$ on $[0, 1]$, whose exact integral is $I = \\int_0^1 3x^2\\,dx = 1$.\n- With **uniform sampling** $p_{\\text{unif}}(x) = 1$, the per-sample variance is $\\sigma_{\\text{unif}}^2 = \\int_0^1 (3x^2)^2\\,dx - 1^2 = \\frac{9}{5} - 1 = 0.80$.\n- Suppose instead we use **linear importance sampling** $p(x) = 2x$ on $[0, 1]$ (sampled via $x = \\sqrt{u}$).\nWhat is the exact per-sample variance $\\sigma_{\\text{IS}}^2 = \\int_0^1 \\frac{f(x)^2}{p(x)}\\,dx - I^2$ using $p(x) = 2x$? (Enter as a decimal to 3 decimal places.)\n",
-        "hint_markdown": "Substitute $f(x) = 3x^2$ and $p(x) = 2x$ into $\\int_0^1 \\frac{9x^4}{2x} dx - 1^2 = \\int_0^1 \\frac{9}{2}x^3 dx - 1$.",
+        "hint_markdown": "Evaluate the second moment integral $\\int_0^1 [f(x)^2 / p(x)] dx$ and subtract the squared true mean $I^2$.",
         "correct": {
           "value": 0.125,
           "tolerance": 0.002
@@ -987,8 +987,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_correlated_and_boltzmann_sampling",
-        "prompt_markdown": "In the lecture's intuitive hard-sphere explanation (slide 21 of `11.sampling.pdf`), suppose throwing $N = 10$ atoms at random into a box of area $A$ has a non-overlap (\"success\") probability of $q = 0.10$. If you scale the system at constant density to $mN = 100$ atoms in area $mA$ ($m = 10$ sub-boxes), the probability of getting a single non-overlapping configuration by uniform random placement is $p = q^m = 10^{-10}$. What is $\\log_{10}(1 / p)$, the base-10 logarithm of the average number of random configurations you must throw to get **one** valid sample?\n",
-        "hint_markdown": "Compute $\\log_{10}(1 / q^m) = m \\log_{10}(1 / q)$ for $m = 10$ and $q = 0.10$.",
+        "prompt_markdown": "In the lecture's intuitive hard-sphere explanation, suppose placing $N = 10$ atoms at random into a sub-box of area $A$ has a non-overlap probability of $q = 0.10$. If you scale the system at constant density to $m = 10$ such independent sub-boxes ($100$ atoms total), what is $\\log_{10}(1 / p)$, the base-10 logarithm of the average number of random configurations required to obtain a single non-overlapping state?",
+        "hint_markdown": "Multiply the number of sub-boxes by the logarithm of the inverse success probability per sub-box.",
         "correct": {
           "value": 10,
           "tolerance": 0.05
@@ -1002,7 +1002,7 @@
         "difficulty": "hard",
         "taught_by": "sec_correlated_and_boltzmann_sampling",
         "prompt_markdown": "Consider a system of $N = 50$ particles where the extensive free-energy difference per particle between $\\beta$ and $2\\beta$ is $\\beta[f(\\beta) - f(2\\beta)] = 0.20$. Using the slide 20 formula $\\text{error}(\\beta F) = \\exp\\!\\big[\\beta(F(\\beta) - F(2\\beta))\\big]$ with $F = N f$, what is the natural logarithm $\\ln[\\text{error}(\\beta F)]$ of the single-sample statistical error of $\\beta F$ under independent uniform sampling?\n",
-        "hint_markdown": "Compute $\\ln[\\text{error}(\\beta F)] = \\beta(F(\\beta) - F(2\\beta)) = N \\times 0.20$.",
+        "hint_markdown": "Evaluate the product of the total particle number and the per-particle free-energy difference parameter.",
         "correct": {
           "value": 10,
           "tolerance": 0.05
@@ -1045,7 +1045,7 @@
         "difficulty": "medium",
         "taught_by": "sec_rejection_composition_and_normals",
         "prompt_markdown": "Using the standard trigonometric Box\u2013Muller transform:\n$$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2), \\qquad y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$$\nif the uniform PRNG draws $x_1 = e^{-2} \\approx 0.135335$ and $x_2 = 0.25$, what is the exact value of the **second** generated normal variate $y_2$?\n",
-        "hint_markdown": "Substitute $-2\\ln(e^{-2}) = 4$ and $\\sin(2\\pi \\times 0.25) = \\sin(\\pi/2) = 1$.",
+        "hint_markdown": "Evaluate the radial envelope term at $x_1 = e^{-2}$ and multiply by the sine of the angle corresponding to $x_2 = 0.25$.",
         "correct": {
           "value": 2.0,
           "tolerance": 0.01
@@ -1094,7 +1094,7 @@
           "concept_cholesky_gaussian"
         ],
         "prompt_markdown": "In a $D = 10$-dimensional multivariate Gaussian sampler $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$, the Cholesky factor $\\mathbf{S}$ is a $10 \\times 10$ lower-triangular matrix ($S_{\\alpha i} = 0$ for all entries strictly above the main diagonal, $i > \\alpha$). How many entries of $\\mathbf{S}$ lie strictly above the diagonal and are guaranteed to be zero?\n",
-        "hint_markdown": "A $D \\times D$ matrix has $D(D-1)/2$ entries strictly above the main diagonal.",
+        "hint_markdown": "Count the number of off-diagonal elements in the upper triangular portion of a $D \\times D$ square matrix.",
         "correct": {
           "value": 45,
           "tolerance": 0.1

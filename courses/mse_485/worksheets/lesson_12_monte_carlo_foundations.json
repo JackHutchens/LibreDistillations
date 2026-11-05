@@ -95,7 +95,7 @@
         "difficulty": "easy",
         "taught_by": "sec_mc_intro_and_pi",
         "prompt_markdown": "In the hit-or-miss Monte Carlo estimation of $\\pi$ on the unit quadrant $(x, y) \\in [0, 1]^2$ (Slide 2), what is the exact theoretical probability $p$ that a single uniformly chosen dart lands inside the quarter-circle $x^2 + y^2 \\le 1$ (to four decimal places)?\n",
-        "hint_markdown": "Compute $\\pi / 4 \\approx 3.14159265 / 4$.",
+        "hint_markdown": "Determine the ratio of the area of the unit quarter-circle to the area of the bounding unit square.",
         "correct": {
           "value": 0.7854,
           "tolerance": 0.0005
@@ -111,8 +111,8 @@
           "sec_mc_intro_and_pi",
           "concept_hit_or_miss_pi"
         ],
-        "prompt_markdown": "You run the quarter-circle dartboard code snippet from Slide 2 with $N = 2000$ random $(x, y)$ pairs in $[0, 1]^2$ and record `hits = 1573` points satisfying $x^2 + y^2 \\le 1$. What is the resulting Monte Carlo estimate $\\hat{\\pi} = 4 \\times \\text{hits} / N$?\n",
-        "hint_markdown": "Evaluate $4 \\times 1573 / 2000$.",
+        "prompt_markdown": "You run the quarter-circle dartboard Monte Carlo simulation with $N = 2000$ independent random points uniformly chosen in the unit square $[0, 1]^2$ and record `hits = 1573` points landing inside the quarter-circle $x^2 + y^2 \\le 1$. What is the resulting Monte Carlo estimate $\\hat{\\pi}$ of $\\pi$?",
+        "hint_markdown": "Relate the empirical acceptance ratio to the quarter-circle area, and scale appropriately to estimate the full circle's area.",
         "correct": {
           "value": 3.146,
           "tolerance": 0.001
@@ -128,8 +128,8 @@
           "sec_mc_intro_and_pi",
           "concept_hit_or_miss_pi"
         ],
-        "prompt_markdown": "What is the theoretical standard deviation (standard error) $\\sigma_{\\hat{\\pi}} = \\sqrt{\\frac{\\pi(4 - \\pi)}{M}}$ of the quarter-circle $\\hat{\\pi}$ estimator when $M = 10{,}000$ independent darts are thrown (to four decimal places)?\n",
-        "hint_markdown": "Compute $\\sqrt{3.14159265 \\times (4 - 3.14159265) / 10000} = \\sqrt{2.69677} / 100$.",
+        "prompt_markdown": "For the hit-or-miss quarter-circle dartboard estimator of $\\pi$ based on a Bernoulli indicator with probability $p = \\pi / 4$, what is the theoretical standard error $\\sigma_{\\hat{\\pi}}$ when $M = 10{,}000$ independent trials are evaluated? (Enter to four decimal places, e.g., `0.0164`.)",
+        "hint_markdown": "Propagate the standard error of a binomial proportion with success probability $p = \\pi/4$ when multiplied by the geometric scale factor 4.",
         "correct": {
           "value": 0.0164,
           "tolerance": 0.0005
@@ -146,7 +146,7 @@
           "concept_hit_or_miss_pi"
         ],
         "prompt_markdown": "As highlighted on Slide 3 (\"To get another decimal place takes 100 times longer!\"), if a Monte Carlo simulation currently achieves a statistical error of $\\varepsilon = 0.01$ in $T_{\\text{CPU}} = 1\\text{ minute}$, how many **minutes** of CPU time are required to reduce the statistical error by a factor of $10$ to $\\varepsilon = 0.001$ (one additional decimal place)?\n",
-        "hint_markdown": "Since $\\varepsilon \\propto M^{-1/2}$ and $T_{\\text{CPU}} \\propto M \\propto \\varepsilon^{-2}$, scaling $\\varepsilon \\to \\varepsilon / 10$ scales $T_{\\text{CPU}}$ by $10^2$.",
+        "hint_markdown": "Recall the inverse square-root convergence rate of independent Monte Carlo sampling with respect to the number of samples.",
         "correct": {
           "value": 100.0,
           "tolerance": 0.1
@@ -218,8 +218,8 @@
         "question_type": "numeric",
         "difficulty": "easy",
         "taught_by": "sec_curse_of_dimensionality",
-        "prompt_markdown": "You lay out a uniform deterministic grid with $L = 10$ points along each coordinate direction ($h = 1/L = 0.1$) to integrate a function in a $D = 6$-dimensional hypercube. What is the total number of grid points $N = L^D$?\n",
-        "hint_markdown": "Compute $10^6$.",
+        "prompt_markdown": "You lay out a uniform deterministic grid with $L = 10$ points along each coordinate direction to integrate a function in a $D = 6$-dimensional hypercube. What is the total number of grid points $N$ in the tensor product grid?",
+        "hint_markdown": "Determine the total number of points in a multidimensional Cartesian product grid.",
         "correct": {
           "value": 1000000.0,
           "tolerance": 1.0
@@ -236,7 +236,7 @@
           "concept_dimensionality_crossover"
         ],
         "prompt_markdown": "For the **Trapezoidal Rule** ($\\varepsilon \\sim h^2$, order $\\alpha = 2$), above what exact spatial dimension $D^*$ does Monte Carlo integration ($\\varepsilon \\sim M^{-1/2}$) asymptotically beat deterministic grid quadrature in the limit of small error $\\varepsilon \\to 0$ (i.e., $D > D^*$)?\n",
-        "hint_markdown": "Use the crossover formula $D^* = 2\\alpha$ with $\\alpha = 2$ (see Slide 3: 'MC is advantageous for D > 4!').",
+        "hint_markdown": "Equate the error scaling exponents with respect to total computational evaluations $N$ for deterministic grid quadrature and Monte Carlo sampling.",
         "correct": {
           "value": 4.0,
           "tolerance": 0.01
@@ -252,8 +252,8 @@
           "sec_curse_of_dimensionality",
           "concept_dimensionality_crossover"
         ],
-        "prompt_markdown": "For **Simpson's Rule** ($\\varepsilon \\sim f^{(4)}(x) h^4$, order $\\alpha = 4$), above what crossover dimension $D^* = 2\\alpha$ does Monte Carlo integration asymptotically require less CPU time than Simpson's rule as $\\varepsilon \\to 0$?\n",
-        "hint_markdown": "Evaluate $D^* = 2\\alpha$ for $\\alpha = 4$ (Slide 4).",
+        "prompt_markdown": "For **Simpson's Rule** ($\\varepsilon \\sim f^{(4)}(x) h^4$, order $\\alpha = 4$), above what crossover dimension $D^*$ does Monte Carlo integration asymptotically require less computational work than Simpson's rule as $\\varepsilon \\to 0$?",
+        "hint_markdown": "Find the dimensionality where the error scaling exponent of grid quadrature matches the universal $-1/2$ exponent of Monte Carlo.",
         "correct": {
           "value": 8.0,
           "tolerance": 0.01
@@ -298,8 +298,8 @@
           "sec_curse_of_dimensionality",
           "concept_dimensionality_crossover"
         ],
-        "prompt_markdown": "Suppose you use the **Trapezoidal Rule** ($\\alpha = 2$) in $D = 6$ dimensions with $N$ total grid evaluations. The integration error scales with $N$ as $\\varepsilon \\propto N^{-\\gamma}$. What is the numerical value of the positive exponent $\\gamma = \\alpha / D$ (to three decimal places)?\n",
-        "hint_markdown": "Since $h = N^{-1/D}$ and $\\varepsilon \\propto h^\\alpha$, the exponent is $\\gamma = \\alpha / D = 2 / 6 = 1/3$.",
+        "prompt_markdown": "Suppose you use the **Trapezoidal Rule** ($\\alpha = 2$) in $D = 6$ dimensions with $N$ total grid evaluations. The integration error scales with $N$ as $\\varepsilon \\propto N^{-\\gamma}$. What is the numerical value of the positive convergence exponent $\\gamma$ (to three decimal places)?",
+        "hint_markdown": "Express the grid spacing $h$ in terms of total grid points $N$ in $D$ dimensions, and substitute into the error order $\\varepsilon \\propto h^\\alpha$.",
         "correct": {
           "value": 0.333,
           "tolerance": 0.005
@@ -383,7 +383,7 @@
         "difficulty": "easy",
         "taught_by": "sec_pdfs_moments_and_mappings",
         "prompt_markdown": "A continuous random variable $x \\in [0, 2]$ has probability density function $P(x) = A x^2$ for $0 \\le x \\le 2$ (and $P(x) = 0$ otherwise). Using the normalization condition $I_0 = \\int_{-\\infty}^\\infty P(x)\\,dx = 1$, what is the numerical value of the normalization constant $A$?\n",
-        "hint_markdown": "Integrate $\\int_0^2 A x^2\\,dx = A [x^3 / 3]_0^2 = \\frac{8}{3}A = 1$, so $A = 3/8$.",
+        "hint_markdown": "Integrate the polynomial PDF over its support and set the total probability to unity.",
         "correct": {
           "value": 0.375,
           "tolerance": 0.002
@@ -396,8 +396,8 @@
         "question_type": "numeric",
         "difficulty": "easy",
         "taught_by": "sec_pdfs_moments_and_mappings",
-        "prompt_markdown": "For a certain probability distribution $P(x)$, you compute the first moment $I_1 = \\langle x \\rangle = 3.0$ and the second moment $I_2 = \\langle x^2 \\rangle = 13.5$. Using the moment relation on Slide 6, what is the variance $\\langle (x - \\langle x \\rangle)^2 \\rangle = I_2 - (I_1)^2$?\n",
-        "hint_markdown": "Subtract $(I_1)^2 = 3.0^2 = 9.0$ from $I_2 = 13.5$.",
+        "prompt_markdown": "For a continuous probability distribution $P(x)$, the first moment is $I_1 = \\langle x \\rangle = 3.0$ and the second moment is $I_2 = \\langle x^2 \\rangle = 13.5$. What is the variance $\\operatorname{Var}(x) = \\langle (x - \\langle x \\rangle)^2 \\rangle$?",
+        "hint_markdown": "Relate the variance of a distribution to its first two raw moments.",
         "correct": {
           "value": 4.5,
           "tolerance": 0.01
@@ -468,8 +468,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_pdfs_moments_and_mappings",
-        "prompt_markdown": "Suppose $x \\sim \\text{Uniform}(0, 1)$ (so $p_x(x) = 1$ on $0 < x < 1$) and we define a new random variable $y = g(x) = x^2$. Using $p_y(y) = p_x(x)\\left|\\frac{dg}{dx}\\right|^{-1} = \\frac{1}{2\\sqrt{y}}$ for $0 < y < 1$, what is the numerical value of the probability density $p_y(y)$ evaluated at $y = 0.25$?\n",
-        "hint_markdown": "Evaluate $p_y(0.25) = 1 / (2\\sqrt{0.25}) = 1 / (2 \\times 0.5)$.",
+        "prompt_markdown": "Suppose $x \\sim \\text{Uniform}(0, 1)$ (so $p_x(x) = 1$ on $0 < x < 1$) and we define a new random variable through the mapping $y = x^2$. What is the numerical value of the transformed probability density $p_y(y)$ evaluated at $y = 0.25$?",
+        "hint_markdown": "Apply the transformation law for continuous probability distributions using the derivative of the mapping function.",
         "correct": {
           "value": 1.0,
           "tolerance": 0.01
@@ -656,8 +656,8 @@
           "sec_inverse_transform_and_box_muller",
           "concept_inverse_and_box_muller"
         ],
-        "prompt_markdown": "Using the exponential sampling formula $y = -\\frac{\\ln(x)}{\\lambda}$ from Slide 9 with decay rate $\\lambda = 2.0\\text{ ps}^{-1}$, what waiting time $y$ (in $\\text{ps}$, to three decimal places) is generated when the uniform deviate is $x = e^{-3} \\approx 0.049787$?\n",
-        "hint_markdown": "Substitute $\\ln(x) = \\ln(e^{-3}) = -3$ and $\\lambda = 2.0$ into $y = -\\ln(x)/\\lambda$.",
+        "prompt_markdown": "For an exponential Poisson waiting-time distribution with decay rate $\\lambda = 2.0\\text{ ps}^{-1}$, what waiting time $y$ (in $\\text{ps}$, to three decimal places) is generated via inverse transform sampling when the uniform random deviate is $x = e^{-3} \\approx 0.049787$?",
+        "hint_markdown": "Apply the inverse cumulative distribution function for an exponential decay to the given uniform random deviate.",
         "correct": {
           "value": 1.5,
           "tolerance": 0.01
@@ -700,7 +700,7 @@
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
         "prompt_markdown": "You want to sample a continuous random variable $y \\in [0, 1]$ from the cubic probability density $p(y) = 4y^3$ using a uniform random deviate $u \\sim \\text{Uniform}(0, 1)$. What is the Inverse Transform Sampling formula $y(u) = C^{-1}(u)$?\n",
-        "hint_markdown": "First compute $C(y) = \\int_0^y 4t^3\\,dt = y^4$. Then set $C(y) = u$ and solve for $y$.",
+        "hint_markdown": "Integrate the PDF to determine the cumulative distribution function on $[0, 1]$ and invert the resulting relationship.",
         "options": [
           {
             "id": "a",
@@ -728,8 +728,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
-        "prompt_markdown": "Using the inverse transform $y = u^{1/3}$ for the quadratic PDF $p(y) = 3y^2$ on $[0, 1]$, what value of $y$ is returned when the uniform random number is $u = 0.125$?\n",
-        "hint_markdown": "Take the cube root of $0.125 = 1/8$.",
+        "prompt_markdown": "For the normalized quadratic probability density $p(y) = 3y^2$ on the interval $[0, 1]$, what deviate $y$ is generated by inverse transform sampling when the input uniform random number is $u = 0.125$?",
+        "hint_markdown": "Integrate the PDF to find the cumulative distribution function, invert it with respect to $u$, and evaluate at the given deviate.",
         "correct": {
           "value": 0.5,
           "tolerance": 0.005
@@ -743,7 +743,7 @@
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
         "prompt_markdown": "Suppose a random variable $y \\in [0, 2]$ has the normalized linear PDF $p(y) = \\frac{1}{2}y$ for $0 \\le y \\le 2$. Find the cumulative distribution function $C(y) = \\int_0^y \\frac{1}{2}t\\,dt$, invert $C(y) = u$, and compute the sampled deviate $y$ when $u = 0.36$.\n",
-        "hint_markdown": "Since $C(y) = \\frac{1}{4}y^2 = u$, we have $y = 2\\sqrt{u}$.",
+        "hint_markdown": "Integrate the linear density to find the CDF on $[0, 2]$, invert the relation, and solve for $y$ given $u$.",
         "correct": {
           "value": 1.2,
           "tolerance": 0.01
@@ -760,7 +760,7 @@
           "concept_inverse_and_box_muller"
         ],
         "prompt_markdown": "The standard **Cauchy (Lorentzian)** distribution $p(y) = \\frac{1}{\\pi(1 + y^2)}$ on $-\\infty < y < \\infty$ has cumulative distribution function $C(y) = \\frac{1}{2} + \\frac{1}{\\pi}\\arctan(y)$. If $u \\sim \\text{Uniform}(0, 1)$, what is the exact Inverse Transform Sampling formula $y(u) = C^{-1}(u)$?\n",
-        "hint_markdown": "Solve $u = \\frac{1}{2} + \\frac{1}{\\pi}\\arctan(y)$ for $y$.",
+        "hint_markdown": "Invert the cumulative distribution function by isolating the inverse tangent term.",
         "options": [
           {
             "id": "a",
@@ -792,7 +792,7 @@
           "concept_inverse_and_box_muller"
         ],
         "prompt_markdown": "Using the Cauchy inverse transform $y = \\gamma \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$ with width parameter $\\gamma = 2.0$, what deviate $y$ is generated when $u = 0.75$?\n",
-        "hint_markdown": "Note that $\\pi(0.75 - 0.50) = \\pi/4$, and $\\tan(\\pi/4) = 1$.",
+        "hint_markdown": "Evaluate the argument of the tangent function at the given quantile and scale by the width parameter.",
         "correct": {
           "value": 2.0,
           "tolerance": 0.01
@@ -867,7 +867,7 @@
           "concept_inverse_and_box_muller"
         ],
         "prompt_markdown": "In the Box\u2013Muller algorithm, suppose your uniform random number generator produces the pair $x_1 = e^{-2} \\approx 0.135335$ and $x_2 = \\frac{1}{6} \\approx 0.166667$. Compute the first standard normal deviate $y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$.\n",
-        "hint_markdown": "First evaluate $r = \\sqrt{-2\\ln(e^{-2})} = \\sqrt{4} = 2$, and $\\cos(2\\pi / 6) = \\cos(\\pi / 3) = 0.5$.",
+        "hint_markdown": "Evaluate the radial distance term using the natural logarithm of $x_1$ and multiply by the cosine of the angle specified by $x_2$.",
         "correct": {
           "value": 1.0,
           "tolerance": 0.01
@@ -881,7 +881,7 @@
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
         "prompt_markdown": "Using the inverse Box\u2013Muller relation on Slide 10,\n$$x_1 = \\exp\\!\\left(-\\frac{1}{2}\\left[y_1^2 + y_2^2\\right]\\right)$$\nif a generated Gaussian pair happens to fall on the circle of radius $\\sqrt{y_1^2 + y_2^2} = \\sqrt{2\\ln 4}$ (so $y_1^2 + y_2^2 = 2\\ln 4$), what was the value of the input uniform deviate $x_1$?\n",
-        "hint_markdown": "Substitute $y_1^2 + y_2^2 = 2\\ln 4$ into $\\exp(-\\frac{1}{2}[y_1^2 + y_2^2]) = \\exp(-\\ln 4)$.",
+        "hint_markdown": "Substitute the squared radius into the radial CDF mapping and simplify the exponential of the logarithm.",
         "correct": {
           "value": 0.25,
           "tolerance": 0.005
@@ -956,7 +956,7 @@
           "sec_inverse_transform_and_box_muller"
         ],
         "prompt_markdown": "In the Marsaglia polar variant of Box\u2013Muller, candidate pairs $(v_1, v_2)$ are drawn uniformly from the square $[-1, 1] \\times [-1, 1]$ (area $4$) and accepted only if they fall inside the unit disk $R^2 = v_1^2 + v_2^2 \\le 1$ (area $\\pi$). What is the exact acceptance probability $P_{\\text{accept}}$ of a candidate pair (to four decimal places)?\n",
-        "hint_markdown": "Notice the connection back to Slide 2: ratio of circle area $\\pi$ to square area $4$!",
+        "hint_markdown": "Compute the geometric ratio between the acceptance region area and the bounding sampling domain area.",
         "correct": {
           "value": 0.7854,
           "tolerance": 0.0005
@@ -970,7 +970,7 @@
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
         "prompt_markdown": "In the Marsaglia polar method, suppose you draw $(v_1, v_2) = (0.30, 0.40)$ inside the unit circle, so $R = \\sqrt{v_1^2 + v_2^2} = 0.50$ and $R^2 = 0.25$. Using $y_1 = \\sqrt{-2\\ln(R^2)} \\frac{v_1}{\\sqrt{R^2}}$, compute the resulting standard normal deviate $y_1$ (to three decimal places).\n",
-        "hint_markdown": "Compute $\\sqrt{-2\\ln(0.25)} \\times (0.30 / 0.50) = \\sqrt{2.7725887} \\times 0.60$.",
+        "hint_markdown": "Evaluate the radial amplitude factor at $R^2 = 0.25$ and multiply by the directional ratio $v_1 / R$.",
         "correct": {
           "value": 0.999,
           "tolerance": 0.005
@@ -983,8 +983,8 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
-        "prompt_markdown": "Connecting Lesson 12 back to Lesson 11 (Slide 2 of `08.ensemble.pdf`): to initialize an MD simulation or perform an Andersen thermostat kick at temperature $T$, each velocity component must follow the Maxwell\u2013Boltzmann Gaussian distribution\n$$P(v_x) \\propto \\exp\\!\\left(-\\frac{m v_x^2}{2 k_B T}\\right)$$\nwhich is a Normal distribution with mean $0$ and standard deviation $\\sigma_v = \\sqrt{k_B T / m}$. If Box\u2013Muller returns a standard normal deviate $y_1 = -1.50$ for an atom of mass $m = 4.0$ at temperature $k_B T = 9.0$ (in reduced units), what is the assigned velocity $v_x = \\sigma_v y_1$?\n",
-        "hint_markdown": "First compute $\\sigma_v = \\sqrt{9.0 / 4.0} = 1.50$, then multiply by $y_1 = -1.50$.",
+        "prompt_markdown": "Connecting Lesson 12 back to Lesson 11: to initialize an MD simulation or perform an Andersen thermostat collision at temperature $T$, each Cartesian velocity component follows a Gaussian distribution with standard deviation $\\sigma_v = \\sqrt{k_B T / m}$. If a standard normal deviate $y_1 = -1.50$ is drawn for an atom of mass $m = 4.0$ at thermal energy $k_B T = 9.0$ (in reduced units), what is the assigned velocity $v_x$?",
+        "hint_markdown": "Scale the dimensionless standard normal deviate by the thermal velocity standard deviation.",
         "correct": {
           "value": -2.25,
           "tolerance": 0.01

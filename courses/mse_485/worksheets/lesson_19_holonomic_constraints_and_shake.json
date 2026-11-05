@@ -94,7 +94,7 @@
       "difficulty": "medium",
       "taught_by": "concept_19_1_timescales",
       "prompt_markdown": "A covalent $\\mathrm{C{-}H}$ stretching mode has a vibrational wavenumber of $\\tilde{\\nu} = 3000\\,\\mathrm{cm}^{-1}$. Using the fundamental constant ratio $hc / k_B = 1.4388\\,\\mathrm{cm\\cdot K}$, calculate the dimensionless quantum parameter $x = \\frac{\\hbar\\omega}{k_B T}$ at room temperature ($T = 300\\,\\mathrm{K}$). (Report your answer to 2 decimal places.)\n",
-      "hint_markdown": "Compute $\\\\Theta_{\\\\mathrm{vib}} = (hc/k_B)\\\\tilde{\\\\nu}$ in Kelvin first, then divide by $T = 300\\\\,\\\\mathrm{K}$.",
+      "hint_markdown": "Relate the characteristic vibrational temperature to the wavenumber and evaluate the ratio relative to the thermal energy.",
       "correct": {
         "value": 14.39,
         "tolerance": 0.05
@@ -282,7 +282,7 @@
       "difficulty": "hard",
       "taught_by": "concept_19_2_ensemble_metric",
       "prompt_markdown": "For the equal-mass triatomic chain ($\\gamma = 0.5$) with holonomic bond constraints $\\sigma_{12} = r_{12}^2 - d^2 = 0$ and $\\sigma_{23} = r_{23}^2 - d^2 = 0$, compute the ratio of the metric determinant weighting factor at $\\theta = 90^\\circ$ to that at $\\theta \\to 0^\\circ$:\n$$\\frac{|\\det\\mathbf{M}(90^\\circ)|^{1/2}}{|\\det\\mathbf{M}(0^\\circ)|^{1/2}} = \\frac{1}{\\sqrt{1 - \\gamma^2}}$$\n(Report your numerical answer to 4 decimal places.)\n",
-      "hint_markdown": "Substitute $\\\\gamma^2 = (0.5)^2 = 0.25$ into $1 / \\\\sqrt{1 - \\\\gamma^2} = 1 / \\\\sqrt{0.75}$.",
+      "hint_markdown": "Evaluate the metric determinant ratio at the given mass-coupling parameter $\\gamma = 0.5$.",
       "correct": {
         "value": 1.1547,
         "tolerance": 0.002
@@ -458,8 +458,8 @@
       "question_type": "numeric",
       "difficulty": "medium",
       "taught_by": "concept_19_3_quaternions",
-      "prompt_markdown": "A rigid molecule rotating with transverse angular speed $\\omega_\\perp = 1.5\\,\\mathrm{ps}^{-1}$ tumbles close to the North Pole at a tilt angle of $\\theta_{\\min} = 2.0^\\circ$. What is the peak Euler precession rate $|\\dot{\\phi}_{\\max}| = \\frac{\\omega_\\perp}{\\sin\\theta_{\\min}}$ in $\\mathrm{ps}^{-1}$? (Report your answer to 1 decimal place.)\n",
-      "hint_markdown": "Convert $2.0^\\\\circ$ to radians ($2\\\\pi/180 \\\\approx 0.03490\\\\,\\\\mathrm{rad}$), compute $\\\\sin(2.0^\\\\circ)$, and divide $1.5$ by that value.",
+      "prompt_markdown": "A rigid molecule rotating with transverse angular speed $\\omega_\\perp = 1.5\\,\\mathrm{ps}^{-1}$ tumbles close to the North Pole at a tilt angle of $\\theta_{\\min} = 2.0^\\circ$. What is the peak Euler precession rate $|\\dot{\\phi}_{\\max}|$ in $\\mathrm{ps}^{-1}$? (Report your answer to 1 decimal place.)",
+      "hint_markdown": "Relate the precession rate to the transverse angular velocity and the sine of the nutation angle.",
       "correct": {
         "value": 43.0,
         "tolerance": 0.3
@@ -724,7 +724,7 @@
       "difficulty": "medium",
       "taught_by": "sec_19_4_shake_algorithm",
       "prompt_markdown": "Consider a homonuclear diatomic molecule ($m_1 = m_2 = 1$) with target bond length $a = 1.00\\,\\text{\u00c5}$. At time $t$, the bond vector is $\\mathbf{r}_{12}(t) = (1.00, 0, 0)\\,\\text{\u00c5}$. After the unconstrained Verlet step, the predicted bond vector is $\\mathbf{r}_{12}^{\\mathrm{unc}}(t+h) = (1.10, 0, 0)\\,\\text{\u00c5}$.\nUsing the linearized SHAKE formula\n$$g = \\frac{|\\mathbf{r}_{12}^{\\mathrm{unc}}|^2 - a^2}{2\\left(\\frac{1}{m_1} + \\frac{1}{m_2}\\right)\\mathbf{r}_{12}^{\\mathrm{unc}}\\cdot\\mathbf{r}_{12}(t)},$$\ncalculate the scalar displacement magnitude $|\\delta\\mathbf{r}_1| = \\frac{g}{m_1}|\\mathbf{r}_{12}(t)|$ (in $\\text{\u00c5}$) applied to atom 1 in the first Newton iteration. (Report your answer to 4 decimal places.)\n",
-      "hint_markdown": "Compute the numerator $1.10^2 - 1.00^2 = 0.21$, and divide by $2(1 + 1)(1.10)(1.00) = 4.40$.",
+      "hint_markdown": "Evaluate the numerator from the squared distance discrepancy and divide by the denominator evaluated with the predicted and old bond vectors.",
       "correct": {
         "value": 0.0477,
         "tolerance": 0.0005
@@ -767,7 +767,7 @@
       "difficulty": "easy",
       "taught_by": "sec_19_4_shake_algorithm",
       "prompt_markdown": "During a SHAKE update of a covalent $\\mathrm{O{-}H}$ bond ($m_{\\mathrm{O}} = 16.0\\,\\mathrm{u}$, $m_{\\mathrm{H}} = 1.0\\,\\mathrm{u}$), the oxygen atom is displaced by $|\\delta\\mathbf{r}_{\\mathrm{O}}| = 0.005\\,\\text{\u00c5}$ along the old bond vector. By what distance $|\\delta\\mathbf{r}_{\\mathrm{H}}|$ (in $\\text{\u00c5}$) is the hydrogen atom displaced in the opposite direction? (Report your answer to 2 decimal places.)\n",
-      "hint_markdown": "Use conservation of the center of mass: $m_{\\\\mathrm{H}}|\\\\delta\\\\mathbf{r}_{\\\\mathrm{H}}| = m_{\\\\mathrm{O}}|\\\\delta\\\\mathbf{r}_{\\\\mathrm{O}}|$.",
+      "hint_markdown": "Balance the center of mass by scaling the oxygen displacement by the inverse mass ratio.",
       "correct": {
         "value": 0.08,
         "tolerance": 0.002
@@ -839,7 +839,7 @@
       "difficulty": "medium",
       "taught_by": "sec_19_4_shake_algorithm",
       "prompt_markdown": "Suppose an unconstrained MD simulation takes $1.00\\,\\mathrm{ms}$ of CPU time per timestep with $\\Delta t_{\\mathrm{unc}} = 1.0\\,\\mathrm{fs}$. When SHAKE is turned on to freeze bond lengths, the SHAKE cycle adds an extra $\\frac{1}{3}$ ($33.33\\%$) to the per-step CPU time (so SHAKE accounts for $\\frac{0.3333}{1.3333} = 25\\%$ of the new total step time of $1.3333\\,\\mathrm{ms}$), while allowing the timestep to increase to $\\Delta t_{\\mathrm{SHAKE}} = 4.0\\,\\mathrm{fs}$.\nWhat is the net **overall computational speedup factor** (simulated physical time per unit CPU wall-clock time) achieved by using SHAKE? (Report your answer to 1 decimal place.)\n",
-      "hint_markdown": "Divide the timestep gain factor ($\\\\Delta t_{\\\\mathrm{SHAKE}} / \\\\Delta t_{\\\\mathrm{unc}} = 4.0$) by the relative per-step CPU cost factor ($1.3333 / 1.00$).",
+      "hint_markdown": "Take the ratio of the timestep expansion factor to the per-step CPU wall-time increase factor.",
       "correct": {
         "value": 3.0,
         "tolerance": 0.05
@@ -1007,8 +1007,8 @@
       "question_type": "numeric",
       "difficulty": "easy",
       "taught_by": "sec_19_5_cpmd_orthonormality",
-      "prompt_markdown": "A Car\u2013Parrinello MD simulation of a 64-atom silicon supercell (with 4 valence electrons per Si atom, doubly occupied spin-restricted orbitals) tracks $N = 128$ occupied Kohn\u2013Sham spatial orbitals $\\phi_i(\\mathbf{r})$. How many total holonomic orthonormality constraints $\\frac{N(N+1)}{2}$ must the electronic SHAKE algorithm satisfy at every timestep?\n",
-      "hint_markdown": "Evaluate $128 \\\\times 129 / 2$.",
+      "prompt_markdown": "A Car\u2013Parrinello MD simulation of a 64-atom silicon supercell (with 4 valence electrons per Si atom, doubly occupied spin-restricted orbitals) tracks $N = 128$ occupied Kohn\u2013Sham spatial orbitals $\\phi_i(\\mathbf{r})$. How many total holonomic orthonormality constraints must the electronic SHAKE algorithm satisfy at every timestep?",
+      "hint_markdown": "Sum the $N$ normalization conditions and the distinct pairwise orthogonality conditions among the $N$ orbitals.",
       "correct": {
         "value": 8256,
         "tolerance": 0.1
@@ -1079,8 +1079,8 @@
       "question_type": "numeric",
       "difficulty": "medium",
       "taught_by": "sec_19_5_cpmd_orthonormality",
-      "prompt_markdown": "Suppose two normalized trial wave functions $\\phi_1$ and $\\phi_2$ ($\\langle\\phi_1|\\phi_1\\rangle = \\langle\\phi_2|\\phi_2\\rangle = 1$) have a small initial overlap $\\epsilon = \\langle\\phi_2|\\phi_1\\rangle = 0.10$ after an unconstrained CPMD step. After applying **one** symmetric SHAKE orthogonalization iteration:\n$$\\phi_1^{(1)} = \\phi_1 - \\frac{1}{2}\\epsilon\\,\\phi_2, \\qquad \\phi_2^{(1)} = \\phi_2 - \\frac{1}{2}\\epsilon\\,\\phi_1,$$\nwhat is the remaining overlap $\\langle\\phi_2^{(1)} | \\phi_1^{(1)}\\rangle$ before re-normalization? (Hint: expand $\\langle \\phi_2 - \\frac{1}{2}\\epsilon\\phi_1 | \\phi_1 - \\frac{1}{2}\\epsilon\\phi_2\\rangle$ exactly in powers of $\\epsilon$. Report your answer to 5 decimal places.)\n",
-      "hint_markdown": "Notice that the $\\\\mathcal{O}(\\\\epsilon)$ terms cancel: $\\\\epsilon - \\\\frac{1}{2}\\\\epsilon - \\\\frac{1}{2}\\\\epsilon + \\\\frac{1}{4}\\\\epsilon^2 \\\\langle\\\\phi_1|\\\\phi_2\\\\rangle = \\\\frac{1}{4}\\\\epsilon^3$.",
+      "prompt_markdown": "Suppose two normalized trial wave functions $\\phi_1$ and $\\phi_2$ ($\\langle\\phi_1|\\phi_1\\rangle = \\langle\\phi_2|\\phi_2\\rangle = 1$) have a small initial overlap $\\epsilon = \\langle\\phi_2|\\phi_1\\rangle = 0.10$ after an unconstrained CPMD step. After applying **one** symmetric SHAKE orthogonalization iteration:\n$$\\phi_1^{(1)} = \\phi_1 - \\frac{1}{2}\\epsilon\\,\\phi_2, \\qquad \\phi_2^{(1)} = \\phi_2 - \\frac{1}{2}\\epsilon\\,\\phi_1,$$\nwhat is the remaining overlap $\\langle\\phi_2^{(1)} | \\phi_1^{(1)}\\rangle$ before re-normalization? (Report your answer to 5 decimal places, e.g., `0.00025`.)",
+      "hint_markdown": "Expand the inner product between the two updated trial states and observe which powers of $\\epsilon$ survive after first-order terms cancel.",
       "correct": {
         "value": 0.00025,
         "tolerance": 2e-05
