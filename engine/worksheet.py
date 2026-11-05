@@ -13,7 +13,12 @@ from typing import Any, Mapping
 _repo_root = Path(__file__).resolve().parent.parent
 if str(_repo_root) not in sys.path:
     sys.path.insert(0, str(_repo_root))
-import yaml
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
 import matplotlib.pyplot as plt
 from IPython.display import display, Markdown, HTML
 import ipywidgets as widgets
@@ -239,7 +244,7 @@ class Worksheet:
 
     @classmethod
     def load(cls, yaml_path: str | Path) -> "Worksheet":
-        """Load a worksheet from a YAML file path and dynamically import its Concepts module."""
+        """Load a worksheet from a YAML/JSON file path and dynamically import its Concepts module."""
         repo_root = Path(__file__).resolve().parent.parent
         if str(repo_root) not in sys.path:
             sys.path.insert(0, str(repo_root))
@@ -247,38 +252,62 @@ class Worksheet:
         p = Path(yaml_path)
         if not p.is_file():
             filename = Path(yaml_path).name
-            candidates = [
-                p,
-                p.resolve(),
-                Path.cwd() / yaml_path,
-                Path.cwd() / filename,
-                Path.cwd().parent / "worksheets" / filename,
-                Path.cwd() / "worksheets" / filename,
-            ]
-            candidates.extend(repo_root.glob(f"courses/*/worksheets/{filename}"))
-            candidates.extend([
-                repo_root / filename,
-                repo_root / "worksheets" / filename,
-                Path.cwd() / "Target Format Reference" / filename,
-                Path.cwd() / "Generated Worksheets" / filename,
-            ])
-            cur = Path.cwd().resolve()
-            while cur != cur.parent:
-                candidates.append(cur / filename)
-                candidates.append(cur / "worksheets" / filename)
-                candidates.extend(cur.glob(f"courses/*/worksheets/{filename}"))
-                cur = cur.parent
+            alt_names = [filename]
+            if filename.endswith(".yaml") or filename.endswith(".yml"):
+                alt_names.append(Path(filename).with_suffix(".json").name)
+            elif filename.endswith(".json"):
+                alt_names.append(Path(filename).with_suffix(".yaml").name)
+                alt_names.append(Path(filename).with_suffix(".yml").name)
+
+            candidates = []
+            for fname in alt_names:
+                candidates.extend([
+                    Path(fname),
+                    Path.cwd() / fname,
+                    Path.cwd().parent / "worksheets" / fname,
+                    Path.cwd() / "worksheets" / fname,
+                ])
+                candidates.extend(repo_root.glob(f"courses/*/worksheets/{fname}"))
+                candidates.extend([
+                    repo_root / fname,
+                    repo_root / "worksheets" / fname,
+                    Path.cwd() / "Target Format Reference" / fname,
+                    Path.cwd() / "Generated Worksheets" / fname,
+                ])
+                cur = Path.cwd().resolve()
+                while cur != cur.parent:
+                    candidates.append(cur / fname)
+                    candidates.append(cur / "worksheets" / fname)
+                    candidates.extend(cur.glob(f"courses/*/worksheets/{fname}"))
+                    cur = cur.parent
 
             for c in candidates:
                 if c.is_file():
                     p = c
                     break
             else:
-                raise FileNotFoundError(f"Could not locate worksheet YAML: {yaml_path}")
+                raise FileNotFoundError(f"Could not locate worksheet file: {yaml_path}")
 
         p = p.resolve()
-        with open(p, "r", encoding="utf-8") as fh:
-            spec = yaml.safe_load(fh)
+        json_path = p.with_suffix(".json")
+
+        if p.suffix == ".json":
+            with open(p, "r", encoding="utf-8") as fh:
+                spec = json.load(fh)
+        elif json_path.is_file() and yaml is None:
+            with open(json_path, "r", encoding="utf-8") as fh:
+                spec = json.load(fh)
+        elif yaml is not None:
+            with open(p, "r", encoding="utf-8") as fh:
+                spec = yaml.safe_load(fh)
+        elif json_path.is_file():
+            with open(json_path, "r", encoding="utf-8") as fh:
+                spec = json.load(fh)
+        else:
+            raise ImportError(
+                f"Cannot load '{p.name}': PyYAML is not installed and no pre-compiled '{json_path.name}' "
+                "was found. Please install pyyaml or compile worksheets using 'cram build'."
+            )
 
         concept_candidates = [
             p.parent.parent / "concepts" / f"{p.stem}.py",
@@ -314,15 +343,18 @@ class Worksheet:
         return {}
 
     def _save_records(self) -> None:
-        self._records_dir.mkdir(parents=True, exist_ok=True)
-        payload = {
-            "worksheet_id": self.id,
-            "title": self.title,
-            "session_id": self.session_id,
-            "answers": self.records,
-        }
-        with open(self._record_file, "w", encoding="utf-8") as fh:
-            json.dump(payload, fh, indent=2)
+        try:
+            self._records_dir.mkdir(parents=True, exist_ok=True)
+            payload = {
+                "worksheet_id": self.id,
+                "title": self.title,
+                "session_id": self.session_id,
+                "answers": self.records,
+            }
+            with open(self._record_file, "w", encoding="utf-8") as fh:
+                json.dump(payload, fh, indent=2)
+        except Exception:
+            pass
 
     def start(self) -> None:
         """Display the worksheet header, learning objectives, and session status."""
@@ -749,19 +781,22 @@ class Worksheet:
         total_credit = sum(float(r.get("credit", 0.0)) for r in self.records.values() if r.get("completed"))
 
         receipt_path = self._records_dir / f"{self.id}_finalized.json"
-        with open(receipt_path, "w", encoding="utf-8") as fh:
-            json.dump(
-                {
-                    "worksheet_id": self.id,
-                    "title": self.title,
-                    "session_id": self.session_id,
-                    "completed_problems": completed_q,
-                    "total_problems": total_q,
-                    "recorded_credit": round(total_credit, 2),
-                },
-                fh,
-                indent=2,
-            )
+        try:
+            with open(receipt_path, "w", encoding="utf-8") as fh:
+                json.dump(
+                    {
+                        "worksheet_id": self.id,
+                        "title": self.title,
+                        "session_id": self.session_id,
+                        "completed_problems": completed_q,
+                        "total_problems": total_q,
+                        "recorded_credit": round(total_credit, 2),
+                    },
+                    fh,
+                    indent=2,
+                )
+        except Exception:
+            pass
 
         display(
             Markdown(

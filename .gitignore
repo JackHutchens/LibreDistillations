@@ -67,3 +67,13 @@ Thumbs.db
 
 # JupyterLite local build artifacts
 .jupyterlite.doit.db*
+.cache/
+
+# ==============================================================================
+# Local Unit Test Suite (Do Not Push to Remote Repository)
+# ==============================================================================
+tests/
+test/
+.pytest_cache/
+.coverage
+htmlcov/

@@ -5,20 +5,17 @@
     "ignore_contents": [
       ".*\\.git.*",
       ".*\\.github.*",
+      ".*\\.cache.*",
+      ".*\\.jupyterlite.*",
       ".*[rR]esources.*",
       ".*__pycache__.*",
       ".*\\.worksheet_records.*",
       ".*dist.*",
       ".*scratch.*",
-      ".*\\.ipynb_checkpoints.*"
-    ]
-  },
-  "PyodideLockAddon": {
-    "specs": [
-      "numpy",
-      "matplotlib",
-      "pyyaml",
-      "ipywidgets"
+      ".*\\.ipynb_checkpoints.*",
+      ".*Generated Worksheets.*",
+      ".*Target Format Reference.*",
+      ".*tests.*"
     ]
   }
 }

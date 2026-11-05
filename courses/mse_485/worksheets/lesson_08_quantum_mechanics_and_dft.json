@@ -1,0 +1,1444 @@
+{
+  "worksheet": {
+    "id": "lesson_08_quantum_mechanics_and_dft",
+    "title": "MSE 485 \u00b7 Lesson 08: Quantum Mechanics, Many-Electron Wavefunctions, and Density Functional Theory",
+    "estimated_minutes": 135,
+    "learning_objectives": [
+      "Contrast the accuracy-vs-speed hierarchy of atomistic energy models and solve the Schr\u00f6dinger equation for canonical 1D and 3D radial potentials.",
+      "Apply the Rayleigh-Ritz Variational Principle and derive the complete ground-state energy minimization for the Hydrogen atom using a trial exponential wavefunction.",
+      "Quantify the exponential curse of dimensionality for many-electron wavefunctions and compare the Hartree product, Hartree-Fock Slater determinants, Pauli exchange, and electron correlation.",
+      "Formulate Density Functional Theory via the 1st and 2nd Hohenberg-Kohn theorems, the Kohn-Sham auxiliary equations, and Jacob's Ladder of exchange-correlation functionals (LDA, GGA, Meta-GGA, Hybrids).",
+      "Explain norm-conserving pseudopotentials, plane-wave basis cutoffs, Bloch's theorem, Brillouin-zone Bragg band gaps, and the DFT semiconductor band-gap problem."
+    ],
+    "sections": [
+      {
+        "id": "sec_hierarchy_and_schrodinger",
+        "type": "markdown_section",
+        "title": "1. Hierarchy of Energy Models & The Schr\u00f6dinger Equation",
+        "body_markdown": "In atomic-scale simulations (`05.QuantMech.pdf`, pp. 1\u201311), choosing an **energy model** $E(\\{\\mathbf{R}_I\\})$ involves a fundamental trade-off between **accuracy/transferability** and **computational speed**:\n- **Empirical Potentials** (Lennard-Jones, EAM, OPLS): fastest ($\\sim 10^6\\text{\u2013}10^9$ atoms, molecular dynamics), fitted to data, no explicit electrons.\n- **Semi-Empirical / Tight-Binding Models**: intermediate speed and accuracy, parameterized quantum hopping integrals.\n- **Quantum Mechanical First-Principles (*Ab Initio*) Methods** (Density Functional Theory, Hartree\u2013Fock, Configuration Interaction, Quantum Monte Carlo): highest accuracy, capable of predicting chemical bonding, magnetism, optical excitations, and transition states directly from atomic numbers $Z_I$.\n\nIn the **Standard Model of Matter** for materials science, atoms consist of massive, point-like nuclei (protons + neutrons) surrounded by **tightly bound core electrons** and held together in molecules, liquids, and solids by chemical bonds formed by **valence electrons**.\n\n### Wave\u2013Particle Duality & The Schr\u00f6dinger Equation\nBy de Broglie / Planck wave\u2013particle duality ($\\lambda \\cdot p = h$, or $\\mathbf{p} = \\hbar\\mathbf{k}$), electrons obey the **time-dependent Schr\u00f6dinger equation**:\n$$-\\frac{\\hbar^2}{2m}\\nabla^2 \\Psi(\\mathbf{r}, t) + V(\\mathbf{r}, t)\\Psi(\\mathbf{r}, t) = i\\hbar\\frac{\\partial \\Psi(\\mathbf{r}, t)}{\\partial t}$$\n- **Mathematical Characteristics (Slide 4 Exercise):** This is a **linear**, **homogeneous** partial differential equation that is **first-order in time $t$** and **second-order in space $\\mathbf{r}$**, with complex-valued solutions $\\Psi(\\mathbf{r},t)$ whose squared modulus $|\\Psi(\\mathbf{r},t)|^2$ gives the Born probability density.\n- **Separation of Variables (Slide 5 Exercise):** When the potential is time-independent, $V(\\mathbf{r}, t) = V(\\mathbf{r})$, substituting $\\Psi(\\mathbf{r}, t) = \\varphi(\\mathbf{r})\\cdot f(t)$ yields $f(t) = e^{-iEt/\\hbar}$ and the **time-independent Schr\u00f6dinger eigenvalue equation** $\\hat{\\mathcal{H}}\\varphi(\\mathbf{r}) = E\\varphi(\\mathbf{r})$:\n  $$\\left[-\\frac{\\hbar^2}{2m}\\nabla^2 + V(\\mathbf{r})\\right]\\varphi(\\mathbf{r}) = E\\,\\varphi(\\mathbf{r})$$\n\n### Canonical Analytical Solutions (Slides 6\u20139)\n1. **Free Particle ($V(\\mathbf{r}) = 0$):** Plane waves $\\Psi_{\\mathbf{k}}(\\mathbf{r},t) = \\exp(i\\mathbf{k}\\cdot\\mathbf{r} - i\\omega t)$ with continuous parabolic energy dispersion $E_k = \\frac{\\hbar^2 k^2}{2m} = \\hbar\\omega$.\n2. **1D Harmonic Oscillator ($V(x) = \\frac{1}{2}kx^2$):** Gaussian times Hermite polynomials $\\varphi_n(x) = c_n \\exp\\left(-\\frac{m\\omega^2 x^2}{2\\hbar\\omega}\\right)H_n\\left(\\sqrt{\\frac{m\\omega}{\\hbar}}x\\right)$ with equally spaced quantized levels $E_n = \\left(n + \\frac{1}{2}\\right)\\hbar\\omega$ for $n = 0, 1, 2, \\dots$ (note the non-zero **zero-point energy** $E_0 = \\frac{1}{2}\\hbar\\omega$).\n3. **1D Infinite Square Well ($V(x) = 0$ for $0 < x < a$, $\\infty$ otherwise):** Standing sine waves vanishing at the boundaries, $\\varphi_n(x) = \\sqrt{\\frac{2}{a}}\\sin\\left(\\frac{\\pi n x}{a}\\right)$, with quadratic quantum-confinement energies $E_n = \\frac{\\hbar^2 \\pi^2 n^2}{2 m a^2} \\propto \\frac{n^2}{a^2}$ ($n = 1, 2, 3, \\dots$).\n4. **Metal Surface Potential Step ($V(x) = 0$ inside metal $x < 0$, $V(x) = V_0 > E$ in vacuum $x > 0$):** Oscillatory plane wave inside the metal that **decays exponentially** ($\\psi(x) \\propto e^{-\\kappa x}$ with $\\kappa = \\sqrt{2m(V_0 - E)}/\\hbar$) into the vacuum outside the surface (creating the surface dipole and work function, and enabling Scanning Tunneling Microscopy!).\n5. **Spherical Coulomb Potential ($V(r) = -\\frac{Ze^2}{4\\pi\\varepsilon_0 r}$):** Separating variables in spherical coordinates $\\Psi_{nlm}(\\mathbf{r}) = R_{nl}(r)Y_{lm}(\\theta, \\varphi)$ yields the radial equation with the **centrifugal barrier** $\\frac{l(l+1)\\hbar^2}{2mr^2}$:\n   $$\\left[-\\frac{\\hbar^2}{2m}\\left(\\frac{d^2}{dr^2} + \\frac{2}{r}\\frac{d}{dr}\\right) + \\frac{l(l+1)\\hbar^2}{2mr^2} + V(r)\\right]R_{nl}(r) = E\\,R_{nl}(r)$$\n\n### Matrix Formulation in an Orthogonal Basis (Slide 11)\nExpanding $|\\psi\\rangle = \\sum_{n=1}^k c_n |\\varphi_n\\rangle$ in an orthonormal basis ($\\langle\\varphi_m|\\varphi_n\\rangle = \\delta_{mn}$) and left-multiplying $\\hat{\\mathcal{H}}|\\psi\\rangle = E|\\psi\\rangle$ by $\\langle\\varphi_m|$ converts the differential equation into an algebraic $k \\times k$ **matrix eigenvalue problem**:\n$$\\sum_{n=1}^k H_{mn} c_n = E c_m \\quad \\Longleftrightarrow \\quad \\mathbf{H}\\mathbf{c} = E\\mathbf{c}, \\qquad \\text{where } H_{mn} = \\langle\\varphi_m|\\hat{\\mathcal{H}}|\\varphi_n\\rangle$$\n"
+      },
+      {
+        "id": "q01_hierarchy_of_models",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "In the hierarchy of atomistic energy models (`05.QuantMech.pdf`, pp. 1\u20132), which class of electrons actually forms chemical bonds holding molecules, liquids, and solids together, and why must we use quantum mechanics rather than classical empirical force fields to model bond breaking, magnetism, or optical excitations?\n",
+        "hint_markdown": "Contrast core electrons vs. valence electrons on Slide 2, and compare what empirical models lack on Slide 1.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Valence electrons form chemical bonds (while core electrons remain tightly bound to nuclei); empirical potentials pre-assume fixed bonding or fitted pair functions and lack explicit electronic wavefunctions/densities needed for bond rearrangement, magnetism, and optical transitions."
+          },
+          {
+            "id": "b",
+            "text": "Core 1s electrons dominate chemical bonding in all transition metals, while valence electrons remain inert."
+          },
+          {
+            "id": "c",
+            "text": "Empirical potentials solve the time-dependent Schr\u00f6dinger equation exactly but are slower than DFT."
+          },
+          {
+            "id": "d",
+            "text": "Quantum mechanical methods only calculate nuclear kinetic energy and ignore electrons."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "As shown on Slides 1\u20132, atoms consist of massive point-like nuclei surrounded by tightly bound core electrons and outer **valence electrons** that form chemical bonds. Empirical force fields parameterize $E(\\\\{\\\\mathbf{R}_I\\\\})$ without explicit electrons, trading electronic/chemical transferability for speed."
+      },
+      {
+        "id": "q02_schrodinger_pde_properties",
+        "type": "problem",
+        "question_type": "multi_select",
+        "difficulty": "easy",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "Which of the following are true mathematical characteristics of the time-dependent Schr\u00f6dinger equation $-\\frac{\\hbar^2}{2m}\\nabla^2\\Psi(\\mathbf{r},t) + V(\\mathbf{r},t)\\Psi(\\mathbf{r},t) = i\\hbar\\frac{\\partial\\Psi(\\mathbf{r},t)}{\\partial t}$ (Slide 4 Exercise)? *(Select all that apply.)*\n",
+        "hint_markdown": "Check the order of spatial and temporal derivatives, whether Psi appears to the 1st power (linear), and whether any term is independent of Psi (homogeneous).",
+        "options": [
+          {
+            "id": "a",
+            "text": "It is a linear and homogeneous partial differential equation (any linear combination of solutions is also a solution, enabling quantum superposition)."
+          },
+          {
+            "id": "b",
+            "text": "It is second-order in spatial coordinates (nabla^2) and first-order in time (d/dt)."
+          },
+          {
+            "id": "c",
+            "text": "For a time-independent potential V(r), separation of variables Psi(r,t) = phi(r) * f(t) yields stationary states with harmonic time evolution f(t) = exp(-i*E*t/hbar)."
+          },
+          {
+            "id": "d",
+            "text": "It is a quadratic non-linear equation in Psi(r,t)."
+          }
+        ],
+        "correct": [
+          "a",
+          "b",
+          "c"
+        ],
+        "rationale_markdown": "The Schr\u00f6dinger equation is **linear** and **homogeneous** in $\\\\Psi$ (not quadratic!), second-order in space via $\\\\nabla^2$, and first-order in time with an explicit imaginary unit $i$. When $V = V(\\\\mathbf{r})$, separating $\\\\Psi(\\\\mathbf{r},t) = \\\\varphi(\\\\mathbf{r})e^{-iEt/\\\\hbar}$ reduces it to $\\\\hat{\\\\mathcal{H}}\\\\varphi = E\\\\varphi$."
+      },
+      {
+        "id": "q03_infinite_square_well_ratio_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "For an electron in a 1D infinite square well of width $a$ (`05.QuantMech.pdf`, p. 7), the quantized energy levels are $E_n = \\frac{\\hbar^2 \\pi^2 n^2}{2ma^2}$ for $n = 1, 2, 3, \\dots$. If the ground-state energy ($n=1$) is $E_1 = 1.50\\text{ eV}$, what is the energy $E_4$ of the $n = 4$ state (in $\\text{eV}$)?\n",
+        "hint_markdown": "Notice from Slide 7 that E_n / E_1 = n^2. For n = 4, multiply E_1 by 4^2 = 16.",
+        "correct": {
+          "value": 24.0,
+          "tolerance": 0.05
+        },
+        "rationale_markdown": "Because $E_n \\\\propto n^2$, the ratio $E_4 / E_1 = 4^2 = 16$ (as plotted on the vertical axis of Slide 7). Thus $E_4 = 16 \\\\times 1.50\\\\text{ eV} = 24.0\\\\text{ eV}$."
+      },
+      {
+        "id": "q04_harmonic_oscillator_vs_square_well",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "Compare the energy level spacing $\\Delta E_n = E_{n+1} - E_n$ of a 1D quantum harmonic oscillator ($V(x) = \\frac{1}{2}kx^2$, Slide 6) against that of a 1D infinite square well ($V(x) = 0$ on $(0,a)$, Slide 7). How do their level spacings behave as the quantum number $n$ increases?\n",
+        "hint_markdown": "Compare E_n = (n + 1/2)*hbar*omega vs. E_n = E_1 * n^2.",
+        "options": [
+          {
+            "id": "a",
+            "text": "The harmonic oscillator has constant level spacing Delta E_n = hbar*omega for all n (with zero-point energy E_0 = 1/2 hbar*omega), whereas the infinite square well spacing grows linearly as Delta E_n = (2n + 1)*E_1."
+          },
+          {
+            "id": "b",
+            "text": "Both potentials have constant, equally spaced energy levels."
+          },
+          {
+            "id": "c",
+            "text": "The harmonic oscillator level spacing grows as n^2, whereas the square well spacing decreases as 1/n^2."
+          },
+          {
+            "id": "d",
+            "text": "The harmonic oscillator has zero ground-state energy E_0 = 0."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "For the harmonic oscillator, $E_n = (n + \\\\frac{1}{2})\\\\hbar\\\\omega$, so adjacent levels are separated by a constant quantum $\\\\Delta E_n = \\\\hbar\\\\omega$. For the infinite square well, $E_n = n^2 E_1$, so $\\\\Delta E_n = ((n+1)^2 - n^2)E_1 = (2n+1)E_1$ grows linearly with $n$."
+      },
+      {
+        "id": "q05_metal_surface_step_wavefunction",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "According to Slide 8 (`05.QuantMech.pdf`), how does a conduction electron wavefunction $\\psi(x)$ with energy $E < V_0$ behave across a metal surface modeled as a potential step ($V(x) = 0$ inside the metal $x < 0$, and $V(x) = V_0$ in the vacuum $x > 0$)?\n",
+        "hint_markdown": "Examine the plot of psi(y) on Slide 8 across the surface boundary at 0.",
+        "options": [
+          {
+            "id": "a",
+            "text": "It is an oscillatory plane/standing wave inside the metal (x < 0) and decays exponentially into the vacuum outside the metal (x > 0)."
+          },
+          {
+            "id": "b",
+            "text": "It vanishes discontinuously to zero at x = 0 with infinite slope."
+          },
+          {
+            "id": "c",
+            "text": "It decays exponentially inside the metal and oscillates with constant amplitude in the vacuum."
+          },
+          {
+            "id": "d",
+            "text": "It grows exponentially to infinity as x -> +infinity in the vacuum."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Inside the metal ($E > V = 0$), the kinetic energy is positive and $\\\\psi$ oscillates sinusoidally. Outside the metal ($E < V_0$), $\\\\frac{d^2\\\\psi}{dx^2} = \\\\frac{2m(V_0 - E)}{\\\\hbar^2}\\\\psi = \\\\kappa^2\\\\psi$, so the physically normalizable solution decays exponentially as $e^{-\\\\kappa x}$ into the vacuum."
+      },
+      {
+        "id": "q06_radial_coulomb_centrifugal_barrier",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "In the radial Schr\u00f6dinger equation for a spherically symmetric Coulomb potential (Slide 9),\n$$\\left[-\\frac{\\hbar^2}{2m}\\left(\\frac{d^2}{dr^2} + \\frac{2}{r}\\frac{d}{dr}\\right) + \\frac{l(l+1)\\hbar^2}{2mr^2} + V(r)\\right]R_{nl}(r) = E\\,R_{nl}(r)$$\nwhat is the physical origin and effect of the term $\\frac{l(l+1)\\hbar^2}{2mr^2}$?\n",
+        "hint_markdown": "Recall that the angular momentum squared operator L^2 has eigenvalues l(l+1)*hbar^2 on spherical harmonics Y_{lm}(theta, phi).",
+        "options": [
+          {
+            "id": "a",
+            "text": "It is the repulsive centrifugal barrier from orbital angular momentum L^2 = l(l+1)*hbar^2, which pushes higher-l states (p, d, f with l >= 1) away from the nucleus at r -> 0 while vanishing for s-states (l = 0)."
+          },
+          {
+            "id": "b",
+            "text": "It is an attractive magnetic spin-orbit coupling term that pulls d and f electrons into the nucleus."
+          },
+          {
+            "id": "c",
+            "text": "It is the electron-electron Hartree repulsion term."
+          },
+          {
+            "id": "d",
+            "text": "It is non-zero only for s-orbitals (l = 0)."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Acting with the angular Laplacian on spherical harmonics $Y_{lm}(\\\\theta,\\\\varphi)$ yields $-\\\\frac{l(l+1)}{r^2}Y_{lm}$. In the radial Hamiltonian, $+\\\\frac{l(l+1)\\\\hbar^2}{2mr^2} = \\\\frac{|\\\\mathbf{L}|^2}{2mr^2}$ acts as a repulsive centrifugal potential for $l \\\\ge 1$, forcing $R_{nl}(0) = 0$ for $p, d, f$ orbitals while allowing $s$ orbitals ($l=0$) to have non-zero amplitude at the nucleus."
+      },
+      {
+        "id": "q07_hydrogen_quantum_numbers_degeneracy_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "medium",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "For a hydrogenic atom (`05.QuantMech.pdf`, pp. 9\u201310), the principal quantum number $n$ allows orbital angular momentum quantum numbers $l = 0, 1, \\dots, n-1$, and each $l$ has $2l + 1$ magnetic sublevels $m \\in \\{-l, \\dots, +l\\}$. For the $n = 3$ shell ($3s, 3p, 3d$), how many total spatial orbitals $(l, m)$ exist (excluding spin)?\n",
+        "hint_markdown": "Sum (2l + 1) for l = 0, 1, 2 (which equals 1 + 3 + 5 = n^2).",
+        "correct": {
+          "value": 9,
+          "tolerance": 0.1
+        },
+        "rationale_markdown": "For $n = 3$, the allowed values of $l$ are $l = 0$ ($3s$, $1$ orbital), $l = 1$ ($3p$, $3$ orbitals), and $l = 2$ ($3d$, $5$ orbitals), giving $\\\\sum_{l=0}^{n-1}(2l+1) = 1 + 3 + 5 = n^2 = 9$ spatial orbitals."
+      },
+      {
+        "id": "q08_matrix_formulation_basis_size",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_hierarchy_and_schrodinger",
+        "prompt_markdown": "In the matrix formulation of quantum mechanics (Slide 11), expanding the wavefunction in $k$ orthonormal basis functions $|\\psi\\rangle = \\sum_{n=1}^k c_n|\\varphi_n\\rangle$ transforms $\\hat{\\mathcal{H}}|\\psi\\rangle = E|\\psi\\rangle$ into $\\sum_{n=1}^k H_{mn}c_n = E c_m$. How are the matrix elements $H_{mn}$ defined, and how does the cost of standard dense matrix diagonalization scale with the basis size $k$?\n",
+        "hint_markdown": "Check Slide 11 for the bra-ket definition of H_{mn}, and recall the asymptotic complexity of dense eigensolvers.",
+        "options": [
+          {
+            "id": "a",
+            "text": "H_{mn} = <phi_m | H | phi_n> is the Hamiltonian integral between basis states m and n, and dense matrix diagonalization scales as O(k^3)."
+          },
+          {
+            "id": "b",
+            "text": "H_{mn} = <phi_m | phi_n> is the identity matrix, and diagonalization scales as O(1)."
+          },
+          {
+            "id": "c",
+            "text": "H_{mn} = c_m * c_n, and diagonalization scales linearly as O(k)."
+          },
+          {
+            "id": "d",
+            "text": "H_{mn} = E * delta_{mn} for any arbitrary non-eigenstate basis."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Projecting $\\\\hat{\\\\mathcal{H}}\\\\sum_n c_n|\\\\varphi_n\\\\rangle = E\\\\sum_n c_n|\\\\varphi_n\\\\rangle$ onto $\\\\langle\\\\varphi_m|$ yields $\\\\sum_{n=1}^k \\\\langle\\\\varphi_m|\\\\hat{\\\\mathcal{H}}|\\\\varphi_n\\\\rangle c_n = E c_m$, so $H_{mn} = \\\\langle\\\\varphi_m|\\\\hat{\\\\mathcal{H}}|\\\\varphi_n\\\\rangle$. Diagonalizing a $k \\\\times k$ Hermitian matrix requires $\\\\mathcal{O}(k^3)$ floating-point operations."
+      },
+      {
+        "id": "sec_variational_principle_and_hydrogen",
+        "type": "markdown_section",
+        "title": "2. The Variational Principle & Worked Derivation for the Hydrogen Atom",
+        "body_markdown": "When we cannot solve $\\hat{\\mathcal{H}}\\Psi = E\\Psi$ analytically, the **Rayleigh\u2013Ritz Variational Principle** (`05.QuantMech.pdf`, pp. 12\u201315) provides the mathematical foundation for almost every computational electronic-structure method:\n$$\\boxed{E[\\Phi] = \\frac{\\langle\\Phi|\\hat{\\mathcal{H}}|\\Phi\\rangle}{\\langle\\Phi|\\Phi\\rangle} \\ge E_0}$$\n- For **any** normalizable trial wavefunction $\\Phi$, the energy expectation value $E[\\Phi]$ is an **upper bound** to the true ground-state energy $E_0$.\n- Equality holds ($E[\\Phi] = E_0$) **if and only if** $\\Phi$ is the exact ground-state wavefunction $\\Psi_0$.\n- Therefore, if we parameterize a family of trial wavefunctions $\\Phi_\\alpha$ and minimize $E(\\alpha)$ with respect to $\\alpha$ ($\\frac{dE}{d\\alpha} = 0$), we obtain the closest possible approximation to the ground state within that family!\n\n### Atomic Units (Slide 15)\nTo eliminate fundamental constants from quantum mechanical equations, we set **$\\hbar = m_e = e = \\frac{1}{4\\pi\\varepsilon_0} = 1$**:\n- **Length:** $1\\text{ Bohr radius } (a_0) = 5.29177 \\times 10^{-11}\\text{ m} = 0.529177\\text{ \u00c5}$\n- **Energy:** $1\\text{ Hartree } (\\text{Ha}) = \\frac{e^2}{4\\pi\\varepsilon_0 a_0} = 4.35974 \\times 10^{-18}\\text{ J} = 27.2114\\text{ eV}$ (note that $1\\text{ Ry} = 0.5\\text{ Ha} = 13.6057\\text{ eV}$)\n\n### Complete Variational Derivation for the Hydrogen Atom (Slides 12\u201314)\nIn atomic units, the Hydrogen Hamiltonian is $\\hat{\\mathcal{H}} = -\\frac{1}{2}\\nabla^2 - \\frac{1}{r}$. Let us test the spherically symmetric exponential **Ansatz**:\n$$\\Phi_\\alpha(r) = c \\cdot \\exp(-\\alpha r)$$\nUsing the spherical volume element $\\langle \\dots | \\dots \\rangle = \\int_0^\\infty 4\\pi r^2 (\\dots)\\,dr$, the standard radial Gamma integral $\\int_0^\\infty r^n e^{-ar}\\,dr = \\frac{n!}{a^{n+1}}$, and the radial Laplacian $\\nabla^2\\Phi_\\alpha = \\frac{1}{r^2}\\frac{d}{dr}\\left(r^2\\frac{d\\Phi_\\alpha}{dr}\\right) = \\left(\\alpha^2 - \\frac{2\\alpha}{r}\\right)c e^{-\\alpha r}$:\n1. **Overlap (Normalization) Integral:**\n   $$\\langle\\Phi_\\alpha|\\Phi_\\alpha\\rangle = 4\\pi c^2 \\int_0^\\infty r^2 e^{-2\\alpha r}\\,dr = 4\\pi c^2 \\frac{2!}{(2\\alpha)^3} = \\pi\\frac{c^2}{\\alpha^3}$$\n2. **Kinetic Energy Integral:**\n   $$\\left\\langle\\Phi_\\alpha\\left|-\\frac{1}{2}\\nabla^2\\right|\\Phi_\\alpha\\right\\rangle = -\\frac{1}{2}(4\\pi c^2)\\int_0^\\infty r^2\\left(\\alpha^2 - \\frac{2\\alpha}{r}\\right)e^{-2\\alpha r}\\,dr = -2\\pi c^2\\left[\\alpha^2\\frac{2!}{(2\\alpha)^3} - 2\\alpha\\frac{1!}{(2\\alpha)^2}\\right] = \\pi\\frac{c^2}{2\\alpha}$$\n3. **Coulomb Potential Energy Integral:**\n   $$\\left\\langle\\Phi_\\alpha\\left|-\\frac{1}{r}\\right|\\Phi_\\alpha\\right\\rangle = -4\\pi c^2 \\int_0^\\infty r e^{-2\\alpha r}\\,dr = -4\\pi c^2 \\frac{1!}{(2\\alpha)^2} = -\\pi\\frac{c^2}{\\alpha^2}$$\n4. **Total Variational Energy $E(\\alpha)$ and Minimization (Slide 14):**\n   Dividing by $\\langle\\Phi_\\alpha|\\Phi_\\alpha\\rangle = \\pi\\frac{c^2}{\\alpha^3}$ cancels $\\pi c^2$:\n   $$\\boxed{E(\\alpha) = \\frac{\\pi\\frac{c^2}{2\\alpha} - \\pi\\frac{c^2}{\\alpha^2}}{\\pi\\frac{c^2}{\\alpha^3}} = \\underbrace{\\frac{1}{2}\\alpha^2}_{T(\\alpha)} \\underbrace{- \\alpha}_{V(\\alpha)}}$$\n   Setting $\\frac{dE(\\alpha)}{d\\alpha} = \\alpha - 1 = 0$ yields the optimal inverse decay length **$\\alpha^* = 1\\,a_0^{-1}$** and the exact ground-state energy:\n   $$E(\\alpha^* = 1) = \\frac{1}{2}(1)^2 - 1 = -0.5\\text{ Ha} = -13.6\\text{ eV}$$\n"
+      },
+      {
+        "id": "concept_variational_hydrogen",
+        "type": "concept_cell",
+        "title": "Interactive Explorer: Variational Principle for the Hydrogen Atom",
+        "description_markdown": "Vary the exponential decay parameter $\\alpha \\in [0.2, 2.2]\\,a_0^{-1}$ for the trial wavefunction $\\Phi_\\alpha(r) = c e^{-\\alpha r}$, and toggle between the energy components $T(\\alpha), V(\\alpha), E(\\alpha)$ and the radial probability density $4\\pi r^2|\\Phi_\\alpha(r)|^2$.\n",
+        "render_function": "render_variational_hydrogen",
+        "layout": "figure_left",
+        "controls": [
+          {
+            "name": "alpha",
+            "label": "Trial exponent alpha (a_0^-1)",
+            "kind": "slider",
+            "min": 0.2,
+            "max": 2.2,
+            "step": 0.05,
+            "default": 1.0
+          },
+          {
+            "name": "view_mode",
+            "label": "Plot View",
+            "kind": "dropdown",
+            "default": "energy_landscape",
+            "options": [
+              {
+                "label": "Energy Curves T(alpha), V(alpha), E(alpha)",
+                "value": "energy_landscape"
+              },
+              {
+                "label": "Radial Probability Density 4*pi*r^2*|Psi(r)|^2",
+                "value": "radial_density"
+              }
+            ]
+          }
+        ],
+        "takeaway_markdown": "**Key Takeaway:** Squeezing the electron closer to the nucleus ($\\alpha > 1$) makes the Coulomb potential $V(\\alpha) = -\\alpha$ more negative, but the kinetic energy $T(\\alpha) = +\\frac{1}{2}\\alpha^2$ (Heisenberg uncertainty curvature) grows quadratically and wins! Conversely, delocalizing the electron ($\\alpha < 1$) lowers $T(\\alpha)$ but sacrifices too much Coulomb attraction. The exact balance occurs at $\\alpha^* = 1\\,a_0^{-1}$, where $E(1) = -0.50\\text{ Ha}$ and the virial theorem $2T + V = 0$ is satisfied.\n"
+      },
+      {
+        "id": "q09_variational_principle_statement",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_variational_principle_and_hydrogen",
+        "prompt_markdown": "According to the Variational Principle (`05.QuantMech.pdf`, p. 12), if $E_0$ is the exact ground-state energy of a Hamiltonian $\\hat{\\mathcal{H}}$ and $\\Phi$ is any normalized trial wavefunction ($\\langle\\Phi|\\Phi\\rangle = 1$) that is **not** identical to the exact ground state, what is always true of $E[\\Phi] = \\langle\\Phi|\\hat{\\mathcal{H}}|\\Phi\\rangle$?\n",
+        "hint_markdown": "Expand Phi in the complete orthonormal eigenstates of H: |Phi> = sum_n c_n |Psi_n> with E_n >= E_0.",
+        "options": [
+          {
+            "id": "a",
+            "text": "E[Phi] is strictly greater than E_0 (E[Phi] > E_0), providing a rigorous upper bound to the true ground-state energy."
+          },
+          {
+            "id": "b",
+            "text": "E[Phi] is strictly less than E_0 (E[Phi] < E_0)."
+          },
+          {
+            "id": "c",
+            "text": "E[Phi] can be either above or below E_0 depending on the sign of Phi."
+          },
+          {
+            "id": "d",
+            "text": "E[Phi] = 0 for any non-eigenstate trial wavefunction."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Expanding $|\\\\Phi\\\\rangle = \\\\sum_n c_n |\\\\Psi_n\\\\rangle$ in the exact eigenstates of $\\\\hat{\\\\mathcal{H}}$ gives $E[\\\\Phi] = \\\\sum_n |c_n|^2 E_n \\\\ge E_0 \\\\sum_n |c_n|^2 = E_0$, with strict inequality whenever $|\\\\Phi\\\\rangle$ has any non-zero admixture of excited states ($E_n > E_0$)."
+      },
+      {
+        "id": "q10_atomic_units_values",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_variational_principle_and_hydrogen",
+        "prompt_markdown": "In Hartree atomic units (`05.QuantMech.pdf`, p. 15), $\\hbar = m_e = e = \\frac{1}{4\\pi\\varepsilon_0} = 1$. What are the approximate values of $1\\text{ Bohr radius}$ ($a_0$) in \u00c5ngstr\u00f6ms and $1\\text{ Hartree}$ ($\\text{Ha}$) in electron-volts ($\\text{eV}$)?\n",
+        "hint_markdown": "Convert 5.2918 x 10^-11 m to Angstroms (10^-10 m) and 4.3597 x 10^-18 J to eV (divide by 1.6022 x 10^-19 J/eV), or recall that the Hydrogen ground state is -0.5 Ha = -13.6 eV.",
+        "options": [
+          {
+            "id": "a",
+            "text": "a_0 approx 0.529 A and 1 Ha approx 27.21 eV (so the Hydrogen ground state is E_0 = -0.5 Ha = -13.6 eV)"
+          },
+          {
+            "id": "b",
+            "text": "a_0 approx 1.000 A and 1 Ha approx 13.60 eV"
+          },
+          {
+            "id": "c",
+            "text": "a_0 approx 5.29 A and 1 Ha approx 1.00 eV"
+          },
+          {
+            "id": "d",
+            "text": "a_0 approx 0.053 A and 1 Ha approx 100.0 eV"
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "From Slide 15, $a_0 = 5.29177 \\\\times 10^{-11}\\\\text{ m} = 0.529177\\\\text{ \u00c5}$, and $1\\\\text{ Ha} = \\\\frac{4.35974 \\\\times 10^{-18}\\\\text{ J}}{1.60218 \\\\times 10^{-19}\\\\text{ J/eV}} = 27.2114\\\\text{ eV}$."
+      },
+      {
+        "id": "q11_hydrogen_overlap_integral",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_variational_principle_and_hydrogen",
+        "prompt_markdown": "Using the radial integral identity $\\int_0^\\infty r^n \\exp(-ar)\\,dr = \\frac{n!}{a^{n+1}}$ from Slide 13, what is the overlap integral $\\langle\\Phi_\\alpha|\\Phi_\\alpha\\rangle = \\int_0^\\infty 4\\pi r^2 \\bigl(c e^{-\\alpha r}\\bigr)^2\\,dr$ for the Hydrogen trial wavefunction $\\Phi_\\alpha(r) = c e^{-\\alpha r}$?\n",
+        "hint_markdown": "Substitute n = 2 and a = 2*alpha into 4 * pi * c^2 * (n! / a^(n+1)).",
+        "options": [
+          {
+            "id": "a",
+            "text": "pi * c^2 / alpha^3 (so normalization <Phi_alpha|Phi_alpha> = 1 requires c = sqrt(alpha^3 / pi))"
+          },
+          {
+            "id": "b",
+            "text": "4 * pi * c^2 / alpha^2"
+          },
+          {
+            "id": "c",
+            "text": "pi * c^2 / (2 * alpha)"
+          },
+          {
+            "id": "d",
+            "text": "2 * pi * c^2 / alpha^4"
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "With $n = 2$ and $a = 2\\\\alpha$, $\\\\langle\\\\Phi_\\\\alpha|\\\\Phi_\\\\alpha\\\\rangle = 4\\\\pi c^2 \\\\int_0^\\\\infty r^2 e^{-2\\\\alpha r}\\\\,dr = 4\\\\pi c^2 \\\\frac{2!}{(2\\\\alpha)^3} = 4\\\\pi c^2 \\\\frac{2}{8\\\\alpha^3} = \\\\pi\\\\frac{c^2}{\\\\alpha^3}$ (Slide 14)."
+      },
+      {
+        "id": "q12_hydrogen_kinetic_potential_scaling",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": [
+          "sec_variational_principle_and_hydrogen",
+          "concept_variational_hydrogen"
+        ],
+        "prompt_markdown": "In the Hydrogen variational derivation (Slide 14), after dividing by the normalization integral $\\langle\\Phi_\\alpha|\\Phi_\\alpha\\rangle = \\pi\\frac{c^2}{\\alpha^3}$, how do the normalized kinetic energy $T(\\alpha) = \\frac{\\langle\\Phi_\\alpha|-\\frac{1}{2}\\nabla^2|\\Phi_\\alpha\\rangle}{\\langle\\Phi_\\alpha|\\Phi_\\alpha\\rangle}$ and potential energy $V(\\alpha) = \\frac{\\langle\\Phi_\\alpha|-\\frac{1}{r}|\\Phi_\\alpha\\rangle}{\\langle\\Phi_\\alpha|\\Phi_\\alpha\\rangle}$ depend on $\\alpha$?\n",
+        "hint_markdown": "Divide pi*c^2/(2*alpha) and -pi*c^2/alpha^2 by pi*c^2/alpha^3 as shown on Slide 14.",
+        "options": [
+          {
+            "id": "a",
+            "text": "T(alpha) = +(1/2)*alpha^2 and V(alpha) = -alpha, giving E(alpha) = (1/2)*alpha^2 - alpha"
+          },
+          {
+            "id": "b",
+            "text": "T(alpha) = +alpha and V(alpha) = -(1/2)*alpha^2, giving E(alpha) = alpha - (1/2)*alpha^2"
+          },
+          {
+            "id": "c",
+            "text": "T(alpha) = +1/(2*alpha^2) and V(alpha) = -1/alpha"
+          },
+          {
+            "id": "d",
+            "text": "T(alpha) = +(1/2)*alpha^3 and V(alpha) = -alpha^2"
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "From Slide 14, $T(\\\\alpha) = \\\\frac{\\\\pi c^2 / (2\\\\alpha)}{\\\\pi c^2 / \\\\alpha^3} = \\\\frac{1}{2}\\\\alpha^2$ (since $\\\\nabla^2$ brings down two spatial derivatives $\\\\propto \\\\alpha^2$) and $V(\\\\alpha) = \\\\frac{-\\\\pi c^2 / \\\\alpha^2}{\\\\pi c^2 / \\\\alpha^3} = -\\\\alpha$ (since $1/r$ scales as $\\\\alpha^1$). Thus $E(\\\\alpha) = \\\\frac{1}{2}\\\\alpha^2 - \\\\alpha$."
+      },
+      {
+        "id": "q13_hydrogen_suboptimal_alpha_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": [
+          "sec_variational_principle_and_hydrogen",
+          "concept_variational_hydrogen"
+        ],
+        "prompt_markdown": "Suppose you evaluate the Hydrogen variational energy $E(\\alpha) = \\frac{1}{2}\\alpha^2 - \\alpha$ (in Hartrees) at a compressed trial parameter $\\alpha = 1.6\\,a_0^{-1}$ instead of the optimal $\\alpha^* = 1.0\\,a_0^{-1}$. What is the resulting trial energy $E(1.6)$ (in $\\text{Ha}$)? *(Include the correct algebraic sign.)*\n",
+        "hint_markdown": "Calculate 0.5 * (1.6)^2 - 1.6 = 1.28 - 1.60, and notice that it lies strictly above E_0 = -0.50 Ha!",
+        "correct": {
+          "value": -0.32,
+          "tolerance": 0.005
+        },
+        "rationale_markdown": "At $\\\\alpha = 1.6$, $T(1.6) = \\\\frac{1}{2}(1.6)^2 = +1.28\\\\text{ Ha}$ and $V(1.6) = -1.60\\\\text{ Ha}$, giving $E(1.6) = 1.28 - 1.60 = -0.32\\\\text{ Ha}$, which is strictly greater than the true ground-state energy $E_0 = -0.50\\\\text{ Ha}$ in accordance with the Variational Principle."
+      },
+      {
+        "id": "q14_hydrogenic_ion_z_scaling_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "hard",
+        "taught_by": "sec_variational_principle_and_hydrogen",
+        "prompt_markdown": "Consider a one-electron hydrogenic ion with nuclear charge $Z = 2$ ($\\text{He}^+$), whose Hamiltonian in atomic units is $\\hat{\\mathcal{H}} = -\\frac{1}{2}\\nabla^2 - \\frac{Z}{r} = -\\frac{1}{2}\\nabla^2 - \\frac{2}{r}$. Using the same trial wavefunction $\\Phi_\\alpha(r) = c e^{-\\alpha r}$, the potential energy integral is multiplied by $Z = 2$, giving $E(\\alpha) = \\frac{1}{2}\\alpha^2 - Z\\alpha = \\frac{1}{2}\\alpha^2 - 2\\alpha$. Minimizing $E(\\alpha)$ with respect to $\\alpha$, what is the exact ground-state energy $E_0$ of $\\text{He}^+$ (in $\\text{Ha}$)?\n",
+        "hint_markdown": "Set dE/dalpha = alpha - 2 = 0 to find alpha* = 2, then evaluate E(2) = 0.5 * (2)^2 - 2 * (2).",
+        "correct": {
+          "value": -2.0,
+          "tolerance": 0.01
+        },
+        "rationale_markdown": "Differentiating $E(\\\\alpha) = \\\\frac{1}{2}\\\\alpha^2 - Z\\\\alpha$ gives $\\\\frac{dE}{d\\\\alpha} = \\\\alpha - Z = 0 \\\\implies \\\\alpha^* = Z = 2\\\\,a_0^{-1}$ (the orbital is pulled twice as close to the nucleus). Substituting $\\\\alpha^* = 2$ gives $E_0 = \\\\frac{1}{2}(2)^2 - 2(2) = -\\\\frac{1}{2}Z^2 = -2.0\\\\text{ Ha}$ ($-54.4\\\\text{ eV}$)."
+      },
+      {
+        "id": "sec_many_electron_and_hartree_fock",
+        "type": "markdown_section",
+        "title": "3. The Many-Electron Problem, Hartree Method, and Hartree\u2013Fock Exchange",
+        "body_markdown": "For an atom, molecule, or solid with $n$ interacting electrons in the field of nuclear charge(s) $Z$, the many-electron time-independent Schr\u00f6dinger equation in atomic units (`05.QuantMech.pdf`, p. 16) is:\n$$\\left[-\\frac{1}{2}\\sum_{i=1}^n \\nabla_i^2 - \\sum_{i=1}^n \\frac{Z}{r_i} + \\sum_{i=1}^{n-1}\\sum_{j=i+1}^n \\frac{1}{|\\mathbf{r}_i - \\mathbf{r}_j|}\\right]\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_n) = E\\,\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_n)$$\n\n### The Curse of Dimensionality: Example of an $\\text{Fe}$ Atom (Slide 16)\nBecause the two-electron Coulomb repulsion $\\frac{1}{|\\mathbf{r}_i - \\mathbf{r}_j|}$ couples all electron coordinates together, $\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_n)$ is a function of **$3n$ coupled spatial variables**!\n- A single **iron ($\\text{Fe}$) atom** has **$n = 26$ electrons** $\\implies$ $\\psi$ depends on $3 \\times 26 = 78$ spatial variables.\n- Even on a very coarse 3D grid with only $10$ grid points along each Cartesian axis ($10^3$ points per electron), storing $\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_{26})$ requires **$10^{3 \\times 26} = 10^{78}$ numbers**!\n- At $4\\text{ Bytes}$ per single-precision number ($4 \\times 10^{78}\\text{ Bytes}$), this dwarfs all digital data stored worldwide ($\\sim 1\\text{ zettabyte} = 10^{21}\\text{ Bytes}$) by 57 orders of magnitude! Direct grid solution of the many-electron Schr\u00f6dinger equation is physically impossible.\n\n### 1. The Hartree Method (1928, Slides 17\u201319)\nDouglas Hartree approximated the $n$-electron wavefunction as a simple **Hartree product** of independent single-particle orbitals:\n$$\\psi_{\\text{Hartree}}(\\mathbf{r}_1, \\mathbf{r}_2, \\dots, \\mathbf{r}_n) = \\varphi_1(\\mathbf{r}_1)\\,\\varphi_2(\\mathbf{r}_2)\\cdots\\varphi_n(\\mathbf{r}_n)$$\nApplying the variational principle yields a self-consistent equation where electron $i$ moves in the nuclear potential plus the mean-field **Hartree potential** of the other $j \\ne i$ electron charge clouds:\n$$\\left[-\\frac{1}{2}\\nabla_i^2 + \\sum_I V(\\mathbf{R}_I - \\mathbf{r}_i) + \\underbrace{\\sum_{j \\ne i}\\int |\\varphi_j(\\mathbf{r}_j)|^2 \\frac{1}{|\\mathbf{r}_i - \\mathbf{r}_j|}\\,d^3r_j}_{\\text{Hartree potential}}\\right]\\varphi_i(\\mathbf{r}_i) = \\epsilon\\,\\varphi_i(\\mathbf{r}_i)$$\n**What is missing in the Hartree approximation (Slides 19\u201320)?**\n1. **No Fermion Antisymmetry:** The Hartree product violates the Pauli Exclusion Principle.\n2. **No Electron Correlation:** Electrons only feel the *average* smeared-out density of other electrons (\"cars smeared out\" rather than \"cars avoiding each other\" dynamically at short distances).\n\n### 2. The Hartree\u2013Fock (HF) Method & Slater Determinants (Slides 20\u201324)\nElectrons are indistinguishable **fermions**: swapping any two electrons must flip the sign of the wavefunction:\n$$\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_j, \\dots, \\mathbf{r}_k, \\dots, \\mathbf{r}_n) = -\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_k, \\dots, \\mathbf{r}_j, \\dots, \\mathbf{r}_n)$$\nFock and Slater enforced antisymmetry by replacing the Hartree product with a single **Slater Determinant** (Slide 21):\n$$\\psi_{\\text{HF}}(\\mathbf{r}_1, \\mathbf{r}_2, \\dots, \\mathbf{r}_n) = \\frac{1}{\\sqrt{n!}} \\begin{vmatrix} \\varphi_1(\\mathbf{r}_1) & \\varphi_2(\\mathbf{r}_1) & \\cdots & \\varphi_n(\\mathbf{r}_1) \\\\ \\varphi_1(\\mathbf{r}_2) & \\varphi_2(\\mathbf{r}_2) & \\cdots & \\varphi_n(\\mathbf{r}_2) \\\\ \\vdots & \\vdots & \\ddots & \\vdots \\\\ \\varphi_1(\\mathbf{r}_n) & \\varphi_2(\\mathbf{r}_n) & \\cdots & \\varphi_n(\\mathbf{r}_n) \\end{vmatrix}$$\n- Swapping two electron coordinates $\\mathbf{r}_j \\leftrightarrow \\mathbf{r}_k$ swaps two rows of the determinant, automatically changing its sign! If two electrons occupy the same spin-orbital ($\\varphi_\\mu = \\varphi_\\nu$), two columns are identical and $\\psi_{\\text{HF}} \\equiv 0$ (**Pauli Exclusion Principle**).\n- Applying the variational principle to $\\psi_{\\text{HF}}$ yields the **Hartree\u2013Fock equations** (Slides 22\u201323):\n  $$\\left[-\\frac{1}{2}\\nabla_i^2 + \\sum_I V(\\mathbf{R}_I - \\mathbf{r}_i)\\right]\\varphi_\\lambda(\\mathbf{r}_i) + \\left[\\sum_\\mu \\int \\varphi_\\mu^*(\\mathbf{r}_j)\\frac{1}{|\\mathbf{r}_i - \\mathbf{r}_j|}\\varphi_\\mu(\\mathbf{r}_j)\\,d^3r_j\\right]\\varphi_\\lambda(\\mathbf{r}_i) - \\underbrace{\\sum_\\mu \\left[\\int \\varphi_\\mu^*(\\mathbf{r}_j)\\frac{1}{|\\mathbf{r}_i - \\mathbf{r}_j|}\\varphi_\\lambda(\\mathbf{r}_j)\\,d^3r_j\\right]\\varphi_\\mu(\\mathbf{r}_i)}_{\\text{Non-local Exchange Term } \\int V_\\lambda^x(\\mathbf{r}_i, \\mathbf{r}_j)\\varphi_\\lambda(\\mathbf{r}_j)\\,d^3r_j} = \\epsilon\\,\\varphi_\\lambda(\\mathbf{r}_i)$$\n- **Successes of HF:** Exact Pauli exchange; **completely self-interaction free** (for $\\mu = \\lambda$, the $\\mu=\\lambda$ exchange integral exactly cancels the spurious $\\mu=\\lambda$ self-Hartree integral!); good atomic properties; foundation for correlated quantum chemistry.\n- **Limitations of HF & Correlation Energy (Slide 24):** By definition, any effect beyond a single Slater determinant is **electron correlation**:\n  $$\\boxed{E_{\\text{corr}} = E_{\\text{exact}} - E_{\\text{HF}} \\le 0}$$\n  Although $|E_{\\text{corr}}|$ is typically $< 1\\%$ of the total energy $E_{\\text{exact}}$ (e.g., for $\\text{N}_2$, $|E_{\\text{corr}}| = 14.9\\text{ eV} < 1\\%$ of $E_{\\text{exact}}$), it makes a **huge** contribution to chemical bonding! For $\\text{N}_2 \\to \\text{N} + \\text{N}$, Hartree\u2013Fock predicts a binding energy of only $D_e(\\text{HF}) = 5.1\\text{ eV}$ vs. $D_e(\\text{exp}) = 9.9\\text{ eV}$ (severe underbinding!).\n\n### 3. Beyond Hartree\u2013Fock: Configuration Interaction & Thomas\u2013Fermi (Slides 25\u201326)\n- **Configuration Interaction (CI):** Expands the many-body wavefunction as a linear combination of the ground-state HF determinant $\\Psi_0$ plus excited Slater determinants $\\Psi_1, \\Psi_2, \\dots$ formed by promoting electrons from occupied orbitals $i$ to unoccupied (\"virtual\") orbitals $K+1$:\n  $$\\Psi_{\\text{CI}} = c_0 \\Psi_0 + c_1 \\Psi_1 + c_2 \\Psi_2 + \\dots$$\n  Full CI approaches $E_{\\text{exact}}$ as the basis set grows, but scales combinatorially with $n$.\n- **Thomas\u2013Fermi Approach (1927, Slide 26):** Proposed replacing the $3n$-variable wavefunction $\\Psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_n)$ with the **3-variable electron density $\\rho(\\mathbf{r})$** by modeling the kinetic energy at each point as a *locally homogeneous electron gas* ($T_{\\text{TF}}[\\rho] \\propto \\int \\rho(\\mathbf{r})^{5/3}\\,d^3r$). While Thomas\u2013Fermi failed to bind molecules (due to its crude orbital-free kinetic energy), it inspired modern **Density Functional Theory**!\n"
+      },
+      {
+        "id": "q15_fe_atom_grid_storage_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "As shown in the $\\text{Fe}$ atom example on Slide 16 (`05.QuantMech.pdf`), an iron atom has $n = 26$ electrons in 3D space. If we discretize each spatial coordinate $(x_i, y_i, z_i)$ on a coarse grid of just $10$ points per direction, the number of grid values required to store the full many-body wavefunction $\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_{26})$ is $10^P$. What is the exponent $P$?\n",
+        "hint_markdown": "Each of the 26 electrons has 3 spatial coordinates, giving 3 * 26 variables, each with 10 grid points.",
+        "correct": {
+          "value": 78,
+          "tolerance": 0.1
+        },
+        "rationale_markdown": "With $n = 26$ electrons in 3D, $\\\\psi(\\\\mathbf{r}_1, \\\\dots, \\\\mathbf{r}_{26})$ is a function of $3 \\\\times 26 = 78$ scalar coordinates. With $10$ grid points along each coordinate axis, the grid contains $10^{78}$ points ($P = 78$)."
+      },
+      {
+        "id": "q16_hartree_method_deficiencies",
+        "type": "problem",
+        "question_type": "multi_select",
+        "difficulty": "easy",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "According to Slides 17\u201320 of `05.QuantMech.pdf`, what are the two fundamental physical properties missing from the 1928 Hartree product approximation $\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_n) = \\varphi_1(\\mathbf{r}_1)\\varphi_2(\\mathbf{r}_2)\\cdots\\varphi_n(\\mathbf{r}_n)$? *(Select all that apply.)*\n",
+        "hint_markdown": "Look at the bullet points under 'What is missing in the Hartree approximation' on Slide 20.",
+        "options": [
+          {
+            "id": "a",
+            "text": "The wavefunction is not antisymmetric under the exchange of two identical fermions (violating the Pauli Exclusion Principle)."
+          },
+          {
+            "id": "b",
+            "text": "It does not include dynamic electron correlation (electrons only interact with the smeared-out average density of other electrons and can get arbitrarily close)."
+          },
+          {
+            "id": "c",
+            "text": "It omits the attraction between electrons and atomic nuclei."
+          },
+          {
+            "id": "d",
+            "text": "It omits the single-particle kinetic energy operator -1/2 nabla_i^2."
+          }
+        ],
+        "correct": [
+          "a",
+          "b"
+        ],
+        "rationale_markdown": "Slide 20 explicitly highlights the two missing ingredients in the Hartree product: (1) the wavefunction is not **antisymmetric** under particle exchange, and (2) it does not include **electron correlation** beyond the independent mean-field Hartree potential."
+      },
+      {
+        "id": "q17_slater_determinant_antisymmetry",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "How does representing an $n$-electron wavefunction as a normalized **Slater determinant** (Slide 21) automatically enforce both fermion antisymmetry and the Pauli Exclusion Principle?\n",
+        "hint_markdown": "Recall two basic linear algebra properties of determinants: what happens when two rows are swapped, and what happens when two columns are identical?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Exchanging two electrons swaps two rows of the determinant, which flips the sign of psi; placing two electrons in the same quantum state makes two columns identical, causing the determinant to vanish (psi = 0)."
+          },
+          {
+            "id": "b",
+            "text": "The determinant of a matrix is always positive definite, preventing negative probabilities."
+          },
+          {
+            "id": "c",
+            "text": "The prefactor 1/sqrt(n!) sets the Coulomb repulsion between all electron pairs to zero."
+          },
+          {
+            "id": "d",
+            "text": "Swapping two rows of a determinant leaves its sign unchanged."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "In the Slater determinant (Slide 21), row $i$ corresponds to electron coordinate $\\\\mathbf{r}_i$ and column $j$ corresponds to single-particle spin-orbital $\\\\varphi_j$. Swapping $\\\\mathbf{r}_j \\\\leftrightarrow \\\\mathbf{r}_k$ swaps two rows, multiplying the determinant by $-1$ (antisymmetry). If $\\\\varphi_j = \\\\varphi_k$, two columns are equal and the determinant is identically zero (Pauli exclusion)."
+      },
+      {
+        "id": "q18_slater_determinant_normalization_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "In the Slater determinant formula $\\psi(\\mathbf{r}_1, \\dots, \\mathbf{r}_n) = \\frac{1}{\\sqrt{n!}}\\det[\\varphi_j(\\mathbf{r}_i)]$ (Slide 21) built from $n$ orthonormal orbitals, the determinant expands into $n!$ permutation terms. For a $4$-electron Be atom ($n = 4$), how many product terms are in the expanded determinant ($n!$)?\n",
+        "hint_markdown": "Compute 4! = 4 * 3 * 2 * 1.",
+        "correct": {
+          "value": 24,
+          "tolerance": 0.1
+        },
+        "rationale_markdown": "An $n \\\\times n$ determinant expands into $n!$ signed permutation products. For $n = 4$, $4! = 4 \\\\times 3 \\\\times 2 \\\\times 1 = 24$ terms, which is why the normalization prefactor is $\\\\frac{1}{\\\\sqrt{24}} = \\\\frac{1}{\\\\sqrt{n!}}$."
+      },
+      {
+        "id": "q19_hf_nonlocal_exchange_term",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "Why is the Hartree\u2013Fock exchange term $-\\sum_\\mu \\left[\\int \\varphi_\\mu^*(\\mathbf{r}_j)\\frac{1}{|\\mathbf{r}_i - \\mathbf{r}_j|}\\varphi_\\lambda(\\mathbf{r}_j)\\,d^3r_j\\right]\\varphi_\\mu(\\mathbf{r}_i)$ called a **non-local potential** on Slide 23 (`05.QuantMech.pdf`)?\n",
+        "hint_markdown": "Compare V_H(r_i) * phi_lambda(r_i) (which only depends on phi_lambda at point r_i) against the exchange integral (where phi_lambda(r_j) is inside the integral over all r_j!).",
+        "options": [
+          {
+            "id": "a",
+            "text": "Because the orbital phi_lambda(r_j) appears inside the integral over r_j (of the form integral V_lambda^x(r_i, r_j) phi_lambda(r_j) d^3r_j) and cannot be written as a simple multiplicative function V^x(r_i) * phi_lambda(r_i) at a single point r_i."
+          },
+          {
+            "id": "b",
+            "text": "Because it acts only on electrons located infinitely far outside the crystal."
+          },
+          {
+            "id": "c",
+            "text": "Because the Coulomb potential 1/|r_i - r_j| is independent of distance."
+          },
+          {
+            "id": "d",
+            "text": "Because it violates conservation of charge."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "As shown on Slide 23, in the exchange term $\\\\varphi_\\\\lambda(\\\\mathbf{r}_j)$ and $\\\\varphi_\\\\mu(\\\\mathbf{r}_i)$ have swapped coordinates $\\\\mathbf{r}_i \\\\leftrightarrow \\\\mathbf{r}_j$. Consequently, evaluating the exchange operator on $\\\\varphi_\\\\lambda$ at point $\\\\mathbf{r}_i$ requires integrating $\\\\varphi_\\\\lambda(\\\\mathbf{r}_j)$ over **all space** $\\\\mathbf{r}_j$: $\\\\int V_\\\\lambda^x(\\\\mathbf{r}_i, \\\\mathbf{r}_j)\\\\varphi_\\\\lambda(\\\\mathbf{r}_j)\\\\,d^3r_j$. This makes Hartree\u2013Fock exchange computationally much more expensive (especially in plane-wave bases) than a local potential $V(\\\\mathbf{r}_i)\\\\varphi_\\\\lambda(\\\\mathbf{r}_i)$."
+      },
+      {
+        "id": "q20_hf_self_interaction_cancellation",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "In the Hartree\u2013Fock equation on Slide 22, the Hartree sum $\\sum_\\mu$ includes the $\\mu = \\lambda$ term (where an electron in orbital $\\varphi_\\lambda$ repels its own charge cloud). Why is Hartree\u2013Fock nevertheless **completely free of self-interaction error** (Slide 24)?\n",
+        "hint_markdown": "Compare the mu = lambda term in the Hartree sum against the mu = lambda term in the subtracted Exchange sum on Slide 22.",
+        "options": [
+          {
+            "id": "a",
+            "text": "For mu = lambda, the exchange term integral is identical to the Hartree self-repulsion integral with the opposite sign, so they cancel out exactly!"
+          },
+          {
+            "id": "b",
+            "text": "In Hartree-Fock, the Coulomb repulsion 1/|r_i - r_j| is set to zero for all orbitals."
+          },
+          {
+            "id": "c",
+            "text": "Self-interaction only occurs for nuclei, not for electrons."
+          },
+          {
+            "id": "d",
+            "text": "The kinetic energy cancels the Hartree self-interaction."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Inspecting Slide 22 for $\\\\mu = \\\\lambda$, the Hartree term is $+\\\\left[\\\\int |\\\\varphi_\\\\lambda(\\\\mathbf{r}_j)|^2 \\\\frac{1}{|\\\\mathbf{r}_i - \\\\mathbf{r}_j|}\\\\,d^3r_j\\\\right]\\\\varphi_\\\\lambda(\\\\mathbf{r}_i)$ and the exchange term is $-\\\\left[\\\\int |\\\\varphi_\\\\lambda(\\\\mathbf{r}_j)|^2 \\\\frac{1}{|\\\\mathbf{r}_i - \\\\mathbf{r}_j|}\\\\,d^3r_j\\\\right]\\\\varphi_\\\\lambda(\\\\mathbf{r}_i)$. They cancel identically, making Hartree\u2013Fock exact (and self-interaction free) for any 1-electron system."
+      },
+      {
+        "id": "q21_correlation_energy_and_n2_binding",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "On Slide 24 (`05.QuantMech.pdf`), the correlation energy is defined as $E_{\\text{corr}} = E_{\\text{exact}} - E_{\\text{HF}}$. For the $\\text{N}_2$ molecule, $|E_{\\text{corr}}| = 14.9\\text{ eV}$, which is $< 1\\%$ of the total energy $E_{\\text{exact}}$. Why is neglecting $E_{\\text{corr}}$ in Hartree\u2013Fock still unacceptable for chemistry and materials science?\n",
+        "hint_markdown": "Compare the HF binding energy of N_2 (5.1 eV) against the experimental binding energy (9.9 eV) on Slide 24.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Chemical reactions and cohesive binding depend on relative energy differences rather than total energies; for N_2 -> N + N, correlation accounts for nearly half the bond dissociation energy (D_e(HF) = 5.1 eV vs. D_e(exp) = 9.9 eV)."
+          },
+          {
+            "id": "b",
+            "text": "Because E_HF is always lower than E_exact, violating the variational principle."
+          },
+          {
+            "id": "c",
+            "text": "Because Hartree-Fock predicts N_2 to have a binding energy of 1000 eV."
+          },
+          {
+            "id": "d",
+            "text": "Because correlation energy only affects core 1s electrons and never changes chemical bond energies."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Total atomic energies are dominated by huge core-electron binding energies that cancel in chemical reactions. Relative bond energies are on the order of $1\\text{\u2013}10\\text{ eV}$, which is the same scale as the change in correlation energy upon bond formation! In $\\text{N}_2$, HF underbinds the triple bond by $9.9 - 5.1 = 4.8\\text{ eV}$ ($\\sim 48\\%$ error)."
+      },
+      {
+        "id": "q22_n2_correlation_binding_error_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "From Slide 24 (`05.QuantMech.pdf`), the experimental dissociation (binding) energy of $\\text{N}_2 \\to \\text{N} + \\text{N}$ is $D_e(\\text{exp}) = 9.9\\text{ eV}$, whereas Hartree\u2013Fock predicts $D_e(\\text{Hartree\u2013Fock}) = 5.1\\text{ eV}$. By how many $\\text{eV}$ does Hartree\u2013Fock underestimate the binding energy of $\\text{N}_2$ due to missing electron correlation?\n",
+        "hint_markdown": "Compute D_e(exp) - D_e(Hartree-Fock) = 9.9 - 5.1.",
+        "correct": {
+          "value": 4.8,
+          "tolerance": 0.05
+        },
+        "rationale_markdown": "Subtracting $D_e(\\\\text{Hartree\u2013Fock}) = 5.1\\\\text{ eV}$ from $D_e(\\\\text{exp}) = 9.9\\\\text{ eV}$ gives $4.8\\\\text{ eV}$ of missing correlation binding energy."
+      },
+      {
+        "id": "q23_configuration_interaction_and_thomas_fermi",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_many_electron_and_hartree_fock",
+        "prompt_markdown": "How do the **Configuration Interaction (CI)** method (Slide 25) and the **Thomas\u2013Fermi** approach (Slide 26) take opposite philosophical routes to go beyond Hartree\u2013Fock?\n",
+        "hint_markdown": "Compare expanding Psi_CI = c_0 Psi_0 + c_1 Psi_1 + ... in excited Slater determinants vs. replacing Psi(r_1,...,r_n) with the 3-variable density rho(r).",
+        "options": [
+          {
+            "id": "a",
+            "text": "CI systematically improves the 3n-variable wavefunction by mixing in excited Slater determinants (Psi_CI = sum c_k Psi_k), whereas Thomas-Fermi replaces the 3n-variable wavefunction altogether with the 3-variable electron density rho(r)."
+          },
+          {
+            "id": "b",
+            "text": "CI replaces the wavefunction with the 3D density rho(r), whereas Thomas-Fermi mixes excited Slater determinants."
+          },
+          {
+            "id": "c",
+            "text": "Both CI and Thomas-Fermi use a single unantisymmetrized Hartree product."
+          },
+          {
+            "id": "d",
+            "text": "Thomas-Fermi is an exact correlated wavefunction method that scales as O(N!)."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Configuration Interaction (Slide 25) stays in the $3n$-dimensional wavefunction framework by adding excited determinants $\\\\Psi_1, \\\\Psi_2, \\\\dots$ to capture correlation. Thomas\u2013Fermi (Slide 26) pioneered the density-functional route by working directly with the 3-variable electron density $\\\\rho(\\\\mathbf{r})$."
+      },
+      {
+        "id": "sec_dft_hohenberg_kohn_kohn_sham",
+        "type": "markdown_section",
+        "title": "4. Density Functional Theory: Hohenberg\u2013Kohn Theorems, Kohn\u2013Sham Equations & Jacob's Ladder",
+        "body_markdown": "**Density Functional Theory (DFT)** \u2014 for which Walter Kohn was awarded the 1998 Nobel Prize in Chemistry (`05.QuantMech.pdf`, pp. 27\u201336) \u2014 places the density-based approach on an **exact** mathematical footing, reducing the $3N$-variable problem to a **3-variable electron density $\\rho(\\mathbf{r})$**!\n\n### 1st Hohenberg\u2013Kohn Theorem (1964, Slides 28\u201329)\n- Normally, the external nuclear potential $V_{\\text{ext}}(\\mathbf{r})$ and electron count $N_{\\text{el}}$ define the Hamiltonian $\\hat{\\mathcal{H}}$, which determines the many-body ground state $\\Psi_0(\\mathbf{r}_1, \\dots, \\mathbf{r}_N)$ and, by integrating over $N-1$ coordinates, the ground-state density $\\rho_0(\\mathbf{r})$.\n- **Hohenberg and Kohn proved that this arrow is invertible:** the ground-state electron density $\\rho_0(\\mathbf{r})$ **uniquely determines** the external potential $V_{\\text{ext}}(\\mathbf{r})$ (up to an additive constant), and therefore uniquely determines $\\Psi_0$ and **all** ground-state properties!\n- Consequently, the ground-state total energy is a unique functional of the density:\n  $$E_{\\text{tot}}^0[\\rho_0] = \\underbrace{E_{\\text{kin}}[\\rho_0] + V_{\\text{el-el}}[\\rho_0]}_{\\text{Universal functional } F[\\rho_0]} + \\int V_{\\text{ext}}(\\mathbf{r})\\rho_0(\\mathbf{r})\\,d^3r$$\n  where $F[\\rho] = E_{\\text{kin}}[\\rho] + V_{\\text{el-el}}[\\rho]$ is a **universal functional** (its mathematical form is identical for any atom, molecule, or solid, independent of $V_{\\text{ext}}$), though its exact analytical formula is unknown.\n\n### 2nd Hohenberg\u2013Kohn Theorem (Slide 30)\n- The ground-state energy and density can be obtained **variationally**: for any trial 3D electron density $\\rho(\\mathbf{r})$ integrating to $N$ electrons,\n  $$\\boxed{E[\\rho(\\mathbf{r})] = F[\\rho(\\mathbf{r})] + \\int V_{\\text{ext}}(\\mathbf{r})\\rho(\\mathbf{r})\\,d^3r \\ge E_0}$$\n  and the density $\\rho(\\mathbf{r})$ that minimizes $E[\\rho]$ is the **exact ground-state density $\\rho_0(\\mathbf{r})$**!\n\n### The Kohn\u2013Sham Equations (1965, Slides 31\u201333)\nWhy couldn't we just minimize $E[\\rho]$ directly? Because orbital-free approximations (like Thomas\u2013Fermi) fail badly for the kinetic energy $E_{\\text{kin}}[\\rho]$.\n**Kohn and Sham's brilliant breakthrough (Slide 31):** map the interacting electron system onto an **auxiliary system of non-interacting electrons** $\\{\\varphi_i(\\mathbf{r})\\}_{i=1}^N$ constructed to have the **exact same ground-state density** $\\rho(\\mathbf{r}) = \\sum_{i=1}^N |\\varphi_i(\\mathbf{r})|^2$!\n- Why? Because the kinetic energy of non-interacting orbitals is known exactly:\n  $$T_S[\\rho(\\mathbf{r})] = -\\frac{1}{2}\\sum_{i=1}^N \\int \\varphi_i^*(\\mathbf{r})\\nabla^2 \\varphi_i(\\mathbf{r})\\,d^3r$$\n- The universal functional is then partitioned into the known non-interacting kinetic energy $T_S[\\rho]$, the known classical Hartree electrostatic energy $E_H[\\rho]$, and the **exchange-correlation functional $E_{\\text{xc}}[\\rho]$** (which absorbs all remaining quantum exchange, correlation, and the small kinetic correlation difference $E_{\\text{kin}} - T_S$):\n  $$F[\\rho(\\mathbf{r})] = T_S[\\rho(\\mathbf{r})] + \\underbrace{\\frac{1}{2}\\iint \\frac{\\rho(\\mathbf{r})\\rho(\\mathbf{r}')}{|\\mathbf{r}-\\mathbf{r}'|}\\,d^3r\\,d^3r'}_{E_H[\\rho(\\mathbf{r})]} + E_{\\text{xc}}[\\rho(\\mathbf{r})]$$\n- Applying the Euler\u2013Lagrange variational minimization $\\frac{\\delta}{\\delta\\rho}\\left\\{E[\\rho] - \\mu\\left(\\int\\rho(\\mathbf{r})\\,d^3r - N\\right)\\right\\} = 0$ yields the single-particle **Kohn\u2013Sham Equations** (Slide 32):\n  $$\\boxed{\\underbrace{\\left[-\\frac{1}{2}\\nabla^2 + V_H(\\mathbf{r}) + V_{\\text{xc}}(\\mathbf{r}) + V_{\\text{ext}}(\\mathbf{r})\\right]}_{\\hat{\\mathcal{H}}_{\\text{KS}}}\\varphi_i(\\mathbf{r}) = \\epsilon_i\\,\\varphi_i(\\mathbf{r})}$$\n  where $V_H(\\mathbf{r}) = \\int \\frac{\\rho(\\mathbf{r}')}{|\\mathbf{r}-\\mathbf{r}'|}\\,d^3r'$ and the **local exchange-correlation potential** is the functional derivative $V_{\\text{xc}}(\\mathbf{r}) = \\frac{\\delta E_{\\text{xc}}[\\rho]}{\\delta\\rho(\\mathbf{r})}$.\n- **Total Energy Double-Counting Correction (Slide 33):** Notice that the sum of Kohn\u2013Sham eigenvalues $\\sum_{i=1}^N \\epsilon_i$ double-counts the Hartree energy and uses $\\int V_{\\text{xc}}(\\mathbf{r})\\rho(\\mathbf{r})\\,d^3r$ instead of $E_{\\text{xc}}[\\rho]$:\n  $$E[\\{\\varphi_i\\}] = \\sum_{i=1}^N \\epsilon_i - E_H[\\rho(\\mathbf{r})] + E_{\\text{xc}}[\\rho(\\mathbf{r})] - \\int \\frac{\\delta E_{\\text{xc}}[\\rho]}{\\delta\\rho(\\mathbf{r})}\\rho(\\mathbf{r})\\,d^3r$$\n\n### Exchange\u2013Correlation Functionals: Jacob's Ladder (Slides 34\u201336, 52)\nSince Kohn\u2013Sham DFT is exact in principle if $E_{\\text{xc}}[\\rho]$ were known, all practical approximations lie in modeling $E_{\\text{xc}}[\\rho]$:\n1. **Local Density Approximation (LDA, Slides 34\u201336):** Assumes $E_{\\text{xc}}^{\\text{LDA}}[\\rho] = \\int \\rho(\\mathbf{r})\\varepsilon_{\\text{xc}}^{\\text{HEG}}(\\rho(\\mathbf{r}))\\,d^3r$, where $\\varepsilon_{\\text{xc}}^{\\text{HEG}}(\\rho)$ is the exact exchange-correlation energy per electron of a **uniform (homogeneous) electron gas**, parameterized from **Ceperley and Alder's (1980) Quantum Monte Carlo** simulations (which also mapped the low-density Wigner crystal transition at $r_s \\approx 100$).\n   - *Performance:* Surprisingly accurate for solid phase stability (e.g. correctly predicts the energetic order of all **11 high-pressure crystal phases of Silicon**, Slide 35!), but systematically **overbinds** solids (**cohesive energies 5\u201320% too large**, **lattice constants 1\u20133% too small**, bulk moduli 5\u201320% too stiff).\n2. **Generalized Gradient Approximation (GGA: PW91, PBE, Slide 36):** Incorporates both the local density $\\rho(\\mathbf{r})$ and its spatial gradient $|\\nabla\\rho(\\mathbf{r})|$ while preserving exact analytic scaling laws. Improves cohesive energies and is crucial for magnetic transition metals (e.g. predicting BCC ferromagnetic Fe as the ground state).\n3. **Meta-GGA (TPSS, SCAN):** Includes the Laplacian $\\nabla^2\\rho$ or orbital kinetic-energy density $\\tau(\\mathbf{r}) = \\frac{1}{2}\\sum_i |\\nabla\\varphi_i|^2$ (curvature information).\n4. **Hybrid Functionals (B3LYP, HSE, Slide 36):** Mix a fraction (typically 20\u201325%) of **non-local Hartree\u2013Fock exact exchange** with GGA/Meta-GGA exchange-correlation, partially curing self-interaction error and dramatically improving **semiconductor band gaps**.\n"
+      },
+      {
+        "id": "concept_kohn_sham_scf",
+        "type": "concept_cell",
+        "title": "Interactive Explorer: Kohn\u2013Sham Self-Consistent Field (SCF) Loop & Functional Benchmarks",
+        "description_markdown": "Because the Kohn\u2013Sham effective potential $V_{\\text{KS}}[\\rho] = V_{\\text{ext}} + V_H[\\rho] + V_{\\text{xc}}[\\rho]$ depends on the electron density $\\rho(\\mathbf{r}) = \\sum_i |\\varphi_i(\\mathbf{r})|^2$ produced by its own eigenfunctions, the Kohn\u2013Sham equations must be solved iteratively until self-consistency! Vary the density mixing parameter $\\beta$ and select an exchange-correlation functional along Jacob's Ladder.\n",
+        "render_function": "render_kohn_sham_scf_loop",
+        "layout": "figure_left",
+        "controls": [
+          {
+            "name": "mixing_beta",
+            "label": "SCF density mixing step beta",
+            "kind": "slider",
+            "min": 0.1,
+            "max": 0.95,
+            "step": 0.05,
+            "default": 0.35
+          },
+          {
+            "name": "functional",
+            "label": "Exchange-Correlation Functional",
+            "kind": "dropdown",
+            "default": "PBE_GGA",
+            "options": [
+              {
+                "label": "LDA (Ceperley-Alder Uniform Electron Gas)",
+                "value": "LDA"
+              },
+              {
+                "label": "GGA-PBE (Local Density + Gradient |nabla rho|)",
+                "value": "PBE_GGA"
+              },
+              {
+                "label": "Hybrid HSE06 (GGA + 25% Exact HF Exchange)",
+                "value": "HSE_Hybrid"
+              }
+            ]
+          }
+        ],
+        "takeaway_markdown": "**Key Takeaway:** By the 2nd Hohenberg\u2013Kohn theorem, $\\left.\\frac{\\delta E[\\rho]}{\\delta\\rho}\\right|_{\\rho_0} = \\mu$, so a first-order density error $\\|\\delta\\rho\\|$ produces a **second-order** variational energy error $|E[\\rho] - E_0| \\propto \\|\\delta\\rho\\|^2$. Notice how choosing $\\beta$ too large ($\\beta \\gtrsim 0.9$) triggers *charge sloshing* divergence!\n"
+      },
+      {
+        "id": "q24_first_hohenberg_kohn_theorem",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "What is the central statement of the **1st Hohenberg\u2013Kohn Theorem** (`05.QuantMech.pdf`, pp. 28\u201329) that makes Density Functional Theory possible?\n",
+        "hint_markdown": "Look at the reverse arrow V_ext(r) <= rho_0(r) in the box on Slide 28.",
+        "options": [
+          {
+            "id": "a",
+            "text": "The ground-state electron density rho_0(r) (a function of only 3 spatial variables) uniquely determines the external potential V_ext(r), and therefore uniquely determines the many-body ground-state wavefunction Psi_0 and all system properties."
+          },
+          {
+            "id": "b",
+            "text": "Any excited-state wavefunction is an explicit polynomial of the nuclear positions."
+          },
+          {
+            "id": "c",
+            "text": "The electron-electron Coulomb repulsion vanishes in all crystalline solids."
+          },
+          {
+            "id": "d",
+            "text": "The kinetic energy of an interacting electron gas is identically zero."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Slide 28 shows the Hohenberg\u2013Kohn mapping $\\\\rho_0(\\\\mathbf{r}) \\\\Rightarrow V_{\\\\text{ext}}(\\\\mathbf{r}) \\\\Rightarrow \\\\Psi_i(\\\\mathbf{r}_1,\\\\dots,\\\\mathbf{r}_N)$: because the ground-state density $\\\\rho_0(\\\\mathbf{r})$ uniquely determines $V_{\\\\text{ext}}(\\\\mathbf{r})$ and $N_{\\\\text{el}}$, the total energy and all ground-state observables are exact functionals of $\\\\rho_0(\\\\mathbf{r})$."
+      },
+      {
+        "id": "q25_universal_functional_definition",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "In the Hohenberg\u2013Kohn energy decomposition $E_{\\text{tot}}^0[\\rho] = F[\\rho] + \\int V_{\\text{ext}}(\\mathbf{r})\\rho(\\mathbf{r})\\,d^3r$ (Slide 29), what does $F[\\rho]$ contain and why is it called the **universal functional**?\n",
+        "hint_markdown": "Check Slide 29 for the definition F[rho^0] = E_kin[rho^0] + V_{el-el}[rho^0].",
+        "options": [
+          {
+            "id": "a",
+            "text": "F[rho] = E_kin[rho] + V_{el-el}[rho] contains the electronic kinetic energy and electron-electron interaction; it is 'universal' because its functional form is exactly the same for any atom, molecule, or solid (independent of the external nuclear potential V_ext)."
+          },
+          {
+            "id": "b",
+            "text": "F[rho] contains only the nuclear-nuclear repulsion and changes functional form for every element in the periodic table."
+          },
+          {
+            "id": "c",
+            "text": "F[rho] is called universal because its simple closed-form algebraic formula was derived by Thomas and Fermi in 1927."
+          },
+          {
+            "id": "d",
+            "text": "F[rho] = int V_ext(r) rho(r) d^3r."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "As stated on Slide 29, $F[\\\\rho] = E_{\\\\text{kin}}[\\\\rho] + V_{\\\\text{el-el}}[\\\\rho]$ depends only on intrinsic properties of electrons (their mass and mutual Coulomb interaction), so its functional form is identical across all chemical systems \u2014 though its exact mathematical formula remains unknown."
+      },
+      {
+        "id": "q26_second_hohenberg_kohn_theorem",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": [
+          "sec_dft_hohenberg_kohn_kohn_sham",
+          "concept_kohn_sham_scf"
+        ],
+        "prompt_markdown": "What does the **2nd Hohenberg\u2013Kohn Theorem** (Slide 30) guarantee about the total energy functional $E[\\rho(\\mathbf{r})] = F[\\rho(\\mathbf{r})] + \\int V_{\\text{ext}}(\\mathbf{r})\\rho(\\mathbf{r})\\,d^3r$?\n",
+        "hint_markdown": "Read the two bullet points and the inequality on Slide 30.",
+        "options": [
+          {
+            "id": "a",
+            "text": "E[rho(r)] >= E_0 for any valid trial density rho(r), and the density that minimizes E[rho(r)] is the exact ground-state density rho_0(r)."
+          },
+          {
+            "id": "b",
+            "text": "E[rho(r)] <= E_0 for all trial densities."
+          },
+          {
+            "id": "c",
+            "text": "Every trial density yields the exact same total energy E_0."
+          },
+          {
+            "id": "d",
+            "text": "The 2nd Hohenberg-Kohn theorem applies only to a single isolated hydrogen atom."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "The 2nd Hohenberg\u2013Kohn theorem establishes the variational principle directly in terms of the 3D density $\\\\rho(\\\\mathbf{r})$: $E[\\\\rho(\\\\mathbf{r})] \\\\ge E_0$, with equality at the exact ground-state density $\\\\rho_0(\\\\mathbf{r})$."
+      },
+      {
+        "id": "q27_kohn_sham_mapping_motivation",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "In the Kohn\u2013Sham formulation of DFT (Slides 31\u201333), why do we re-introduce $N$ single-particle orbitals $\\varphi_i(\\mathbf{r})$ ($\\rho(\\mathbf{r}) = \\sum_{i=1}^N |\\varphi_i(\\mathbf{r})|^2$) describing a fictitious **non-interacting** reference system, instead of minimizing $E[\\rho]$ directly using $\\rho(\\mathbf{r})$ alone?\n",
+        "hint_markdown": "Read the first bullet point on Slide 31 ('Why? The kinetic energy of the non-interacting system is well defined.').",
+        "options": [
+          {
+            "id": "a",
+            "text": "Because the kinetic energy functional of an interacting density E_kin[rho] is unknown and poorly approximated by orbital-free formulas, whereas the non-interacting orbital kinetic energy T_S = -1/2 sum_i <phi_i|nabla^2|phi_i> is exact and captures almost all of the true kinetic energy!"
+          },
+          {
+            "id": "b",
+            "text": "Because the Kohn-Sham orbitals eliminate the need to compute the Hartree electrostatic potential V_H(r)."
+          },
+          {
+            "id": "c",
+            "text": "Because the Kohn-Sham orbitals make the exchange-correlation functional E_xc[rho] identically zero."
+          },
+          {
+            "id": "d",
+            "text": "Because a 3N-variable Slater determinant is faster to store on a grid than a 3D density."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Direct orbital-free density functionals (like Thomas\u2013Fermi) fail to describe shell structure and chemical bonding because they cannot accurately represent the kinetic energy $E_{\\\\text{kin}}[\\\\rho]$. Kohn and Sham solved this by computing the large non-interacting kinetic energy $T_S[\\\\{\\\\varphi_i\\\\}]$ exactly from single-particle orbitals and lumping only the small residual kinetic correlation $E_{\\\\text{kin}} - T_S$ into $E_{\\\\text{xc}}[\\\\rho]$."
+      },
+      {
+        "id": "q28_kohn_sham_effective_potential",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "In the Kohn\u2013Sham eigenvalue equation $\\left[-\\frac{1}{2}\\nabla^2 + V_{\\text{eff}}(\\mathbf{r})\\right]\\varphi_i(\\mathbf{r}) = \\epsilon_i\\varphi_i(\\mathbf{r})$ (Slide 32), what are the three terms that make up the local Kohn\u2013Sham effective potential $V_{\\text{eff}}(\\mathbf{r})$?\n",
+        "hint_markdown": "Inspect the boxed equation for H_KS on Slide 32.",
+        "options": [
+          {
+            "id": "a",
+            "text": "V_eff(r) = V_H(r) + V_xc(r) + V_ext(r), where V_H is the classical Hartree potential, V_xc = delta E_xc / delta rho(r) is the local exchange-correlation potential, and V_ext is the external nuclear potential."
+          },
+          {
+            "id": "b",
+            "text": "V_eff(r) = T_S(r) + E_corr(r) - V_ext(r)."
+          },
+          {
+            "id": "c",
+            "text": "V_eff(r) contains only the external nuclear attraction V_ext(r) because Kohn-Sham electrons do not feel V_H or V_xc."
+          },
+          {
+            "id": "d",
+            "text": "V_eff(r) is the non-local Hartree-Fock integral operator V_lambda^x(r, r') with zero correlation."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Minimizing $T_S + E_H[\\\\rho] + E_{\\\\text{xc}}[\\\\rho] + \\\\int V_{\\\\text{ext}}\\\\rho\\\\,d^3r$ with respect to $\\\\varphi_i^*(\\\\mathbf{r})$ yields the effective single-particle potential $V_{\\\\text{eff}}(\\\\mathbf{r}) = V_H(\\\\mathbf{r}) + V_{\\\\text{xc}}(\\\\mathbf{r}) + V_{\\\\text{ext}}(\\\\mathbf{r})$ (Slide 32), where $V_{\\\\text{xc}}(\\\\mathbf{r}) = \\\\frac{\\\\delta E_{\\\\text{xc}}[\\\\rho]}{\\\\delta\\\\rho(\\\\mathbf{r})}$ is a **local** multiplicative potential."
+      },
+      {
+        "id": "q29_kohn_sham_total_energy_double_counting",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "hard",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "According to the summary equation on Slide 33 (`05.QuantMech.pdf`), why is the Kohn\u2013Sham total ground-state energy **not** simply equal to the sum of the occupied Kohn\u2013Sham eigenvalues $\\sum_{i=1}^N \\epsilon_i$?\n",
+        "hint_markdown": "Look at the bottom line of Slide 33: E = sum_i eps_i - E_H[rho] + E_xc[rho] - int (delta E_xc / delta rho) * rho d^3r.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Because summing eps_i = <phi_i | -1/2 nabla^2 + V_H + V_xc + V_ext | phi_i> double-counts the Hartree energy (giving 2*E_H instead of E_H) and integrates V_xc(r)*rho(r) instead of E_xc[rho], requiring the correction E = sum_i eps_i - E_H[rho] + E_xc[rho] - int V_xc(r)*rho(r) d^3r."
+          },
+          {
+            "id": "b",
+            "text": "Because the Kohn-Sham eigenvalues eps_i do not include the kinetic energy T_S."
+          },
+          {
+            "id": "c",
+            "text": "Because the external potential V_ext(r) is double-counted in sum_i eps_i."
+          },
+          {
+            "id": "d",
+            "text": "Because sum_i eps_i is always identically zero in a periodic crystal."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Multiplying the Kohn\u2013Sham equation by $\\\\varphi_i^*(\\\\mathbf{r})$, integrating, and summing over $i=1\\\\dots N$ gives $\\\\sum_{i=1}^N \\\\epsilon_i = T_S[\\\\rho] + 2E_H[\\\\rho] + \\\\int V_{\\\\text{xc}}(\\\\mathbf{r})\\\\rho(\\\\mathbf{r})\\\\,d^3r + \\\\int V_{\\\\text{ext}}(\\\\mathbf{r})\\\\rho(\\\\mathbf{r})\\\\,d^3r$. Comparing with $E = T_S + E_H + E_{\\\\text{xc}} + \\\\int V_{\\\\text{ext}}\\\\rho\\\\,d^3r$ directly yields the Slide 33 formula $E = \\\\sum_i \\\\epsilon_i - E_H[\\\\rho] + E_{\\\\text{xc}}[\\\\rho] - \\\\int \\\\frac{\\\\delta E_{\\\\text{xc}}}{\\\\delta\\\\rho}\\\\rho\\\\,d^3r$."
+      },
+      {
+        "id": "q30_lda_ceperley_alder_origin",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "In the **Local Density Approximation (LDA)** (`05.QuantMech.pdf`, pp. 34, 36), how was the exchange-correlation energy density of the uniform (homogeneous) electron gas determined?\n",
+        "hint_markdown": "Check the citation on Slide 34 and the first bullet point on Slide 36.",
+        "options": [
+          {
+            "id": "a",
+            "text": "From Ceperley and Alder's (1980) stochastic Quantum Monte Carlo (QMC) simulations of the uniform electron gas across electron densities."
+          },
+          {
+            "id": "b",
+            "text": "By fitting empirical parameters to the experimental lattice constant of diamond silicon."
+          },
+          {
+            "id": "c",
+            "text": "By setting the correlation energy equal to zero and using only the Thomas-Fermi kinetic energy."
+          },
+          {
+            "id": "d",
+            "text": "From classical molecular dynamics with a Lennard-Jones 12-6 potential."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "As shown on Slides 34 and 36, the correlation part of LDA is parameterized directly from D. M. Ceperley and B. J. Alder's 1980 **Quantum Monte Carlo** calculations of the homogeneous electron gas (*Phys. Rev. Lett.* **45**, 566, 1980)."
+      },
+      {
+        "id": "q31_jacobs_ladder_functionals",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": [
+          "sec_dft_hohenberg_kohn_kohn_sham",
+          "concept_kohn_sham_scf"
+        ],
+        "prompt_markdown": "On Slide 36 (`05.QuantMech.pdf`), four classes of exchange-correlation functionals are presented in order of increasing physical ingredients: **LDA**, **GGA (PW91, PBE)**, **Meta-GGA (TPSS)**, and **Hybrid Functionals (B3LYP, HSE)**. Which option correctly matches each rung to the new physical ingredient it introduces?\n",
+        "hint_markdown": "Review the bullets under LDA, GGA, Meta-GGA, and Hybrid density functionals on Slide 36.",
+        "options": [
+          {
+            "id": "a",
+            "text": "LDA uses only local density rho(r); GGA adds density gradients |nabla rho|; Meta-GGA adds density curvature / kinetic-energy density; Hybrids mix in a fraction of non-local Hartree-Fock exact exchange."
+          },
+          {
+            "id": "b",
+            "text": "LDA includes Hartree-Fock exchange; GGA removes gradients; Meta-GGA uses only uniform gas density."
+          },
+          {
+            "id": "c",
+            "text": "All four functionals depend solely on the local density rho(r) at a single point."
+          },
+          {
+            "id": "d",
+            "text": "Hybrid functionals replace the Kohn-Sham equations with empirical pair potentials."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Slide 36 outlines the exact hierarchy: **LDA** (uniform electron gas at local $\\\\rho(\\\\mathbf{r})$) $\\\\to$ **GGA** (adds gradients $\\\\nabla\\\\rho$) $\\\\to$ **Meta-GGA** (adds curvature / kinetic-energy density) $\\\\to$ **Hybrids** (mixes non-local Hartree\u2013Fock exchange with GGA/Meta-GGA)."
+      },
+      {
+        "id": "q32_lda_vs_gga_systematic_trends",
+        "type": "problem",
+        "question_type": "multi_select",
+        "difficulty": "medium",
+        "taught_by": [
+          "sec_dft_hohenberg_kohn_kohn_sham",
+          "concept_kohn_sham_scf"
+        ],
+        "prompt_markdown": "According to the DFT summary on Slide 52 (`05.QuantMech.pdf`), which of the following statements accurately describe the systematic errors and strengths of **LDA** and **GGA** for solids? *(Select all that apply.)*\n",
+        "hint_markdown": "Read the summary bullets for LDA and GGA on Slide 52.",
+        "options": [
+          {
+            "id": "a",
+            "text": "LDA overbinds solids: its cohesive energies are 5-20% too strongly bound, and its equilibrium lattice constants are 1-3% too small."
+          },
+          {
+            "id": "b",
+            "text": "LDA bulk moduli have 5-20% errors (with the largest errors occurring for late transition metals)."
+          },
+          {
+            "id": "c",
+            "text": "GGA improves cohesive energies over LDA, is often (though not always) better for lattice parameters, and is especially important for magnetic systems."
+          },
+          {
+            "id": "d",
+            "text": "Both LDA and GGA predict semiconductor band gaps that are 50% too large compared to experiment."
+          }
+        ],
+        "correct": [
+          "a",
+          "b",
+          "c"
+        ],
+        "rationale_markdown": "Slide 52 summarizes these exact rules of thumb: LDA **overbinds** (cohesive energies 5\u201320% too large, lattice constants 1\u20133% too small, bulk moduli 5\u201320% off), while GGA corrects cohesive energies and magnetic ground states. Both LDA and GGA **underestimate** (not overestimate!) semiconductor band gaps."
+      },
+      {
+        "id": "q33_silicon_high_pressure_phases",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_dft_hohenberg_kohn_kohn_sham",
+        "prompt_markdown": "As illustrated on Slide 35 (`05.QuantMech.pdf`), when Silicon is compressed from ambient pressure up to $79\\text{ GPa}$, it undergoes a sequence of phase transitions across 11 crystal structures: $\\text{Si(I) diamond } (Z=4) \\to \\text{Si(II) }\\beta\\text{-tin } (Z=6) \\to \\text{Imma} \\to \\text{simple hexagonal } (Z=8) \\to \\text{orthorhombic } (Z=10) \\to \\text{hcp } (Z=12) \\to \\text{fcc } (Z=12)$. What is the physical trend in coordination number $Z$ and electronic character under compression, and how well does DFT-LDA perform?\n",
+        "hint_markdown": "Inspect the coordination numbers Z = 4 -> 6 -> 8 -> 10 -> 12 and the caption at the bottom of Slide 35.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Coordination number steadily increases from Z = 4 (open covalent diamond) to Z = 12 (close-packed metallic hcp/fcc) accompanied by an insulator-to-metal transition, and DFT-LDA correctly predicts the energetic order of all these phases!"
+          },
+          {
+            "id": "b",
+            "text": "Coordination number decreases from Z = 12 at ambient pressure to Z = 2 at 79 GPa, and LDA fails to predict any phase transition."
+          },
+          {
+            "id": "c",
+            "text": "Silicon remains in the 4-coordinated diamond structure at all pressures up to 100 GPa."
+          },
+          {
+            "id": "d",
+            "text": "High-pressure silicon phases are wider-band-gap insulators than ambient diamond silicon."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Under pressure, minimizing enthalpy $H = E + PV$ favors denser packing: Silicon transforms from open 4-coordinated semiconducting diamond $\\\\text{Si(I)}$ at $11\\\\text{ GPa}$ into 6-coordinated metallic $\\\\beta$-tin $\\\\text{Si(II)}$, progressing up to 12-coordinated close-packed metallic $\\\\text{hcp}$ and $\\\\text{fcc}$ phases. Remarkably, parameter-free DFT-LDA predicts the energetic ordering of all 11 phases!"
+      },
+      {
+        "id": "sec_pseudopotentials_and_planewaves",
+        "type": "markdown_section",
+        "title": "5. DFT in Practice: Pseudopotentials, Plane Waves & Reciprocal Space",
+        "body_markdown": "As outlined on Slide 37 (`05.QuantMech.pdf`), running a practical solid-state DFT calculation involves four pillars:\n1. **Remove tightly bound core electrons** via the **pseudopotential approach**.\n2. **Expand valence orbitals in a basis set** (localized **Gaussians/atomic orbitals** for isolated molecules; periodic **plane waves** for crystalline solids).\n3. **Evaluate total energy using Fast Fourier Transforms (FFTs)** between real and reciprocal space (computing **kinetic and Hartree energies in reciprocal space**, and **exchange-correlation and external potentials in real space**) plus **Brillouin-zone $\\mathbf{k}$-point integrations**.\n4. **Minimize energy / iterate charge density to self-consistency.**\n\n### Why Pseudopotentials Are Essential (Slides 38\u201340)\nConsider **Aluminum ($\\text{Al}, Z = 13$, Slide 38)**:\n- Its 10 **core electrons** ($1s^2$ at $-1512\\text{ eV}$, $2s^2$ at $-108\\text{ eV}$, $2p^6$ at $-69.8\\text{ eV}$) are tightly bound near the nucleus and **do not participate in chemical bonding** (\"frozen core\").\n- Only the 3 **valence electrons** ($3s^2$ at $-7.8\\text{ eV}$, $3p^1$ at $-2.7\\text{ eV}$) form metallic/chemical bonds, allowing us to replace $\\text{Al } (Z=13)$ with **Pseudo-$\\text{Al } (Z_{\\text{val}} = 3)$**!\n- Furthermore, inside the core region ($r < r_c$, Slide 39), the true all-electron valence wavefunction $\\Psi_{\\text{AE}}(r)$ **oscillates rapidly** (it must have radial nodes to remain orthogonal to the core $1s, 2s, 2p$ states!), and the bare nuclear Coulomb potential $V(r) \\sim -Z/r$ diverges at $r \\to 0$. Resolving those rapid short-wavelength core wiggles in a plane-wave basis would require an astronomical plane-wave cutoff energy $E_{\\text{cut}}$!\n- **Pseudopotential Construction (Slide 39):** Inside a chosen cutoff radius $r < r_c$, we replace the diverging $-Z/r$ potential with a smooth $V_{\\text{pseudo}}(r)$ and replace the oscillating $\\Psi_{\\text{AE}}(r)$ with a **smooth, nodeless pseudo-wavefunction $\\Psi_{\\text{pseudo}}(r)$**, subject to the constraint that **outside the cutoff region ($r \\ge r_c$), $\\Psi_{\\text{pseudo}}(r) \\equiv \\Psi_{\\text{AE}}(r)$, $V_{\\text{pseudo}}(r) \\equiv V_{\\text{AE}}(r)$, and the eigenvalues $\\epsilon_i$ are identical**!\n\n### Non-Local Pseudopotentials (Slide 40)\nWhy must accurate pseudopotentials be **non-local** (i.e., angular-momentum dependent, having separate potentials $V_s(r), V_p(r), V_d(r)$ for different $l$ channels)?\n- As explained on Slide 40, **valence states with different angular momenta $l$ scatter differently from the core**.\n- Specifically, valence states that have a **core shell of the same angular momentum $l$ below them** feel a strong effective Pauli repulsion (orthogonality constraint to the inner core shell of the same $l$), whereas the first shell of a given $l$ (such as $2p$ in Carbon/Oxygen or $3d$ in $3d$ transition metals, which have **no** core $p$ or $d$ shell below them!) feels no radial orthogonality repulsion.\n"
+      },
+      {
+        "id": "concept_pseudopotential_smoothing",
+        "type": "concept_cell",
+        "title": "Interactive Explorer: Pseudopotential Smoothing & Plane-Wave Basis Cutoff",
+        "description_markdown": "Adjust the pseudopotential core cutoff radius $r_c$ and switch between the **Real-Space Wavefunction/Potential** view (matching Slide 39) and the **Reciprocal-Space Plane-Wave Spectrum** $|c(\\mathbf{G})|^2$. See how removing the core oscillations inside $r < r_c$ causes the high-$G$ Fourier components to decay orders of magnitude faster!\n",
+        "render_function": "render_pseudopotential_smoothing",
+        "layout": "figure_left",
+        "controls": [
+          {
+            "name": "rc",
+            "label": "Core cutoff radius r_c (Bohr, a_0)",
+            "kind": "slider",
+            "min": 0.9,
+            "max": 2.2,
+            "step": 0.1,
+            "default": 1.5
+          },
+          {
+            "name": "view_mode",
+            "label": "Domain View",
+            "kind": "dropdown",
+            "default": "real_space",
+            "options": [
+              {
+                "label": "Real Space: Psi_AE vs. Psi_pseudo & V(r)",
+                "value": "real_space"
+              },
+              {
+                "label": "Reciprocal Space: Plane-Wave Spectrum |c(G)|^2",
+                "value": "fourier_cutoff"
+              }
+            ]
+          }
+        ],
+        "takeaway_markdown": "**Key Takeaway:** Outside $r \\ge r_c$ (the bonding region), $\\Psi_{\\text{pseudo}}(r)$ and $\\Psi_{\\text{AE}}(r)$ are **identical**. Increasing $r_c$ makes the pseudopotential \"softer\" (requiring fewer plane waves and a lower kinetic cutoff $E_{\\text{cut}} = \\frac{\\hbar^2}{2m}G_{\\max}^2$), whereas a smaller $r_c$ is \"harder\" (higher $E_{\\text{cut}}$) but more transferable across shortened high-pressure bonds.\n"
+      },
+      {
+        "id": "q34_dft_in_practice_real_vs_reciprocal",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_pseudopotentials_and_planewaves",
+        "prompt_markdown": "In a modern plane-wave DFT code using Fast Fourier Transforms (FFTs, `05.QuantMech.pdf`, p. 37), which energy terms are evaluated in **reciprocal ($\\mathbf{G}$) space** and which are evaluated in **real ($\\mathbf{r}$) space**?\n",
+        "hint_markdown": "Read the sub-bullets under Step 3 on Slide 37 ('Calculate total energy for trial orbitals').",
+        "options": [
+          {
+            "id": "a",
+            "text": "Kinetic energy and Hartree electrostatic energy are evaluated in reciprocal space (where nabla^2 and Poisson's equation are diagonal in G), while exchange-correlation and local external potentials are evaluated in real space."
+          },
+          {
+            "id": "b",
+            "text": "All terms are evaluated exclusively in real space without using reciprocal space."
+          },
+          {
+            "id": "c",
+            "text": "Kinetic energy is evaluated in real space while LDA exchange-correlation is evaluated analytically in reciprocal space."
+          },
+          {
+            "id": "d",
+            "text": "Fast Fourier Transforms scale as O(N^4) and are avoided in plane-wave codes."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "In a plane-wave basis $e^{i(\\\\mathbf{k}+\\\\mathbf{G})\\\\cdot\\\\mathbf{r}}$, the Laplacian $-\\\\frac{1}{2}\\\\nabla^2$ is diagonal in reciprocal space ($\\\\frac{1}{2}|\\\\mathbf{k}+\\\\mathbf{G}|^2$), and the Hartree Poisson equation $\\\\nabla^2 V_H = -4\\\\pi\\\\rho$ simplifies to $V_H(\\\\mathbf{G}) = \\\\frac{4\\\\pi\\\\rho(\\\\mathbf{G})}{G^2}$. Conversely, $V_{\\\\text{xc}}(\\\\rho(\\\\mathbf{r}))$ is diagonal in real space $\\\\mathbf{r}$. FFTs switch between the two spaces in $\\\\mathcal{O}(N_G \\\\log N_G)$ time (Slide 37)."
+      },
+      {
+        "id": "q35_al_pseudopotential_valence_count_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": "sec_pseudopotentials_and_planewaves",
+        "prompt_markdown": "As shown on Slide 38 (`05.QuantMech.pdf`), an all-electron Aluminum atom ($\\text{Al}, Z = 13$) has core states $1s^2$ ($-1512\\text{ eV}$), $2s^2$ ($-108\\text{ eV}$), and $2p^6$ ($-69.8\\text{ eV}$), and valence states $3s^2$ ($-7.8\\text{ eV}$) and $3p^1$ ($-2.7\\text{ eV}$). When the inner shells are frozen into a pseudopotential (\"Pseudo Al\"), what is the effective valence ionic charge $Z_{\\text{pseudo}}$ (number of active valence electrons per Al atom)?\n",
+        "hint_markdown": "Subtract the 10 frozen core electrons (1s^2 2s^2 2p^6) from Z = 13, or read 'Pseudo Al Z = ...' on Slide 38.",
+        "correct": {
+          "value": 3,
+          "tolerance": 0.1
+        },
+        "rationale_markdown": "Freezing the $10$ Neon-core electrons ($1s^2 2s^2 2p^6$) into the ionic pseudopotential leaves only the $3$ outer valence electrons ($3s^2 3p^1$), so Pseudo-Al has $Z = 3$ (Slide 38)."
+      },
+      {
+        "id": "q36_pseudopotential_matching_outside_rc",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": [
+          "sec_pseudopotentials_and_planewaves",
+          "concept_pseudopotential_smoothing"
+        ],
+        "prompt_markdown": "According to Slide 39 (`05.QuantMech.pdf`), how do the pseudo-wavefunction $\\Psi_{\\text{pseudo}}(r)$ and pseudopotential $V_{\\text{pseudo}}(r)$ compare to the all-electron wavefunction $\\Psi_{\\text{AE}}(r)$ and Coulomb potential $V(r) \\sim -Z/r$ **inside** ($r < r_c$) versus **outside** ($r \\ge r_c$) the core cutoff radius $r_c$?\n",
+        "hint_markdown": "Examine the red (pseudo) and dashed blue (real) curves on Slide 39 inside and outside the vertical black line r_c.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Inside r < r_c, V_pseudo is smooth/finite and Psi_pseudo is smooth and nodeless (removing core oscillations); outside r >= r_c, Psi_pseudo(r) and V_pseudo(r) are identical to the true all-electron wavefunction and potential."
+          },
+          {
+            "id": "b",
+            "text": "Outside r >= r_c, Psi_pseudo(r) is set to zero while inside r < r_c it oscillates faster than Psi_AE(r)."
+          },
+          {
+            "id": "c",
+            "text": "V_pseudo(r) diverges as -Z^2/r^3 at r -> 0."
+          },
+          {
+            "id": "d",
+            "text": "Psi_pseudo(r) has twice as many radial nodes inside r < r_c as Psi_AE(r)."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Slide 39 illustrates that inside $r < r_c$, the rapid core oscillations of $\\\\Psi_{\\\\text{AE}}$ and the $-Z/r$ singularity are replaced by smooth, nodeless red curves ($\\\\Psi_{\\\\text{pseudo}}, V_{\\\\text{pseudo}}$). Outside $r \\\\ge r_c$ (where chemical bonding occurs), the red and blue curves coincide **identically**."
+      },
+      {
+        "id": "q37_nonlocal_pseudopotential_orthogonality",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_pseudopotentials_and_planewaves",
+        "prompt_markdown": "Why do **non-local pseudopotentials** (Slide 40) require different effective radial potentials $V_l(r)$ for different angular momentum channels ($s, p, d$)?\n",
+        "hint_markdown": "Read the two bullet points on Slide 40 regarding states that have a core shell below them with the same angular momentum l.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Electron states with different angular momenta l scatter differently from the core; specifically, valence states that have a core shell below them of the SAME angular momentum l feel stronger effective repulsion due to the Pauli orthogonality constraint."
+          },
+          {
+            "id": "b",
+            "text": "Because s, p, and d electrons have different electric charges."
+          },
+          {
+            "id": "c",
+            "text": "Because only d-electrons experience nuclear attraction outside r_c."
+          },
+          {
+            "id": "d",
+            "text": "Because spherical harmonics Y_{lm} are not orthogonal to one another."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Orthogonality between a valence orbital and an inner core orbital of the **same** angular momentum $l$ (whose spherical harmonics $Y_{lm}$ are identical!) must be achieved through radial nodes, which raises the radial kinetic energy and acts as an effective repulsive pseudopotential in that $l$-channel (Slide 40)."
+      },
+      {
+        "id": "q38_basis_set_molecules_vs_solids",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_pseudopotentials_and_planewaves",
+        "prompt_markdown": "According to Slide 41 (`05.QuantMech.pdf`), which basis set is most natural for **isolated molecules** versus **periodic crystalline solids**, and how do we systematically converge a basis-set calculation toward completeness?\n",
+        "hint_markdown": "Check the bullet points under 'Basis set choices' and 'Convergence' on Slide 41.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Localized atomic orbitals or Gaussians are typically used for isolated molecules, whereas periodic plane waves (sines and cosines) with Bloch's theorem and k-point sampling are used for periodic solids; convergence is achieved by systematically increasing the basis set size (e.g. G_max / E_cut) and k-point mesh."
+          },
+          {
+            "id": "b",
+            "text": "Single plane waves are used for isolated molecules in vacuum, whereas non-periodic polynomials are used for bulk crystals."
+          },
+          {
+            "id": "c",
+            "text": "Reducing the basis set size to a single function per unit cell guarantees exact completeness."
+          },
+          {
+            "id": "d",
+            "text": "k-point sampling is only required for isolated gas-phase atoms."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Molecules are localized in space (favoring atom-centered Gaussians/localized orbitals), whereas crystals have translational periodicity $[\\hat{\\mathcal{H}}, \\hat{\\mathcal{T}}_{\\mathbf{R}}] = 0$ (favoring plane waves $\\\\sum_{|\\\\mathbf{G}| \\\\le G_{\\\\max}} c_{n\\\\mathbf{k}}(\\\\mathbf{G})e^{i\\\\mathbf{G}\\\\cdot\\\\mathbf{r}}$ combined with Brillouin-zone $\\\\mathbf{k}$-point sampling, Slides 41\u201342)."
+      },
+      {
+        "id": "sec_bloch_band_structure_and_dft_failures",
+        "type": "markdown_section",
+        "title": "6. Bloch's Theorem, Crystal Band Gaps & Successes/Failures of DFT",
+        "body_markdown": "### Bloch's Theorem and Reciprocal Space (Slides 41\u201343)\nIn a periodic crystal defined by Bravais lattice vectors $\\{\\mathbf{a}_1, \\mathbf{a}_2, \\mathbf{a}_3\\}$, the Hamiltonian commutes with lattice translations ($[\\hat{\\mathcal{H}}, \\hat{\\mathcal{T}}_{\\mathbf{R}}] = 0$). By **Bloch's Theorem**, the eigenstates take the form of a plane wave modulated by a lattice-periodic function $u_{n\\mathbf{k}}(\\mathbf{r} + \\mathbf{R}) = u_{n\\mathbf{k}}(\\mathbf{r})$:\n$$\\boxed{\\varphi_{n\\mathbf{k}}(\\mathbf{r}) = u_{n\\mathbf{k}}(\\mathbf{r})\\exp(i\\mathbf{k}\\cdot\\mathbf{r}) \\quad \\Longleftrightarrow \\quad \\psi(\\mathbf{r} + \\mathbf{R}) = \\psi(\\mathbf{r})\\exp(i\\mathbf{k}\\cdot\\mathbf{R})}$$\nExpanding $u_{n\\mathbf{k}}(\\mathbf{r}) = \\sum_{|\\mathbf{G}| \\le G_{\\max}} c_{n\\mathbf{k}}(\\mathbf{G})\\exp(i\\mathbf{G}\\cdot\\mathbf{r})$ over reciprocal lattice vectors $\\mathbf{G}$ generated by:\n$$\\mathbf{b}_k = 2\\pi \\frac{\\mathbf{a}_l \\times \\mathbf{a}_m}{\\mathbf{a}_k \\cdot (\\mathbf{a}_l \\times \\mathbf{a}_m)}$$\nallows us to restrict the crystal wavevector $\\mathbf{k}$ to the **First Brillouin Zone** \u2014 the **Wigner\u2013Seitz cell of the reciprocal lattice** (Slide 43).\n\n### Physical Origin of the Electronic Band Gap: Bragg Diffraction Picture (Slides 44\u201345)\nWhy do energy gaps open in periodic crystals? Consider a 1D crystal with lattice constant $a$:\n- An electron wave undergoes **Bragg diffraction** when $n\\lambda = 2a \\implies k = \\frac{2\\pi}{\\lambda} = \\pm \\frac{n\\pi}{a}$ (at the Brillouin-zone boundary $k = \\pm\\frac{\\pi}{a}$ for $n=1$).\n- At $k = \\frac{\\pi}{a}$, the forward-traveling incident wave $\\psi_i = e^{i\\pi x/a}$ and the backward-diffracted wave $\\psi_r = e^{-i\\pi x/a}$ are degenerate and mix equally to form **two standing waves** (no traveling wave solution exists!):\n  $$\\psi_+(x) = \\psi_i + \\psi_r = 2\\cos\\left(\\frac{\\pi x}{a}\\right), \\qquad \\psi_-(x) = \\psi_i - \\psi_r = 2i\\sin\\left(\\frac{\\pi x}{a}\\right)$$\n- **Energy Splitting $\\Delta E = E_{\\text{gap}} = 2U$ (Slide 45):**\n  - $|\\psi_+(x)|^2 \\propto \\cos^2(\\pi x/a)$ piles electron probability density **directly on top of the positive ion cores** ($x = 0, \\pm a, \\pm 2a, \\dots$), lowering its potential energy by $-U$: $E_+ = E_{\\text{free}} - U$.\n  - $|\\psi_-(x)|^2 \\propto \\sin^2(\\pi x/a)$ piles electron density **in between the ions** ($x = \\pm\\frac{a}{2}, \\pm\\frac{3a}{2}, \\dots$), raising its energy by $+U$: $E_- = E_{\\text{free}} + U$.\n  - Thus, interaction with the periodic ion potential $U$ opens a **band gap** at $k = \\pm\\frac{\\pi}{a}$:\n    $$\\boxed{E_{\\text{gap}} = E_- - E_+ = (E_{\\text{free}} + U) - (E_{\\text{free}} - U) = 2U}$$\n  - Near the diffraction condition ($k \\to \\pm\\pi/a$), the band dispersion $E(k)$ curves parabolically ($\\frac{dE}{dk} = 0$ at the band edges), so electrons behave as \"free\" quasiparticles with a modified **effective mass** $m^* = \\hbar^2\\left(\\frac{d^2E}{dk^2}\\right)^{-1}$!\n\n### Metallic vs. Semiconducting Band Structures: $\\text{Cu}$ vs. $\\text{Si}$ (Slides 46\u201347)\n- In **Copper ($\\text{Cu}$, Slide 47)**, a wide, nearly-free-electron $4s$ band is intersected at intermediate energies ($-2\\text{ to }-5\\text{ eV}$ below $E_F$) by narrow, atomic-like $3d$ bands, leading to **$s\\text{\u2013}d$ hybridization** and **necking of the Fermi surface along $\\langle 111\\rangle$ ($L$-point) directions** (which drives **Hume-Rothery alloy phase stabilization**!).\n\n### Quantitative Successes & Failures of Kohn\u2013Sham DFT (Slides 48\u201352)\n1. **Structural & Elastic Properties (Slide 48):** Lattice parameters are typically accurate to **within $1\\text{\u2013}3\\%$** (often better than $1\\%$), and **bulk moduli / elastic constants** are within **$\\sim 10\\%$**.\n2. **Vibrational / Phonon Properties (Slide 48):** Atomic **forces** ($\\mathbf{F} = -\\nabla E$, 1st derivatives) are accurate to **better than $10\\%$** (similar to elastic constants). Because **vibrational phonon frequencies** $\\omega \\propto \\sqrt{k}$ are proportional to the square root of the 2nd derivative of energy ($\\frac{\\delta\\omega}{\\omega} \\approx \\frac{1}{2}\\frac{\\delta k}{k}$), phonon frequencies have about **$1/2$ the relative error of forces \u2014 i.e., $\\sim 5\\%$ accuracy** (vastly outperforming empirical EAM potentials in $\\text{Ni}$, Slide 48)!\n3. **Point Defect Energies (Slide 49):** Vacancy and interstitial formation energies in metals are highly accurate (**within $\\sim 0.1\\text{ eV}$**), but for covalent **self-interstitial defects in Silicon**, DFT-LDA/GGA underestimates the formation energy by **$\\sim 1\\text{ eV}$** (predicting $3\\text{\u2013}3.5\\text{ eV}$ vs. $4.5\\text{ eV}$ from experiment and QMC).\n4. **The DFT Band-Gap Problem (Slides 49\u201351):** Because Kohn\u2013Sham DFT is strictly a **ground-state** theory and local/semi-local functionals (LDA/GGA) suffer from residual self-interaction error and lack the exact derivative discontinuity when adding an electron, **LDA and GGA underestimate semiconductor band gaps by $20\\text{\u2013}50\\%$**!\n   - In narrow-gap semiconductors like **$\\text{Ge}$** ($E_{\\text{exp}} = 0.74\\text{ eV}$) and **$\\text{InAs}$** ($E_{\\text{exp}} = 0.41\\text{ eV}$, where LDA gives $-0.42\\text{ eV}$ and GGA-PBE gives $-0.13\\text{ eV}$, Slide 50), **LDA and GGA falsely predict a metallic ground state (negative/zero band gap)!**\n   - **Solutions:** **Hybrid functionals** (B3LYP, HSE06 gives $0.39\\text{ eV}$ for $\\text{InAs}$, $\\sim 10\\%$ accuracy) or many-body excited-state theories like the **$GW$ approximation** and **Quantum Monte Carlo (QMC)** (Slides 50\u201351).\n"
+      },
+      {
+        "id": "concept_bloch_bandgap_and_dft",
+        "type": "concept_cell",
+        "title": "Interactive Explorer: Brillouin-Zone Band Gap Opening & The DFT Band-Gap Problem",
+        "description_markdown": "Adjust the periodic crystal potential strength $U$ (in $\\text{eV}$) to watch Bragg diffraction open a band gap $E_{\\text{gap}} = 2U$ at the 1st Brillouin-zone boundary $k = \\pm\\pi/a$, or switch to the **DFT vs. $GW$ Semiconductor Band-Gap Benchmark** (matching Slides 50\u201351).\n",
+        "render_function": "render_bloch_bandgap_and_dft",
+        "layout": "figure_left",
+        "controls": [
+          {
+            "name": "u_ev",
+            "label": "Periodic ion potential U (eV)",
+            "kind": "slider",
+            "min": 0.0,
+            "max": 1.5,
+            "step": 0.1,
+            "default": 0.65
+          },
+          {
+            "name": "view_mode",
+            "label": "Visualization Mode",
+            "kind": "dropdown",
+            "default": "brillouin_zone",
+            "options": [
+              {
+                "label": "1D Brillouin Zone Dispersion E(k) & Gap 2U",
+                "value": "brillouin_zone"
+              },
+              {
+                "label": "DFT Band-Gap Problem: LDA vs. GW vs. Experiment",
+                "value": "dft_bandgap_comparison"
+              }
+            ]
+          }
+        ],
+        "takeaway_markdown": "**Key Takeaway:** At $k = \\pm\\pi/a$, Bragg reflection converts traveling waves into standing waves $\\psi_+ \\propto \\cos(\\pi x/a)$ (density on ions, energy $E_{\\text{free}} - U$) and $\\psi_- \\propto \\sin(\\pi x/a)$ (density between ions, energy $E_{\\text{free}} + U$), opening $E_{\\text{gap}} = 2U$. In Kohn\u2013Sham DFT, LDA/GGA underestimates $E_{\\text{gap}}$ by $20\\text{\u2013}50\\%$, turning narrow-gap semiconductors ($\\text{InAs}, \\text{Ge}$) into false metals unless hybrid functionals (HSE) or $GW$ corrections are applied.\n"
+      },
+      {
+        "id": "q39_bloch_theorem_and_brillouin_zone",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": "sec_bloch_band_structure_and_dft_failures",
+        "prompt_markdown": "According to Slide 43 (`05.QuantMech.pdf`), what is **Bloch's Theorem** for an electron in a crystal with Bravais lattice translation vector $\\mathbf{R}$, and how is the **First Brillouin Zone** geometrically defined?\n",
+        "hint_markdown": "Read the second and fifth bullet points on Slide 43.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Bloch's theorem states that psi(r + R) = psi(r) * exp(i k . R) (or phi(r) = u_nk(r) * exp(i k . r) with periodic u_nk); the Brillouin zone is the Wigner-Seitz primitive cell of the reciprocal lattice."
+          },
+          {
+            "id": "b",
+            "text": "Bloch's theorem states that psi(r + R) = 0 for all lattice vectors R; the Brillouin zone is the real-space unit cell."
+          },
+          {
+            "id": "c",
+            "text": "Bloch's theorem applies only to amorphous glasses and liquids."
+          },
+          {
+            "id": "d",
+            "text": "The Brillouin zone is a sphere of radius 1 Bohr in real space."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Because the crystal Hamiltonian commutes with lattice translations ($[\\\\hat{\\\\mathcal{H}}, \\\\hat{\\\\mathcal{T}}_{\\\\mathbf{R}}] = 0$), eigenstates satisfy $\\\\psi(\\\\mathbf{r}+\\\\mathbf{R}) = e^{i\\\\mathbf{k}\\\\cdot\\\\mathbf{R}}\\\\psi(\\\\mathbf{r})$ (Slide 43). Wavevectors $\\\\mathbf{k}$ differing by a reciprocal lattice vector $\\\\mathbf{G}$ are equivalent, so all unique $\\\\mathbf{k}$ states lie inside the **Wigner\u2013Seitz cell of the reciprocal lattice**, called the First Brillouin Zone."
+      },
+      {
+        "id": "q40_reciprocal_lattice_1d_zone_boundary",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "easy",
+        "taught_by": [
+          "sec_bloch_band_structure_and_dft_failures",
+          "concept_bloch_bandgap_and_dft"
+        ],
+        "prompt_markdown": "In a 1D crystal with real-space lattice spacing $a$ (Slides 44\u201345), the fundamental reciprocal lattice vector has magnitude $\\Delta k = G_1 = \\frac{2\\pi}{a}$. At what wavevectors $k$ do the boundaries of the **First Brillouin Zone** (where lowest-order $n=1$ Bragg diffraction occurs) lie?\n",
+        "hint_markdown": "Check the horizontal axis of the E(k) plot on Slide 45 or the Bragg condition k = n*pi/a for n = +/- 1 on Slide 44.",
+        "options": [
+          {
+            "id": "a",
+            "text": "k = -pi/a and k = +pi/a (so the total width of the 1st Brillouin zone is Delta k = 2*pi/a)"
+          },
+          {
+            "id": "b",
+            "text": "k = 0 and k = +4*pi/a"
+          },
+          {
+            "id": "c",
+            "text": "k = -a/pi and k = +a/pi"
+          },
+          {
+            "id": "d",
+            "text": "k = -1/a and k = +1/a"
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "The Wigner\u2013Seitz cell around $k = 0$ extends halfway to the nearest reciprocal lattice points $G = \\\\pm \\\\frac{2\\\\pi}{a}$, placing the 1st Brillouin-zone boundaries at $k = \\\\pm \\\\frac{\\\\pi}{a}$ (where $n=1$ Bragg diffraction $\\\\lambda = 2a$ occurs, Slides 44\u201345)."
+      },
+      {
+        "id": "q41_standing_waves_origin_of_gap",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": [
+          "sec_bloch_band_structure_and_dft_failures",
+          "concept_bloch_bandgap_and_dft"
+        ],
+        "prompt_markdown": "At the Brillouin-zone boundary $k = \\frac{\\pi}{a}$ (Slides 44\u201345), the incident wave $\\psi_i = e^{i\\pi x/a}$ and reflected wave $\\psi_r = e^{-i\\pi x/a}$ superpose to form two standing waves: $\\psi_+(x) = 2\\cos(\\pi x/a)$ and $\\psi_-(x) = 2i\\sin(\\pi x/a)$. Why do these two states have different energies $E = E_{\\text{free}} \\mp U$ in the presence of the periodic ion potential $U$?\n",
+        "hint_markdown": "Compare where |cos(pi*x/a)|^2 peaks (at x = 0, a, 2a on the positive ions) versus where |sin(pi*x/a)|^2 peaks (at x = a/2, 3a/2 between the ions).",
+        "options": [
+          {
+            "id": "a",
+            "text": "psi_+(x) = 2*cos(pi*x/a) concentrates electron density on the attractive ion cores (lowering energy to E_free - U), whereas psi_-(x) = 2i*sin(pi*x/a) concentrates electron density between the ions (raising energy to E_free + U), opening a band gap E_gap = 2U."
+          },
+          {
+            "id": "b",
+            "text": "psi_+(x) and psi_-(x) have different free-electron kinetic energies hbar^2 k^2 / (2m)."
+          },
+          {
+            "id": "c",
+            "text": "psi_+(x) travels to the right at speed v_F while psi_-(x) travels to the left at speed 2*v_F."
+          },
+          {
+            "id": "d",
+            "text": "Only psi_+(x) satisfies Bloch's theorem."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Both standing waves have the same kinetic energy $E_{\\\\text{free}} = \\\\frac{\\\\hbar^2(\\\\pi/a)^2}{2m}$ and zero group velocity (no traveling wave solution). However, $|\\\\psi_+|^2 \\\\propto \\\\cos^2(\\\\pi x/a)$ peaks at the lattice sites $x = m a$ (on the positive ions), while $|\\\\psi_-|^2 \\\\propto \\\\sin^2(\\\\pi x/a)$ has nodes at the ions and peaks between them, splitting their potential energies by $(E_{\\\\text{free}} + U) - (E_{\\\\text{free}} - U) = 2U$ (Slides 44\u201345)."
+      },
+      {
+        "id": "q42_bragg_bandgap_numeric",
+        "type": "problem",
+        "question_type": "numeric",
+        "difficulty": "easy",
+        "taught_by": [
+          "sec_bloch_band_structure_and_dft_failures",
+          "concept_bloch_bandgap_and_dft"
+        ],
+        "prompt_markdown": "In the nearly-free-electron diffraction model on Slide 45 (`05.QuantMech.pdf`), if the free-electron kinetic energy at $k = \\pi/a$ is $E_{\\text{free}} = 4.20\\text{ eV}$ and the periodic ion potential perturbation has amplitude $U = 0.65\\text{ eV}$, what is the magnitude of the resulting energy band gap $E_{\\text{gap}} = E_- - E_+$ at $k = \\pi/a$ (in $\\text{eV}$)?\n",
+        "hint_markdown": "Use E_gap = (E_free + U) - (E_free - U) = 2 * U from Slide 45.",
+        "correct": {
+          "value": 1.3,
+          "tolerance": 0.02
+        },
+        "rationale_markdown": "At the zone boundary $k = \\\\pi/a$, the lower band edge is at $E_+ = E_{\\\\text{free}} - U = 3.55\\\\text{ eV}$ and the upper band edge is at $E_- = E_{\\\\text{free}} + U = 4.85\\\\text{ eV}$, so the band gap is $E_{\\\\text{gap}} = 2U = 2 \\\\times 0.65 = 1.30\\\\text{ eV}$."
+      },
+      {
+        "id": "q43_copper_band_structure_features",
+        "type": "problem",
+        "question_type": "multi_select",
+        "difficulty": "medium",
+        "taught_by": "sec_bloch_band_structure_and_dft_failures",
+        "prompt_markdown": "In the Wien2k DFT band structure and Fermi surface of **Copper ($\\text{Cu}$)** on Slide 47 (`05.QuantMech.pdf`), which of the following physical features are observed? *(Select all that apply.)*\n",
+        "hint_markdown": "Read the four bullet points on Slide 47 and inspect the yellow shaded band region.",
+        "options": [
+          {
+            "id": "a",
+            "text": "A wide, nearly-free-electron 4s band dominates at low (-10 to -5 eV) and high (> -1 eV) energies."
+          },
+          {
+            "id": "b",
+            "text": "Strong hybridization occurs between the nearly-free 4s band and narrow, atomic-like 3d bands at intermediate energies (-5 to -2 eV, yellow shaded region)."
+          },
+          {
+            "id": "c",
+            "text": "The Fermi surface develops 'necks' touching the Brillouin-zone boundary along the [111] (L-point) directions, which drives Hume-Rothery alloy phase stabilization."
+          },
+          {
+            "id": "d",
+            "text": "Copper has a 5.0 eV insulating band gap at the Fermi level E_F = 0."
+          }
+        ],
+        "correct": [
+          "a",
+          "b",
+          "c"
+        ],
+        "rationale_markdown": "Slide 47 highlights all three classic features of noble-metal ($\\text{Cu}$) electronic structure: a wide parabolic $4s$ band, flat $3d$ bands hybridizing with $4s$ from $-2$ to $-5\\text{ eV}$, and $\\langle 111\\rangle$ Fermi-surface necking at the $L$ zone boundary (Hume-Rothery stabilization). Because the $4s$ band crosses $E_F = 0$, $\\text{Cu}$ is a metal with no band gap at $E_F$."
+      },
+      {
+        "id": "q44_dft_structural_and_phonon_accuracy",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_bloch_band_structure_and_dft_failures",
+        "prompt_markdown": "According to Slide 48 (`05.QuantMech.pdf`), standard Kohn\u2013Sham DFT predicts atomic **forces** (1st derivatives of energy) and **elastic constants / bulk moduli** (2nd derivatives) to within $\\sim 10\\%$. Why are DFT **vibrational phonon frequencies** typically accurate to **$\\sim 5\\%$** (about $1/2$ the relative error of the forces/force constants)?\n",
+        "hint_markdown": "Recall that harmonic vibrational frequency scales as the square root of the 2nd-derivative force constant: omega = sqrt(k / M). Propagate a 10% relative error in k through the square root!",
+        "options": [
+          {
+            "id": "a",
+            "text": "Because vibrational frequencies omega = sqrt(k / M) scale as the square root of the 2nd-derivative force constants k, so a ~10% relative error in k (and forces) produces a relative frequency error delta_omega / omega approx (1/2) * (delta_k / k) approx 5%."
+          },
+          {
+            "id": "b",
+            "text": "Because phonon frequencies depend only on nuclear masses and not on the interatomic potential energy."
+          },
+          {
+            "id": "c",
+            "text": "Because DFT uses empirical EAM force constants to compute phonon dispersions."
+          },
+          {
+            "id": "d",
+            "text": "Because the 2nd derivative of any DFT energy functional is zero."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Since $\\\\omega \\\\propto k^{1/2}$, logarithmic differentiation gives $\\\\frac{\\\\delta\\\\omega}{\\\\omega} = \\\\frac{1}{2}\\\\frac{\\\\delta k}{k}$. Thus a $\\\\sim 10\\\\%$ error in the interatomic force constants $k$ (and forces) translates into only a $\\\\sim 5\\\\%$ error in vibrational frequencies $\\\\omega$ (Slide 48, demonstrated by the excellent agreement of PW91 DFT with neutron diffraction for $\\\\text{fcc Ni}$)."
+      },
+      {
+        "id": "q45_dft_defect_energies_silicon_interstitial",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": "sec_bloch_band_structure_and_dft_failures",
+        "prompt_markdown": "According to Slide 49 (`05.QuantMech.pdf`), how accurate is standard DFT (LDA/GGA) for point defect formation energies in **metals** versus **self-interstitial defects in Silicon**?\n",
+        "hint_markdown": "Read the two bullet points under 'Defect energies' on Slide 49.",
+        "options": [
+          {
+            "id": "a",
+            "text": "In metals, vacancy and interstitial formation energies are highly accurate (within ~0.1 eV); however, for self-interstitials in silicon, DFT is too low by ~1 eV (predicting 3-3.5 eV instead of the 4.5 eV from experiment and QMC)."
+          },
+          {
+            "id": "b",
+            "text": "In metals, DFT defect energies are off by 10 eV, whereas in silicon they are exact to 0.001 eV."
+          },
+          {
+            "id": "c",
+            "text": "DFT always predicts negative formation energies for all vacancies in metals."
+          },
+          {
+            "id": "d",
+            "text": "Quantum Monte Carlo (QMC) cannot be applied to point defects in silicon."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Slide 49 notes that while metallic vacancy and interstitial energies are typically accurate within $\\\\sim 0.1\\\\text{ eV}$, silicon self-interstitials involve localized mid-gap/strained covalent states where DFT-LDA/GGA underestimates the formation energy by $\\\\sim 1\\\\text{ eV}$ ($3\\\\text{\u2013}3.5\\\\text{ eV}$ vs. $4.5\\\\text{ eV}$ in experiment and QMC)."
+      },
+      {
+        "id": "q46_dft_bandgap_problem_inas_and_ge",
+        "type": "problem",
+        "question_type": "single_select",
+        "difficulty": "medium",
+        "taught_by": [
+          "sec_bloch_band_structure_and_dft_failures",
+          "concept_bloch_bandgap_and_dft"
+        ],
+        "prompt_markdown": "As demonstrated on Slides 49\u201351 (`05.QuantMech.pdf`) for **$\\text{InAs}$** (experimental band gap $0.41\\text{ eV}$) and **$\\text{Ge}$** (experimental band gap $0.74\\text{ eV}$), what is the **\"band-gap problem\" of DFT**, and which computational methods resolve it?\n",
+        "hint_markdown": "Compare the LDA (-0.42 eV), PBE (-0.13 eV), B3LYP/HSE (0.39-0.54 eV), and GW band gaps on Slides 50-51.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Standard Kohn-Sham LDA and GGA fail for excited states and underestimate semiconductor band gaps by 20-50%, falsely predicting narrow-gap semiconductors like InAs and Ge to be metallic (zero/negative gap); Hybrid functionals (B3LYP, HSE) and the GW approximation / QMC restore accurate band gaps."
+          },
+          {
+            "id": "b",
+            "text": "LDA and GGA overestimate the band gap of InAs as 4.1 eV instead of 0.41 eV."
+          },
+          {
+            "id": "c",
+            "text": "The GW approximation predicts all semiconductors and insulators (including Diamond and MgO) to be metals."
+          },
+          {
+            "id": "d",
+            "text": "Adding a larger plane-wave cutoff E_cut in LDA fixes the InAs band gap to 0.41 eV."
+          }
+        ],
+        "correct": "a",
+        "rationale_markdown": "Because Kohn\u2013Sham eigenvalues are ground-state auxiliary quantities lacking the exchange-correlation derivative discontinuity, LDA and GGA underestimate band gaps by $20\\text{\u2013}50\\\\%$ across all semiconductors and insulators (Slide 51), inverting the $\\\\Gamma$-point conduction and valence bands in $\\\\text{InAs}$ ($-0.42\\\\text{ eV}$ in LDA, $-0.13\\\\text{ eV}$ in PBE) and $\\\\text{Ge}$ to produce a false metallic ground state. Hybrid functionals (HSE/B3LYP) and the $GW$ quasiparticle approximation accurately open the gap (Slides 50\u201351)."
+      }
+    ]
+  }
+}

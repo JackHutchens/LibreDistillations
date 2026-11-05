@@ -3,7 +3,21 @@
 from __future__ import annotations
 from typing import Any, Mapping
 import numpy as np
-from scipy.special import erfc, erf
+try:
+    from scipy.special import erfc, erf
+except ImportError:
+    import math
+
+    def _v_erf(x: Any) -> Any:
+        arr = np.asarray(x, dtype=float)
+        return np.vectorize(math.erf)(arr)
+
+    def _v_erfc(x: Any) -> Any:
+        arr = np.asarray(x, dtype=float)
+        return np.vectorize(math.erfc)(arr)
+
+    erf = _v_erf
+    erfc = _v_erfc
 import matplotlib.pyplot as plt
 from engine.plot_style import COLORS
 

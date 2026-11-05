@@ -13,6 +13,7 @@ import argparse
 import copy
 import hashlib
 import importlib.util
+import json
 import os
 from pathlib import Path
 import re
@@ -330,6 +331,20 @@ def validate_and_compile_worksheet(
             "            sys.path.insert(0, str(_cur))\n"
             "        break\n"
             "    _cur = _cur.parent\n\n"
+            "# In WebAssembly / Pyodide / JupyterLite environments, pre-load dependencies\n"
+            "if 'pyodide' in sys.modules or hasattr(sys, '_emscripten_info') or sys.platform == 'emscripten':\n"
+            "    try:\n"
+            "        import piplite\n"
+            "        await piplite.install(['pyyaml', 'matplotlib', 'ipywidgets', 'numpy'])\n"
+            "    except Exception:\n"
+            "        pass\n\n"
+            "# Explicit imports for Pyodide AST scanner and interactive widget ecosystem\n"
+            "try:\n"
+            "    import yaml\n"
+            "except ImportError:\n"
+            "    pass\n"
+            "import matplotlib.pyplot as plt\n"
+            "import ipywidgets as widgets\n\n"
             "from engine import Worksheet, apply_default_style\n\n"
             "apply_default_style()\n\n"
             f"ws = Worksheet.load('{yaml_path.name}')\n"
@@ -425,6 +440,16 @@ def validate_and_compile_worksheet(
         target_path.parent.mkdir(parents=True, exist_ok=True)
         with open(target_path, "w", encoding="utf-8") as fh:
             nbformat.write(nb, fh)
+
+        # Emit companion .json specification for zero-dependency / fast WASM in-browser loading
+        json_target = yaml_path.with_suffix(".json")
+        try:
+            with open(yaml_path, "r", encoding="utf-8") as yfh:
+                raw_spec = yaml.safe_load(yfh)
+            with open(json_target, "w", encoding="utf-8") as jfh:
+                json.dump(raw_spec, jfh, indent=2)
+        except Exception as exc:
+            warnings.append(f"Failed to emit companion JSON for {yaml_path.name}: {exc}")
 
     return {
         "id": ws.id,
