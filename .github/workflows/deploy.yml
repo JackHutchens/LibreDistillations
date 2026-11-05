@@ -37,7 +37,22 @@ jobs:
 
       - name: Build JupyterLite Site
         run: |
-          jupyter lite build --config jupyter_lite_config.json
+          jupyter lite build \
+            --contents . \
+            --output-dir dist
+
+      - name: Verify Artifact Directory
+        run: |
+          if [ -d "dist" ]; then
+            echo "dist directory found."
+          elif [ -d "_output" ]; then
+            echo "_output directory found, copying to dist..."
+            cp -r _output dist
+          else
+            echo "Error: Output directory not generated."
+            ls -la
+            exit 1
+          fi
 
       - name: Upload GitHub Pages Artifact
         uses: actions/upload-pages-artifact@v3

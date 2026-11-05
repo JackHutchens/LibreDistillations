@@ -1,0 +1,24 @@
+{
+  "LiteBuildConfig": {
+    "output_dir": "dist",
+    "contents": ["."],
+    "ignore_contents": [
+      ".*\\.git.*",
+      ".*\\.github.*",
+      ".*[rR]esources.*",
+      ".*__pycache__.*",
+      ".*\\.worksheet_records.*",
+      ".*dist.*",
+      ".*scratch.*",
+      ".*\\.ipynb_checkpoints.*"
+    ]
+  },
+  "PyodideLockAddon": {
+    "specs": [
+      "numpy",
+      "matplotlib",
+      "pyyaml",
+      "ipywidgets"
+    ]
+  }
+}
