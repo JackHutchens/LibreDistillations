@@ -246,18 +246,18 @@ def render_smart_mc_proposal_asymmetry(controls: Mapping[str, Any], ax: plt.Axes
 
 
 def render_metropolis_vs_smart_mc_efficiency(controls: Mapping[str, Any], ax: plt.Axes) -> str:
-    """Compare acceptance probability and 100-step MSD across Metropolis, Force-Bias, and Smart MC (Slides 11-12)."""
+    """Compare acceptance probability and 100-step MSD across Metropolis, Force-Bias, and Smart MC."""
     delta_probe = float(controls.get("delta_over_sigma", 0.24))
     metric = str(controls.get("metric", "msd"))
 
     deltas = np.linspace(0.02, 0.48, 120)
-    # Parameterize curves after Pangali, Rao & Berne / Rossky, Doll & Friedman (Slides 11-12 Figs. 1 & 3)
+    # Parameterize curves after Pangali, Rao & Berne / Rossky, Doll & Friedman (Figs. 1 & 3)
     acc_metro = np.exp(-((deltas / 0.19) ** 1.35))
     acc_fb_half = 1.0 / (1.0 + (deltas / 0.255) ** 2.3)
     acc_smart = 1.0 / (1.0 + (deltas / 0.245) ** 2.35)
     acc_fb_one = np.exp(-((deltas / 0.225) ** 1.45))
 
-    # 100-step Mean-Squared Displacement <Delta r^2(100)> (Slide 11 Fig. 3)
+    # 100-step Mean-Squared Displacement <Delta r^2(100)>
     # Notice in Fig. 3: Force-Bias (lambda=0.5) & Smart MC peak near Delta/sigma ~ 0.22-0.25 (~5.0),
     # whereas classic Metropolis peaks higher (~5.6) at larger step size Delta/sigma ~ 0.34!
     msd_metro = 5.6 * ((deltas / 0.34) ** 1.8) * np.exp(1.0 - (deltas / 0.34) ** 1.8)

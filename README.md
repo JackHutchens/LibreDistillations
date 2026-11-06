@@ -36,7 +36,7 @@ The repository enforces strict separation between curriculum definitions, visual
 │   └── figures.py                # Static and shared diagram rendering
 │
 ├── courses/                      # Multi-course curriculum root
-│   └── <course_id>/              # Isolated course module (e.g., mse_485)
+│   └── <course_id>/              # Isolated course module (e.g., "Atomic Scale Simulations")
 │       ├── course.yaml           # Course metadata, title, and module registry
 │       ├── worksheets/           # Declarative YAML curriculum specifications
 │       ├── concepts/             # Python visualization functions for interactive cells
@@ -175,7 +175,7 @@ For learners who do not have a local Python environment configured, the entire c
 
 ## Learner Workflow
 
-1. Navigate to `courses/<course_id>/notebooks/` (e.g., `courses/mse_485/notebooks/`).
+1. Navigate to `courses/<course_id>/notebooks/` (e.g., `courses/Atomic Scale Simulations/notebooks/`).
 2. Open any `.ipynb` file.
 3. **Execute Cell 1**: Initializes the session, configures uniform visual styling, displays module metadata, and lists target learning objectives.
 4. **Interact with Concept Cells**: Adjust control sliders and dropdown menus to explore physical behavior before attempting corresponding questions.
@@ -205,7 +205,7 @@ python tools/cram.py list
 Verifies question quotas ($35 \le N_Q \le 50$), checks learning objective links, validates answer schemas, and executes all interactive visualizer functions across minimum, default, and maximum parameter ranges:
 ```bash
 # Validate a specific course
-python tools/cram.py verify mse_485
+python tools/cram.py verify "Atomic Scale Simulations"
 
 # Validate all courses across the repository
 python tools/cram.py verify all
@@ -215,7 +215,7 @@ python tools/cram.py verify all
 Builds `.ipynb` notebooks from YAML specifications and Python concept modules with pre-rendered static outputs:
 ```bash
 # Compile a specific course
-python tools/cram.py build mse_485
+python tools/cram.py build "Atomic Scale Simulations"
 
 # Compile all courses
 python tools/cram.py build all
@@ -224,7 +224,7 @@ python tools/cram.py build all
 ### Curriculum Summary
 Prints a structural summary table displaying question counts, concept visualizers, and section breakdowns:
 ```bash
-python tools/cram.py summary mse_485
+python tools/cram.py summary "Atomic Scale Simulations"
 ```
 
 ### Scaffold a New Course
@@ -237,7 +237,7 @@ python tools/cram.py ingest <new_course_id>
 
 ## Reference Course Implementation
 
-This repository contains a reference implementation: **MSE 485: Atomic Scale Simulations**. It consists of 24 interactive modules, comprising 983 calibrated problems and 89 dynamic visualizers:
+This repository contains a reference implementation: **Atomic Scale Simulations**. It consists of 24 interactive modules, comprising 983 calibrated problems and 89 dynamic visualizers:
 
 | Module Sequence | Curricular Scope | Key Dynamic Visualizers |
 | :--- | :--- | :--- |

@@ -1,891 +1,1245 @@
 id: lesson_02_errors_and_autocorrelation
-title: "Lesson 02: Ergodicity, Statistical vs. Systematic Errors, Autocorrelation, Data Blocking & Resampling"
+title: 'Lesson 02: Ergodicity, Statistical vs. Systematic Errors, Autocorrelation, Data Blocking & Resampling'
 estimated_minutes: 120
 learning_objectives:
-  - "Define ergodicity in deterministic and stochastic simulations, relate the equilibrium distribution F*(S) to the canonical Boltzmann distribution, and distinguish statistical errors from systematic errors."
-  - "Calculate the normalized autocorrelation function C(t), integrated autocorrelation time τ_int, and statistical inefficiency κ = 1 + 2∑ C(t) ≈ 1 + 2τ for correlated MD/MC time series."
-  - "Derive the variance of the sample mean for correlated data, compute the effective number of independent samples N_eff = N_eq / κ, and evaluate true standard errors σ_true = σ_naive √κ."
-  - "Apply the Flyvbjerg–Petersen data blocking (binning) method to extract plateau standard errors, determine κ from (σ_plateau / σ_naive)², and diagnose why N_eff ≥ 20 is required."
-  - "Select the equilibration warm-up cutoff k_1 (I_eq) to balance transient systematic drift against statistical variance, avoiding the smooth cumulative-average trap."
-  - "Derive the O(N⁻¹) systematic bias and O(N⁻¹/²) statistical error of nonlinear functions F(Z̄) via Taylor expansion, and apply Jackknife and Bootstrap resampling to nonlinear observables."
-
+- Define ergodicity in deterministic and stochastic simulations, relate the equilibrium distribution F*(S) to the canonical
+  Boltzmann distribution, and distinguish statistical errors from systematic errors.
+- Calculate the normalized autocorrelation function C(t), integrated autocorrelation time τ_int, and statistical inefficiency
+  κ = 1 + 2∑ C(t) ≈ 1 + 2τ for correlated MD/MC time series.
+- Derive the variance of the sample mean for correlated data, compute the effective number of independent samples N_eff =
+  N_eq / κ, and evaluate true standard errors σ_true = σ_naive √κ.
+- Apply the Flyvbjerg–Petersen data blocking (binning) method to extract plateau standard errors, determine κ from (σ_plateau
+  / σ_naive)², and diagnose why N_eff ≥ 20 is required.
+- Select the equilibration warm-up cutoff k_1 (I_eq) to balance transient systematic drift against statistical variance, avoiding
+  the smooth cumulative-average trap.
+- Derive the O(N⁻¹) systematic bias and O(N⁻¹/²) statistical error of nonlinear functions F(Z̄) via Taylor expansion, and
+  apply Jackknife and Bootstrap resampling to nonlinear observables.
 sections:
-  - id: sec_ergodicity_and_error_types
-    type: markdown_section
-    title: "1. Ergodicity, Equilibrium Distributions & Statistical vs. Systematic Errors"
-    body_markdown: |
-      In Lesson 01 we saw that any atomistic simulation — whether **deterministic** (integrating Newton's equations via Molecular Dynamics) or **stochastic** (sampling Markov transitions $T(S_{n+1}\mid S_n)$ via Monte Carlo or Langevin dynamics) — generates a sequence of states along iteration index $n$ ("time" or "Monte Carlo time"):
-      $$S_0 \Longrightarrow S_1 \Longrightarrow S_2 \Longrightarrow \cdots \Longrightarrow S_n \Longrightarrow S_{n+1} \Longrightarrow \cdots$$
-      Regardless of whether the underlying rule is deterministic or stochastic, **we analyze the errors of the output trace the exact same way**.
-
-      ### The Ergodic Hypothesis & Equilibrium Distribution $F^*(S)$
-      Why can a single long trajectory starting from one arbitrary initial configuration $S_0$ tell us the macroscopic thermodynamic properties of a material? Because we assume the simulation is **ergodic** (Lecture 02, Slides 2–3):
-      - Let $F_t(S \mid S_0)$ be the probability distribution of finding the system in state $S$ after time $t$, given initial state $S_0$.
-      - A simulation is **ergodic** if, after a characteristic **correlation time** $\kappa$ (the number of iterations required to "forget" its past), the system loses all memory of its initial state $S_0$ (except for exact conserved quantities like total energy $E$ and total momentum $\mathbf{P}$ in an isolated $NVE$ run) and converges to a **unique equilibrium probability distribution** $F^*(S)$:
-        $$\lim_{t \to \infty} F_t(S \mid S_0) = F^*(S)$$
-      - In classical statistical mechanics at constant temperature $T$, this unique distribution is the **canonical Boltzmann distribution**:
-        $$F^*(S) = Z^{-1} \exp\!\left(-\frac{\mathcal{H}(S)}{k_B T}\right), \qquad Z = \int dS\, \exp\!\left(-\frac{\mathcal{H}(S)}{k_B T}\right)$$
-      - **Two uses of ergodicity in every simulation:**
-        1. **Equilibration (Warm-Up):** Starting from an artificial $S_0$ (e.g., a perfect lattice when simulating a liquid), waiting for $t_{\text{eq}} \gg \kappa$ allows the system to relax into $F^*(S)$.
-        2. **Independent Sampling:** Once in equilibrium, any non-conserved observable $A(S_t)$ sampled at time separations $\Delta t \gg \kappa$ behaves as if drawn independently from $F^*(S)$, allowing us to replace the phase-space integral $\langle V(S)\rangle_{F^*} = \int dS\, F^*(S)V(S)$ with a time average!
-      - Besides static thermodynamic averages (like internal energy $U = \langle V(S)\rangle_{F^*}$), trajectories also yield dynamical transport coefficients such as the **diffusion constant** $D$ in $d$ spatial dimensions:
-        $$D = \lim_{t \to \infty} \frac{1}{2 d t} \big\langle |\mathbf{r}(t) - \mathbf{r}(0)|^2 \big\rangle$$
-
-      ### Statistical Errors vs. Systematic Errors
-      In what sense do simulations calculate "exact" properties? If there are no systematic biases, averaging long enough ($N \to \infty$) drives the random sampling error to zero! However, *"simulation results without error bars are only suggestive — without error bars one has no idea of their significance."* Every serious simulation must distinguish two fundamentally different sources of error (Slide 14):
-
-      | Error Category | Physical / Mathematical Origin | Scaling with Run Length $N$ | Atomistic Simulation Examples |
-      | :--- | :--- | :--- | :--- |
-      | **Statistical Error** | Finite random sampling of thermal fluctuations around $\langle A\rangle$ | Decays as $\sigma_{\bar{A}} = \sqrt{\frac{\kappa_2 \kappa}{N}} \propto N^{-1/2}$ | Finite number of MD/MC steps; variance of block averages |
-      | **Systematic Error** | Non-sampling bias in the model, algorithm, or analysis; **does NOT vanish as $N \to \infty$** (except $O(1/N)$ nonlinear estimator bias) | Independent of $N$ (persists even if you sample forever!) | Empirical potential inaccuracy; MD timestep $\Delta t$ truncation; finite box size ($1/N_{\text{atoms}}$); un-discarded warm-up transient; floating-point round-off; code bugs |
-
-      ### Computational Efficiency $\zeta$ of a Simulation Method
-      How do we compare two different algorithms (e.g., two Monte Carlo move sets) that compute the same quantity? Since statistical error shrinks as $\sigma_{\text{err}}(T) \propto 1/\sqrt{T}$ where $T$ is the total CPU wall-clock time spent, the product $T \cdot \sigma_{\text{err}}^2$ is **independent of the length of the run**. We define the **computational efficiency** $\zeta$ (Slide 14):
-      $$\zeta = \frac{1}{T \, \sigma_{\text{err}}^2}$$
-      Efficiency $\zeta$ depends on the computer hardware, the algorithm, the correlation time $\kappa$, and the observable being measured, **but NOT on how long you run the simulation**!
-
-  - id: q_1
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_ergodicity_and_error_types
-    prompt_markdown: "What does it mean for an atomistic simulation $S_0 \\to S_1 \\to \\cdots \\to S_t$ to be **ergodic** (Lecture 02, Slides 2–3)?"
-    hint_markdown: "Consider how the conditional state distribution $F_t(S \\mid S_0)$ behaves for times $t \\gg \\kappa$."
-    options:
-      - {id: a, text: "For times $t \\gg \\kappa$ (much longer than the correlation time), the system loses memory of its initial state $S_0$ (aside from conserved quantities) and samples a unique equilibrium probability distribution $\\lim_{t\\to\\infty} F_t(S\\mid S_0) = F^*(S)$."}
-      - {id: b, text: "The instantaneous potential energy $V(S_t)$ becomes strictly constant and stops fluctuating once $t > \\kappa$."}
-      - {id: c, text: "Every microstate in phase space has the exact same energy $\\mathcal{H}(S)$ regardless of temperature."}
-      - {id: d, text: "Consecutive states $S_n$ and $S_{n+1}$ are completely uncorrelated at a single step separation ($\\Delta n = 1$)."}
-    correct: a
-    rationale_markdown: "Ergodicity means that after a correlation time $\\kappa$, the system forgets its initial state $S_0$ (except for conserved quantities like total energy/momentum in $NVE$) so that $\\lim_{t\\to\\infty} F_t(S\\mid S_0) = F^*(S)$ is a unique equilibrium distribution. Option (b) is false because energy fluctuates forever in canonical equilibrium; Option (d) is false because consecutive steps are almost always correlated."
-
-  - id: q_2
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_ergodicity_and_error_types
-    prompt_markdown: "According to Lecture 02 (Slide 2), how does proving ergodicity compare between **stochastic simulations** (like Markov Chain Monte Carlo) and **deterministic simulations** (like Newtonian Molecular Dynamics)?"
-    hint_markdown: "Think of the famous 1954 Fermi–Pasta–Ulam anharmonic chain experiment in deterministic mechanics vs. Markov chain transition matrices."
-    options:
-      - {id: a, text: "Ergodicity is often straightforward to prove mathematically for random/stochastic transitions, but is notoriously difficult (or fails in quasi-integrable regimes) for deterministic simulations."}
-      - {id: b, text: "Ergodicity is trivial to prove for every deterministic Newtonian system, including harmonic crystals, but impossible to prove for Monte Carlo."}
-      - {id: c, text: "Deterministic simulations can never be ergodic under any circumstances."}
-      - {id: d, text: "Ergodicity only applies to quantum systems, not classical phase space."}
-    correct: a
-    rationale_markdown: "As noted on Slide 2 of Lecture 02: *'Ergodicity is often easy to prove for the random transition [via Markov chain irreducibility and aperiodicity] but usually difficult for the deterministic simulation'* (as famously demonstrated by the Fermi–Pasta–Ulam paradox in weakly anharmonic chains)."
-
-  - id: q_3
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_ergodicity_and_error_types
-    prompt_markdown: "In a 3D ($d = 3$) Molecular Dynamics simulation of liquid argon, you measure the mean-squared displacement of atoms at long times ($t = 200\\text{ ps}$) to be $\\langle |\\mathbf{r}(t) - \\mathbf{r}(0)|^2 \\rangle = 180.0\\text{ Å}^2$. Using the Einstein diffusion relation $D = \\lim_{t\\to\\infty} \\frac{1}{2dt}\\langle |\\mathbf{r}(t) - \\mathbf{r}(0)|^2 \\rangle$ (Lecture 02, Slide 3), what is the self-diffusion constant $D$ (in $\\text{Å}^2/\\text{ps}$)?"
-    hint_markdown: "In $d = 3$ dimensions, the denominator is $2 d t = 6 t$. Compute $180.0 / (6 \\times 200)$."
-    correct: 0.15
-    tolerance: 0.002
-    rationale_markdown: "In $d = 3$ dimensions, $2 d t = 2(3)(200\\text{ ps}) = 1200\\text{ ps}$. Thus $D = \\frac{180.0\\text{ Å}^2}{1200\\text{ ps}} = 0.150\\text{ Å}^2/\\text{ps}$ ($= 1.5 \\times 10^{-5}\\text{ cm}^2/\\text{s}$)."
-
-  - id: q_4
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by: sec_ergodicity_and_error_types
-    prompt_markdown: "Which of the following are examples of **systematic errors** (rather than statistical sampling errors) in an atomistic simulation? Select **all** that apply."
-    hint_markdown: "Ask yourself: if I run the exact same simulation code with the exact same parameters for $N \\to \\infty$ steps, does this error vanish or persist?"
-    options:
-      - {id: a, text: "Using an empirical pair potential that omits three-body covalent bonding interactions present in the real material."}
-      - {id: b, text: "Choosing a Verlet integration time step $\\Delta t = 10\\text{ fs}$ that is too large, introducing $\\mathcal{O}(\\Delta t^2)$ Hamiltonian truncation drift."}
-      - {id: c, text: "Including the initial non-equilibrium warm-up transient ($t < t_{\\text{eq}}$) inside your production average."}
-      - {id: d, text: "The random $\\pm \\sigma_A / \\sqrt{N_{\\text{eff}}}$ uncertainty in the sample mean due to averaging over a finite number of equilibrium fluctuations."}
-    correct: [a, b, c]
-    rationale_markdown: "- **(A), (B), and (C) are systematic errors:** Model Hamiltonian errors (A), finite-timestep integration errors (B), and non-equilibrium initialization transients (C) shift the expected value away from the true physical equilibrium value even as $N \\to \\infty$.\n- **(D) is purely statistical error:** It measures random sampling scatter around the mean and vanishes as $N_{\\text{eff}}^{-1/2}$."
-
-  - id: q_5
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_ergodicity_and_error_types
-    prompt_markdown: "In Lecture 02 (Slide 14), the **efficiency** of a simulation algorithm is defined as $\\zeta = \\frac{1}{T \\sigma^2}$, where $T$ is the CPU time (in hours) and $\\sigma$ is the achieved statistical error bar on the mean. Suppose Algorithm A runs for $T_A = 4.0\\text{ hours}$ and achieves a statistical error bar of $\\sigma_A = 0.05\\text{ eV}$, while Algorithm B runs for $T_B = 2.0\\text{ hours}$ and achieves $\\sigma_B = 0.025\\text{ eV}$. What is the efficiency ratio $\\zeta_B / \\zeta_A$?"
-    hint_markdown: "Compute $\\zeta_A = 1 / (4.0 \\times 0.05^2)$ and $\\zeta_B = 1 / (2.0 \\times 0.025^2)$, then divide $\\zeta_B / \\zeta_A$."
-    correct: 8.0
-    tolerance: 0.05
-    rationale_markdown: "For Algorithm A, $\\zeta_A = \\frac{1}{4.0 \\times (0.05)^2} = \\frac{1}{0.01} = 100\\text{ hr}^{-1}\\text{eV}^{-2}$. For Algorithm B, $\\zeta_B = \\frac{1}{2.0 \\times (0.025)^2} = \\frac{1}{0.00125} = 800\\text{ hr}^{-1}\\text{eV}^{-2}$. Thus $\\zeta_B / \\zeta_A = 800 / 100 = 8.0$ (Algorithm B achieves half the error bar in half the time, making it $2 \\times 2^2 = 8$ times more efficient!)."
-
-  - id: q_6
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_ergodicity_and_error_types
-    prompt_markdown: "If you take the exact same simulation code on the same computer and simply run it **4 times longer** ($T \\to 4T$), how does the algorithmic efficiency $\\zeta = \\frac{1}{T \\sigma_{\\text{err}}^2}$ change?"
-    hint_markdown: "When $T \\to 4T$, how does the statistical error bar $\\sigma_{\\text{err}} \\propto 1/\\sqrt{T}$ scale?"
-    options:
-      - {id: a, text: "$\\zeta$ remains unchanged, because $\\sigma_{\\text{err}}$ decreases by a factor of $2$ ($\\sigma_{\\text{err}}^2 \\to \\sigma_{\\text{err}}^2 / 4$), canceling the $4\\times$ increase in $T$."}
-      - {id: b, text: "$\\zeta$ increases by a factor of $4$."}
-      - {id: c, text: "$\\zeta$ decreases by a factor of $4$."}
-      - {id: d, text: "$\\zeta$ increases by a factor of $2$."}
-    correct: a
-    rationale_markdown: "Because statistical error scales as $\\sigma_{\\text{err}} \\propto T^{-1/2}$, running $4\\times$ longer reduces $\\sigma_{\\text{err}}^2$ by a factor of $4$. Therefore the product $T \\sigma_{\\text{err}}^2$ (and hence $\\zeta = 1/(T\\sigma_{\\text{err}}^2)$) is an intrinsic property of the algorithm and hardware that is **independent of the length of the run** (Slide 14)."
-
-  - id: sec_autocorrelation_and_kappa
-    type: markdown_section
-    title: "2. Sequential Time Correlation, Autocorrelation Function C(t) & Statistical Inefficiency κ"
-    body_markdown: |
-      ### Why Naive Error Formulas Fail in MD and MC
-      Suppose we have an equilibrated trace of $N$ measurements $\{a_1, a_2, \dots, a_N\}$ with sample mean $\bar{a} = \frac{1}{N}\sum_{t=1}^N a_t$ and sample variance $\sigma^2(a_t) = \frac{1}{N-1}\sum_{t=1}^N (a_t - \bar{a})^2$. If the $N$ samples were **statistically independent**, the standard error of the mean would be the naive formula:
-      $$\text{error}_{\text{naive}}(\langle a \rangle) = \sqrt{\frac{\sigma^2(a_t)}{N}} = \left[\frac{\sum_{t=1}^N \delta a_t^2}{N(N-1)}\right]^{1/2}, \qquad \delta a_t \equiv a_t - \bar{a}$$
-      **Why is this dangerously wrong for raw MD or MC time series?** Consider the thought experiment on Slide 10 of Lecture 02: *imagine taking $N$ genuine samples and simply repeating (duplicating) every single measurement twice to create a dataset of $2N$ numbers!*
-      - The sample mean $\bar{a}$ is unchanged (still an unbiased estimator!).
-      - The sample variance $\sigma^2(a_t)$ is unchanged.
-      - Yet the naive formula $\sqrt{\sigma^2(a_t)/(2N)}$ claims your error bar just shrank by $\sqrt{2}$, even though you added **zero new information**!
-
-      In both Molecular Dynamics (where atoms move only $\sim 0.01\text{ Å}$ per femtosecond step) and Metropolis Monte Carlo (where only one particle or spin moves per step), consecutive configurations $S_t$ and $S_{t+1}$ are strongly correlated.
-
-      ### Normalized Autocorrelation Function $C(t)$ & Correlation Time $\kappa$
-      Let $\delta a_t = a_t - \langle a \rangle$ denote the fluctuation of observable $a$ at step $t$. In equilibrium (time-translation invariance), the correlation between step $t$ and step $t'$ depends only on the time lag $\Delta t = |t - t'|$. We define the **normalized auto time-correlation function** $C(t)$ (Slides 11 & 16):
-      $$C(t, t') \equiv \frac{\langle \delta a_t \, \delta a_{t'} \rangle}{\langle \delta a_t^2 \rangle} = C(|t - t'|) = \frac{\big\langle (A_k - \langle A \rangle)(A_{k+t} - \langle A \rangle) \big\rangle}{\langle A^2 \rangle - \langle A \rangle^2}$$
-      For a finite equilibrated trace $A_k$ ($k_1 \le k \le k_2$, containing $N_{\text{eq}} = k_2 - k_1 + 1$ points) with sample mean $a$ and sample variance $v = \frac{1}{N_{\text{eq}}-1}\sum_{k=k_1}^{k_2} (A_k - a)^2$, the unbiased finite-sample estimator $c_A(i)$ at lag $i$ (Slide 16) is:
-      $$c_A(i) = \frac{1}{v} \frac{1}{N_{\text{eq}} - i} \sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$$
-      Key properties of $C(t)$:
-      1. **At zero lag ($t = 0$):** $C(0) = \frac{\langle \delta a_t^2 \rangle}{\langle \delta a_t^2 \rangle} = 1$ identically.
-      2. **At large lag ($t \to \infty$):** In an ergodic system, $a_t$ and $a_{t+\Delta t}$ become statistically independent for $\Delta t \gg \tau$, so $\langle \delta a_t \delta a_{t+\Delta t}\rangle \to \langle \delta a_t\rangle \langle \delta a_{t+\Delta t}\rangle = 0 \implies C(t) \to 0$.
-      3. **Typical exponential decay:** Often $C(t) \approx \exp(-t / \tau)$, where $\tau$ is the **exponential decay correlation time** (in steps).
-
-      ### Deriving the Correlated Error Formula & Statistical Inefficiency $\kappa$
-      Let's compute the true variance of the sample mean $\bar{a} = \frac{1}{N}\sum_{t=1}^N a_t$ WITHOUT assuming independence (Slide 11):
-      $$\big\langle (\bar{a} - \langle a \rangle)^2 \big\rangle = \left\langle \left(\frac{1}{N}\sum_{t=1}^N \delta a_t\right)\left(\frac{1}{N}\sum_{t'=1}^N \delta a_{t'}\right) \right\rangle = \frac{1}{N^2}\sum_{t=1}^N \sum_{t'=1}^N \langle \delta a_t \delta a_{t'} \rangle = \frac{\langle \delta a_t^2 \rangle}{N^2}\sum_{t=1}^N \sum_{t'=1}^N C(|t - t'|)$$
-      For a run much longer than the correlation decay ($N \gg \tau$), summing over the $N \times N$ square $(t, t')$ is bounded by summing $t$ from $1$ to $N$ and the relative lag $\Delta t = t' - t$ from $-\infty$ to $+\infty$:
-      $$\big\langle (\bar{a} - \langle a \rangle)^2 \big\rangle \approx \frac{\langle \delta a_t^2 \rangle}{N^2} \cdot N \sum_{\Delta t = -\infty}^{\infty} C(\Delta t) = \langle \delta a_t^2 \rangle \frac{\kappa}{N}$$
-      where we have defined the **statistical inefficiency** (called the **correlation time** $\kappa$ in Prof. Trinkle's slides):
-      $$\boxed{\kappa = \int_{-\infty}^{\infty} dt\, C(t) \approx \sum_{\Delta t = -\infty}^{\infty} C(\Delta t) = 1 + 2\sum_{t=1}^{\infty} C(t) = 1 + 2\tau_{\text{int}}}$$
-      Here $\tau_{\text{int}} = \sum_{t=1}^{\infty} C(t)$ is the **integrated autocorrelation time**. Notice how $\kappa$ relates to $\tau$:
-      - If data are **completely uncorrelated** ($C(t) = 0$ for all $t \ge 1$), then $\tau_{\text{int}} = 0$ and **$\kappa = 1$**.
-      - If $C(t) = e^{-t/\tau}$ with $\tau \gg 1$, then $\tau_{\text{int}} = \sum_{t=1}^\infty e^{-t/\tau} = \frac{1}{e^{1/\tau}-1} \approx \tau$, giving:
-        $$\kappa \approx 1 + 2\tau$$
-      - Therefore, an equilibrated trace of length $N_{\text{eq}}$ contains only **$N_{\text{eff}}$ effective independent samples**:
-        $$\boxed{N_{\text{eff}} = \frac{N_{\text{eq}}}{\kappa}, \qquad \sigma_{\bar{A}} = \sqrt{\frac{v_A}{N_{\text{eff}}}} = \sqrt{\frac{v_A \, \kappa}{N_{\text{eq}}}} = \sigma_{\text{naive}}\sqrt{\kappa}}$$
-
-      > [!WARNING]
-      > **Practical Cutoff Rule for $\kappa$ (Slides 11 & 16):**
-      > In a finite dataset, $c_A(i)$ at large lag $i$ fluctuates noisily around zero. Summing $c_A(i)$ all the way to $i = N_{\text{eq}}-1$ accumulates pure statistical noise (in fact, $\sum_{i=1}^{N-1} (1 - i/N)c_A(i) = -1/2$ identically!). Therefore, we **truncate the sum at a finite cutoff** $i_{\text{cutoff}}$ defined by the first lag where $c_A(i) \le 0$:
-      > $$\kappa = 1 + 2\sum_{i=1}^{i_{\text{cutoff}}} c_A(i)$$
-
-  - id: concept_autocorrelation
-    type: concept_cell
-    title: "Interactive Explorer: Autocorrelation Decay C(t), Statistical Inefficiency κ & Effective Samples"
-    description_markdown: "Adjust the exponential correlation decay time $\\tau$ and total steps $N$, and toggle between the **Autocorrelation Function $C(\\Delta t)$** and the **Correlated Time Series Trace** (compare Lecture 02, Slide 12: *correlated data vs. uncorrelated data*)."
-    render_function: render_autocorrelation_lab
-    layout: figure_left
-    controls:
-      view_mode:
-        kind: dropdown
-        label: "Plot View"
-        options:
-          - {label: "Autocorrelation Function C(Δt)", value: "autocorrelation"}
-          - {label: "Time Series Trace A_t & Error Band", value: "trace"}
-        default: "autocorrelation"
-      tau:
-        kind: slider
-        label: "Exponential Decay Time τ (steps)"
-        min: 0.0
-        max: 25.0
-        step: 1.0
-        default: 8.0
-      n_steps:
-        kind: slider
-        label: "Total Equilibrated Steps N_eq"
-        min: 200
-        max: 2000
-        step: 100
-        default: 600
-    takeaway_markdown: "**Key Takeaway:** When $\\tau = 0$ (uncorrelated data, Slide 12 right), $C(\\Delta t)$ drops immediately from $1$ at $\\Delta t=0$ to $0$ at $\\Delta t=1$, so $\\kappa = 1$ and $N_{\\text{eff}} = N$. When $\\tau = 20$ steps, $\\kappa \\approx 1 + 2(20) = 41$, shrinking $N_{\\text{eff}}$ by $41\\times$ and inflating the true error bar by $\\sqrt{41} \\approx 6.4\\times$ relative to the naive formula!"
-
-  - id: q_7
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_autocorrelation_and_kappa
-    prompt_markdown: "By definition of the normalized autocorrelation function $C(t) = \\frac{\\langle \\delta A_k \\delta A_{k+t}\\rangle}{\\langle \\delta A_k^2 \\rangle}$, what is the exact value of $C(0)$ at zero time lag ($t = 0$) for any non-constant observable $A$, and what value does $C(t)$ approach as $t \\to \\infty$ in an ergodic system?"
-    hint_markdown: "Substitute $t = 0$ into the numerator and denominator of $C(t)$."
-    options:
-      - {id: a, text: "$C(0) = 1$ and $\\lim_{t\\to\\infty} C(t) = 0$"}
-      - {id: b, text: "$C(0) = \\sigma_A^2$ and $\\lim_{t\\to\\infty} C(t) = 1$"}
-      - {id: c, text: "$C(0) = 0$ and $\\lim_{t\\to\\infty} C(t) = \\kappa$"}
-      - {id: d, text: "$C(0) = \\langle A \\rangle^2$ and $\\lim_{t\\to\\infty} C(t) = 0$"}
-    correct: a
-    rationale_markdown: "Because $C(t)$ is normalized by the variance $V = \\langle \\delta A_k^2 \\rangle$, at $t = 0$ we have $C(0) = \\langle \\delta A_k^2 \\rangle / \\langle \\delta A_k^2 \\rangle = 1$. As $t \\to \\infty$ in an ergodic system, fluctuations separated by $t \\gg \\tau$ become uncorrelated, so $\\langle \\delta A_k \\delta A_{k+t}\\rangle \\to \\langle \\delta A_k \\rangle \\langle \\delta A_{k+t} \\rangle = 0$."
-
-  - id: q_8
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_autocorrelation_and_kappa
-    prompt_markdown: "Consider the thought experiment from Lecture 02 (Slide 10): you have $N = 500$ genuinely independent measurements of energy, and you artificially repeat each number $4$ times in a row to create a trace of $N_{\\text{total}} = 2{,}000$ correlated data points. What is the statistical inefficiency (correlation time) $\\kappa$ of this $2{,}000$-point dataset?"
-    hint_markdown: "Recall $N_{\\text{eff}} = N_{\\text{total}} / \\kappa$. How many truly independent measurements are present in the dataset?"
-    correct: 4.0
-    tolerance: 0.01
-    rationale_markdown: "Since the $N_{\\text{total}} = 2{,}000$ dataset contains exactly $N_{\\text{eff}} = 500$ truly independent samples, the correlation time / statistical inefficiency is $\\kappa = \\frac{N_{\\text{total}}}{N_{\\text{eff}}} = \\frac{2000}{500} = 4.0$. Consequently, $\\sigma_{\\bar{A}} = \\sqrt{\\frac{\\sigma_A^2 \\kappa}{2000}} = \\sqrt{\\frac{\\sigma_A^2}{500}}$ is completely unchanged by the artificial duplication!"
-
-  - id: q_9
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_autocorrelation_and_kappa
-    prompt_markdown: "In a Monte Carlo simulation of a polymer chain, you compute the empirical autocorrelation function $c_A(i)$ of the end-to-end distance and find that it crosses zero after lag $i_{\\text{cutoff}} = 4$, with values $c_A(1) = 0.70$, $c_A(2) = 0.45$, $c_A(3) = 0.25$, and $c_A(4) = 0.10$ (and $c_A(5) \\le 0$). Using the Statistical Vocabulary table formula (Lecture 02, Slide 16):\n$$\\kappa = 1 + 2\\sum_{i=1}^{i_{\\text{cutoff}}} c_A(i)$$\nwhat is the correlation time (statistical inefficiency) $\\kappa$?"
-    hint_markdown: "Sum $c_A(1) + c_A(2) + c_A(3) + c_A(4) = 0.70 + 0.45 + 0.25 + 0.10$, multiply by $2$, and add $1$."
-    correct: 4.0
-    tolerance: 0.01
-    rationale_markdown: "Summing the positive autocorrelation lags up to $i_{\\text{cutoff}} = 4$ gives $\\tau_{\\text{int}} = \\sum_{i=1}^4 c_A(i) = 0.70 + 0.45 + 0.25 + 0.10 = 1.50$. Then $\\kappa = 1 + 2(1.50) = 4.0$."
-
-  - id: q_10
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: concept_autocorrelation
-    prompt_markdown: "An equilibrated Molecular Dynamics trajectory contains $N_{\\text{eq}} = 10{,}000$ saved steps. The autocorrelation function of the pressure decays exponentially as $C(t) \\approx e^{-t/\\tau}$ with decay time $\\tau = 12.0\\text{ steps}$. Using the continuum/large-$\\tau$ approximation $\\kappa \\approx 1 + 2\\tau$, what is the **effective number of independent samples** $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa$?"
-    hint_markdown: "First compute $\\kappa = 1 + 2(12.0) = 25.0$, then divide $N_{\\text{eq}} = 10{,}000$ by $\\kappa$."
-    correct: 400.0
-    tolerance: 1.0
-    rationale_markdown: "With $\\tau = 12.0\\text{ steps}$, the statistical inefficiency is $\\kappa \\approx 1 + 2\\tau = 1 + 2(12.0) = 25.0$. Dividing $N_{\\text{eq}} = 10{,}000$ by $\\kappa = 25.0$ yields $N_{\\text{eff}} = \\frac{10{,}000}{25.0} = 400$ effective independent samples."
-
-  - id: q_11
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: concept_autocorrelation
-    prompt_markdown: "In an MD simulation with $N_{\\text{eq}} = 4{,}900$ equilibrated steps, the sample standard deviation of the total potential energy is $\\sigma_A = \\sqrt{v_A} = 1.40\\text{ eV}$, and the correlation time (statistical inefficiency) is $\\kappa = 49.0$. What is the **true standard error of the mean** $\\sigma_{\\bar{A}} = \\sqrt{\\frac{v_A \\kappa}{N_{\\text{eq}}}}$ (in $\\text{eV}$)?"
-    hint_markdown: "Compute $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa = 4900 / 49 = 100$, then divide $\\sigma_A = 1.40\\text{ eV}$ by $\\sqrt{N_{\\text{eff}}}$."
-    correct: 0.14
-    tolerance: 0.002
-    rationale_markdown: "First find the effective number of independent points: $N_{\\text{eff}} = \\frac{N_{\\text{eq}}}{\\kappa} = \\frac{4900}{49.0} = 100$. Then $\\sigma_{\\bar{A}} = \\frac{\\sigma_A}{\\sqrt{N_{\\text{eff}}}} = \\frac{1.40\\text{ eV}}{\\sqrt{100}} = 0.140\\text{ eV}$. (Notice that the naive error formula $\\sigma_A/\\sqrt{4900} = 0.020\\text{ eV}$ would have underestimated the true error bar by a factor of $\\sqrt{49} = 7\\times$!)"
-
-  - id: q_12
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: concept_autocorrelation
-    prompt_markdown: "If a correlated simulation time series has a statistical inefficiency of $\\kappa = 81$, by what multiplicative factor ($\\sigma_{\\text{true}} / \\sigma_{\\text{naive}}$) does the true standard error of the mean exceed the naive uncorrelated error estimate $s_A / \\sqrt{N}$?"
-    hint_markdown: "Since $\\sigma_{\\text{true}} = \\sigma_{\\text{naive}} \\sqrt{\\kappa}$, take the square root of $\\kappa = 81$."
-    correct: 9.0
-    tolerance: 0.01
-    rationale_markdown: "From $\\sigma_{\\text{true}} = \\sqrt{\\frac{v_A \\kappa}{N_{\\text{eq}}}} = \\sqrt{\\frac{v_A}{N_{\\text{eq}}}}\\,\\sqrt{\\kappa} = \\sigma_{\\text{naive}}\\sqrt{\\kappa}$, when $\\kappa = 81$ the true error bar is $\\sqrt{81} = 9.0$ times larger than the naive uncorrelated estimate."
-
-  - id: q_13
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_autocorrelation_and_kappa
-    prompt_markdown: "Why must the summation $\\kappa = 1 + 2\\sum_{i=1}^{i_{\\text{cutoff}}} c_A(i)$ be **truncated at a finite lag** $i_{\\text{cutoff}}$ (where $c_A(i)$ first reaches zero) rather than summed all the way to the maximum lag $i = N_{\\text{eq}} - 1$ (Lecture 02, Slides 11 & 16)?"
-    hint_markdown: "At large lags $i \\gg \\tau$, the true $C(i)$ is zero, but each finite-sample estimate $c_A(i)$ has random statistical noise of order $1/\\sqrt{N_{\\text{eq}} - i}$."
-    options:
-      - {id: a, text: "At lags $i \\gg \\tau$, $c_A(i)$ consists of random finite-sample noise whose variance accumulates over hundreds of lags, corrupting the integral and biasing $\\kappa$ toward zero if summed to $N_{\\text{eq}}-1$."}
-      - {id: b, text: "Because $c_A(i)$ always diverges to $+\\infty$ as $i \\to N_{\\text{eq}} - 1$."}
-      - {id: c, text: "Because $c_A(i)$ is only defined for $i = 1$ and $i = 2$."}
-      - {id: d, text: "Truncating at $C(t) = 0$ is done solely to save CPU time, as the large-lag terms are identically zero to machine precision."}
-    correct: a
-    rationale_markdown: "At lags $i$ beyond the physical correlation decay ($C(i) \\approx 0$), the empirical estimator $c_A(i)$ fluctuates randomly around zero with amplitude $\\sim 1/\\sqrt{N_{\\text{eq}}-i}$. Summing thousands of noisy tail terms adds huge variance (and an exact negative sum bias due to subtracting the sample mean $a$). Truncating where $c_A(i)$ first crosses $0$ captures the signal while rejecting the tail noise."
-
-  - id: q_14
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: concept_autocorrelation
-    prompt_markdown: "Compare the two analysis windows shown on Slide 12 of Lecture 02: **correlated data (`data.2`)** on the left vs. **uncorrelated data (`data.1`)** on the right, both having $N = 1{,}000$ points. Which statement accurately describes the two datasets?"
-    hint_markdown: "Read the `sigma`, `autocor. time`, and `error of mean` boxes on Slide 12 of Lecture 02."
-    options:
-      - {id: a, text: "The correlated dataset (`data.2`) has a much smaller intrinsic standard deviation (`sigma` $\\approx 0.103$) than `data.1` (`sigma` $\\approx 0.401$), yet because its autocorrelation time is $\\kappa \\approx 11.8$ (vs. $\\kappa \\approx 1.01$ for `data.1`), both datasets end up with nearly the same error of the mean ($\\approx \\pm 0.011$ vs. $\\pm 0.013$)!"}
-      - {id: b, text: "Both datasets have autocorrelation time $\\kappa = 1.0$, so their error bars depend only on their means."}
-      - {id: c, text: "The uncorrelated dataset (`data.1`) has an autocorrelation function that decays slowly over 40 steps."}
-      - {id: d, text: "Because `data.2` has a smaller `sigma`, its true error of the mean is $10\\times$ smaller than `data.1`."}
-    correct: a
-    rationale_markdown: "Look closely at Slide 12 of Lecture 02! For `data.2` (left), `sigma` $= 0.103$, `autocor. time` $\\kappa = 11.78$, and $N = 1000$, giving `error of mean` $= 0.103\\sqrt{11.78/1000} \\approx 0.011$. For `data.1` (right), `sigma` $= 0.401$ is nearly $4\\times$ wider, but `autocor. time` $\\kappa = 1.01$ (drops to 0 at lag 1), giving `error of mean` $= 0.401\\sqrt{1.01/1000} \\approx 0.013$. A $12\\times$ longer correlation time erases a $4\\times$ smaller fluctuation width!"
-
-  - id: q_15
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_autocorrelation_and_kappa
-    prompt_markdown: "For an exact discrete autoregressive AR(1) process where $C(t) = \\phi^{|t|}$ with $0 < \\phi < 1$ (corresponding to $\\phi = e^{-1/\\tau}$), the infinite series for the statistical inefficiency can be summed in closed form:\n$$\\kappa = 1 + 2\\sum_{t=1}^{\\infty} \\phi^t = 1 + \\frac{2\\phi}{1 - \\phi} = \\frac{1 + \\phi}{1 - \\phi}$$\nIf neighboring steps have a one-step correlation of $\\phi = C(1) = 0.80$, what is the exact statistical inefficiency $\\kappa$?"
-    hint_markdown: "Compute $(1 + 0.80) / (1 - 0.80)$."
-    correct: 9.0
-    tolerance: 0.01
-    rationale_markdown: "Using the exact geometric series sum: $\\kappa = \\frac{1 + \\phi}{1 - \\phi} = \\frac{1 + 0.80}{1 - 0.80} = \\frac{1.80}{0.20} = 9.0$."
-
-  - id: sec_data_blocking
-    type: markdown_section
-    title: "3. The Flyvbjerg–Petersen Data Blocking (Binning) Method & The N_eff ≥ 20 Rule"
-    body_markdown: |
-      Computing the autocorrelation function $c_A(i)$ and choosing the cutoff lag $i_{\text{cutoff}}$ by hand is one way to find the true error bar. A second, remarkably elegant and automatic method that avoids computing $c_A(i)$ altogether is **Data Blocking (Binning)**, formalized by Flyvbjerg and Petersen (1989) (Lecture 02, Slide 10).
-
-      ### How Data Blocking Works
-      Suppose we have an equilibrated trace of $N$ correlated measurements $\{a_1, a_2, \dots, a_N\}$. We partition the trace into $M = N / b$ contiguous, non-overlapping **blocks** each of length $b$ steps (note: Slide 10 denotes the block length by $N_b$, so there are $N / N_b$ blocks; in modern literature $b$ is the block length and $N_b = N/b$ is the number of blocks — both notations give the exact same formula!).
-
-      1. **Compute the average within each block $m \in \{1, 2, \dots, M\}$:**
-         $$B_m = \frac{1}{b}\sum_{t=(m-1)b + 1}^{m b} a_t$$
-         Notice that the overall mean of the block averages is identical to the original sample mean: $\bar{B} = \frac{1}{M}\sum_{m=1}^M B_m = \bar{a}$.
-      2. **Compute the sample variance among the $M$ block averages:**
-         $$\sigma^2(B) = \frac{1}{M - 1}\sum_{m=1}^M (B_m - \bar{B})^2$$
-      3. **Estimate the standard error of the overall mean treating the $M = N/b$ blocks as independent:**
-         $$\boxed{\hat{\sigma}_{\bar{a}}(b) = \sqrt{\frac{\sigma^2(B)}{M}} = \sqrt{\frac{b \, \sigma^2(B)}{N}}}$$
-
-      ### Why Does the Blocking Curve Plateau at the True Error?
-      Let's trace what happens as we systematically increase the block length $b = 1, 2, 4, 8, 16, \dots$:
-      - **Small blocks ($b = 1$):** Each block is a single step ($M = N$), so $\hat{\sigma}_{\bar{a}}(1) = \sqrt{\sigma^2(a_t)/N} = \sigma_{\text{naive}}$. Because adjacent blocks are strongly correlated, this **underestimates** the true error by a factor of $\sqrt{\kappa}$.
-      - **Intermediate blocks ($1 < b \lesssim \tau$):** As $b$ grows, correlations *inside* each block are absorbed into the block variance $\sigma^2(B)$, causing $\hat{\sigma}_{\bar{a}}(b)$ to **climb monotonically upward**.
-      - **Plateau regime ($b \gg \tau$, typically $b \gtrsim 3\tau$ to $5\tau$):** Once each block is much longer than the correlation time $\tau$, adjacent block averages $B_m$ and $B_{m+1}$ become **statistically independent** (only a negligible boundary layer of width $\sim \tau$ at the interface between two blocks is correlated). Therefore, $\sigma^2(B) \to \frac{\sigma_A^2 \kappa}{b}$, and the blocking error estimate **converges to a flat plateau** equal to the true standard error:
-        $$\hat{\sigma}_{\bar{a}}(b) \xrightarrow{b \gg \tau} \sigma_{\text{plateau}} = \sqrt{\frac{\sigma_A^2 \kappa}{N}} = \sigma_{\text{naive}}\sqrt{\kappa}$$
-      - **Extracting $\kappa$ directly from the blocking curve:** Once the plateau is reached, the ratio of the plateau error to the naive ($b=1$) error immediately yields the statistical inefficiency $\kappa$:
-        $$\boxed{\kappa = \left(\frac{\sigma_{\text{plateau}}}{\sigma_{\text{naive}}}\right)^2}$$
-      - **Over-blocking Breakdown ($M = N/b < 20$):** If we make the block size $b$ so huge that only $M = 2, 3,$ or $5$ blocks remain in the entire simulation, the variance of the variance explodes! As stated on Slide 15 of Lecture 02:
-        > *"We need about 20 independent data points to estimate errors (so error of error is only 20%)."*
-
-        Specifically, for $M$ independent Gaussian blocks, the relative statistical uncertainty in the estimated standard error ("the error of the error") is:
-        $$\frac{\Delta \hat{\sigma}_{\bar{a}}}{\hat{\sigma}_{\bar{a}}} \approx \frac{1}{\sqrt{2(M - 1)}}$$
-        At $M = 20$ independent points (or $N_{\text{eff}} = 20$), $1/\sqrt{38} \approx 16.2\% \approx 20\%$. If $N_{\text{eff}} < 20$, no blocking plateau can form before the curve dissolves into wild finite-sample noise!
-
-  - id: concept_blocking
-    type: concept_cell
-    title: "Interactive Explorer: Flyvbjerg–Petersen Data Blocking Curve & Plateau Extraction"
-    description_markdown: "Vary the correlation time $\\tau$, total trajectory length $N$, and selected block length $b$ to watch $\\hat{\\sigma}_{\\bar{A}}(b)$ climb from the naive $b=1$ underestimate to the true plateau $\\sigma_A\\sqrt{\\kappa/N}$ — and observe what happens in the shaded noisy zone where fewer than $20$ blocks remain!"
-    render_function: render_data_blocking_plateau
-    layout: figure_left
-    controls:
-      tau:
-        kind: slider
-        label: "Correlation Decay Time τ (steps)"
-        min: 1.0
-        max: 40.0
-        step: 1.0
-        default: 10.0
-      n_total:
-        kind: dropdown
-        label: "Total Trajectory Length N"
-        options:
-          - {label: "N = 512 steps (short run)", value: 512}
-          - {label: "N = 2048 steps (medium run)", value: 2048}
-          - {label: "N = 4096 steps (standard run)", value: 4096}
-          - {label: "N = 16384 steps (long run)", value: 16384}
-        default: 4096
-      selected_block_size:
-        kind: dropdown
-        label: "Inspect Block Length b"
-        options:
-          - {label: "b = 1 (Naive uncorrelated)", value: 1}
-          - {label: "b = 4 steps", value: 4}
-          - {label: "b = 16 steps", value: 16}
-          - {label: "b = 32 steps", value: 32}
-          - {label: "b = 64 steps", value: 64}
-          - {label: "b = 128 steps", value: 128}
-          - {label: "b = 256 steps", value: 256}
-        default: 32
-    takeaway_markdown: "**Key Takeaway:** A reliable data-blocking error analysis requires two simultaneous conditions at your chosen plateau block size $b$: (1) $b \\gg \\tau$ so blocks are independent and the curve has flattened out, and (2) $N_b = N/b \\ge 20$ so there are enough blocks to compute a trustworthy variance!"
-
-  - id: q_16
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_data_blocking
-    prompt_markdown: "You partition an equilibrated MD trajectory of $N = 8{,}000$ steps into $M = 40$ contiguous blocks, each of length $b = N_b = 200$ steps (which is much longer than the correlation time $\\tau = 15$ steps). You compute the block average $B_m$ for each of the $40$ blocks and find that the sample standard deviation among the 40 block averages is $\\sigma(B) = 0.31623\\text{ GPa}$ (so $\\sigma^2(B) = 0.100\\text{ GPa}^2$). Using the binning error formula (Lecture 02, Slide 10):\n$$\\text{error}(\\langle a \\rangle) \\approx \\sqrt{\\frac{b\\,\\sigma^2(B)}{N}} = \\sqrt{\\frac{\\sigma^2(B)}{M}}$$\nwhat is the estimated standard error of the overall mean (in $\\text{GPa}$)?"
-    hint_markdown: "Divide $\\sigma^2(B) = 0.100$ by the number of blocks $M = 40$, then take the square root."
-    correct: 0.05
-    tolerance: 0.001
-    rationale_markdown: "Substituting $b = 200$, $\\sigma^2(B) = 0.100\\text{ GPa}^2$, and $N = 8{,}000$ (so $M = N/b = 40$ blocks) gives $\\text{error}(\\langle a \\rangle) = \\sqrt{\\frac{200 \\times 0.100}{8000}} = \\sqrt{\\frac{0.100}{40}} = \\sqrt{0.0025} = 0.050\\text{ GPa}$."
-
-  - id: q_17
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: concept_blocking
-    prompt_markdown: "In a Flyvbjerg–Petersen data blocking analysis of an MC magnetization trace, the naive ($b=1$) standard error is $\\hat{\\sigma}_{\\bar{M}}(1) = 0.0040$, and as block length $b$ increases, the blocking curve levels off at a plateau value of $\\sigma_{\\text{plateau}} = 0.0200$. What is the statistical inefficiency (correlation time) $\\kappa$ of the magnetization trace?"
-    hint_markdown: "Use $\\kappa = (\\sigma_{\\text{plateau}} / \\sigma_{\\text{naive}})^2$."
-    correct: 25.0
-    tolerance: 0.1
-    rationale_markdown: "Because $\\sigma_{\\text{plateau}} = \\sigma_{\\text{naive}}\\sqrt{\\kappa}$, squaring the ratio gives $\\kappa = \\left(\\frac{\\sigma_{\\text{plateau}}}{\\sigma_{\\text{naive}}}\\right)^2 = \\left(\\frac{0.0200}{0.0040}\\right)^2 = 5.0^2 = 25.0$."
-
-  - id: q_18
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_data_blocking
-    prompt_markdown: "As you group an equilibrated time series into larger and larger blocks of size $b$, what happens to the **overall mean of the block averages** $\\bar{B} = \\frac{1}{M}\\sum_{m=1}^M B_m$ (assuming $N$ is an exact multiple of $b$)?"
-    hint_markdown: "Check the identity $\\bar{b} = \\bar{a}$ on Slide 10 of Lecture 02."
-    options:
-      - {id: a, text: "The mean of the block averages $\\bar{B}$ is algebraically identical to the unblocked sample mean $\\bar{a}$ for every block size $b$."}
-      - {id: b, text: "The mean of the block averages $\\bar{B}$ increases as $\\sqrt{b}$ until it reaches a plateau."}
-      - {id: c, text: "The mean of the block averages $\\bar{B}$ shrinks as $1/b$."}
-      - {id: d, text: "Data blocking changes the sample mean by subtracting the correlation time $\\kappa$."}
-    correct: a
-    rationale_markdown: "Because $\\bar{B} = \\frac{1}{M}\\sum_{m=1}^M \\left(\\frac{1}{b}\\sum_{t \\in m} a_t\\right) = \\frac{1}{Mb}\\sum_{t=1}^N a_t = \\bar{a}$, binning/blocking leaves the sample mean completely invariant ($\\bar{b} = \\bar{a}$, Slide 10); it only changes how we estimate the *variance of the mean*."
-
-  - id: q_19
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: concept_blocking
-    prompt_markdown: "Suppose a student runs an MD simulation for $N = 500$ steps on a slow glassy system whose correlation time is $\\kappa = 200$ steps. When the student plots the data-blocking standard error $\\hat{\\sigma}_{\\bar{A}}(b)$ versus block size $b$, why does the curve **never show a clear flat plateau**?"
-    hint_markdown: "How many effective independent samples $N_{\\text{eff}} = N / \\kappa$ are in the entire trajectory? Recall the rule on Slide 15 of Lecture 02."
-    options:
-      - {id: a, text: "Because $N_{\\text{eff}} = N / \\kappa = 500 / 200 = 2.5 \\ll 20$: before the block size $b$ can exceed the correlation time ($b > 200$), fewer than 3 blocks remain, so the curve enters the high-variance finite-block noise regime before a plateau can form."}
-      - {id: b, text: "Because data blocking only works for Monte Carlo simulations, not Molecular Dynamics."}
-      - {id: c, text: "Because $\\hat{\\sigma}_{\\bar{A}}(b)$ always decreases monotonically with $b$ when $\\kappa > 100$."}
-      - {id: d, text: "Because $N = 500$ is not an exact power of 2."}
-    correct: a
-    rationale_markdown: "To see a plateau, the block length $b$ must exceed the correlation time ($b \\gtrsim \\kappa = 200$) *while simultaneously* leaving at least $M = N/b \\ge 20$ independent blocks so the error-of-the-error is small (Slide 15). That requires $N \\ge 20\\kappa = 4{,}000$ steps. With $N = 500$ and $\\kappa = 200$, $N_{\\text{eff}} = 2.5$, so the run is far too short to estimate errors reliably."
-
-  - id: q_20
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_data_blocking
-    prompt_markdown: "According to Lecture 02 (Slide 15), we need at least **$N_{\\text{eff}} = 20$ independent data points** to estimate statistical error bars reliably (so that the uncertainty in the error bar itself is $\\sim 20\\%$). If you are studying a phase transition where critical slowing down causes the statistical inefficiency to reach $\\kappa = 350\\text{ MC sweeps}$, what is the **minimum number of equilibrated MC sweeps** $N_{\\text{eq}}$ you must run after warm-up?"
-    hint_markdown: "Solve $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa = 20$ for $N_{\\text{eq}}$."
-    correct: 7000.0
-    tolerance: 10.0
-    rationale_markdown: "Requiring $N_{\\text{eff}} = \\frac{N_{\\text{eq}}}{\\kappa} \\ge 20$ with $\\kappa = 350$ gives $N_{\\text{eq}} \\ge 20 \\times 350 = 7{,}000\\text{ MC sweeps}$."
-
-  - id: q_21
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_data_blocking
-    prompt_markdown: "For $M$ independent Gaussian block averages, the relative statistical error of the estimated standard error ('the error of the error') is given by $\\frac{\\Delta \\hat{\\sigma}}{\\hat{\\sigma}} \\approx \\frac{1}{\\sqrt{2(M - 1)}}$. If you block your trajectory so that $M = 51$ independent blocks remain on the plateau, what is the percentage relative uncertainty $100 \\times \\frac{\\Delta \\hat{\\sigma}}{\\hat{\\sigma}}$ in your reported error bar?"
-    hint_markdown: "Substitute $M = 51$ into $100 / \\sqrt{2(51 - 1)}$."
-    correct: 10.0
-    tolerance: 0.1
-    rationale_markdown: "With $M = 51$ independent blocks, $2(M - 1) = 2(50) = 100$, so $\\frac{\\Delta \\hat{\\sigma}}{\\hat{\\sigma}} = \\frac{1}{\\sqrt{100}} = 0.10 = 10.0\\%$."
-
-  - id: sec_equilibration_warmup
-    type: markdown_section
-    title: "4. Initialization Transients, Equilibration Cutoff k_1 (I_eq) & Slippery Statistical Traps"
-    body_markdown: |
-      ### The Equilibration (Warm-Up) Problem
-      When we start a simulation at step $k = 1$, our initial configuration $S_0$ is almost never drawn from the true canonical equilibrium distribution $F^*(S)$. For example, we might initialize a liquid simulation on a simple cubic crystal lattice, or start an Ising magnet with all spins pointing up ($\sigma_i = +1$).
-
-      As shown in the **Statistical Vocabulary** table (Lecture 02, Slide 16):
-      - The full raw **trace** is $A_k$ for $1 \le k \le N$.
-      - We must discard the initial non-equilibrium warm-up transient $1 \le k < k_1$ (often denoted $I_{\text{eq}}$) and retain only the **equilibrated data range** $k_1 \le k \le k_2$ (typically $k_2 = N$), which contains:
-        $$N_{\text{eq}} = k_2 - k_1 + 1$$
-        production steps.
-      - All equilibrium estimators — the mean $a = \frac{1}{N_{\text{eq}}}\sum_{k=k_1}^{k_2} A_k$, the sample variance $v = \frac{1}{N_{\text{eq}}-1}\sum_{k=k_1}^{k_2} (A_k - a)^2$, and the autocorrelation $c_A(i)$ — are evaluated **strictly over the equilibrated window $[k_1, k_2]$**.
-
-      ### The Bias–Variance Trade-Off in Choosing $k_1$ ($I_{\text{eq}}$)
-      How should we choose the warm-up truncation step $k_1$?
-      - **If $k_1$ is too small ($k_1 \lesssim \tau_{\text{eq}}$):** The retained window still includes the exponential relaxation drift $\Delta A_0 e^{-k/\tau_{\text{eq}}}$ from the artificial initial state $S_0$. This contaminates the sample mean $a$ with a **systematic initialization bias** (and artificially inflates the sample variance $v$ and autocorrelation time $\kappa$!).
-      - **If $k_1$ is too large ($k_1 \to N$):** The remaining production window $N_{\text{eq}} = N - k_1 + 1$ becomes very short, reducing $N_{\text{eff}} = N_{\text{eq}}/\kappa$ and inflating the **statistical error** $\sigma_{\bar{A}} \propto N_{\text{eq}}^{-1/2}$.
-      - **Rule of thumb:** Choose $k_1$ to be at least **$5$ to $10$ times the relaxation/correlation time** ($k_1 \gtrsim 5\tau_{\text{eq}}$) where the trace visually and statistically flattens around a stationary mean, while ensuring $N_{\text{eq}} \gg 20\kappa$.
-
-      ### Four Classic Slippery Traps in Simulation Analysis (Slide 17)
-      On Slide 17 of Lecture 02 (*"Statistical thinking is slippery: be careful"*), Prof. Trinkle highlights four misconceptions that trap almost every beginner:
-      1. **"Shouldn't the energy settle down to a constant in equilibrium?"**
-         - **NO!** In any canonical ($NVT$) or grand-canonical ensemble (and for kinetic/potential energy separately in $NVE$), microscopic observables **fluctuate forever** with standard deviation $\sigma_A \propto 1/\sqrt{N_{\text{atoms}}}$. It is only the *overall sample mean* $\bar{A}$ that converges as $N_{\text{eq}} \to \infty$.
-      2. **"The cumulative energy curve $\bar{E}(n) = \frac{1}{n}\sum_{k=1}^n E_k$ looks smooth and flat at the end, so my simulation has converged!"**
-         - **BEWARE!** Even pathological, non-ergodic, or still-drifting simulations produce deceptively smooth cumulative average curves at large $n$. Why? Because changing the $n$-th point by $\Delta E$ only changes the cumulative average $\bar{E}(n) = \frac{n-1}{n}\bar{E}(n-1) + \frac{1}{n}E_n$ by $\mathcal{O}(1/n)$, which acts as a heavy low-pass filter that hides late-time jumps or phase transitions! Always plot the **raw trace** and **windowed block averages**, never rely on a smooth cumulative mean alone.
-      3. **"Dataset A differs from Dataset B by 2 error bars, therefore the two models MUST be physically different!"**
-         - **Not necessarily!** For a Gaussian distribution, a $\ge 2\sigma$ deviation occurs by pure chance about $5\%$ of the time ($\sim 1$ in $20$, or $\sim 1$ in $10$ when comparing pairs of noisy numbers). Conversely, *"if things agree too well (e.g. 20 parameters all within $0.1\sigma$), something is wrong!"*
-      4. **"My analysis procedure is too complicated to propagate errors analytically."**
-         - **NO! NEVER!** Even for the most complex multi-step fitting workflow, you can **run your whole code $M = 10$ times** with independent random seeds (or split your equilibrated trajectory into $M = 10$ independent macro-blocks) and compute the mean and standard error directly from the variance across the $M$ independent outputs!
-
-  - id: concept_warmup
-    type: concept_cell
-    title: "Interactive Explorer: Equilibration Cutoff k_1 (I_eq) & The Bias–Variance Trade-Off"
-    description_markdown: "Slide the warm-up truncation step $k_1$, relaxation timescale $\\tau_{\\text{eq}}$, and initial offset to see how discarding the initial transient eliminates **systematic warm-up bias** at the cost of a slightly shorter production window $N_{\\text{eq}}$."
-    render_function: render_warmup_and_jackknife
-    layout: figure_left
-    controls:
-      warmup_cutoff:
-        kind: slider
-        label: "Warm-Up Cutoff Step k_1 (I_eq)"
-        min: 0
-        max: 450
-        step: 15
-        default: 150
-      equilibration_tau:
-        kind: slider
-        label: "Transient Decay Time τ_eq (steps)"
-        min: 10.0
-        max: 120.0
-        step: 10.0
-        default: 50.0
-      initial_offset:
-        kind: slider
-        label: "Initial Non-Equilibrium Offset (eV)"
-        min: 0.5
-        max: 4.0
-        step: 0.5
-        default: 2.5
-    takeaway_markdown: "**Key Takeaway:** Setting $k_1 = 0$ includes the steep initial transient, creating a massive systematic bias in $\\bar{A}$ and artificially inflating the apparent variance. Setting $k_1 \\approx 3\\tau_{\\text{eq}}\\text{ to }5\\tau_{\\text{eq}}$ reduces the transient bias below the statistical noise floor while preserving most of the trajectory for production averaging."
-
-  - id: q_22
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_equilibration_warmup
-    prompt_markdown: "According to the Statistical Vocabulary table (Lecture 02, Slide 16), if a simulation generates a trace $A_k$ for $1 \\le k \\le 5{,}000$, and you discard the first $800$ steps as warm-up so that the equilibrated range begins at $k_1 = 801$ and ends at $k_2 = 5{,}000$, how many equilibrated data points $N_{\\text{eq}} = k_2 - k_1 + 1$ are included in your production average?"
-    hint_markdown: "Compute $5{,}000 - 801 + 1$."
-    correct: 4200.0
-    tolerance: 0.1
-    rationale_markdown: "Using $N_{\\text{eq}} = k_2 - k_1 + 1 = 5000 - 801 + 1 = 4{,}200$ equilibrated points (matching the total $5000$ points minus the $800$ discarded warm-up steps)."
-
-  - id: q_23
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: concept_warmup
-    prompt_markdown: "Suppose an MD potential energy trace of total length $N = 1{,}000$ steps has $E_k = -2.00\\text{ eV}$ during the initial $200$-step warm-up ($1 \\le k \\le 200$) and fluctuates around a true equilibrium mean of $-3.00\\text{ eV}$ during the remaining $800$ steps ($201 \\le k \\le 1{,}000$). If a student forgets to discard the warm-up period and averages over all $1{,}000$ steps, what is the resulting **systematic warm-up bias** $\\bar{E}_{1..1000} - (-3.00\\text{ eV})$ (in $\\text{eV}$)?"
-    hint_markdown: "Compute the full-trace average $[200(-2.00) + 800(-3.00)] / 1000$, then subtract the true equilibrium mean $-3.00\\text{ eV}$."
-    correct: 0.2
-    tolerance: 0.005
-    rationale_markdown: "The full-trace average is $\\bar{E}_{1..1000} = \\frac{200(-2.00) + 800(-3.00)}{1000} = \\frac{-400 - 2400}{1000} = -2.80\\text{ eV}$. Subtracting the true equilibrium mean of $-3.00\\text{ eV}$ gives a systematic bias of $-2.80 - (-3.00) = +0.20\\text{ eV}$."
-
-  - id: q_24
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_equilibration_warmup
-    prompt_markdown: "What happens to the **empirical sample variance** $v_A$ and **apparent autocorrelation time** $\\kappa$ if you fail to discard a large initial equilibration transient before running your statistical analysis?"
-    hint_markdown: "Think about what happens to $\\sum (A_k - a)^2$ and low-frequency drift when $A_k$ starts far above the equilibrium mean and slowly decays."
-    options:
-      - {id: a, text: "Both the apparent variance $v_A$ and the apparent autocorrelation time $\\kappa$ are artificially inflated by the slow, one-way transient drift."}
-      - {id: b, text: "The apparent variance $v_A$ becomes zero and $\\kappa$ drops to $1$."}
-      - {id: c, text: "The sample mean $a$ is biased, but $v_A$ and $c_A(i)$ are mathematically unaffected by the transient."}
-      - {id: d, text: "The autocorrelation function $c_A(0)$ becomes negative."}
-    correct: a
-    rationale_markdown: "A large initial transient means $A_k - a$ has the same sign for many consecutive steps at the start of the run. This large, slow drift adds a huge positive contribution to both the sample variance $v_A = \\frac{1}{N-1}\\sum (A_k - a)^2$ and the low-frequency autocorrelation $c_A(i)$, distorting every entry in the Statistical Vocabulary table!"
-
-  - id: q_25
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_equilibration_warmup
-    prompt_markdown: "Why does Slide 17 of Lecture 02 warn: *'\"The cumulative energy has converged.\" — BEWARE. Even pathological cases have smooth cumulative energy curves'*?"
-    hint_markdown: "Write the running cumulative mean as $\\bar{E}_n = \\frac{n-1}{n}\\bar{E}_{n-1} + \\frac{1}{n}E_n$ and consider the weight $1/n$ of new data at large $n$."
-    options:
-      - {id: a, text: "Because at large step count $n$, each new measurement $E_n$ is weighted by $1/n$, so the cumulative average $\\bar{E}_n$ always looks visually smooth and sluggish even if the instantaneous trace $E_n$ just jumped to a new metastable state or is still drifting."}
-      - {id: b, text: "Because the cumulative energy is an integral that diverges to infinity for any negative potential energy."}
-      - {id: c, text: "Because cumulative averages can only be computed for uncorrelated random numbers."}
-      - {id: d, text: "Because floating-point addition always rounds the last digit to zero."}
-    correct: a
-    rationale_markdown: "In a cumulative average $\\bar{E}_n = \\frac{1}{n}\\sum_{k=1}^n E_k = \\bar{E}_{n-1} + \\frac{E_n - \\bar{E}_{n-1}}{n}$, step-to-step fluctuations are suppressed by $1/n$. By $n = 10^5$, the curve looks glass-smooth even if the system is completely non-ergodic or undergoing a slow drift. Always inspect the raw trace and local block averages!"
-
-  - id: q_26
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_equilibration_warmup
-    prompt_markdown: "Suppose a student says: *'My simulation post-processing pipeline involves a complex non-linear curve fit and three coordinate transformations, so it is too complicated to compute error bars.'* What is Prof. Trinkle's direct prescription on Slide 17 of Lecture 02?"
-    hint_markdown: "Read the fourth bullet on Slide 17: 'NO! NEVER! Run your whole code...'"
-    options:
-      - {id: a, text: "Run the entire simulation/analysis pipeline $M = 10$ independent times (or on $M$ independent data blocks) and compute the mean and standard error directly from the variance of the $M$ results."}
-      - {id: b, text: "Omit the error bars and state in the caption that the algorithm is deterministic."}
-      - {id: c, text: "Report the machine epsilon ($10^{-16}$) as the error bar."}
-      - {id: d, text: "Replace the nonlinear observable with a linear one."}
-    correct: a
-    rationale_markdown: "Slide 17 states emphatically: *'NO! NEVER! Run your whole code 10 times and compute the mean and variance from the different runs. If a quantity is important, you MUST estimate its errors.'* If $y_1, \\dots, y_{10}$ are the outputs of 10 independent runs, $\\bar{y} \\pm \\sqrt{s_y^2 / 10}$ gives a rigorous, model-free error bar!"
-
-  - id: q_27
-    type: problem
-    question_type: numeric
-    difficulty: easy
-    taught_by: sec_equilibration_warmup
-    prompt_markdown: "Following the prescription on Slide 17, you run a complex defect-migration simulation code $M = 10$ independent times with different random number seeds. Across the $10$ independent runs, the extracted migration barrier has a sample mean of $\\bar{E}_m = 0.650\\text{ eV}$ and a sample variance across the 10 runs of $s^2 = 0.00090\\text{ eV}^2$ (so $s = 0.030\\text{ eV}$). What is the **standard error of the mean** $\\sigma_{\\bar{E}_m} = s / \\sqrt{M}$ across the 10 runs (in $\\text{eV}$, to 4 decimal places)?"
-    hint_markdown: "Compute $0.030 / \\sqrt{10}$."
-    correct: 0.00949
-    tolerance: 0.0002
-    rationale_markdown: "Since the $M = 10$ runs are completely independent ($\\kappa = 1$ between runs), the standard error of the 10-run average is $\\sigma_{\\bar{E}_m} = \\frac{s}{\\sqrt{10}} = \\frac{0.030}{3.16228} \\approx 0.00949\\text{ eV}$."
-
-  - id: sec_nonlinear_bias_and_resampling
-    type: markdown_section
-    title: "5. Nonlinear Functions of Expectations: O(1/N) Bias, Jackknife & Bootstrap Resampling"
-    body_markdown: |
-      ### Why $F(\bar{Z})$ Is Biased When $F$ Is Nonlinear (Lecture 02, Slide 13)
-      In statistical mechanics, many physical quantities are **nonlinear functions of ensemble expectations**, $F(\langle Z \rangle)$, rather than simple expectations of a single observable:
-      - **Binder Cumulant** (used to locate critical points in phase transitions):
-        $$U_4 = 1 - \frac{\langle M^4 \rangle}{3\langle M^2 \rangle^2}$$
-      - **Arrhenius / Free-Energy Barriers:** $\Delta F = -k_B T \ln \langle e^{-\Delta H / k_B T} \rangle$
-      - **Ratios of expectations** (such as Virial compressibility or canonical reweighting $\frac{\langle A e^{-\beta \Delta H}\rangle}{\langle e^{-\beta \Delta H}\rangle}$).
-
-      Crucially, for any nonlinear function $F(Z)$, **the expectation of the function does NOT equal the function of the expectation**:
-      $$\langle F(Z) \rangle \ne F(\langle Z \rangle)$$
-      Suppose $Z = \bar{Z} + \delta Z$ is the sample mean from a Monte Carlo or MD run (with true mean $\bar{Z} = \langle Z \rangle$, zero mean fluctuation $\langle \delta Z \rangle = 0$, and standard error $\text{error}(Z) = \langle \delta Z^2 \rangle^{1/2} = \frac{\sigma_Z}{\sqrt{N_{\text{eff}}}}$), and we plug $Z$ into a nonlinear formula $F(Z)$. How large are the **systematic bias** and **statistical error** of $F(Z)$?
-
-      Following Slide 13 of Lecture 02, we expand $F(Z)$ in a Taylor power series around $\bar{Z}$:
-      $$F(Z) = F(\bar{Z}) + \left.\frac{dF}{dZ}\right|_{\bar{Z}} \delta Z + \frac{1}{2}\left.\frac{d^2 F}{dZ^2}\right|_{\bar{Z}} \delta Z^2 + \cdots$$
-
-      1. **Systematic Bias of $F(Z)$ — Scales as $\mathcal{O}(N^{-1})$:**
-         Taking the expectation value of $F(Z) - F(\bar{Z})$ and using $\langle \delta Z \rangle = 0$ leaves the second-derivative curvature term:
-         $$\boxed{\text{bias}(F) = \big\langle F(Z) - F(\bar{Z}) \big\rangle = \frac{1}{2}\left.\frac{d^2 F}{dZ^2}\right|_{\bar{Z}} \langle \delta Z^2 \rangle + \cdots \approx \frac{1}{2}\left.\frac{d^2 F}{dZ^2}\right|_{\bar{Z}} \text{error}(Z)^2 = \mathcal{O}(N_{\text{eff}}^{-1})}$$
-         - If $F$ is strictly **linear** ($F''(\bar{Z}) = 0$), the bias is **identically zero**!
-         - If $F$ is **convex** ($F''(\bar{Z}) > 0$, e.g. $F(Z) = Z^2$ or $F(Z) = 1/Z$ for $Z>0$), $\text{bias}(F) > 0$ (Jensen's inequality: your result is systematically *too high*).
-         - If $F$ is **concave** ($F''(\bar{Z}) < 0$, e.g. $F(Z) = \ln Z$), $\text{bias}(F) < 0$ (your result is systematically *too low*).
-
-      2. **Statistical Error of $F(Z)$ — Scales as $\mathcal{O}(N^{-1/2})$:**
-         Computing the root-mean-square fluctuation around the mean retains the leading first-derivative term:
-         $$\boxed{\text{error}(F) = \big\langle (F(Z) - \langle F(Z) \rangle)^2 \big\rangle^{1/2} \approx \left|\left.\frac{dF}{dZ}\right|_{\bar{Z}}\right| \langle \delta Z^2 \rangle^{1/2} = \left|\left.\frac{dF}{dZ}\right|_{\bar{Z}}\right| \text{error}(Z) = \mathcal{O}(N_{\text{eff}}^{-1/2})}$$
-
-      Notice the asymptotic scaling hierarchy: as $N_{\text{eff}} \to \infty$, the systematic nonlinear bias shrinks as $\mathcal{O}(N_{\text{eff}}^{-1})$, which is faster than the statistical error $\mathcal{O}(N_{\text{eff}}^{-1/2})$. However, when $N_{\text{eff}}$ is modest or the curvature $|F''(\bar{Z})|$ is large, **you must estimate and correct for the bias**!
-
-      ### Resampling Methods for Nonlinear Observables: Jackknife & Bootstrap
-      How do we estimate $\text{error}(F)$ and $\text{bias}(F)$ for an arbitrary nonlinear function $F(\bar{A}, \bar{B}, \dots)$ without taking analytical derivatives by hand? Suppose we first group our correlated trajectory into $M$ independent blocks ($b \gg \tau$) with block averages $B_1, B_2, \dots, B_M$, and let $\hat{\theta}_{\text{full}} = F(\bar{B})$ be the nonlinear estimator evaluated on the full dataset.
-
-      1. **Delete-1 Block Jackknife:**
-         For each block $m \in \{1, \dots, M\}$, form the **$m$-th Jackknife subsample** by omitting block $m$ and averaging the remaining $M - 1$ blocks:
-         $$\bar{B}_{(m)} = \frac{1}{M - 1}\sum_{j \ne m} B_j, \qquad \hat{\theta}_{(m)} = F\big(\bar{B}_{(m)}\big)$$
-         Let $\bar{\theta}_{\text{JK}} = \frac{1}{M}\sum_{m=1}^M \hat{\theta}_{(m)}$ be the average of the $M$ Jackknife estimates. Because each $\hat{\theta}_{(m)}$ shares $M-2$ blocks with any other $\hat{\theta}_{(m')}$, their fluctuations are smaller by $1/(M-1)$, so the **Jackknife standard error** includes an $(M - 1)$ prefactor:
-         $$\boxed{\sigma_{\text{JK}}(\hat{\theta}) = \sqrt{\frac{M - 1}{M}\sum_{m=1}^M \big(\hat{\theta}_{(m)} - \bar{\theta}_{\text{JK}}\big)^2}}$$
-         Even better, since each Jackknife subsample has size $M - 1$ instead of $M$, its $\mathcal{O}(1/M)$ bias is larger by $\frac{M}{M-1}$, allowing us to extract the **Jackknife bias estimate** and the **bias-corrected estimator**:
-         $$\widehat{\text{bias}}_{\text{JK}}(\hat{\theta}) = (M - 1)\big(\bar{\theta}_{\text{JK}} - \hat{\theta}_{\text{full}}\big), \qquad \hat{\theta}_{\text{corrected}} = \hat{\theta}_{\text{full}} - \widehat{\text{bias}}_{\text{JK}} = M\hat{\theta}_{\text{full}} - (M - 1)\bar{\theta}_{\text{JK}}$$
-
-      2. **Bootstrap Resampling:**
-         Draw $M$ blocks *with replacement* from $\{B_1, \dots, B_M\}$ a large number of times $N_{\text{boot}}$ (e.g., $N_{\text{boot}} = 1{,}000$). For each bootstrap replicate $r$, compute the mean $\bar{B}^{*(r)}$ and evaluate $\hat{\theta}^{*(r)} = F(\bar{B}^{*(r)})$. The **Bootstrap standard error** is simply the sample standard deviation across the $N_{\text{boot}}$ replicates:
-         $$\sigma_{\text{boot}}(\hat{\theta}) = \sqrt{\frac{1}{N_{\text{boot}} - 1}\sum_{r=1}^{N_{\text{boot}}} \big(\hat{\theta}^{*(r)} - \bar{\theta}^*\big)^2}, \qquad \widehat{\text{bias}}_{\text{boot}} = \bar{\theta}^* - \hat{\theta}_{\text{full}}$$
-
-  - id: concept_nonlinear_bias
-    type: concept_cell
-    title: "Interactive Explorer: Nonlinear Estimator Bias O(N⁻¹) vs. Statistical Error O(N⁻¹/²)"
-    description_markdown: "Adjust the second-derivative curvature $F''(\\bar{Z})$ and fluctuation width $\\sigma_Z$ on a log–log plot to compare the $\\mathcal{O}(N_{\\text{eff}}^{-1/2})$ statistical error against the $\\mathcal{O}(N_{\\text{eff}}^{-1})$ systematic nonlinear bias (Lecture 02, Slide 13)."
-    render_function: render_nonlinear_bias_lab
-    layout: figure_left
-    controls:
-      curvature_c:
-        kind: slider
-        label: "Second Derivative Curvature F''(Z̄)"
-        min: 0.5
-        max: 8.0
-        step: 0.5
-        default: 2.0
-      sigma_z:
-        kind: slider
-        label: "Observable Std Dev σ_Z"
-        min: 0.2
-        max: 2.0
-        step: 0.2
-        default: 0.8
-    takeaway_markdown: "**Key Takeaway:** On a log–log plot against $N_{\\text{eff}}$, statistical error has slope $-1/2$ while nonlinear bias has a steeper slope of $-1$. At large $N_{\\text{eff}}$ statistical error dominates, but at small $N_{\\text{eff}}$ or large curvature $F''(\\bar{Z})$, nonlinear bias can be comparable to the error bar!"
-
-  - id: q_28
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "When a random sample average $Z = \\bar{Z} + \\delta Z$ with standard error $\\text{error}(Z) \\propto N^{-1/2}$ is plugged into a smooth nonlinear function $F(Z)$ (with $F'(\\bar{Z}) \\ne 0$ and $F''(\\bar{Z}) \\ne 0$), how do the **systematic bias** $\\text{bias}(F) = \\langle F(Z) - F(\\bar{Z}) \\rangle$ and the **statistical error** $\\text{error}(F)$ scale with the number of independent samples $N$ (Lecture 02, Slide 13)?"
-    hint_markdown: "Check the red $\\mathcal{O}(\\cdot)$ annotations on Slide 13 of Lecture 02."
-    options:
-      - {id: a, text: "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1/2})$."}
-      - {id: b, text: "Both $\\text{bias}(F)$ and $\\text{error}(F)$ scale as $\\mathcal{O}(N^{-1/2})$."}
-      - {id: c, text: "$\\text{bias}(F)$ is independent of $N$ ($\\mathcal{O}(1)$), while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$."}
-      - {id: d, text: "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1/2})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$."}
-    correct: a
-    rationale_markdown: "From the Taylor expansion on Slide 13 of Lecture 02, $\\text{bias}(F) \\approx \\frac{1}{2}F''(\\bar{Z})\\,\\text{error}(Z)^2 \\propto (N^{-1/2})^2 = \\mathcal{O}(N^{-1})$, whereas $\\text{error}(F) \\approx |F'(\\bar{Z})|\\,\\text{error}(Z) = \\mathcal{O}(N^{-1/2})$."
-
-  - id: q_29
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "Suppose you estimate a variable $Z$ from a Monte Carlo simulation with mean $\\bar{Z} = 2.0$ and standard error $\\text{error}(Z) = \\langle \\delta Z^2 \\rangle^{1/2} = 0.10$. You want to report the nonlinear quantity $F(Z) = Z^2$. Using the Taylor formula on Slide 13:\n$$\\text{bias}(F) = \\langle F(Z) - F(\\bar{Z}) \\rangle = \\frac{1}{2}\\left.\\frac{d^2 F}{dZ^2}\\right|_{\\bar{Z}} \\text{error}(Z)^2$$\nwhat is the exact systematic bias $\\text{bias}(F)$ of $Z^2$?"
-    hint_markdown: "For $F(Z) = Z^2$, the second derivative is $d^2F/dZ^2 = 2$. Compute $\\frac{1}{2}(2)(0.10)^2$."
-    correct: 0.01
-    tolerance: 0.0005
-    rationale_markdown: "For $F(Z) = Z^2$, $\\frac{dF}{dZ} = 2Z$ and $\\frac{d^2F}{dZ^2} = 2$. Thus $\\text{bias}(Z^2) = \\frac{1}{2}(2)\\,\\text{error}(Z)^2 = (0.10)^2 = 0.010$ (indeed, $\\langle (\\bar{Z} + \\delta Z)^2 \\rangle - \\bar{Z}^2 = \\langle \\delta Z^2 \\rangle = 0.010$ exactly!)."
-
-  - id: q_30
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "For the same variable $Z$ with mean $\\bar{Z} = 2.0$ and standard error $\\text{error}(Z) = 0.10$, what is the leading-order **statistical error** $\\text{error}(F) \\approx \\left|\\left.\\frac{dF}{dZ}\\right|_{\\bar{Z}}\\right| \\text{error}(Z)$ of $F(Z) = Z^2$?"
-    hint_markdown: "Evaluate $|dF/dZ| = 2\\bar{Z} = 4.0$ at $\\bar{Z} = 2.0$, and multiply by $\\text{error}(Z) = 0.10$."
-    correct: 0.4
-    tolerance: 0.005
-    rationale_markdown: "At $\\bar{Z} = 2.0$, the first derivative of $F(Z) = Z^2$ is $F'(\\bar{Z}) = 2(2.0) = 4.0$. Multiplying by $\\text{error}(Z) = 0.10$ gives $\\text{error}(F) \\approx 4.0 \\times 0.10 = 0.40$."
-
-  - id: q_31
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "In a free-energy perturbation calculation, you measure an exponential Boltzmann average $Z$ with true mean $\\bar{Z} = 1.0$ and standard error $\\text{error}(Z) = 0.20$, and then compute the free energy via the nonlinear logarithm $F(Z) = -\\ln(Z)$ (in units of $k_B T = 1$). Using $\\text{bias}(F) \\approx \\frac{1}{2}F''(\\bar{Z})\\,\\text{error}(Z)^2$, what is the leading-order systematic bias $\\text{bias}(F)$ (including the correct sign)?"
-    hint_markdown: "For $F(Z) = -\\ln(Z)$, we have $F'(Z) = -1/Z$ and $F''(Z) = +1/Z^2$. Evaluate $\\frac{1}{2}F''(1.0)(0.20)^2$."
-    correct: 0.02
-    tolerance: 0.001
-    rationale_markdown: "Differentiating $F(Z) = -\\ln(Z)$ gives $F'(Z) = -Z^{-1}$ and $F''(Z) = +Z^{-2}$. At $\\bar{Z} = 1.0$, $F''(1.0) = +1.0$. Therefore, $\\text{bias}(F) \\approx \\frac{1}{2}(1.0)(0.20)^2 = +0.020$."
-
-  - id: q_32
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "You partition an equilibrated trajectory into $M = 5$ independent blocks to perform a **Delete-1 Block Jackknife** analysis on the Binder cumulant $U_4$. Leaving out one block at a time gives the five Jackknife estimates:\n$$\\hat{\\theta}_{(1)} = 0.60,\\quad \\hat{\\theta}_{(2)} = 0.62,\\quad \\hat{\\theta}_{(3)} = 0.61,\\quad \\hat{\\theta}_{(4)} = 0.58,\\quad \\hat{\\theta}_{(5)} = 0.59$$\nwhose mean is $\\bar{\\theta}_{\\text{JK}} = 0.60$. Using the Jackknife standard error formula:\n$$\\sigma_{\\text{JK}} = \\sqrt{\\frac{M - 1}{M}\\sum_{m=1}^M \\big(\\hat{\\theta}_{(m)} - \\bar{\\theta}_{\\text{JK}}\\big)^2}$$\nwhat is $\\sigma_{\\text{JK}}$?"
-    hint_markdown: "First compute $\\sum_{m=1}^5 (\\hat{\\theta}_{(m)} - 0.60)^2 = 0^2 + 0.02^2 + 0.01^2 + (-0.02)^2 + (-0.01)^2 = 0.0010$. Multiply by $(M-1)/M = 4/5$, then take the square root."
-    correct: 0.02828
-    tolerance: 0.0005
-    rationale_markdown: "The sum of squared deviations of the 5 Jackknife estimates from $\\bar{\\theta}_{\\text{JK}} = 0.60$ is $0^2 + (0.02)^2 + (0.01)^2 + (-0.02)^2 + (-0.01)^2 = 0.0010$. Multiplying by $\\frac{M-1}{M} = \\frac{4}{5} = 0.8$ gives $\\sigma_{\\text{JK}}^2 = 0.00080$, so $\\sigma_{\\text{JK}} = \\sqrt{0.00080} \\approx 0.02828$."
-
-  - id: q_33
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "In a $M = 10$-block Jackknife analysis of a nonlinear susceptibility ratio, the full-sample estimate is $\\hat{\\theta}_{\\text{full}} = 2.500$, while the mean of the $M = 10$ delete-one-block Jackknife estimates is $\\bar{\\theta}_{\\text{JK}} = 2.502$. What is the **bias-corrected Jackknife estimate** $\\hat{\\theta}_{\\text{corrected}} = \\hat{\\theta}_{\\text{full}} - (M - 1)(\\bar{\\theta}_{\\text{JK}} - \\hat{\\theta}_{\\text{full}})$?"
-    hint_markdown: "Compute $\\widehat{\\text{bias}}_{\\text{JK}} = 9 \\times (2.502 - 2.500) = +0.018$, and subtract it from $\\hat{\\theta}_{\\text{full}} = 2.500$."
-    correct: 2.482
-    tolerance: 0.001
-    rationale_markdown: "The Jackknife estimate of the $\\mathcal{O}(1/M)$ bias is $\\widehat{\\text{bias}}_{\\text{JK}} = (M - 1)(\\bar{\\theta}_{\\text{JK}} - \\hat{\\theta}_{\\text{full}}) = 9(2.502 - 2.500) = +0.018$. Subtracting this positive bias from $\\hat{\\theta}_{\\text{full}} = 2.500$ gives $\\hat{\\theta}_{\\text{corrected}} = 2.500 - 0.018 = 2.482$."
-
-  - id: q_34
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_nonlinear_bias_and_resampling
-    prompt_markdown: "Why does the Delete-1 Jackknife variance formula $\\sigma_{\\text{JK}}^2 = \\frac{M-1}{M}\\sum_{m=1}^M (\\hat{\\theta}_{(m)} - \\bar{\\theta}_{\\text{JK}})^2$ have the prefactor $\\frac{M-1}{M}$ in the numerator instead of the usual $\\frac{1}{M(M-1)}$ used for $M$ independent block averages?"
-    hint_markdown: "How much data do $\\hat{\\theta}_{(1)}$ and $\\hat{\\theta}_{(2)}$ share in common?"
-    options:
-      - {id: a, text: "Because each delete-1 Jackknife subsample $\\hat{\\theta}_{(m)}$ averages $M-1$ of the $M$ blocks, so two Jackknife estimates overlap on $M-2$ blocks and vary among themselves by a factor of $1/(M-1)$ less than individual block averages."}
-      - {id: b, text: "Because Jackknife estimates have infinite variance unless multiplied by $M-1$."}
-      - {id: c, text: "Because the Jackknife method assumes the data follow a Cauchy distribution."}
-      - {id: d, text: "Because only $1$ block is kept in each Jackknife subsample and $M-1$ blocks are discarded."}
-    correct: a
-    rationale_markdown: "For a linear mean, $\\bar{B}_{(m)} - \\bar{B} = -\\frac{B_m - \\bar{B}}{M - 1}$, so the deviations of the delete-1 subsamples are compressed by $1/(M-1)$ relative to individual block deviations $B_m - \\bar{B}$. Squaring this $(M-1)$ factor converts $\\frac{1}{M(M-1)}\\sum (B_m - \\bar{B})^2$ into $\\frac{M-1}{M}\\sum (\\bar{B}_{(m)} - \\bar{B})^2$!"
-
-  - id: sec_end_to_end_protocol
-    type: markdown_section
-    title: "6. Putting It All Together: The Complete MSE 485 Error-Analysis Protocol"
-    body_markdown: |
-      Let's synthesize the complete, step-by-step error analysis protocol from Lecture 02 (Slide 16: **Statistical Vocabulary**) that you will use on every homework assignment and project in MSE 485:
-
-      ```
-      Raw Simulation Trace A_k (1 <= k <= N)
-         │
-         ▼
-      [Step 1: Equilibration Truncation]
-         Plot trace A_k vs. k; identify initial transient decay.
-         Discard warm-up steps k < k_1; keep equilibrated range k_1 <= k <= k_2 (N_eq = k_2 - k_1 + 1).
-         │
-         ▼
-      [Step 2: Sample Mean & Variance]
-         Compute mean:     a = (1 / N_eq) * sum_{k=k_1}^{k_2} A_k
-         Compute variance: v = [1 / (N_eq - 1)] * sum_{k=k_1}^{k_2} (A_k - a)^2,   sigma = sqrt(v)
-         │
-         ├──► [Method A: Autocorrelation Function]
-         │       c_A(i) = (1 / v) * [1 / (N_eq - i)] * sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)
-         │       Find first zero crossing i_cutoff where c_A(i) <= 0.
-         │       Compute statistical inefficiency:  kappa = 1 + 2 * sum_{i=1}^{i_cutoff} c_A(i)
-         │
-         └──► [Method B: Flyvbjerg-Petersen Data Blocking]
-                 Group N_eq points into M = N_eq / b blocks of size b = 1, 2, 4, 8, ...
-                 Plot block error sigma_hat(b) = sqrt(sigma^2(B) / M) vs. b.
-                 Identify flat plateau at b >> tau (while M >= 20); extract kappa = (sigma_plateau / sigma_naive)^2.
-         │
-         ▼
-      [Step 3: Effective Sample Size & True Standard Error]
-         Compute N_eff = N_eq / kappa   (Verify N_eff >= 20!)
-         Report:  <A> = a +/- sqrt(v / N_eff) = a +/- sqrt(v * kappa / N_eq)
-         │
-         ▼
-      [Step 4: Nonlinear Functions F(<A>, <B>)]
-         Apply Delete-1 Block Jackknife or Bootstrap over M >= 20 independent blocks (b >> tau)
-         to obtain bias-corrected F and its standard error sigma_F.
-      ```
-
-  - id: q_35
-    type: problem
-    question_type: single_select
-    difficulty: easy
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "In the **Statistical Vocabulary** table (Lecture 02, Slide 16), which formula defines the unbiased finite-sample estimator $c_A(i)$ for the autocorrelation function at lag $i$ over the equilibrated range $k_1 \\le k \\le k_2$ ($N_{\\text{eq}} = k_2 - k_1 + 1$)?"
-    hint_markdown: "Notice that for lag $i$, there are $N_{\\text{eq}} - i$ valid pairs $(A_k, A_{k+i})$ inside $[k_1, k_2]$, normalized by the sample variance $v$."
-    options:
-      - {id: a, text: "$c_A(i) = \\dfrac{1}{v}\\dfrac{1}{N_{\\text{eq}} - i}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$"}
-      - {id: b, text: "$c_A(i) = \\dfrac{1}{N_{\\text{eq}}}\\displaystyle\\sum_{k=1}^{N} A_k A_{k+i}$"}
-      - {id: c, text: "$c_A(i) = \\dfrac{v}{N_{\\text{eq}}}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k + a)(A_{k+i} + a)$"}
-      - {id: d, text: "$c_A(i) = 1 + 2\\displaystyle\\sum_{k=1}^{i} A_k$"}
-    correct: a
-    rationale_markdown: "As given directly in the Estimator column of Slide 16: $c_A(i) = \\frac{1}{v}\\frac{1}{N_{\\text{eq}}-i}\\sum_{k=k_1}^{k_2-i} (A_k - a)(A_{k+i} - a)$, which averages the product of mean-subtracted fluctuations over all $N_{\\text{eq}} - i$ pairs separated by lag $i$ and divides by the sample variance $v$."
-
-  - id: q_36
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "Using the estimator formula $c_A(i) = \\frac{1}{v(N_{\\text{eq}} - i)}\\sum_{k=1}^{N_{\\text{eq}}-i}(A_k - a)(A_{k+i} - a)$, consider a tiny toy trace of $N_{\\text{eq}} = 4$ equilibrated points: $A = [2.0,\\ 4.0,\\ 2.0,\\ 0.0]$, which has sample mean $a = 2.0$ and sample variance $v = \\frac{(0)^2 + (2)^2 + (0)^2 + (-2)^2}{4 - 1} = \\frac{8}{3}$. What is the value of $c_A(1)$ at lag $i = 1$?"
-    hint_markdown: "Compute $\\delta A = A - a = [0,\\ +2,\\ 0,\\ -2]$. Sum the $N_{\\text{eq}} - 1 = 3$ products $\\delta A_1 \\delta A_2 + \\delta A_2 \\delta A_3 + \\delta A_3 \\delta A_4$, then divide by $3 v$."
-    correct: 0.0
-    tolerance: 0.001
-    rationale_markdown: "With $\\delta A = [0, 2, 0, -2]$, at lag $i = 1$ the three adjacent products are $(0)(2) + (2)(0) + (0)(-2) = 0 + 0 + 0 = 0$. Dividing by $(N_{\\text{eq}}-1)v = 3(8/3) = 8$ gives $c_A(1) = 0.0$."
-
-  - id: q_37
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "For the same 4-point toy trace $A = [2.0,\\ 4.0,\\ 2.0,\\ 0.0]$ with $\\delta A = [0,\\ +2,\\ 0,\\ -2]$ and sample variance $v = 8/3$, what is the value of $c_A(2)$ at lag $i = 2$?"
-    hint_markdown: "At lag $i = 2$, there are $N_{\\text{eq}} - 2 = 2$ pairs: $\\delta A_1 \\delta A_3 + \\delta A_2 \\delta A_4 = (0)(0) + (2)(-2) = -4$. Divide by $(N_{\\text{eq}} - 2)v = 2 \\times (8/3) = 16/3$."
-    correct: -0.75
-    tolerance: 0.005
-    rationale_markdown: "At lag $i = 2$, $\\sum_{k=1}^2 \\delta A_k \\delta A_{k+2} = (0)(0) + (2)(-2) = -4$. Dividing by $(4 - 2)v = 2 \\times \\frac{8}{3} = \\frac{16}{3}$ yields $c_A(2) = \\frac{-4}{16/3} = -\\frac{12}{16} = -0.75$ (reflecting the strong period-4 oscillation between $+2$ at $k=2$ and $-2$ at $k=4$)."
-
-  - id: q_38
-    type: problem
-    question_type: numeric
-    difficulty: hard
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "You perform a complete Molecular Dynamics simulation of $N = 25{,}000$ total time steps. Visual and statistical inspection shows that equilibration is complete after $5{,}000$ steps, so you analyze the equilibrated range $k_1 = 5{,}001$ to $k_2 = 25{,}000$ ($N_{\\text{eq}} = 20{,}000$). In this production window, the total energy has sample variance $v_A = 0.360\\text{ eV}^2$, and the autocorrelation sum up to the first zero crossing is $\\sum_{i=1}^{i_{\\text{cutoff}}} c_A(i) = 9.50$. What is the **true standard error of the mean** $\\sigma_{\\bar{A}}$ (in $\\text{eV}$)?"
-    hint_markdown: "First compute $\\kappa = 1 + 2(9.50) = 20.0$. Then find $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa = 20{,}000 / 20.0 = 1{,}000$, and evaluate $\\sqrt{v_A / N_{\\text{eff}}}$."
-    correct: 0.01897
-    tolerance: 0.0005
-    rationale_markdown: "Step 1: $\\kappa = 1 + 2\\sum_{i=1}^{i_{\\text{cutoff}}} c_A(i) = 1 + 2(9.50) = 20.0$.\nStep 2: $N_{\\text{eff}} = \\frac{N_{\\text{eq}}}{\\kappa} = \\frac{20{,}000}{20.0} = 1{,}000$ independent samples ($\\ge 20$, valid!).\nStep 3: $\\sigma_{\\bar{A}} = \\sqrt{\\frac{v_A}{N_{\\text{eff}}}} = \\sqrt{\\frac{0.360}{1000}} = \\frac{0.60}{\\sqrt{1000}} \\approx 0.01897\\text{ eV}$."
-
-  - id: q_39
-    type: problem
-    question_type: single_select
-    difficulty: medium
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "When applying **Bootstrap** or **Jackknife** resampling to a time series from a Molecular Dynamics or Monte Carlo simulation with correlation time $\\kappa = 50$ steps, why is it a **grave error** to resample individual time steps $A_k$ independently instead of resampling **blocks** of length $b \\gg \\kappa$?"
-    hint_markdown: "What happens to the sequential time correlations if you scramble individual steps $A_k$ randomly with replacement?"
-    options:
-      - {id: a, text: "Resampling individual steps destroys the sequential time correlation structure and treats all $N_{\\text{eq}}$ steps as independent ($\\kappa = 1$), underestimating the true standard error by a factor of $\\sqrt{\\kappa} = \\sqrt{50} \\approx 7.1\\times$."}
-      - {id: b, text: "Resampling individual steps changes the sample mean to zero."}
-      - {id: c, text: "Bootstrap resampling can only be applied to datasets with fewer than 10 points."}
-      - {id: d, text: "Resampling individual steps overestimates the error bar by a factor of $\\kappa^2$."}
-    correct: a
-    rationale_markdown: "Standard i.i.d. Bootstrap/Jackknife assumes the resampled units are statistically independent. If you resample individual correlated steps $A_k$, each bootstrap replicate behaves as if $\\kappa = 1$, reproducing the naive uncorrelated error $\\sigma_{\\text{naive}}$ instead of $\\sigma_{\\text{naive}}\\sqrt{\\kappa}$. You must always group correlated data into approximately independent **blocks** of length $b \\gg \\tau$ first, and then Jackknife or Bootstrap over the $M$ blocks!"
-
-  - id: q_40
-    type: problem
-    question_type: numeric
-    difficulty: medium
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "In a canonical ($NVT$) simulation of a magnetic crystal, the magnetic susceptibility is related to the variance of the magnetization $M$ by the fluctuation–dissipation formula $\\chi = \\frac{1}{k_B T}\\big(\\langle M^2 \\rangle - \\langle M \\rangle^2\\big)$. Suppose $k_B T = 2.0$, and across $M_{\\text{blocks}} = 25$ independent blocks you estimate $\\bar{M} = 0.0$ with standard error $\\text{error}(\\bar{M}) = 0.20$, while $\\overline{M^2} = 1.00$ has negligible error. Because $\\hat{\\chi} = \\frac{1}{k_B T}\\big(\\overline{M^2} - \\bar{M}^2\\big)$ contains the nonlinear term $-\\frac{1}{k_B T}\\bar{M}^2$, what is the **systematic bias** $\\text{bias}(\\hat{\\chi}) = \\langle \\hat{\\chi} - \\chi_{\\text{true}} \\rangle$ caused by squaring the noisy sample mean $\\bar{M}$?"
-    hint_markdown: "Here $F(\\bar{M}) = -\\frac{1}{2 k_B T}\\cdot 2\\bar{M}^2 = -\\frac{1}{2.0}\\bar{M}^2 = -0.5\\,\\bar{M}^2$, so $F''(0) = -1.0$. Use $\\text{bias}(F) = \\frac{1}{2}F''(0)\\,\\text{error}(\\bar{M})^2$."
-    correct: -0.02
-    tolerance: 0.001
-    rationale_markdown: "Since $\\langle \\bar{M}^2 \\rangle = \\langle M \\rangle^2 + \\text{error}(\\bar{M})^2$, the expectation of $\\hat{\\chi} = \\frac{1}{k_B T}(\\overline{M^2} - \\bar{M}^2)$ is $\\chi_{\\text{true}} - \\frac{1}{k_B T}\\text{error}(\\bar{M})^2$. With $k_B T = 2.0$ and $\\text{error}(\\bar{M}) = 0.20$, the systematic bias is $-\\frac{(0.20)^2}{2.0} = -0.020$ (which is why multiplying by $\\frac{M_{\\text{blocks}}}{M_{\\text{blocks}}-1}$ or using Jackknife bias correction is essential!)."
-
-  - id: q_41
-    type: problem
-    question_type: multi_select
-    difficulty: medium
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "Select **all** statements from Lecture 02 that represent sound, rigorous practice when analyzing and reporting atomistic simulation data:"
-    hint_markdown: "Review Slides 4, 15, 16, and 17 of Lecture 02."
-    options:
-      - {id: a, text: "Every reported simulation quantity must include an error bar; results without error estimates are only suggestive."}
-      - {id: b, text: "Both the sample mean and its statistical error bar can be simultaneously determined from the same equilibrated trajectory once time correlations $\\kappa$ are accounted for."}
-      - {id: c, text: "To ensure the error of the error estimate is at most $\\sim 20\\%$, the equilibrated trajectory must span at least $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa \\ge 20$ effective independent samples."}
-      - {id: d, text: "Running a simulation longer ($N_{\\text{eq}} \\to \\infty$) automatically eliminates systematic errors such as interatomic potential inaccuracies and finite-timestep drift."}
-    correct: [a, b, c]
-    rationale_markdown: "- **(A) is correct** (Slide 4: *'Simulation results without error bars are only suggestive'*).\n- **(B) is correct** (Slide 15: *'The error and mean are simultaneously determined from the same data'*).\n- **(C) is correct** (Slide 15: *'We need about 20 independent data points to estimate errors'*).\n- **(D) is incorrect** (Slide 14: *'Even if you sample forever you do not get rid of systematic errors'*)."
-
-  - id: q_42
-    type: problem
-    question_type: multi_select
-    difficulty: hard
-    taught_by: sec_end_to_end_protocol
-    prompt_markdown: "Suppose you are comparing two simulation runs of the same liquid at the same $(N, V, T)$: Run 1 saves configurations every $\\Delta t_1 = 1\\text{ fs}$ for $100\\text{ ps}$ ($N_1 = 100{,}000$ points, with correlation time $\\kappa_1 = 200$ saved steps), while Run 2 saves configurations every $\\Delta t_2 = 100\\text{ fs}$ for the same $100\\text{ ps}$ physical duration ($N_2 = 1{,}000$ points, with correlation time $\\kappa_2 \\approx 2$ saved steps). Assuming $100\\text{ fs}$ is smaller than the physical correlation time ($200\\text{ fs}$), which statements are true? Select **all** that apply."
-    hint_markdown: "Compare $N_{\\text{eff},1} = N_1 / \\kappa_1$ and $N_{\\text{eff},2} = N_2 / \\kappa_2$ over the same $100\\text{ ps}$ physical trajectory!"
-    options:
-      - {id: a, text: "Both runs span the exact same physical duration ($100\\text{ ps}$) and contain essentially the same number of effective independent samples ($N_{\\text{eff}} \\approx 500$), yielding the same true standard error of the mean."}
-      - {id: b, text: "If someone mistakenly applies the naive uncorrelated formula $s_A / \\sqrt{N}$, Run 1 will falsely appear to have a $10\\times$ smaller error bar than Run 2 simply because it wrote to disk $100\\times$ more frequently."}
-      - {id: c, text: "In a Flyvbjerg–Petersen data blocking plot against physical block duration $t_b = b \\Delta t$, both runs converge to the same plateau error bar once $t_b \\gg 200\\text{ fs}$."}
-      - {id: d, text: "Saving configurations $100\\times$ more frequently during a fixed $100\\text{ ps}$ MD trajectory reduces the true statistical error bar by a factor of $10$."}
-    correct: [a, b, c]
-    rationale_markdown: "- **(A) is correct:** $N_{\\text{eff},1} = 100{,}000 / 200 = 500$ and $N_{\\text{eff},2} = 1{,}000 / 2 = 500$. The true precision depends on the physical duration divided by the physical correlation time ($100\\text{ ps} / 0.2\\text{ ps} = 500$).\n- **(B) is correct:** Because $N_1 = 100 N_2$, the naive formula $s_A/\\sqrt{N}$ is fooled by oversampling and underestimates Run 1's error by $\\sqrt{200} \\approx 14.1\\times$.\n- **(C) is correct:** Data blocking absorbs the sub-correlation steps into the blocks and reaches the same plateau once block duration exceeds the physical correlation time.\n- **(D) is incorrect:** Oversampling within a correlation time adds correlated redundant data without increasing $N_{\\text{eff}}$."
+- id: sec_ergodicity_and_error_types
+  type: markdown_section
+  title: 1. Ergodicity, Equilibrium Distributions & Statistical vs. Systematic Errors
+  body_markdown: "In Lesson 01 we saw that any atomistic simulation — whether **deterministic** (integrating Newton's equations\
+    \ via Molecular Dynamics) or **stochastic** (sampling Markov transitions $T(S_{n+1}\\mid S_n)$ via Monte Carlo or Langevin\
+    \ dynamics) — generates a sequence of states along iteration index $n$ (\"time\" or \"Monte Carlo time\"):\n$$S_0 \\Longrightarrow\
+    \ S_1 \\Longrightarrow S_2 \\Longrightarrow \\cdots \\Longrightarrow S_n \\Longrightarrow S_{n+1} \\Longrightarrow \\\
+    cdots$$\nRegardless of whether the underlying rule is deterministic or stochastic, **we analyze the errors of the output\
+    \ trace the exact same way**.\n\n### The Ergodic Hypothesis & Equilibrium Distribution $F^*(S)$\nWhy can a single long\
+    \ trajectory starting from one arbitrary initial configuration $S_0$ tell us the macroscopic thermodynamic properties\
+    \ of a material? Because we assume the simulation is **ergodic**:\n- Let $F_t(S \\mid S_0)$ be the probability distribution\
+    \ of finding the system in state $S$ after time $t$, given initial state $S_0$.\n- A simulation is **ergodic** if, after\
+    \ a characteristic **correlation time** $\\kappa$ (the number of iterations required to \"forget\" its past), the system\
+    \ loses all memory of its initial state $S_0$ (except for exact conserved quantities like total energy $E$ and total momentum\
+    \ $\\mathbf{P}$ in an isolated $NVE$ run) and converges to a **unique equilibrium probability distribution** $F^*(S)$:\n\
+    \ $$\\lim_{t \\to \\infty} F_t(S \\mid S_0) = F^*(S)$$\n- In classical statistical mechanics at constant temperature $T$,\
+    \ this unique distribution is the **canonical Boltzmann distribution**:\n $$F^*(S) = Z^{-1} \\exp\\!\\left(-\\frac{\\\
+    mathcal{H}(S)}{k_B T}\\right), \\qquad Z = \\int dS\\, \\exp\\!\\left(-\\frac{\\mathcal{H}(S)}{k_B T}\\right)$$\n- **Two\
+    \ uses of ergodicity in every simulation:**\n 1. **Equilibration (Warm-Up):** Starting from an artificial $S_0$ (e.g.,\
+    \ a perfect lattice when simulating a liquid), waiting for $t_{\\text{eq}} \\gg \\kappa$ allows the system to relax into\
+    \ $F^*(S)$.\n 2. **Independent Sampling:** Once in equilibrium, any non-conserved observable $A(S_t)$ sampled at time\
+    \ separations $\\Delta t \\gg \\kappa$ behaves as if drawn independently from $F^*(S)$, allowing us to replace the phase-space\
+    \ integral $\\langle V(S)\\rangle_{F^*} = \\int dS\\, F^*(S)V(S)$ with a time average!\n- Besides static thermodynamic\
+    \ averages (like internal energy $U = \\langle V(S)\\rangle_{F^*}$), trajectories also yield dynamical transport coefficients\
+    \ such as the **diffusion constant** $D$ in $d$ spatial dimensions:\n $$D = \\lim_{t \\to \\infty} \\frac{1}{2 d t} \\\
+    big\\langle |\\mathbf{r}(t) - \\mathbf{r}(0)|^2 \\big\\rangle$$\n\n### Statistical Errors vs. Systematic Errors\nIn what\
+    \ sense do simulations calculate \"exact\" properties? If there are no systematic biases, averaging long enough ($N \\\
+    to \\infty$) drives the random sampling error to zero! However, *\"simulation results without error bars are only suggestive\
+    \ — without error bars one has no idea of their significance.\"* Every serious simulation must distinguish two fundamentally\
+    \ different sources of error:\n\n| Error Category | Physical / Mathematical Origin | Scaling with Run Length $N$ | Atomistic\
+    \ Simulation Examples |\n|:--- |:--- |:--- |:--- |\n| **Statistical Error** | Finite random sampling of thermal fluctuations\
+    \ around $\\langle A\\rangle$ | Decays as $\\sigma_{\\bar{A}} = \\sqrt{\\frac{\\kappa_2 \\kappa}{N}} \\propto N^{-1/2}$\
+    \ | Finite number of MD/MC steps; variance of block averages |\n| **Systematic Error** | Non-sampling bias in the model,\
+    \ algorithm, or analysis; **does NOT vanish as $N \\to \\infty$** (except $O(1/N)$ nonlinear estimator bias) | Independent\
+    \ of $N$ (persists even if you sample forever!) | Empirical potential inaccuracy; MD timestep $\\Delta t$ truncation;\
+    \ finite box size ($1/N_{\\text{atoms}}$); un-discarded warm-up transient; floating-point round-off; code bugs |\n\n###\
+    \ Computational Efficiency $\\zeta$ of a Simulation Method\nHow do we compare two different algorithms (e.g., two Monte\
+    \ Carlo move sets) that compute the same quantity? Since statistical error shrinks as $\\sigma_{\\text{err}}(T) \\propto\
+    \ 1/\\sqrt{T}$ where $T$ is the total CPU wall-clock time spent, the product $T \\cdot \\sigma_{\\text{err}}^2$ is **independent\
+    \ of the length of the run**. We define the **computational efficiency** $\\zeta$:\n$$\\zeta = \\frac{1}{T \\, \\sigma_{\\\
+    text{err}}^2}$$\nEfficiency $\\zeta$ depends on the computer hardware, the algorithm, the correlation time $\\kappa$,\
+    \ and the observable being measured, **but NOT on how long you run the simulation**!"
+- id: q_1
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_ergodicity_and_error_types
+  prompt_markdown: What does it mean for an atomistic simulation $S_0 \to S_1 \to \cdots \to S_t$ to be **ergodic**?
+  hint_markdown: Consider how the conditional state distribution $F_t(S \mid S_0)$ behaves for times $t \gg \kappa$.
+  options:
+  - id: a
+    text: For times $t \gg \kappa$ (much longer than the correlation time), the system loses memory of its initial state $S_0$
+      (aside from conserved quantities) and samples a unique equilibrium probability distribution $\lim_{t\to\infty} F_t(S\mid
+      S_0) = F^*(S)$.
+  - id: b
+    text: The instantaneous potential energy $V(S_t)$ becomes strictly constant and stops fluctuating once $t > \kappa$.
+  - id: c
+    text: Every microstate in phase space has the exact same energy $\mathcal{H}(S)$ regardless of temperature.
+  - id: d
+    text: Consecutive states $S_n$ and $S_{n+1}$ are completely uncorrelated at a single step separation ($\Delta n = 1$).
+  correct: a
+  rationale_markdown: Ergodicity means that after a correlation time $\kappa$, the system forgets its initial state $S_0$
+    (except for conserved quantities like total energy/momentum in $NVE$) so that $\lim_{t\to\infty} F_t(S\mid S_0) = F^*(S)$
+    is a unique equilibrium distribution. Option (b) is false because energy fluctuates forever in canonical equilibrium;
+    Option (d) is false because consecutive steps are almost always correlated.
+- id: q_2
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_ergodicity_and_error_types
+  prompt_markdown: how does proving ergodicity compare between **stochastic simulations** (like Markov Chain Monte Carlo)
+    and **deterministic simulations** (like Newtonian Molecular Dynamics)?
+  hint_markdown: Think of the famous 1954 Fermi–Pasta–Ulam anharmonic chain experiment in deterministic mechanics vs. Markov
+    chain transition matrices.
+  options:
+  - id: a
+    text: Ergodicity is often straightforward to prove mathematically for random/stochastic transitions, but is notoriously
+      difficult (or fails in quasi-integrable regimes) for deterministic simulations.
+  - id: b
+    text: Ergodicity is trivial to prove for every deterministic Newtonian system, including harmonic crystals, but impossible
+      to prove for Monte Carlo.
+  - id: c
+    text: Deterministic simulations can never be ergodic under any circumstances.
+  - id: d
+    text: Ergodicity only applies to quantum systems, not classical phase space.
+  correct: a
+  rationale_markdown: '*''Ergodicity is often easy to prove for the random transition [via Markov chain irreducibility and
+    aperiodicity] but usually difficult for the deterministic simulation''* (as famously demonstrated by the Fermi–Pasta–Ulam
+    paradox in weakly anharmonic chains).'
+- id: q_3
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_ergodicity_and_error_types
+  prompt_markdown: In a 3D ($d = 3$) Molecular Dynamics simulation of liquid argon, you measure the mean-squared displacement
+    of atoms at long times ($t = 200\text{ ps}$) to be $\langle |\mathbf{r}(t) - \mathbf{r}(0)|^2 \rangle = 180.0\text{ Å}^2$.
+    Using the Einstein diffusion relation $D = \lim_{t\to\infty} \frac{1}{2dt}\langle |\mathbf{r}(t) - \mathbf{r}(0)|^2 \rangle$,
+    what is the self-diffusion constant $D$ (in $\text{Å}^2/\text{ps}$)?
+  hint_markdown: In $d = 3$ dimensions, the denominator is $2 d t = 6 t$. Compute $180.0 / (6 \times 200)$.
+  correct: 0.15
+  tolerance: 0.002
+  rationale_markdown: In $d = 3$ dimensions, $2 d t = 2(3)(200\text{ ps}) = 1200\text{ ps}$. Thus $D = \frac{180.0\text{ Å}^2}{1200\text{
+    ps}} = 0.150\text{ Å}^2/\text{ps}$ ($= 1.5 \times 10^{-5}\text{ cm}^2/\text{s}$).
+- id: q_4
+  type: problem
+  question_type: multi_select
+  difficulty: medium
+  taught_by: sec_ergodicity_and_error_types
+  prompt_markdown: Which of the following are examples of **systematic errors** (rather than statistical sampling errors)
+    in an atomistic simulation? Select **all** that apply.
+  hint_markdown: 'Ask yourself: if I run the exact same simulation code with the exact same parameters for $N \to \infty$
+    steps, does this error vanish or persist?'
+  options:
+  - id: a
+    text: Using an empirical pair potential that omits three-body covalent bonding interactions present in the real material.
+  - id: b
+    text: Choosing a Verlet integration time step $\Delta t = 10\text{ fs}$ that is too large, introducing $\mathcal{O}(\Delta
+      t^2)$ Hamiltonian truncation drift.
+  - id: c
+    text: Including the initial non-equilibrium warm-up transient ($t < t_{\text{eq}}$) inside your production average.
+  - id: d
+    text: The random $\pm \sigma_A / \sqrt{N_{\text{eff}}}$ uncertainty in the sample mean due to averaging over a finite
+      number of equilibrium fluctuations.
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: '- **(A), (B), and (C) are systematic errors:** Model Hamiltonian errors (A), finite-timestep integration
+    errors (B), and non-equilibrium initialization transients (C) shift the expected value away from the true physical equilibrium
+    value even as $N \to \infty$.
+
+    - **(D) is purely statistical error:** It measures random sampling scatter around the mean and vanishes as $N_{\text{eff}}^{-1/2}$.'
+- id: q_5
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_ergodicity_and_error_types
+  prompt_markdown: ', the **efficiency** of a simulation algorithm is defined as $\zeta = \frac{1}{T \sigma^2}$, where $T$
+    is the CPU time (in hours) and $\sigma$ is the achieved statistical error bar on the mean. Suppose Algorithm A runs for
+    $T_A = 4.0\text{ hours}$ and achieves a statistical error bar of $\sigma_A = 0.05\text{ eV}$, while Algorithm B runs for
+    $T_B = 2.0\text{ hours}$ and achieves $\sigma_B = 0.025\text{ eV}$. What is the efficiency ratio $\zeta_B / \zeta_A$?'
+  hint_markdown: Compute $\zeta_A = 1 / (4.0 \times 0.05^2)$ and $\zeta_B = 1 / (2.0 \times 0.025^2)$, then divide $\zeta_B
+    / \zeta_A$.
+  correct: 8.0
+  tolerance: 0.05
+  rationale_markdown: For Algorithm A, $\zeta_A = \frac{1}{4.0 \times (0.05)^2} = \frac{1}{0.01} = 100\text{ hr}^{-1}\text{eV}^{-2}$.
+    For Algorithm B, $\zeta_B = \frac{1}{2.0 \times (0.025)^2} = \frac{1}{0.00125} = 800\text{ hr}^{-1}\text{eV}^{-2}$. Thus
+    $\zeta_B / \zeta_A = 800 / 100 = 8.0$ (Algorithm B achieves half the error bar in half the time, making it $2 \times 2^2
+    = 8$ times more efficient!).
+- id: q_6
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_ergodicity_and_error_types
+  prompt_markdown: If you take the exact same simulation code on the same computer and simply run it **4 times longer** ($T
+    \to 4T$), how does the algorithmic efficiency $\zeta = \frac{1}{T \sigma_{\text{err}}^2}$ change?
+  hint_markdown: When $T \to 4T$, how does the statistical error bar $\sigma_{\text{err}} \propto 1/\sqrt{T}$ scale?
+  options:
+  - id: a
+    text: $\zeta$ remains unchanged, because $\sigma_{\text{err}}$ decreases by a factor of $2$ ($\sigma_{\text{err}}^2 \to
+      \sigma_{\text{err}}^2 / 4$), canceling the $4\times$ increase in $T$.
+  - id: b
+    text: $\zeta$ increases by a factor of $4$.
+  - id: c
+    text: $\zeta$ decreases by a factor of $4$.
+  - id: d
+    text: $\zeta$ increases by a factor of $2$.
+  correct: a
+  rationale_markdown: Because statistical error scales as $\sigma_{\text{err}} \propto T^{-1/2}$, running $4\times$ longer
+    reduces $\sigma_{\text{err}}^2$ by a factor of $4$. Therefore the product $T \sigma_{\text{err}}^2$ (and hence $\zeta
+    = 1/(T\sigma_{\text{err}}^2)$) is an intrinsic property of the algorithm and hardware that is **independent of the length
+    of the run**.
+- id: sec_autocorrelation_and_kappa
+  type: markdown_section
+  title: 2. Sequential Time Correlation, Autocorrelation Function C(t) & Statistical Inefficiency κ
+  body_markdown: "### Why Naive Error Formulas Fail in MD and MC\nSuppose we have an equilibrated trace of $N$ measurements\
+    \ $\\{a_1, a_2, \\dots, a_N\\}$ with sample mean $\\bar{a} = \\frac{1}{N}\\sum_{t=1}^N a_t$ and sample variance $\\sigma^2(a_t)\
+    \ = \\frac{1}{N-1}\\sum_{t=1}^N (a_t - \\bar{a})^2$. If the $N$ samples were **statistically independent**, the standard\
+    \ error of the mean would be the naive formula:\n$$\\text{error}_{\\text{naive}}(\\langle a \\rangle) = \\sqrt{\\frac{\\\
+    sigma^2(a_t)}{N}} = \\left[\\frac{\\sum_{t=1}^N \\delta a_t^2}{N(N-1)}\\right]^{1/2}, \\qquad \\delta a_t \\equiv a_t\
+    \ - \\bar{a}$$\n**Why is this dangerously wrong for raw MD or MC time series?** Consider the thought experiment of Lecture\
+    \ 02: *imagine taking $N$ genuine samples and simply repeating (duplicating) every single measurement twice to create\
+    \ a dataset of $2N$ numbers!*\n- The sample mean $\\bar{a}$ is unchanged (still an unbiased estimator!).\n- The sample\
+    \ variance $\\sigma^2(a_t)$ is unchanged.\n- Yet the naive formula $\\sqrt{\\sigma^2(a_t)/(2N)}$ claims your error bar\
+    \ just shrank by $\\sqrt{2}$, even though you added **zero new information**!\n\nIn both Molecular Dynamics (where atoms\
+    \ move only $\\sim 0.01\\text{ Å}$ per femtosecond step) and Metropolis Monte Carlo (where only one particle or spin moves\
+    \ per step), consecutive configurations $S_t$ and $S_{t+1}$ are strongly correlated.\n\n### Normalized Autocorrelation\
+    \ Function $C(t)$ & Correlation Time $\\kappa$\nLet $\\delta a_t = a_t - \\langle a \\rangle$ denote the fluctuation of\
+    \ observable $a$ at step $t$. In equilibrium (time-translation invariance), the correlation between step $t$ and step\
+    \ $t'$ depends only on the time lag $\\Delta t = |t - t'|$. We define the **normalized auto time-correlation function**\
+    \ $C(t)$:\n$$C(t, t') \\equiv \\frac{\\langle \\delta a_t \\, \\delta a_{t'} \\rangle}{\\langle \\delta a_t^2 \\rangle}\
+    \ = C(|t - t'|) = \\frac{\\big\\langle (A_k - \\langle A \\rangle)(A_{k+t} - \\langle A \\rangle) \\big\\rangle}{\\langle\
+    \ A^2 \\rangle - \\langle A \\rangle^2}$$\nFor a finite equilibrated trace $A_k$ ($k_1 \\le k \\le k_2$, containing $N_{\\\
+    text{eq}} = k_2 - k_1 + 1$ points) with sample mean $a$ and sample variance $v = \\frac{1}{N_{\\text{eq}}-1}\\sum_{k=k_1}^{k_2}\
+    \ (A_k - a)^2$, the unbiased finite-sample estimator $c_A(i)$ at lag $i$ is:\n$$c_A(i) = \\frac{1}{v} \\frac{1}{N_{\\\
+    text{eq}} - i} \\sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$$\nKey properties of $C(t)$:\n1. **At zero lag ($t = 0$):**\
+    \ $C(0) = \\frac{\\langle \\delta a_t^2 \\rangle}{\\langle \\delta a_t^2 \\rangle} = 1$ identically.\n2. **At large lag\
+    \ ($t \\to \\infty$):** In an ergodic system, $a_t$ and $a_{t+\\Delta t}$ become statistically independent for $\\Delta\
+    \ t \\gg \\tau$, so $\\langle \\delta a_t \\delta a_{t+\\Delta t}\\rangle \\to \\langle \\delta a_t\\rangle \\langle \\\
+    delta a_{t+\\Delta t}\\rangle = 0 \\implies C(t) \\to 0$.\n3. **Typical exponential decay:** Often $C(t) \\approx \\exp(-t\
+    \ / \\tau)$, where $\\tau$ is the **exponential decay correlation time** (in steps).\n\n### Deriving the Correlated Error\
+    \ Formula & Statistical Inefficiency $\\kappa$\nLet's compute the true variance of the sample mean $\\bar{a} = \\frac{1}{N}\\\
+    sum_{t=1}^N a_t$ WITHOUT assuming independence:\n$$\\big\\langle (\\bar{a} - \\langle a \\rangle)^2 \\big\\rangle = \\\
+    left\\langle \\left(\\frac{1}{N}\\sum_{t=1}^N \\delta a_t\\right)\\left(\\frac{1}{N}\\sum_{t'=1}^N \\delta a_{t'}\\right)\
+    \ \\right\\rangle = \\frac{1}{N^2}\\sum_{t=1}^N \\sum_{t'=1}^N \\langle \\delta a_t \\delta a_{t'} \\rangle = \\frac{\\\
+    langle \\delta a_t^2 \\rangle}{N^2}\\sum_{t=1}^N \\sum_{t'=1}^N C(|t - t'|)$$\nFor a run much longer than the correlation\
+    \ decay ($N \\gg \\tau$), summing over the $N \\times N$ square $(t, t')$ is bounded by summing $t$ from $1$ to $N$ and\
+    \ the relative lag $\\Delta t = t' - t$ from $-\\infty$ to $+\\infty$:\n$$\\big\\langle (\\bar{a} - \\langle a \\rangle)^2\
+    \ \\big\\rangle \\approx \\frac{\\langle \\delta a_t^2 \\rangle}{N^2} \\cdot N \\sum_{\\Delta t = -\\infty}^{\\infty}\
+    \ C(\\Delta t) = \\langle \\delta a_t^2 \\rangle \\frac{\\kappa}{N}$$\nwhere we have defined the **statistical inefficiency**\
+    \ (called the **correlation time** $\\kappa$ in reference literature):\n$$\\boxed{\\kappa = \\int_{-\\infty}^{\\infty}\
+    \ dt\\, C(t) \\approx \\sum_{\\Delta t = -\\infty}^{\\infty} C(\\Delta t) = 1 + 2\\sum_{t=1}^{\\infty} C(t) = 1 + 2\\\
+    tau_{\\text{int}}}$$\nHere $\\tau_{\\text{int}} = \\sum_{t=1}^{\\infty} C(t)$ is the **integrated autocorrelation time**.\
+    \ Notice how $\\kappa$ relates to $\\tau$:\n- If data are **completely uncorrelated** ($C(t) = 0$ for all $t \\ge 1$),\
+    \ then $\\tau_{\\text{int}} = 0$ and **$\\kappa = 1$**.\n- If $C(t) = e^{-t/\\tau}$ with $\\tau \\gg 1$, then $\\tau_{\\\
+    text{int}} = \\sum_{t=1}^\\infty e^{-t/\\tau} = \\frac{1}{e^{1/\\tau}-1} \\approx \\tau$, giving:\n $$\\kappa \\approx\
+    \ 1 + 2\\tau$$\n- Therefore, an equilibrated trace of length $N_{\\text{eq}}$ contains only **$N_{\\text{eff}}$ effective\
+    \ independent samples**:\n $$\\boxed{N_{\\text{eff}} = \\frac{N_{\\text{eq}}}{\\kappa}, \\qquad \\sigma_{\\bar{A}} = \\\
+    sqrt{\\frac{v_A}{N_{\\text{eff}}}} = \\sqrt{\\frac{v_A \\, \\kappa}{N_{\\text{eq}}}} = \\sigma_{\\text{naive}}\\sqrt{\\\
+    kappa}}$$\n\n> [!WARNING]\n> **Practical Cutoff Rule for $\\kappa$:**\n> In a finite dataset, $c_A(i)$ at large lag $i$\
+    \ fluctuates noisily around zero. Summing $c_A(i)$ all the way to $i = N_{\\text{eq}}-1$ accumulates pure statistical\
+    \ noise (in fact, $\\sum_{i=1}^{N-1} (1 - i/N)c_A(i) = -1/2$ identically!). Therefore, we **truncate the sum at a finite\
+    \ cutoff** $i_{\\text{cutoff}}$ defined by the first lag where $c_A(i) \\le 0$:\n> $$\\kappa = 1 + 2\\sum_{i=1}^{i_{\\\
+    text{cutoff}}} c_A(i)$$"
+- id: concept_autocorrelation
+  type: concept_cell
+  title: 'Interactive Explorer: Autocorrelation Decay C(t), Statistical Inefficiency κ & Effective Samples'
+  description_markdown: 'Adjust the exponential correlation decay time $\tau$ and total steps $N$, and toggle between the
+    **Autocorrelation Function $C(\Delta t)$** and the **Correlated Time Series Trace** (compare: *correlated data vs. Uncorrelated
+    data*).'
+  render_function: render_autocorrelation_lab
+  layout: figure_left
+  controls:
+    view_mode:
+      kind: dropdown
+      label: Plot View
+      options:
+      - label: Autocorrelation Function C(Δt)
+        value: autocorrelation
+      - label: Time Series Trace A_t & Error Band
+        value: trace
+      default: autocorrelation
+    tau:
+      kind: slider
+      label: Exponential Decay Time τ (steps)
+      min: 0.0
+      max: 25.0
+      step: 1.0
+      default: 8.0
+    n_steps:
+      kind: slider
+      label: Total Equilibrated Steps N_eq
+      min: 200
+      max: 2000
+      step: 100
+      default: 600
+  takeaway_markdown: '**Key Takeaway:** When $\tau = 0$ (uncorrelated data, right), $C(\Delta t)$ drops immediately from $1$
+    at $\Delta t=0$ to $0$ at $\Delta t=1$, so $\kappa = 1$ and $N_{\text{eff}} = N$. When $\tau = 20$ steps, $\kappa \approx
+    1 + 2(20) = 41$, shrinking $N_{\text{eff}}$ by $41\times$ and inflating the true error bar by $\sqrt{41} \approx 6.4\times$
+    relative to the naive formula!'
+- id: q_7
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_autocorrelation_and_kappa
+  prompt_markdown: By definition of the normalized autocorrelation function $C(t) = \frac{\langle \delta A_k \delta A_{k+t}\rangle}{\langle
+    \delta A_k^2 \rangle}$, what is the exact value of $C(0)$ at zero time lag ($t = 0$) for any non-constant observable $A$,
+    and what value does $C(t)$ approach as $t \to \infty$ in an ergodic system?
+  hint_markdown: Substitute $t = 0$ into the numerator and denominator of $C(t)$.
+  options:
+  - id: a
+    text: $C(0) = 1$ and $\lim_{t\to\infty} C(t) = 0$
+  - id: b
+    text: $C(0) = \sigma_A^2$ and $\lim_{t\to\infty} C(t) = 1$
+  - id: c
+    text: $C(0) = 0$ and $\lim_{t\to\infty} C(t) = \kappa$
+  - id: d
+    text: $C(0) = \langle A \rangle^2$ and $\lim_{t\to\infty} C(t) = 0$
+  correct: a
+  rationale_markdown: Because $C(t)$ is normalized by the variance $V = \langle \delta A_k^2 \rangle$, at $t = 0$ we have
+    $C(0) = \langle \delta A_k^2 \rangle / \langle \delta A_k^2 \rangle = 1$. As $t \to \infty$ in an ergodic system, fluctuations
+    separated by $t \gg \tau$ become uncorrelated, so $\langle \delta A_k \delta A_{k+t}\rangle \to \langle \delta A_k \rangle
+    \langle \delta A_{k+t} \rangle = 0$.
+- id: q_8
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_autocorrelation_and_kappa
+  prompt_markdown: 'Consider the thought experiment from Lecture 02: you have $N = 500$ genuinely independent measurements
+    of energy, and you artificially repeat each number $4$ times in a row to create a trace of $N_{\text{total}} = 2{,}000$
+    correlated data points. What is the statistical inefficiency (correlation time) $\kappa$ of this $2{,}000$-point dataset?'
+  hint_markdown: Recall $N_{\text{eff}} = N_{\text{total}} / \kappa$. How many truly independent measurements are present
+    in the dataset?
+  correct: 4.0
+  tolerance: 0.01
+  rationale_markdown: Since the $N_{\text{total}} = 2{,}000$ dataset contains exactly $N_{\text{eff}} = 500$ truly independent
+    samples, the correlation time / statistical inefficiency is $\kappa = \frac{N_{\text{total}}}{N_{\text{eff}}} = \frac{2000}{500}
+    = 4.0$. Consequently, $\sigma_{\bar{A}} = \sqrt{\frac{\sigma_A^2 \kappa}{2000}} = \sqrt{\frac{\sigma_A^2}{500}}$ is completely
+    unchanged by the artificial duplication!
+- id: q_9
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_autocorrelation_and_kappa
+  prompt_markdown: 'In a Monte Carlo simulation of a polymer chain, you compute the empirical autocorrelation function $c_A(i)$
+    of the end-to-end distance and find that it crosses zero after lag $i_{\text{cutoff}} = 4$, with values $c_A(1) = 0.70$,
+    $c_A(2) = 0.45$, $c_A(3) = 0.25$, and $c_A(4) = 0.10$ (and $c_A(5) \le 0$). Using the Statistical Vocabulary table formula:
+
+    $$\kappa = 1 + 2\sum_{i=1}^{i_{\text{cutoff}}} c_A(i)$$
+
+    what is the correlation time (statistical inefficiency) $\kappa$?'
+  hint_markdown: Sum $c_A(1) + c_A(2) + c_A(3) + c_A(4) = 0.70 + 0.45 + 0.25 + 0.10$, multiply by $2$, and add $1$.
+  correct: 4.0
+  tolerance: 0.01
+  rationale_markdown: Summing the positive autocorrelation lags up to $i_{\text{cutoff}} = 4$ gives $\tau_{\text{int}} = \sum_{i=1}^4
+    c_A(i) = 0.70 + 0.45 + 0.25 + 0.10 = 1.50$. Then $\kappa = 1 + 2(1.50) = 4.0$.
+- id: q_10
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: concept_autocorrelation
+  prompt_markdown: An equilibrated Molecular Dynamics trajectory contains $N_{\text{eq}} = 10{,}000$ saved steps. The autocorrelation
+    function of the pressure decays exponentially as $C(t) \approx e^{-t/\tau}$ with decay time $\tau = 12.0\text{ steps}$.
+    Using the continuum/large-$\tau$ approximation $\kappa \approx 1 + 2\tau$, what is the **effective number of independent
+    samples** $N_{\text{eff}} = N_{\text{eq}} / \kappa$?
+  hint_markdown: First compute $\kappa = 1 + 2(12.0) = 25.0$, then divide $N_{\text{eq}} = 10{,}000$ by $\kappa$.
+  correct: 400.0
+  tolerance: 1.0
+  rationale_markdown: With $\tau = 12.0\text{ steps}$, the statistical inefficiency is $\kappa \approx 1 + 2\tau = 1 + 2(12.0)
+    = 25.0$. Dividing $N_{\text{eq}} = 10{,}000$ by $\kappa = 25.0$ yields $N_{\text{eff}} = \frac{10{,}000}{25.0} = 400$
+    effective independent samples.
+- id: q_11
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: concept_autocorrelation
+  prompt_markdown: In an MD simulation with $N_{\text{eq}} = 4{,}900$ equilibrated steps, the sample standard deviation of
+    the total potential energy is $\sigma_A = \sqrt{v_A} = 1.40\text{ eV}$, and the correlation time (statistical inefficiency)
+    is $\kappa = 49.0$. What is the **true standard error of the mean** $\sigma_{\bar{A}} = \sqrt{\frac{v_A \kappa}{N_{\text{eq}}}}$
+    (in $\text{eV}$)?
+  hint_markdown: Compute $N_{\text{eff}} = N_{\text{eq}} / \kappa = 4900 / 49 = 100$, then divide $\sigma_A = 1.40\text{ eV}$
+    by $\sqrt{N_{\text{eff}}}$.
+  correct: 0.14
+  tolerance: 0.002
+  rationale_markdown: 'First find the effective number of independent points: $N_{\text{eff}} = \frac{N_{\text{eq}}}{\kappa}
+    = \frac{4900}{49.0} = 100$. Then $\sigma_{\bar{A}} = \frac{\sigma_A}{\sqrt{N_{\text{eff}}}} = \frac{1.40\text{ eV}}{\sqrt{100}}
+    = 0.140\text{ eV}$. (Notice that the naive error formula $\sigma_A/\sqrt{4900} = 0.020\text{ eV}$ would have underestimated
+    the true error bar by a factor of $\sqrt{49} = 7\times$!)'
+- id: q_12
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: concept_autocorrelation
+  prompt_markdown: If a correlated simulation time series has a statistical inefficiency of $\kappa = 81$, by what multiplicative
+    factor ($\sigma_{\text{true}} / \sigma_{\text{naive}}$) does the true standard error of the mean exceed the naive uncorrelated
+    error estimate $s_A / \sqrt{N}$?
+  hint_markdown: Since $\sigma_{\text{true}} = \sigma_{\text{naive}} \sqrt{\kappa}$, take the square root of $\kappa = 81$.
+  correct: 9.0
+  tolerance: 0.01
+  rationale_markdown: From $\sigma_{\text{true}} = \sqrt{\frac{v_A \kappa}{N_{\text{eq}}}} = \sqrt{\frac{v_A}{N_{\text{eq}}}}\,\sqrt{\kappa}
+    = \sigma_{\text{naive}}\sqrt{\kappa}$, when $\kappa = 81$ the true error bar is $\sqrt{81} = 9.0$ times larger than the
+    naive uncorrelated estimate.
+- id: q_13
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_autocorrelation_and_kappa
+  prompt_markdown: Why must the summation $\kappa = 1 + 2\sum_{i=1}^{i_{\text{cutoff}}} c_A(i)$ be **truncated at a finite
+    lag** $i_{\text{cutoff}}$ (where $c_A(i)$ first reaches zero) rather than summed all the way to the maximum lag $i = N_{\text{eq}}
+    - 1$?
+  hint_markdown: At large lags $i \gg \tau$, the true $C(i)$ is zero, but each finite-sample estimate $c_A(i)$ has random
+    statistical noise of order $1/\sqrt{N_{\text{eq}} - i}$.
+  options:
+  - id: a
+    text: At lags $i \gg \tau$, $c_A(i)$ consists of random finite-sample noise whose variance accumulates over hundreds of
+      lags, corrupting the integral and biasing $\kappa$ toward zero if summed to $N_{\text{eq}}-1$.
+  - id: b
+    text: Because $c_A(i)$ always diverges to $+\infty$ as $i \to N_{\text{eq}} - 1$.
+  - id: c
+    text: Because $c_A(i)$ is only defined for $i = 1$ and $i = 2$.
+  - id: d
+    text: Truncating at $C(t) = 0$ is done solely to save CPU time, as the large-lag terms are identically zero to machine
+      precision.
+  correct: a
+  rationale_markdown: At lags $i$ beyond the physical correlation decay ($C(i) \approx 0$), the empirical estimator $c_A(i)$
+    fluctuates randomly around zero with amplitude $\sim 1/\sqrt{N_{\text{eq}}-i}$. Summing thousands of noisy tail terms
+    adds huge variance (and an exact negative sum bias due to subtracting the sample mean $a$). Truncating where $c_A(i)$
+    first crosses $0$ captures the signal while rejecting the tail noise.
+- id: q_14
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: concept_autocorrelation
+  prompt_markdown: 'Compare the two analysis windows shown of Lecture 02: **correlated data (`data.2`)** on the left vs. **uncorrelated
+    data (`data.1`)** on the right, both having $N = 1{,}000$ points. Which statement accurately describes the two datasets?'
+  hint_markdown: Read the `sigma`, `autocor. Time`, and `error of mean` boxes of Lecture 02.
+  options:
+  - id: a
+    text: The correlated dataset (`data.2`) has a much smaller intrinsic standard deviation (`sigma` $\approx 0.103$) than
+      `data.1` (`sigma` $\approx 0.401$), yet because its autocorrelation time is $\kappa \approx 11.8$ (vs. $\kappa \approx
+      1.01$ for `data.1`), both datasets end up with nearly the same error of the mean ($\approx \pm 0.011$ vs. $\pm 0.013$)!
+  - id: b
+    text: Both datasets have autocorrelation time $\kappa = 1.0$, so their error bars depend only on their means.
+  - id: c
+    text: The uncorrelated dataset (`data.1`) has an autocorrelation function that decays slowly over 40 steps.
+  - id: d
+    text: Because `data.2` has a smaller `sigma`, its true error of the mean is $10\times$ smaller than `data.1`.
+  correct: a
+  rationale_markdown: Look closely at Lecture 02! For `data.2` (left), `sigma` $= 0.103$, `autocor. Time` $\kappa = 11.78$,
+    and $N = 1000$, giving `error of mean` $= 0.103\sqrt{11.78/1000} \approx 0.011$. For `data.1` (right), `sigma` $= 0.401$
+    is nearly $4\times$ wider, but `autocor. Time` $\kappa = 1.01$ (drops to 0 at lag 1), giving `error of mean` $= 0.401\sqrt{1.01/1000}
+    \approx 0.013$. A $12\times$ longer correlation time erases a $4\times$ smaller fluctuation width!
+- id: q_15
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_autocorrelation_and_kappa
+  prompt_markdown: 'For an exact discrete autoregressive AR(1) process where $C(t) = \phi^{|t|}$ with $0 < \phi < 1$ (corresponding
+    to $\phi = e^{-1/\tau}$), the infinite series for the statistical inefficiency can be summed in closed form:
+
+    $$\kappa = 1 + 2\sum_{t=1}^{\infty} \phi^t = 1 + \frac{2\phi}{1 - \phi} = \frac{1 + \phi}{1 - \phi}$$
+
+    If neighboring steps have a one-step correlation of $\phi = C(1) = 0.80$, what is the exact statistical inefficiency $\kappa$?'
+  hint_markdown: Compute $(1 + 0.80) / (1 - 0.80)$.
+  correct: 9.0
+  tolerance: 0.01
+  rationale_markdown: 'Using the exact geometric series sum: $\kappa = \frac{1 + \phi}{1 - \phi} = \frac{1 + 0.80}{1 - 0.80}
+    = \frac{1.80}{0.20} = 9.0$.'
+- id: sec_data_blocking
+  type: markdown_section
+  title: 3. The Flyvbjerg–Petersen Data Blocking (Binning) Method & The N_eff ≥ 20 Rule
+  body_markdown: "Computing the autocorrelation function $c_A(i)$ and choosing the cutoff lag $i_{\\text{cutoff}}$ by hand\
+    \ is one way to find the true error bar. A second, remarkably elegant and automatic method that avoids computing $c_A(i)$\
+    \ altogether is **Data Blocking (Binning)**, formalized by Flyvbjerg and Petersen (1989).\n\n### How Data Blocking Works\n\
+    Suppose we have an equilibrated trace of $N$ correlated measurements $\\{a_1, a_2, \\dots, a_N\\}$. We partition the trace\
+    \ into $M = N / b$ contiguous, non-overlapping **blocks** each of length $b$ steps (note: denotes the block length by\
+    \ $N_b$, so there are $N / N_b$ blocks; in modern literature $b$ is the block length and $N_b = N/b$ is the number of\
+    \ blocks — both notations give the exact same formula!).\n\n1. **Compute the average within each block $m \\in \\{1, 2,\
+    \ \\dots, M\\}$:**\n $$B_m = \\frac{1}{b}\\sum_{t=(m-1)b + 1}^{m b} a_t$$\n Notice that the overall mean of the block\
+    \ averages is identical to the original sample mean: $\\bar{B} = \\frac{1}{M}\\sum_{m=1}^M B_m = \\bar{a}$.\n2. **Compute\
+    \ the sample variance among the $M$ block averages:**\n $$\\sigma^2(B) = \\frac{1}{M - 1}\\sum_{m=1}^M (B_m - \\bar{B})^2$$\n\
+    3. **Estimate the standard error of the overall mean treating the $M = N/b$ blocks as independent:**\n $$\\boxed{\\hat{\\\
+    sigma}_{\\bar{a}}(b) = \\sqrt{\\frac{\\sigma^2(B)}{M}} = \\sqrt{\\frac{b \\, \\sigma^2(B)}{N}}}$$\n\n### Why Does the\
+    \ Blocking Curve Plateau at the True Error?\nLet's trace what happens as we systematically increase the block length $b\
+    \ = 1, 2, 4, 8, 16, \\dots$:\n- **Small blocks ($b = 1$):** Each block is a single step ($M = N$), so $\\hat{\\sigma}_{\\\
+    bar{a}}(1) = \\sqrt{\\sigma^2(a_t)/N} = \\sigma_{\\text{naive}}$. Because adjacent blocks are strongly correlated, this\
+    \ **underestimates** the true error by a factor of $\\sqrt{\\kappa}$.\n- **Intermediate blocks ($1 < b \\lesssim \\tau$):**\
+    \ As $b$ grows, correlations *inside* each block are absorbed into the block variance $\\sigma^2(B)$, causing $\\hat{\\\
+    sigma}_{\\bar{a}}(b)$ to **climb monotonically upward**.\n- **Plateau regime ($b \\gg \\tau$, typically $b \\gtrsim 3\\\
+    tau$ to $5\\tau$):** Once each block is much longer than the correlation time $\\tau$, adjacent block averages $B_m$ and\
+    \ $B_{m+1}$ become **statistically independent** (only a negligible boundary layer of width $\\sim \\tau$ at the interface\
+    \ between two blocks is correlated). Therefore, $\\sigma^2(B) \\to \\frac{\\sigma_A^2 \\kappa}{b}$, and the blocking error\
+    \ estimate **converges to a flat plateau** equal to the true standard error:\n $$\\hat{\\sigma}_{\\bar{a}}(b) \\xrightarrow{b\
+    \ \\gg \\tau} \\sigma_{\\text{plateau}} = \\sqrt{\\frac{\\sigma_A^2 \\kappa}{N}} = \\sigma_{\\text{naive}}\\sqrt{\\kappa}$$\n\
+    - **Extracting $\\kappa$ directly from the blocking curve:** Once the plateau is reached, the ratio of the plateau error\
+    \ to the naive ($b=1$) error immediately yields the statistical inefficiency $\\kappa$:\n $$\\boxed{\\kappa = \\left(\\\
+    frac{\\sigma_{\\text{plateau}}}{\\sigma_{\\text{naive}}}\\right)^2}$$\n- **Over-blocking Breakdown ($M = N/b < 20$):**\
+    \ If we make the block size $b$ so huge that only $M = 2, 3,$ or $5$ blocks remain in the entire simulation, the variance\
+    \ of the variance explodes! > *\"We need about 20 independent data points to estimate errors (so error of error is only\
+    \ 20%).\"*\n\n Specifically, for $M$ independent Gaussian blocks, the relative statistical uncertainty in the estimated\
+    \ standard error (\"the error of the error\") is:\n $$\\frac{\\Delta \\hat{\\sigma}_{\\bar{a}}}{\\hat{\\sigma}_{\\bar{a}}}\
+    \ \\approx \\frac{1}{\\sqrt{2(M - 1)}}$$\n At $M = 20$ independent points (or $N_{\\text{eff}} = 20$), $1/\\sqrt{38} \\\
+    approx 16.2\\% \\approx 20\\%$. If $N_{\\text{eff}} < 20$, no blocking plateau can form before the curve dissolves into\
+    \ wild finite-sample noise!"
+- id: concept_blocking
+  type: concept_cell
+  title: 'Interactive Explorer: Flyvbjerg–Petersen Data Blocking Curve & Plateau Extraction'
+  description_markdown: Vary the correlation time $\tau$, total trajectory length $N$, and selected block length $b$ to watch
+    $\hat{\sigma}_{\bar{A}}(b)$ climb from the naive $b=1$ underestimate to the true plateau $\sigma_A\sqrt{\kappa/N}$ — and
+    observe what happens in the shaded noisy zone where fewer than $20$ blocks remain!
+  render_function: render_data_blocking_plateau
+  layout: figure_left
+  controls:
+    tau:
+      kind: slider
+      label: Correlation Decay Time τ (steps)
+      min: 1.0
+      max: 40.0
+      step: 1.0
+      default: 10.0
+    n_total:
+      kind: dropdown
+      label: Total Trajectory Length N
+      options:
+      - label: N = 512 steps (short run)
+        value: 512
+      - label: N = 2048 steps (medium run)
+        value: 2048
+      - label: N = 4096 steps (standard run)
+        value: 4096
+      - label: N = 16384 steps (long run)
+        value: 16384
+      default: 4096
+    selected_block_size:
+      kind: dropdown
+      label: Inspect Block Length b
+      options:
+      - label: b = 1 (Naive uncorrelated)
+        value: 1
+      - label: b = 4 steps
+        value: 4
+      - label: b = 16 steps
+        value: 16
+      - label: b = 32 steps
+        value: 32
+      - label: b = 64 steps
+        value: 64
+      - label: b = 128 steps
+        value: 128
+      - label: b = 256 steps
+        value: 256
+      default: 32
+  takeaway_markdown: '**Key Takeaway:** A reliable data-blocking error analysis requires two simultaneous conditions at your
+    chosen plateau block size $b$: (1) $b \gg \tau$ so blocks are independent and the curve has flattened out, and (2) $N_b
+    = N/b \ge 20$ so there are enough blocks to compute a trustworthy variance!'
+- id: q_16
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_data_blocking
+  prompt_markdown: 'You partition an equilibrated MD trajectory of $N = 8{,}000$ steps into $M = 40$ contiguous blocks, each
+    of length $b = N_b = 200$ steps (which is much longer than the correlation time $\tau = 15$ steps). You compute the block
+    average $B_m$ for each of the $40$ blocks and find that the sample standard deviation among the 40 block averages is $\sigma(B)
+    = 0.31623\text{ GPa}$ (so $\sigma^2(B) = 0.100\text{ GPa}^2$). Using the binning error formula:
+
+    $$\text{error}(\langle a \rangle) \approx \sqrt{\frac{b\,\sigma^2(B)}{N}} = \sqrt{\frac{\sigma^2(B)}{M}}$$
+
+    what is the estimated standard error of the overall mean (in $\text{GPa}$)?'
+  hint_markdown: Divide $\sigma^2(B) = 0.100$ by the number of blocks $M = 40$, then take the square root.
+  correct: 0.05
+  tolerance: 0.001
+  rationale_markdown: Substituting $b = 200$, $\sigma^2(B) = 0.100\text{ GPa}^2$, and $N = 8{,}000$ (so $M = N/b = 40$ blocks)
+    gives $\text{error}(\langle a \rangle) = \sqrt{\frac{200 \times 0.100}{8000}} = \sqrt{\frac{0.100}{40}} = \sqrt{0.0025}
+    = 0.050\text{ GPa}$.
+- id: q_17
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: concept_blocking
+  prompt_markdown: In a Flyvbjerg–Petersen data blocking analysis of an MC magnetization trace, the naive ($b=1$) standard
+    error is $\hat{\sigma}_{\bar{M}}(1) = 0.0040$, and as block length $b$ increases, the blocking curve levels off at a plateau
+    value of $\sigma_{\text{plateau}} = 0.0200$. What is the statistical inefficiency (correlation time) $\kappa$ of the magnetization
+    trace?
+  hint_markdown: Use $\kappa = (\sigma_{\text{plateau}} / \sigma_{\text{naive}})^2$.
+  correct: 25.0
+  tolerance: 0.1
+  rationale_markdown: Because $\sigma_{\text{plateau}} = \sigma_{\text{naive}}\sqrt{\kappa}$, squaring the ratio gives $\kappa
+    = \left(\frac{\sigma_{\text{plateau}}}{\sigma_{\text{naive}}}\right)^2 = \left(\frac{0.0200}{0.0040}\right)^2 = 5.0^2
+    = 25.0$.
+- id: q_18
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_data_blocking
+  prompt_markdown: As you group an equilibrated time series into larger and larger blocks of size $b$, what happens to the
+    **overall mean of the block averages** $\bar{B} = \frac{1}{M}\sum_{m=1}^M B_m$ (assuming $N$ is an exact multiple of $b$)?
+  hint_markdown: Check the identity $\bar{b} = \bar{a}$ of Lecture 02.
+  options:
+  - id: a
+    text: The mean of the block averages $\bar{B}$ is algebraically identical to the unblocked sample mean $\bar{a}$ for every
+      block size $b$.
+  - id: b
+    text: The mean of the block averages $\bar{B}$ increases as $\sqrt{b}$ until it reaches a plateau.
+  - id: c
+    text: The mean of the block averages $\bar{B}$ shrinks as $1/b$.
+  - id: d
+    text: Data blocking changes the sample mean by subtracting the correlation time $\kappa$.
+  correct: a
+  rationale_markdown: Because $\bar{B} = \frac{1}{M}\sum_{m=1}^M \left(\frac{1}{b}\sum_{t \in m} a_t\right) = \frac{1}{Mb}\sum_{t=1}^N
+    a_t = \bar{a}$, binning/blocking leaves the sample mean completely invariant ($\bar{b} = \bar{a}$); it only changes how
+    we estimate the *variance of the mean*.
+- id: q_19
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: concept_blocking
+  prompt_markdown: Suppose a student runs an MD simulation for $N = 500$ steps on a slow glassy system whose correlation time
+    is $\kappa = 200$ steps. When the student plots the data-blocking standard error $\hat{\sigma}_{\bar{A}}(b)$ versus block
+    size $b$, why does the curve **never show a clear flat plateau**?
+  hint_markdown: How many effective independent samples $N_{\text{eff}} = N / \kappa$ are in the entire trajectory? Recall
+    the rule of Lecture 02.
+  options:
+  - id: a
+    text: 'Because $N_{\text{eff}} = N / \kappa = 500 / 200 = 2.5 \ll 20$: before the block size $b$ can exceed the correlation
+      time ($b > 200$), fewer than 3 blocks remain, so the curve enters the high-variance finite-block noise regime before
+      a plateau can form.'
+  - id: b
+    text: Because data blocking only works for Monte Carlo simulations, not Molecular Dynamics.
+  - id: c
+    text: Because $\hat{\sigma}_{\bar{A}}(b)$ always decreases monotonically with $b$ when $\kappa > 100$.
+  - id: d
+    text: Because $N = 500$ is not an exact power of 2.
+  correct: a
+  rationale_markdown: To see a plateau, the block length $b$ must exceed the correlation time ($b \gtrsim \kappa = 200$) *while
+    simultaneously* leaving at least $M = N/b \ge 20$ independent blocks so the error-of-the-error is small. That requires
+    $N \ge 20\kappa = 4{,}000$ steps. With $N = 500$ and $\kappa = 200$, $N_{\text{eff}} = 2.5$, so the run is far too short
+    to estimate errors reliably.
+- id: q_20
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_data_blocking
+  prompt_markdown: we need at least **$N_{\text{eff}} = 20$ independent data points** to estimate statistical error bars reliably
+    (so that the uncertainty in the error bar itself is $\sim 20\%$). If you are studying a phase transition where critical
+    slowing down causes the statistical inefficiency to reach $\kappa = 350\text{ MC sweeps}$, what is the **minimum number
+    of equilibrated MC sweeps** $N_{\text{eq}}$ you must run after warm-up?
+  hint_markdown: Solve $N_{\text{eff}} = N_{\text{eq}} / \kappa = 20$ for $N_{\text{eq}}$.
+  correct: 7000.0
+  tolerance: 10.0
+  rationale_markdown: Requiring $N_{\text{eff}} = \frac{N_{\text{eq}}}{\kappa} \ge 20$ with $\kappa = 350$ gives $N_{\text{eq}}
+    \ge 20 \times 350 = 7{,}000\text{ MC sweeps}$.
+- id: q_21
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_data_blocking
+  prompt_markdown: For $M$ independent Gaussian block averages, the relative statistical error of the estimated standard error
+    ('the error of the error') is given by $\frac{\Delta \hat{\sigma}}{\hat{\sigma}} \approx \frac{1}{\sqrt{2(M - 1)}}$. If
+    you block your trajectory so that $M = 51$ independent blocks remain on the plateau, what is the percentage relative uncertainty
+    $100 \times \frac{\Delta \hat{\sigma}}{\hat{\sigma}}$ in your reported error bar?
+  hint_markdown: Substitute $M = 51$ into $100 / \sqrt{2(51 - 1)}$.
+  correct: 10.0
+  tolerance: 0.1
+  rationale_markdown: With $M = 51$ independent blocks, $2(M - 1) = 2(50) = 100$, so $\frac{\Delta \hat{\sigma}}{\hat{\sigma}}
+    = \frac{1}{\sqrt{100}} = 0.10 = 10.0\%$.
+- id: sec_equilibration_warmup
+  type: markdown_section
+  title: 4. Initialization Transients, Equilibration Cutoff k_1 (I_eq) & Slippery Statistical Traps
+  body_markdown: "### The Equilibration (Warm-Up) Problem\nWhen we start a simulation at step $k = 1$, our initial configuration\
+    \ $S_0$ is almost never drawn from the true canonical equilibrium distribution $F^*(S)$. For example, we might initialize\
+    \ a liquid simulation on a simple cubic crystal lattice, or start an Ising magnet with all spins pointing up ($\\sigma_i\
+    \ = +1$).\n\nAs shown in the **Statistical Vocabulary** table:\n- The full raw **trace** is $A_k$ for $1 \\le k \\le N$.\n\
+    - We must discard the initial non-equilibrium warm-up transient $1 \\le k < k_1$ (often denoted $I_{\\text{eq}}$) and\
+    \ retain only the **equilibrated data range** $k_1 \\le k \\le k_2$ (typically $k_2 = N$), which contains:\n $$N_{\\text{eq}}\
+    \ = k_2 - k_1 + 1$$\n production steps.\n- All equilibrium estimators — the mean $a = \\frac{1}{N_{\\text{eq}}}\\sum_{k=k_1}^{k_2}\
+    \ A_k$, the sample variance $v = \\frac{1}{N_{\\text{eq}}-1}\\sum_{k=k_1}^{k_2} (A_k - a)^2$, and the autocorrelation\
+    \ $c_A(i)$ — are evaluated **strictly over the equilibrated window $[k_1, k_2]$**.\n\n### The Bias–Variance Trade-Off\
+    \ in Choosing $k_1$ ($I_{\\text{eq}}$)\nHow should we choose the warm-up truncation step $k_1$?\n- **If $k_1$ is too small\
+    \ ($k_1 \\lesssim \\tau_{\\text{eq}}$):** The retained window still includes the exponential relaxation drift $\\Delta\
+    \ A_0 e^{-k/\\tau_{\\text{eq}}}$ from the artificial initial state $S_0$. This contaminates the sample mean $a$ with a\
+    \ **systematic initialization bias** (and artificially inflates the sample variance $v$ and autocorrelation time $\\kappa$!).\n\
+    - **If $k_1$ is too large ($k_1 \\to N$):** The remaining production window $N_{\\text{eq}} = N - k_1 + 1$ becomes very\
+    \ short, reducing $N_{\\text{eff}} = N_{\\text{eq}}/\\kappa$ and inflating the **statistical error** $\\sigma_{\\bar{A}}\
+    \ \\propto N_{\\text{eq}}^{-1/2}$.\n- **Rule of thumb:** Choose $k_1$ to be at least **$5$ to $10$ times the relaxation/correlation\
+    \ time** ($k_1 \\gtrsim 5\\tau_{\\text{eq}}$) where the trace visually and statistically flattens around a stationary\
+    \ mean, while ensuring $N_{\\text{eq}} \\gg 20\\kappa$.\n\n### Four Classic Slippery Traps in Simulation Analysis\n of\
+    \ Lecture 02 (*\"Statistical thinking is slippery: be careful\"*), Prof. Trinkle highlights four misconceptions that trap\
+    \ almost every beginner:\n1. **\"Shouldn't the energy settle down to a constant in equilibrium?\"**\n - **NO!** In any\
+    \ canonical ($NVT$) or grand-canonical ensemble (and for kinetic/potential energy separately in $NVE$), microscopic observables\
+    \ **fluctuate forever** with standard deviation $\\sigma_A \\propto 1/\\sqrt{N_{\\text{atoms}}}$. It is only the *overall\
+    \ sample mean* $\\bar{A}$ that converges as $N_{\\text{eq}} \\to \\infty$.\n2. **\"The cumulative energy curve $\\bar{E}(n)\
+    \ = \\frac{1}{n}\\sum_{k=1}^n E_k$ looks smooth and flat at the end, so my simulation has converged!\"**\n - **BEWARE!**\
+    \ Even pathological, non-ergodic, or still-drifting simulations produce deceptively smooth cumulative average curves at\
+    \ large $n$. Why? Because changing the $n$-th point by $\\Delta E$ only changes the cumulative average $\\bar{E}(n) =\
+    \ \\frac{n-1}{n}\\bar{E}(n-1) + \\frac{1}{n}E_n$ by $\\mathcal{O}(1/n)$, which acts as a heavy low-pass filter that hides\
+    \ late-time jumps or phase transitions! Always plot the **raw trace** and **windowed block averages**, never rely on a\
+    \ smooth cumulative mean alone.\n3. **\"Dataset A differs from Dataset B by 2 error bars, therefore the two models MUST\
+    \ be physically different!\"**\n - **Not necessarily!** For a Gaussian distribution, a $\\ge 2\\sigma$ deviation occurs\
+    \ by pure chance about $5\\%$ of the time ($\\sim 1$ in $20$, or $\\sim 1$ in $10$ when comparing pairs of noisy numbers).\
+    \ Conversely, *\"if things agree too well (e.g. 20 parameters all within $0.1\\sigma$), something is wrong!\"*\n4. **\"\
+    My analysis procedure is too complicated to propagate errors analytically.\"**\n - **NO! NEVER!** Even for the most complex\
+    \ multi-step fitting workflow, you can **run your whole code $M = 10$ times** with independent random seeds (or split\
+    \ your equilibrated trajectory into $M = 10$ independent macro-blocks) and compute the mean and standard error directly\
+    \ from the variance across the $M$ independent outputs!"
+- id: concept_warmup
+  type: concept_cell
+  title: 'Interactive Explorer: Equilibration Cutoff k_1 (I_eq) & The Bias–Variance Trade-Off'
+  description_markdown: Slide the warm-up truncation step $k_1$, relaxation timescale $\tau_{\text{eq}}$, and initial offset
+    to see how discarding the initial transient eliminates **systematic warm-up bias** at the cost of a slightly shorter production
+    window $N_{\text{eq}}$.
+  render_function: render_warmup_and_jackknife
+  layout: figure_left
+  controls:
+    warmup_cutoff:
+      kind: slider
+      label: Warm-Up Cutoff Step k_1 (I_eq)
+      min: 0
+      max: 450
+      step: 15
+      default: 150
+    equilibration_tau:
+      kind: slider
+      label: Transient Decay Time τ_eq (steps)
+      min: 10.0
+      max: 120.0
+      step: 10.0
+      default: 50.0
+    initial_offset:
+      kind: slider
+      label: Initial Non-Equilibrium Offset (eV)
+      min: 0.5
+      max: 4.0
+      step: 0.5
+      default: 2.5
+  takeaway_markdown: '**Key Takeaway:** Setting $k_1 = 0$ includes the steep initial transient, creating a massive systematic
+    bias in $\bar{A}$ and artificially inflating the apparent variance. Setting $k_1 \approx 3\tau_{\text{eq}}\text{ to }5\tau_{\text{eq}}$
+    reduces the transient bias below the statistical noise floor while preserving most of the trajectory for production averaging.'
+- id: q_22
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_equilibration_warmup
+  prompt_markdown: According to the Statistical Vocabulary table, if a simulation generates a trace $A_k$ for $1 \le k \le
+    5{,}000$, and you discard the first $800$ steps as warm-up so that the equilibrated range begins at $k_1 = 801$ and ends
+    at $k_2 = 5{,}000$, how many equilibrated data points $N_{\text{eq}} = k_2 - k_1 + 1$ are included in your production
+    average?
+  hint_markdown: Compute $5{,}000 - 801 + 1$.
+  correct: 4200.0
+  tolerance: 0.1
+  rationale_markdown: Using $N_{\text{eq}} = k_2 - k_1 + 1 = 5000 - 801 + 1 = 4{,}200$ equilibrated points (matching the total
+    $5000$ points minus the $800$ discarded warm-up steps).
+- id: q_23
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: concept_warmup
+  prompt_markdown: Suppose an MD potential energy trace of total length $N = 1{,}000$ steps has $E_k = -2.00\text{ eV}$ during
+    the initial $200$-step warm-up ($1 \le k \le 200$) and fluctuates around a true equilibrium mean of $-3.00\text{ eV}$
+    during the remaining $800$ steps ($201 \le k \le 1{,}000$). If a student forgets to discard the warm-up period and averages
+    over all $1{,}000$ steps, what is the resulting **systematic warm-up bias** $\bar{E}_{1..1000} - (-3.00\text{ eV})$ (in
+    $\text{eV}$)?
+  hint_markdown: Compute the full-trace average $[200(-2.00) + 800(-3.00)] / 1000$, then subtract the true equilibrium mean
+    $-3.00\text{ eV}$.
+  correct: 0.2
+  tolerance: 0.005
+  rationale_markdown: The full-trace average is $\bar{E}_{1..1000} = \frac{200(-2.00) + 800(-3.00)}{1000} = \frac{-400 - 2400}{1000}
+    = -2.80\text{ eV}$. Subtracting the true equilibrium mean of $-3.00\text{ eV}$ gives a systematic bias of $-2.80 - (-3.00)
+    = +0.20\text{ eV}$.
+- id: q_24
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_equilibration_warmup
+  prompt_markdown: What happens to the **empirical sample variance** $v_A$ and **apparent autocorrelation time** $\kappa$
+    if you fail to discard a large initial equilibration transient before running your statistical analysis?
+  hint_markdown: Think about what happens to $\sum (A_k - a)^2$ and low-frequency drift when $A_k$ starts far above the equilibrium
+    mean and slowly decays.
+  options:
+  - id: a
+    text: Both the apparent variance $v_A$ and the apparent autocorrelation time $\kappa$ are artificially inflated by the
+      slow, one-way transient drift.
+  - id: b
+    text: The apparent variance $v_A$ becomes zero and $\kappa$ drops to $1$.
+  - id: c
+    text: The sample mean $a$ is biased, but $v_A$ and $c_A(i)$ are mathematically unaffected by the transient.
+  - id: d
+    text: The autocorrelation function $c_A(0)$ becomes negative.
+  correct: a
+  rationale_markdown: A large initial transient means $A_k - a$ has the same sign for many consecutive steps at the start
+    of the run. This large, slow drift adds a huge positive contribution to both the sample variance $v_A = \frac{1}{N-1}\sum
+    (A_k - a)^2$ and the low-frequency autocorrelation $c_A(i)$, distorting every entry in the Statistical Vocabulary table!
+- id: q_25
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_equilibration_warmup
+  prompt_markdown: 'Why does of Lecture 02 warn: *''"The cumulative energy has converged." — BEWARE. Even pathological cases
+    have smooth cumulative energy curves''*?'
+  hint_markdown: Write the running cumulative mean as $\bar{E}_n = \frac{n-1}{n}\bar{E}_{n-1} + \frac{1}{n}E_n$ and consider
+    the weight $1/n$ of new data at large $n$.
+  options:
+  - id: a
+    text: Because at large step count $n$, each new measurement $E_n$ is weighted by $1/n$, so the cumulative average $\bar{E}_n$
+      always looks visually smooth and sluggish even if the instantaneous trace $E_n$ just jumped to a new metastable state
+      or is still drifting.
+  - id: b
+    text: Because the cumulative energy is an integral that diverges to infinity for any negative potential energy.
+  - id: c
+    text: Because cumulative averages can only be computed for uncorrelated random numbers.
+  - id: d
+    text: Because floating-point addition always rounds the last digit to zero.
+  correct: a
+  rationale_markdown: In a cumulative average $\bar{E}_n = \frac{1}{n}\sum_{k=1}^n E_k = \bar{E}_{n-1} + \frac{E_n - \bar{E}_{n-1}}{n}$,
+    step-to-step fluctuations are suppressed by $1/n$. By $n = 10^5$, the curve looks glass-smooth even if the system is completely
+    non-ergodic or undergoing a slow drift. Always inspect the raw trace and local block averages!
+- id: q_26
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_equilibration_warmup
+  prompt_markdown: 'Suppose a student says: *''My simulation post-processing pipeline involves a complex non-linear curve
+    fit and three coordinate transformations, so it is too complicated to compute error bars.''* What is Prof. Trinkle''s
+    direct prescription of Lecture 02?'
+  hint_markdown: 'Read the fourth bullet: ''NO! NEVER! Run your whole code...'''
+  options:
+  - id: a
+    text: Run the entire simulation/analysis pipeline $M = 10$ independent times (or on $M$ independent data blocks) and compute
+      the mean and standard error directly from the variance of the $M$ results.
+  - id: b
+    text: Omit the error bars and state in the caption that the algorithm is deterministic.
+  - id: c
+    text: Report the machine epsilon ($10^{-16}$) as the error bar.
+  - id: d
+    text: Replace the nonlinear observable with a linear one.
+  correct: a
+  rationale_markdown: 'states emphatically: *''NO! NEVER! Run your whole code 10 times and compute the mean and variance from
+    the different runs. If a quantity is important, you MUST estimate its errors.''* If $y_1, \dots, y_{10}$ are the outputs
+    of 10 independent runs, $\bar{y} \pm \sqrt{s_y^2 / 10}$ gives a rigorous, model-free error bar!'
+- id: q_27
+  type: problem
+  question_type: numeric
+  difficulty: easy
+  taught_by: sec_equilibration_warmup
+  prompt_markdown: Following the prescription, you run a complex defect-migration simulation code $M = 10$ independent times
+    with different random number seeds. Across the $10$ independent runs, the extracted migration barrier has a sample mean
+    of $\bar{E}_m = 0.650\text{ eV}$ and a sample variance across the 10 runs of $s^2 = 0.00090\text{ eV}^2$ (so $s = 0.030\text{
+    eV}$). What is the **standard error of the mean** $\sigma_{\bar{E}_m} = s / \sqrt{M}$ across the 10 runs (in $\text{eV}$,
+    to 4 decimal places)?
+  hint_markdown: Compute $0.030 / \sqrt{10}$.
+  correct: 0.00949
+  tolerance: 0.0002
+  rationale_markdown: Since the $M = 10$ runs are completely independent ($\kappa = 1$ between runs), the standard error of
+    the 10-run average is $\sigma_{\bar{E}_m} = \frac{s}{\sqrt{10}} = \frac{0.030}{3.16228} \approx 0.00949\text{ eV}$.
+- id: sec_nonlinear_bias_and_resampling
+  type: markdown_section
+  title: '5. Nonlinear Functions of Expectations: O(1/N) Bias, Jackknife & Bootstrap Resampling'
+  body_markdown: "### Why $F(\\bar{Z})$ Is Biased When $F$ Is Nonlinear\nIn statistical mechanics, many physical quantities\
+    \ are **nonlinear functions of ensemble expectations**, $F(\\langle Z \\rangle)$, rather than simple expectations of a\
+    \ single observable:\n- **Binder Cumulant** (used to locate critical points in phase transitions):\n $$U_4 = 1 - \\frac{\\\
+    langle M^4 \\rangle}{3\\langle M^2 \\rangle^2}$$\n- **Arrhenius / Free-Energy Barriers:** $\\Delta F = -k_B T \\ln \\\
+    langle e^{-\\Delta H / k_B T} \\rangle$\n- **Ratios of expectations** (such as Virial compressibility or canonical reweighting\
+    \ $\\frac{\\langle A e^{-\\beta \\Delta H}\\rangle}{\\langle e^{-\\beta \\Delta H}\\rangle}$).\n\nCrucially, for any nonlinear\
+    \ function $F(Z)$, **the expectation of the function does NOT equal the function of the expectation**:\n$$\\langle F(Z)\
+    \ \\rangle \\ne F(\\langle Z \\rangle)$$\nSuppose $Z = \\bar{Z} + \\delta Z$ is the sample mean from a Monte Carlo or\
+    \ MD run (with true mean $\\bar{Z} = \\langle Z \\rangle$, zero mean fluctuation $\\langle \\delta Z \\rangle = 0$, and\
+    \ standard error $\\text{error}(Z) = \\langle \\delta Z^2 \\rangle^{1/2} = \\frac{\\sigma_Z}{\\sqrt{N_{\\text{eff}}}}$),\
+    \ and we plug $Z$ into a nonlinear formula $F(Z)$. How large are the **systematic bias** and **statistical error** of\
+    \ $F(Z)$?\n\nFollowing of Lecture 02, we expand $F(Z)$ in a Taylor power series around $\\bar{Z}$:\n$$F(Z) = F(\\bar{Z})\
+    \ + \\left.\\frac{dF}{dZ}\\right|_{\\bar{Z}} \\delta Z + \\frac{1}{2}\\left.\\frac{d^2 F}{dZ^2}\\right|_{\\bar{Z}} \\\
+    delta Z^2 + \\cdots$$\n\n1. **Systematic Bias of $F(Z)$ — Scales as $\\mathcal{O}(N^{-1})$:**\n Taking the expectation\
+    \ value of $F(Z) - F(\\bar{Z})$ and using $\\langle \\delta Z \\rangle = 0$ leaves the second-derivative curvature term:\n\
+    \ $$\\boxed{\\text{bias}(F) = \\big\\langle F(Z) - F(\\bar{Z}) \\big\\rangle = \\frac{1}{2}\\left.\\frac{d^2 F}{dZ^2}\\\
+    right|_{\\bar{Z}} \\langle \\delta Z^2 \\rangle + \\cdots \\approx \\frac{1}{2}\\left.\\frac{d^2 F}{dZ^2}\\right|_{\\\
+    bar{Z}} \\text{error}(Z)^2 = \\mathcal{O}(N_{\\text{eff}}^{-1})}$$\n - If $F$ is strictly **linear** ($F''(\\bar{Z}) =\
+    \ 0$), the bias is **identically zero**!\n - If $F$ is **convex** ($F''(\\bar{Z}) > 0$, e.g. $F(Z) = Z^2$ or $F(Z) = 1/Z$\
+    \ for $Z>0$), $\\text{bias}(F) > 0$ (Jensen's inequality: your result is systematically *too high*).\n - If $F$ is **concave**\
+    \ ($F''(\\bar{Z}) < 0$, e.g. $F(Z) = \\ln Z$), $\\text{bias}(F) < 0$ (your result is systematically *too low*).\n\n2.\
+    \ **Statistical Error of $F(Z)$ — Scales as $\\mathcal{O}(N^{-1/2})$:**\n Computing the root-mean-square fluctuation around\
+    \ the mean retains the leading first-derivative term:\n $$\\boxed{\\text{error}(F) = \\big\\langle (F(Z) - \\langle F(Z)\
+    \ \\rangle)^2 \\big\\rangle^{1/2} \\approx \\left|\\left.\\frac{dF}{dZ}\\right|_{\\bar{Z}}\\right| \\langle \\delta Z^2\
+    \ \\rangle^{1/2} = \\left|\\left.\\frac{dF}{dZ}\\right|_{\\bar{Z}}\\right| \\text{error}(Z) = \\mathcal{O}(N_{\\text{eff}}^{-1/2})}$$\n\
+    \nNotice the asymptotic scaling hierarchy: as $N_{\\text{eff}} \\to \\infty$, the systematic nonlinear bias shrinks as\
+    \ $\\mathcal{O}(N_{\\text{eff}}^{-1})$, which is faster than the statistical error $\\mathcal{O}(N_{\\text{eff}}^{-1/2})$.\
+    \ However, when $N_{\\text{eff}}$ is modest or the curvature $|F''(\\bar{Z})|$ is large, **you must estimate and correct\
+    \ for the bias**!\n\n### Resampling Methods for Nonlinear Observables: Jackknife & Bootstrap\nHow do we estimate $\\text{error}(F)$\
+    \ and $\\text{bias}(F)$ for an arbitrary nonlinear function $F(\\bar{A}, \\bar{B}, \\dots)$ without taking analytical\
+    \ derivatives by hand? Suppose we first group our correlated trajectory into $M$ independent blocks ($b \\gg \\tau$) with\
+    \ block averages $B_1, B_2, \\dots, B_M$, and let $\\hat{\\theta}_{\\text{full}} = F(\\bar{B})$ be the nonlinear estimator\
+    \ evaluated on the full dataset.\n\n1. **Delete-1 Block Jackknife:**\n For each block $m \\in \\{1, \\dots, M\\}$, form\
+    \ the **$m$-th Jackknife subsample** by omitting block $m$ and averaging the remaining $M - 1$ blocks:\n $$\\bar{B}_{(m)}\
+    \ = \\frac{1}{M - 1}\\sum_{j \\ne m} B_j, \\qquad \\hat{\\theta}_{(m)} = F\\big(\\bar{B}_{(m)}\\big)$$\n Let $\\bar{\\\
+    theta}_{\\text{JK}} = \\frac{1}{M}\\sum_{m=1}^M \\hat{\\theta}_{(m)}$ be the average of the $M$ Jackknife estimates. Because\
+    \ each $\\hat{\\theta}_{(m)}$ shares $M-2$ blocks with any other $\\hat{\\theta}_{(m')}$, their fluctuations are smaller\
+    \ by $1/(M-1)$, so the **Jackknife standard error** includes an $(M - 1)$ prefactor:\n $$\\boxed{\\sigma_{\\text{JK}}(\\\
+    hat{\\theta}) = \\sqrt{\\frac{M - 1}{M}\\sum_{m=1}^M \\big(\\hat{\\theta}_{(m)} - \\bar{\\theta}_{\\text{JK}}\\big)^2}}$$\n\
+    \ Even better, since each Jackknife subsample has size $M - 1$ instead of $M$, its $\\mathcal{O}(1/M)$ bias is larger\
+    \ by $\\frac{M}{M-1}$, allowing us to extract the **Jackknife bias estimate** and the **bias-corrected estimator**:\n\
+    \ $$\\widehat{\\text{bias}}_{\\text{JK}}(\\hat{\\theta}) = (M - 1)\\big(\\bar{\\theta}_{\\text{JK}} - \\hat{\\theta}_{\\\
+    text{full}}\\big), \\qquad \\hat{\\theta}_{\\text{corrected}} = \\hat{\\theta}_{\\text{full}} - \\widehat{\\text{bias}}_{\\\
+    text{JK}} = M\\hat{\\theta}_{\\text{full}} - (M - 1)\\bar{\\theta}_{\\text{JK}}$$\n\n2. **Bootstrap Resampling:**\n Draw\
+    \ $M$ blocks *with replacement* from $\\{B_1, \\dots, B_M\\}$ a large number of times $N_{\\text{boot}}$ (e.g., $N_{\\\
+    text{boot}} = 1{,}000$). For each bootstrap replicate $r$, compute the mean $\\bar{B}^{*(r)}$ and evaluate $\\hat{\\theta}^{*(r)}\
+    \ = F(\\bar{B}^{*(r)})$. The **Bootstrap standard error** is simply the sample standard deviation across the $N_{\\text{boot}}$\
+    \ replicates:\n $$\\sigma_{\\text{boot}}(\\hat{\\theta}) = \\sqrt{\\frac{1}{N_{\\text{boot}} - 1}\\sum_{r=1}^{N_{\\text{boot}}}\
+    \ \\big(\\hat{\\theta}^{*(r)} - \\bar{\\theta}^*\\big)^2}, \\qquad \\widehat{\\text{bias}}_{\\text{boot}} = \\bar{\\theta}^*\
+    \ - \\hat{\\theta}_{\\text{full}}$$"
+- id: concept_nonlinear_bias
+  type: concept_cell
+  title: 'Interactive Explorer: Nonlinear Estimator Bias O(N⁻¹) vs. Statistical Error O(N⁻¹/²)'
+  description_markdown: Adjust the second-derivative curvature $F''(\bar{Z})$ and fluctuation width $\sigma_Z$ on a log–log
+    plot to compare the $\mathcal{O}(N_{\text{eff}}^{-1/2})$ statistical error against the $\mathcal{O}(N_{\text{eff}}^{-1})$
+    systematic nonlinear bias.
+  render_function: render_nonlinear_bias_lab
+  layout: figure_left
+  controls:
+    curvature_c:
+      kind: slider
+      label: Second Derivative Curvature F''(Z̄)
+      min: 0.5
+      max: 8.0
+      step: 0.5
+      default: 2.0
+    sigma_z:
+      kind: slider
+      label: Observable Std Dev σ_Z
+      min: 0.2
+      max: 2.0
+      step: 0.2
+      default: 0.8
+  takeaway_markdown: '**Key Takeaway:** On a log–log plot against $N_{\text{eff}}$, statistical error has slope $-1/2$ while
+    nonlinear bias has a steeper slope of $-1$. At large $N_{\text{eff}}$ statistical error dominates, but at small $N_{\text{eff}}$
+    or large curvature $F''''(\bar{Z})$, nonlinear bias can be comparable to the error bar!'
+- id: q_28
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: When a random sample average $Z = \bar{Z} + \delta Z$ with standard error $\text{error}(Z) \propto N^{-1/2}$
+    is plugged into a smooth nonlinear function $F(Z)$ (with $F'(\bar{Z}) \ne 0$ and $F''(\bar{Z}) \ne 0$), how do the **systematic
+    bias** $\text{bias}(F) = \langle F(Z) - F(\bar{Z}) \rangle$ and the **statistical error** $\text{error}(F)$ scale with
+    the number of independent samples $N$?
+  hint_markdown: Check the red $\mathcal{O}(\cdot)$ annotations of Lecture 02.
+  options:
+  - id: a
+    text: $\text{bias}(F)$ scales as $\mathcal{O}(N^{-1})$, while $\text{error}(F)$ scales as $\mathcal{O}(N^{-1/2})$.
+  - id: b
+    text: Both $\text{bias}(F)$ and $\text{error}(F)$ scale as $\mathcal{O}(N^{-1/2})$.
+  - id: c
+    text: $\text{bias}(F)$ is independent of $N$ ($\mathcal{O}(1)$), while $\text{error}(F)$ scales as $\mathcal{O}(N^{-1})$.
+  - id: d
+    text: $\text{bias}(F)$ scales as $\mathcal{O}(N^{-1/2})$, while $\text{error}(F)$ scales as $\mathcal{O}(N^{-1})$.
+  correct: a
+  rationale_markdown: From the Taylor expansion of Lecture 02, $\text{bias}(F) \approx \frac{1}{2}F''(\bar{Z})\,\text{error}(Z)^2
+    \propto (N^{-1/2})^2 = \mathcal{O}(N^{-1})$, whereas $\text{error}(F) \approx |F'(\bar{Z})|\,\text{error}(Z) = \mathcal{O}(N^{-1/2})$.
+- id: q_29
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: 'Suppose you estimate a variable $Z$ from a Monte Carlo simulation with mean $\bar{Z} = 2.0$ and standard
+    error $\text{error}(Z) = \langle \delta Z^2 \rangle^{1/2} = 0.10$. You want to report the nonlinear quantity $F(Z) = Z^2$.
+    Using the Taylor formula:
+
+    $$\text{bias}(F) = \langle F(Z) - F(\bar{Z}) \rangle = \frac{1}{2}\left.\frac{d^2 F}{dZ^2}\right|_{\bar{Z}} \text{error}(Z)^2$$
+
+    what is the exact systematic bias $\text{bias}(F)$ of $Z^2$?'
+  hint_markdown: For $F(Z) = Z^2$, the second derivative is $d^2F/dZ^2 = 2$. Compute $\frac{1}{2}(2)(0.10)^2$.
+  correct: 0.01
+  tolerance: 0.0005
+  rationale_markdown: For $F(Z) = Z^2$, $\frac{dF}{dZ} = 2Z$ and $\frac{d^2F}{dZ^2} = 2$. Thus $\text{bias}(Z^2) = \frac{1}{2}(2)\,\text{error}(Z)^2
+    = (0.10)^2 = 0.010$ (indeed, $\langle (\bar{Z} + \delta Z)^2 \rangle - \bar{Z}^2 = \langle \delta Z^2 \rangle = 0.010$
+    exactly!).
+- id: q_30
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: For the same variable $Z$ with mean $\bar{Z} = 2.0$ and standard error $\text{error}(Z) = 0.10$, what is
+    the leading-order **statistical error** $\text{error}(F) \approx \left|\left.\frac{dF}{dZ}\right|_{\bar{Z}}\right| \text{error}(Z)$
+    of $F(Z) = Z^2$?
+  hint_markdown: Evaluate $|dF/dZ| = 2\bar{Z} = 4.0$ at $\bar{Z} = 2.0$, and multiply by $\text{error}(Z) = 0.10$.
+  correct: 0.4
+  tolerance: 0.005
+  rationale_markdown: At $\bar{Z} = 2.0$, the first derivative of $F(Z) = Z^2$ is $F'(\bar{Z}) = 2(2.0) = 4.0$. Multiplying
+    by $\text{error}(Z) = 0.10$ gives $\text{error}(F) \approx 4.0 \times 0.10 = 0.40$.
+- id: q_31
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: In a free-energy perturbation calculation, you measure an exponential Boltzmann average $Z$ with true mean
+    $\bar{Z} = 1.0$ and standard error $\text{error}(Z) = 0.20$, and then compute the free energy via the nonlinear logarithm
+    $F(Z) = -\ln(Z)$ (in units of $k_B T = 1$). Using $\text{bias}(F) \approx \frac{1}{2}F''(\bar{Z})\,\text{error}(Z)^2$,
+    what is the leading-order systematic bias $\text{bias}(F)$ (including the correct sign)?
+  hint_markdown: For $F(Z) = -\ln(Z)$, we have $F'(Z) = -1/Z$ and $F''(Z) = +1/Z^2$. Evaluate $\frac{1}{2}F''(1.0)(0.20)^2$.
+  correct: 0.02
+  tolerance: 0.001
+  rationale_markdown: Differentiating $F(Z) = -\ln(Z)$ gives $F'(Z) = -Z^{-1}$ and $F''(Z) = +Z^{-2}$. At $\bar{Z} = 1.0$,
+    $F''(1.0) = +1.0$. Therefore, $\text{bias}(F) \approx \frac{1}{2}(1.0)(0.20)^2 = +0.020$.
+- id: q_32
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: 'You partition an equilibrated trajectory into $M = 5$ independent blocks to perform a **Delete-1 Block
+    Jackknife** analysis on the Binder cumulant $U_4$. Leaving out one block at a time gives the five Jackknife estimates:
+
+    $$\hat{\theta}_{(1)} = 0.60,\quad \hat{\theta}_{(2)} = 0.62,\quad \hat{\theta}_{(3)} = 0.61,\quad \hat{\theta}_{(4)} =
+    0.58,\quad \hat{\theta}_{(5)} = 0.59$$
+
+    whose mean is $\bar{\theta}_{\text{JK}} = 0.60$. Using the Jackknife standard error formula:
+
+    $$\sigma_{\text{JK}} = \sqrt{\frac{M - 1}{M}\sum_{m=1}^M \big(\hat{\theta}_{(m)} - \bar{\theta}_{\text{JK}}\big)^2}$$
+
+    what is $\sigma_{\text{JK}}$?'
+  hint_markdown: First compute $\sum_{m=1}^5 (\hat{\theta}_{(m)} - 0.60)^2 = 0^2 + 0.02^2 + 0.01^2 + (-0.02)^2 + (-0.01)^2
+    = 0.0010$. Multiply by $(M-1)/M = 4/5$, then take the square root.
+  correct: 0.02828
+  tolerance: 0.0005
+  rationale_markdown: The sum of squared deviations of the 5 Jackknife estimates from $\bar{\theta}_{\text{JK}} = 0.60$ is
+    $0^2 + (0.02)^2 + (0.01)^2 + (-0.02)^2 + (-0.01)^2 = 0.0010$. Multiplying by $\frac{M-1}{M} = \frac{4}{5} = 0.8$ gives
+    $\sigma_{\text{JK}}^2 = 0.00080$, so $\sigma_{\text{JK}} = \sqrt{0.00080} \approx 0.02828$.
+- id: q_33
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: In a $M = 10$-block Jackknife analysis of a nonlinear susceptibility ratio, the full-sample estimate is
+    $\hat{\theta}_{\text{full}} = 2.500$, while the mean of the $M = 10$ delete-one-block Jackknife estimates is $\bar{\theta}_{\text{JK}}
+    = 2.502$. What is the **bias-corrected Jackknife estimate** $\hat{\theta}_{\text{corrected}} = \hat{\theta}_{\text{full}}
+    - (M - 1)(\bar{\theta}_{\text{JK}} - \hat{\theta}_{\text{full}})$?
+  hint_markdown: Compute $\widehat{\text{bias}}_{\text{JK}} = 9 \times (2.502 - 2.500) = +0.018$, and subtract it from $\hat{\theta}_{\text{full}}
+    = 2.500$.
+  correct: 2.482
+  tolerance: 0.001
+  rationale_markdown: The Jackknife estimate of the $\mathcal{O}(1/M)$ bias is $\widehat{\text{bias}}_{\text{JK}} = (M - 1)(\bar{\theta}_{\text{JK}}
+    - \hat{\theta}_{\text{full}}) = 9(2.502 - 2.500) = +0.018$. Subtracting this positive bias from $\hat{\theta}_{\text{full}}
+    = 2.500$ gives $\hat{\theta}_{\text{corrected}} = 2.500 - 0.018 = 2.482$.
+- id: q_34
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_nonlinear_bias_and_resampling
+  prompt_markdown: Why does the Delete-1 Jackknife variance formula $\sigma_{\text{JK}}^2 = \frac{M-1}{M}\sum_{m=1}^M (\hat{\theta}_{(m)}
+    - \bar{\theta}_{\text{JK}})^2$ have the prefactor $\frac{M-1}{M}$ in the numerator instead of the usual $\frac{1}{M(M-1)}$
+    used for $M$ independent block averages?
+  hint_markdown: How much data do $\hat{\theta}_{(1)}$ and $\hat{\theta}_{(2)}$ share in common?
+  options:
+  - id: a
+    text: Because each delete-1 Jackknife subsample $\hat{\theta}_{(m)}$ averages $M-1$ of the $M$ blocks, so two Jackknife
+      estimates overlap on $M-2$ blocks and vary among themselves by a factor of $1/(M-1)$ less than individual block averages.
+  - id: b
+    text: Because Jackknife estimates have infinite variance unless multiplied by $M-1$.
+  - id: c
+    text: Because the Jackknife method assumes the data follow a Cauchy distribution.
+  - id: d
+    text: Because only $1$ block is kept in each Jackknife subsample and $M-1$ blocks are discarded.
+  correct: a
+  rationale_markdown: For a linear mean, $\bar{B}_{(m)} - \bar{B} = -\frac{B_m - \bar{B}}{M - 1}$, so the deviations of the
+    delete-1 subsamples are compressed by $1/(M-1)$ relative to individual block deviations $B_m - \bar{B}$. Squaring this
+    $(M-1)$ factor converts $\frac{1}{M(M-1)}\sum (B_m - \bar{B})^2$ into $\frac{M-1}{M}\sum (\bar{B}_{(m)} - \bar{B})^2$!
+- id: sec_end_to_end_protocol
+  type: markdown_section
+  title: '6. Putting It All Together: The Complete Atomic-Scale Error-Analysis Protocol'
+  body_markdown: "Let's synthesize the complete, step-by-step error analysis protocol from Lecture 02 that you will use on\
+    \ every homework assignment and project in this course:\n\n```\nRaw Simulation Trace A_k (1 <= k <= N)\n │\n ▼\n[Step\
+    \ 1: Equilibration Truncation]\n Plot trace A_k vs. K; identify initial transient decay.\n Discard warm-up steps k < k_1;\
+    \ keep equilibrated range k_1 <= k <= k_2 (N_eq = k_2 - k_1 + 1).\n │\n ▼\n[Step 2: Sample Mean & Variance]\n Compute\
+    \ mean: a = (1 / N_eq) * sum_{k=k_1}^{k_2} A_k\n Compute variance: v = [1 / (N_eq - 1)] * sum_{k=k_1}^{k_2} (A_k - a)^2,\
+    \ sigma = sqrt(v)\n │\n ├──► [Method A: Autocorrelation Function]\n │ c_A(i) = (1 / v) * [1 / (N_eq - i)] * sum_{k=k_1}^{k_2\
+    \ - i} (A_k - a)(A_{k+i} - a)\n │ Find first zero crossing i_cutoff where c_A(i) <= 0.\n │ Compute statistical inefficiency:\
+    \ kappa = 1 + 2 * sum_{i=1}^{i_cutoff} c_A(i)\n │\n └──► [Method B: Flyvbjerg-Petersen Data Blocking]\n Group N_eq points\
+    \ into M = N_eq / b blocks of size b = 1, 2, 4, 8,...\n Plot block error sigma_hat(b) = sqrt(sigma^2(B) / M) vs. B.\n\
+    \ Identify flat plateau at b >> tau (while M >= 20); extract kappa = (sigma_plateau / sigma_naive)^2.\n │\n ▼\n[Step 3:\
+    \ Effective Sample Size & True Standard Error]\n Compute N_eff = N_eq / kappa (Verify N_eff >= 20!)\n Report: <A> = a\
+    \ +/- sqrt(v / N_eff) = a +/- sqrt(v * kappa / N_eq)\n │\n ▼\n[Step 4: Nonlinear Functions F(<A>, <B>)]\n Apply Delete-1\
+    \ Block Jackknife or Bootstrap over M >= 20 independent blocks (b >> tau)\n to obtain bias-corrected F and its standard\
+    \ error sigma_F.\n```"
+- id: q_35
+  type: problem
+  question_type: single_select
+  difficulty: easy
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: In the **Statistical Vocabulary** table, which formula defines the unbiased finite-sample estimator $c_A(i)$
+    for the autocorrelation function at lag $i$ over the equilibrated range $k_1 \le k \le k_2$ ($N_{\text{eq}} = k_2 - k_1
+    + 1$)?
+  hint_markdown: Notice that for lag $i$, there are $N_{\text{eq}} - i$ valid pairs $(A_k, A_{k+i})$ inside $[k_1, k_2]$,
+    normalized by the sample variance $v$.
+  options:
+  - id: a
+    text: $c_A(i) = \dfrac{1}{v}\dfrac{1}{N_{\text{eq}} - i}\displaystyle\sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$
+  - id: b
+    text: $c_A(i) = \dfrac{1}{N_{\text{eq}}}\displaystyle\sum_{k=1}^{N} A_k A_{k+i}$
+  - id: c
+    text: $c_A(i) = \dfrac{v}{N_{\text{eq}}}\displaystyle\sum_{k=k_1}^{k_2 - i} (A_k + a)(A_{k+i} + a)$
+  - id: d
+    text: $c_A(i) = 1 + 2\displaystyle\sum_{k=1}^{i} A_k$
+  correct: a
+  rationale_markdown: 'As given directly in the Estimator column of: $c_A(i) = \frac{1}{v}\frac{1}{N_{\text{eq}}-i}\sum_{k=k_1}^{k_2-i}
+    (A_k - a)(A_{k+i} - a)$, which averages the product of mean-subtracted fluctuations over all $N_{\text{eq}} - i$ pairs
+    separated by lag $i$ and divides by the sample variance $v$.'
+- id: q_36
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: 'Using the estimator formula $c_A(i) = \frac{1}{v(N_{\text{eq}} - i)}\sum_{k=1}^{N_{\text{eq}}-i}(A_k -
+    a)(A_{k+i} - a)$, consider a tiny toy trace of $N_{\text{eq}} = 4$ equilibrated points: $A = [2.0,\ 4.0,\ 2.0,\ 0.0]$,
+    which has sample mean $a = 2.0$ and sample variance $v = \frac{(0)^2 + (2)^2 + (0)^2 + (-2)^2}{4 - 1} = \frac{8}{3}$.
+    What is the value of $c_A(1)$ at lag $i = 1$?'
+  hint_markdown: Compute $\delta A = A - a = [0,\ +2,\ 0,\ -2]$. Sum the $N_{\text{eq}} - 1 = 3$ products $\delta A_1 \delta
+    A_2 + \delta A_2 \delta A_3 + \delta A_3 \delta A_4$, then divide by $3 v$.
+  correct: 0.0
+  tolerance: 0.001
+  rationale_markdown: With $\delta A = [0, 2, 0, -2]$, at lag $i = 1$ the three adjacent products are $(0)(2) + (2)(0) + (0)(-2)
+    = 0 + 0 + 0 = 0$. Dividing by $(N_{\text{eq}}-1)v = 3(8/3) = 8$ gives $c_A(1) = 0.0$.
+- id: q_37
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: For the same 4-point toy trace $A = [2.0,\ 4.0,\ 2.0,\ 0.0]$ with $\delta A = [0,\ +2,\ 0,\ -2]$ and sample
+    variance $v = 8/3$, what is the value of $c_A(2)$ at lag $i = 2$?
+  hint_markdown: 'At lag $i = 2$, there are $N_{\text{eq}} - 2 = 2$ pairs: $\delta A_1 \delta A_3 + \delta A_2 \delta A_4
+    = (0)(0) + (2)(-2) = -4$. Divide by $(N_{\text{eq}} - 2)v = 2 \times (8/3) = 16/3$.'
+  correct: -0.75
+  tolerance: 0.005
+  rationale_markdown: At lag $i = 2$, $\sum_{k=1}^2 \delta A_k \delta A_{k+2} = (0)(0) + (2)(-2) = -4$. Dividing by $(4 -
+    2)v = 2 \times \frac{8}{3} = \frac{16}{3}$ yields $c_A(2) = \frac{-4}{16/3} = -\frac{12}{16} = -0.75$ (reflecting the
+    strong period-4 oscillation between $+2$ at $k=2$ and $-2$ at $k=4$).
+- id: q_38
+  type: problem
+  question_type: numeric
+  difficulty: hard
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: You perform a complete Molecular Dynamics simulation of $N = 25{,}000$ total time steps. Visual and statistical
+    inspection shows that equilibration is complete after $5{,}000$ steps, so you analyze the equilibrated range $k_1 = 5{,}001$
+    to $k_2 = 25{,}000$ ($N_{\text{eq}} = 20{,}000$). In this production window, the total energy has sample variance $v_A
+    = 0.360\text{ eV}^2$, and the autocorrelation sum up to the first zero crossing is $\sum_{i=1}^{i_{\text{cutoff}}} c_A(i)
+    = 9.50$. What is the **true standard error of the mean** $\sigma_{\bar{A}}$ (in $\text{eV}$)?
+  hint_markdown: First compute $\kappa = 1 + 2(9.50) = 20.0$. Then find $N_{\text{eff}} = N_{\text{eq}} / \kappa = 20{,}000
+    / 20.0 = 1{,}000$, and evaluate $\sqrt{v_A / N_{\text{eff}}}$.
+  correct: 0.01897
+  tolerance: 0.0005
+  rationale_markdown: 'Step 1: $\kappa = 1 + 2\sum_{i=1}^{i_{\text{cutoff}}} c_A(i) = 1 + 2(9.50) = 20.0$.
+
+    Step 2: $N_{\text{eff}} = \frac{N_{\text{eq}}}{\kappa} = \frac{20{,}000}{20.0} = 1{,}000$ independent samples ($\ge 20$,
+    valid!).
+
+    Step 3: $\sigma_{\bar{A}} = \sqrt{\frac{v_A}{N_{\text{eff}}}} = \sqrt{\frac{0.360}{1000}} = \frac{0.60}{\sqrt{1000}} \approx
+    0.01897\text{ eV}$.'
+- id: q_39
+  type: problem
+  question_type: single_select
+  difficulty: medium
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: When applying **Bootstrap** or **Jackknife** resampling to a time series from a Molecular Dynamics or Monte
+    Carlo simulation with correlation time $\kappa = 50$ steps, why is it a **grave error** to resample individual time steps
+    $A_k$ independently instead of resampling **blocks** of length $b \gg \kappa$?
+  hint_markdown: What happens to the sequential time correlations if you scramble individual steps $A_k$ randomly with replacement?
+  options:
+  - id: a
+    text: Resampling individual steps destroys the sequential time correlation structure and treats all $N_{\text{eq}}$ steps
+      as independent ($\kappa = 1$), underestimating the true standard error by a factor of $\sqrt{\kappa} = \sqrt{50} \approx
+      7.1\times$.
+  - id: b
+    text: Resampling individual steps changes the sample mean to zero.
+  - id: c
+    text: Bootstrap resampling can only be applied to datasets with fewer than 10 points.
+  - id: d
+    text: Resampling individual steps overestimates the error bar by a factor of $\kappa^2$.
+  correct: a
+  rationale_markdown: Standard i.i.d. Bootstrap/Jackknife assumes the resampled units are statistically independent. If you
+    resample individual correlated steps $A_k$, each bootstrap replicate behaves as if $\kappa = 1$, reproducing the naive
+    uncorrelated error $\sigma_{\text{naive}}$ instead of $\sigma_{\text{naive}}\sqrt{\kappa}$. You must always group correlated
+    data into approximately independent **blocks** of length $b \gg \tau$ first, and then Jackknife or Bootstrap over the
+    $M$ blocks!
+- id: q_40
+  type: problem
+  question_type: numeric
+  difficulty: medium
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: In a canonical ($NVT$) simulation of a magnetic crystal, the magnetic susceptibility is related to the
+    variance of the magnetization $M$ by the fluctuation–dissipation formula $\chi = \frac{1}{k_B T}\big(\langle M^2 \rangle
+    - \langle M \rangle^2\big)$. Suppose $k_B T = 2.0$, and across $M_{\text{blocks}} = 25$ independent blocks you estimate
+    $\bar{M} = 0.0$ with standard error $\text{error}(\bar{M}) = 0.20$, while $\overline{M^2} = 1.00$ has negligible error.
+    Because $\hat{\chi} = \frac{1}{k_B T}\big(\overline{M^2} - \bar{M}^2\big)$ contains the nonlinear term $-\frac{1}{k_B
+    T}\bar{M}^2$, what is the **systematic bias** $\text{bias}(\hat{\chi}) = \langle \hat{\chi} - \chi_{\text{true}} \rangle$
+    caused by squaring the noisy sample mean $\bar{M}$?
+  hint_markdown: Here $F(\bar{M}) = -\frac{1}{2 k_B T}\cdot 2\bar{M}^2 = -\frac{1}{2.0}\bar{M}^2 = -0.5\,\bar{M}^2$, so $F''(0)
+    = -1.0$. Use $\text{bias}(F) = \frac{1}{2}F''(0)\,\text{error}(\bar{M})^2$.
+  correct: -0.02
+  tolerance: 0.001
+  rationale_markdown: Since $\langle \bar{M}^2 \rangle = \langle M \rangle^2 + \text{error}(\bar{M})^2$, the expectation of
+    $\hat{\chi} = \frac{1}{k_B T}(\overline{M^2} - \bar{M}^2)$ is $\chi_{\text{true}} - \frac{1}{k_B T}\text{error}(\bar{M})^2$.
+    With $k_B T = 2.0$ and $\text{error}(\bar{M}) = 0.20$, the systematic bias is $-\frac{(0.20)^2}{2.0} = -0.020$ (which
+    is why multiplying by $\frac{M_{\text{blocks}}}{M_{\text{blocks}}-1}$ or using Jackknife bias correction is essential!).
+- id: q_41
+  type: problem
+  question_type: multi_select
+  difficulty: medium
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: 'Select **all** statements from Lecture 02 that represent sound, rigorous practice when analyzing and reporting
+    atomistic simulation data:'
+  hint_markdown: Review, and 17 of Lecture 02.
+  options:
+  - id: a
+    text: Every reported simulation quantity must include an error bar; results without error estimates are only suggestive.
+  - id: b
+    text: Both the sample mean and its statistical error bar can be simultaneously determined from the same equilibrated trajectory
+      once time correlations $\kappa$ are accounted for.
+  - id: c
+    text: To ensure the error of the error estimate is at most $\sim 20\%$, the equilibrated trajectory must span at least
+      $N_{\text{eff}} = N_{\text{eq}} / \kappa \ge 20$ effective independent samples.
+  - id: d
+    text: Running a simulation longer ($N_{\text{eq}} \to \infty$) automatically eliminates systematic errors such as interatomic
+      potential inaccuracies and finite-timestep drift.
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: '- **(A) is correct**.
+
+    - **(B) is correct**.
+
+    - **(C) is correct**.
+
+    - **(D) is incorrect**.'
+- id: q_42
+  type: problem
+  question_type: multi_select
+  difficulty: hard
+  taught_by: sec_end_to_end_protocol
+  prompt_markdown: 'Suppose you are comparing two simulation runs of the same liquid at the same $(N, V, T)$: Run 1 saves
+    configurations every $\Delta t_1 = 1\text{ fs}$ for $100\text{ ps}$ ($N_1 = 100{,}000$ points, with correlation time $\kappa_1
+    = 200$ saved steps), while Run 2 saves configurations every $\Delta t_2 = 100\text{ fs}$ for the same $100\text{ ps}$
+    physical duration ($N_2 = 1{,}000$ points, with correlation time $\kappa_2 \approx 2$ saved steps). Assuming $100\text{
+    fs}$ is smaller than the physical correlation time ($200\text{ fs}$), which statements are true? Select **all** that apply.'
+  hint_markdown: Compare $N_{\text{eff},1} = N_1 / \kappa_1$ and $N_{\text{eff},2} = N_2 / \kappa_2$ over the same $100\text{
+    ps}$ physical trajectory!
+  options:
+  - id: a
+    text: Both runs span the exact same physical duration ($100\text{ ps}$) and contain essentially the same number of effective
+      independent samples ($N_{\text{eff}} \approx 500$), yielding the same true standard error of the mean.
+  - id: b
+    text: If someone mistakenly applies the naive uncorrelated formula $s_A / \sqrt{N}$, Run 1 will falsely appear to have
+      a $10\times$ smaller error bar than Run 2 simply because it wrote to disk $100\times$ more frequently.
+  - id: c
+    text: In a Flyvbjerg–Petersen data blocking plot against physical block duration $t_b = b \Delta t$, both runs converge
+      to the same plateau error bar once $t_b \gg 200\text{ fs}$.
+  - id: d
+    text: Saving configurations $100\times$ more frequently during a fixed $100\text{ ps}$ MD trajectory reduces the true
+      statistical error bar by a factor of $10$.
+  correct:
+  - a
+  - b
+  - c
+  rationale_markdown: '- **(A) is correct:** $N_{\text{eff},1} = 100{,}000 / 200 = 500$ and $N_{\text{eff},2} = 1{,}000 /
+    2 = 500$. The true precision depends on the physical duration divided by the physical correlation time ($100\text{ ps}
+    / 0.2\text{ ps} = 500$).
+
+    - **(B) is correct:** Because $N_1 = 100 N_2$, the naive formula $s_A/\sqrt{N}$ is fooled by oversampling and underestimates
+    Run 1''s error by $\sqrt{200} \approx 14.1\times$.
+
+    - **(C) is correct:** Data blocking absorbs the sub-correlation steps into the blocks and reaches the same plateau once
+    block duration exceeds the physical correlation time.
+
+    - **(D) is incorrect:** Oversampling within a correlation time adds correlated redundant data without increasing $N_{\text{eff}}$.'

@@ -651,8 +651,8 @@ problems_21_30 = [
             {"id": "d", "text_markdown": "Energy drift of 50% is acceptable as long as temperature is maintained by scaling."}
         ],
         "correct": ["b"],
-        "hint_markdown": "Check the criteria for an integrator in slide 7 of 04.MD.pdf.",
-        "rationale_markdown": "Slide 7 specifies: 'Adjust to get energy conservation to 1% of kinetic energy.' Fluctuations below ~1% of kinetic energy ensure that statistical ensemble averages are unaffected by discretization error."
+        "hint_markdown": "Check the standard accuracy criteria for an MD integrator.",
+        "rationale_markdown": "A common rule of thumb specifies: 'Adjust to get energy conservation to 1% of kinetic energy.' Fluctuations below ~1% of kinetic energy ensure that statistical ensemble averages are unaffected by discretization error."
     },
     {
         "id": "q04_26",
@@ -909,7 +909,7 @@ problems_31_42 = [
             {"id": "d", "text_markdown": "Floating point errors always average to zero identically."}
         ],
         "correct": ["a"],
-        "hint_markdown": "Review the quote from Berendsen on slide 9 and the concept of 'shadowing'.",
+        "hint_markdown": "Review Berendsen's arguments and the concept of 'shadowing'.",
         "rationale_markdown": "As Berendsen noted, we do not need the *exact* trajectory from specific initial conditions; we only need a representative trajectory that samples the correct microcanonical phase-space distribution. By the shadowing lemma, the numerical trajectory stays close to a true trajectory of the physical system, preserving statistical ensemble averages."
     },
     {
@@ -956,7 +956,7 @@ problems_31_42 = [
             {"id": "d", "text_markdown": "Klein bottle boundary conditions where particles flip chirality upon crossing."}
         ],
         "correct": ["a", "b", "c"],
-        "hint_markdown": "Review slide 11 of 04.MD.pdf on spatial scales and boundary condition possibilities.",
+        "hint_markdown": "Consider typical physical spatial scales and boundary condition possibilities for simulation boxes.",
         "rationale_markdown": "Standard MD simulations employ periodic boundary conditions (to eliminate surface artifacts), vacuum/free boundary conditions (for isolated molecules/clusters), or explicit walls/confinement. Klein bottle boundaries are not used in physical molecular simulations."
     },
     {
@@ -990,7 +990,7 @@ problems_31_42 = [
             {"id": "d", "text_markdown": "Gear integrators only work for 1D systems."}
         ],
         "correct": ["b"],
-        "hint_markdown": "Review slide 8: 'Higher Order Methods?' in 04.MD.pdf.",
+        "hint_markdown": "Consider long-term phase-space conservation and symplectic properties in higher-order methods.",
         "rationale_markdown": "Gear predictor-corrector integrators have smaller errors per step for short runs, but because they are non-symplectic, their energy drifts systematically over long times. Moreover, they require storing higher derivatives (jerk, snap), consuming more memory and CPU time."
     },
     {

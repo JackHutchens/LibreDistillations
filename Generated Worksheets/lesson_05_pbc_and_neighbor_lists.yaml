@@ -1,989 +1,1097 @@
 worksheet:
   id: lesson_05_pbc_and_neighbor_lists
-  title: "MSE 485 · Lesson 05: Spatial Boundary Conditions, Minimum Image Convention & Neighbor Lists"
+  title: 'Atomic Scale Simulations · Lesson 05: Spatial Boundary Conditions, Minimum Image Convention & Neighbor Lists'
   estimated_minutes: 95
   learning_objectives:
-    - "Quantify the surface-to-volume scaling ($\\propto N^{-1/3}$) of finite 3D atomic clusters and explain why Periodic Boundary Conditions (PBC) are essential for simulating bulk phases."
-    - "Identify physical artifacts that persist under PBC—including long-wavelength phonon cutoff ($\\lambda > L$), periodic self-interaction, nucleation suppression, and cubic box anisotropy."
-    - "Apply coordinate wrapping and the Minimum Image Convention (MIC) in 1D and 3D, and prove why the radial cutoff must strictly satisfy $r_c < L/2$."
-    - "Compare potential truncation schemes (raw cutoff, shifted potential, and shifted-force potential) and their effects on energy conservation in Molecular Dynamics."
-    - "Analyze the $\\mathcal{O}(N^2)$ bottleneck of all-pairs distance checking and reduce force evaluations to $\\mathcal{O}(N)$ using Verlet skin lists ($r_v = r_c + \\Delta$, rebuild trigger $d_1 + d_2 \\ge \\Delta$) and $\\mathcal{O}(N)$ Cell Linked-Lists (`head` and `list` arrays)."
-
+  - Quantify the surface-to-volume scaling ($\propto N^{-1/3}$) of finite 3D atomic clusters and explain why Periodic Boundary
+    Conditions (PBC) are essential for simulating bulk phases.
+  - Identify physical artifacts that persist under PBC—including long-wavelength phonon cutoff ($\lambda > L$), periodic self-interaction,
+    nucleation suppression, and cubic box anisotropy.
+  - Apply coordinate wrapping and the Minimum Image Convention (MIC) in 1D and 3D, and prove why the radial cutoff must strictly
+    satisfy $r_c < L/2$.
+  - Compare potential truncation schemes (raw cutoff, shifted potential, and shifted-force potential) and their effects on
+    energy conservation in Molecular Dynamics.
+  - Analyze the $\mathcal{O}(N^2)$ bottleneck of all-pairs distance checking and reduce force evaluations to $\mathcal{O}(N)$
+    using Verlet skin lists ($r_v = r_c + \Delta$, rebuild trigger $d_1 + d_2 \ge \Delta$) and $\mathcal{O}(N)$ Cell Linked-Lists
+    (`head` and `list` arrays).
   sections:
-    # =========================================================================
-    # PART 1: SPATIAL BOUNDARY CONDITIONS & FINITE-SIZE ARTIFACTS
-    # =========================================================================
-    - id: sec_surface_pbc_intro
-      type: markdown_section
-      title: "1. Spatial Boundary Conditions & The Tyranny of Surfaces"
-      body_markdown: |
-        Macroscopic materials contain $\mathcal{O}(10^{23})$ atoms, whereas atomistic Molecular Dynamics (MD) and Monte Carlo (MC) simulations typically track $N \sim 10^3\text{–}10^7$ atoms. Because spatial scales are limited, our choice of **spatial boundary conditions** fundamentally determines whether the simulation represents a nanoscale cluster or a macroscopic bulk phase.
+  - id: sec_surface_pbc_intro
+    type: markdown_section
+    title: 1. Spatial Boundary Conditions & The Tyranny of Surfaces
+    body_markdown: 'Macroscopic materials contain $\mathcal{O}(10^{23})$ atoms, whereas atomistic Molecular Dynamics (MD)
+      and Monte Carlo (MC) simulations typically track $N \sim 10^3\text{–}10^7$ atoms. Because spatial scales are limited,
+      our choice of **spatial boundary conditions** fundamentally determines whether the simulation represents a nanoscale
+      cluster or a macroscopic bulk phase.
 
-        ### Free Boundaries vs. Bulk Scaling
-        In a 3D cluster of $N = n^3$ atoms with **free boundaries** (e.g., an isolated droplet or nanoparticle in vacuum), any atom within a surface shell of thickness $d$ atomic layers experiences an under-coordinated, non-bulk environment. The number of strictly interior (bulk) atoms is:
-        $$N_{\text{bulk}} = (n - 2d)^3 = \left(N^{1/3} - 2d\right)^3$$
-        Expanding for large $N$, the fraction of atoms residing in the surface layer scales slowly as an inverse cube root:
-        $$\frac{N_{\text{surf}}}{N} = 1 - \left(1 - \frac{2d}{N^{1/3}}\right)^3 \approx \frac{6d}{N^{1/3}} \propto N^{-1/3}$$
-        - For a $N = 10^3 = 1000$ atom cube with a 1-atom surface layer ($d=1$), $N_{\text{bulk}} = 8^3 = 512$, leaving **$488$ atoms ($48.8\%$) on the surface**!
-        - Even for $N = 10^6 = (100)^3$ atoms with a $d=5$ atom thick surface interaction region, $1 - (90/100)^3 = 27.1\%$ (roughly **a quarter of all atoms**) are still dominated by surface forces!
 
-        ### Types of Boundary Conditions
-        1. **Free boundaries:** Isolated cluster, droplet, or protein in vacuum.
-        2. **Periodic Boundary Conditions (PBC):** The primary simulation box of side $L$ is replicated infinitely in all directions. When a particle leaves through one face, its periodic image simultaneously enters through the opposite face. PBC **completely eliminates free surfaces**, allowing small $N$ to probe bulk solids, liquids, gases, and plasmas.
-        3. **Mixed (Slab) boundaries:** Periodic in $x$ and $y$, but free (or reflective/wall-bounded) in $z$—ideal for studying free surfaces, thin films, or solid-liquid interfaces.
-        4. **Coupled / Embedded boundaries:** Embedding an atomistic quantum or MD region inside a continuum elastic or coarse-grained bath via boundary forces and displacements.
+      ### Free Boundaries vs. Bulk Scaling
 
-        ### Remaining Finite-Size Artifacts Under PBC
-        Although PBC removes free surfaces, the system is still periodic with period $L$, NOT truly infinite:
-        - **Long-wavelength cutoff ($\lambda > L$):** Any collective excitation (phonon, acoustic wave, or capillary wave) must be commensurate with the box: $\mathbf{k} = \frac{2\pi}{L}(n_x, n_y, n_z)$, suppressing wavelengths $\lambda > L$.
-        - **Periodic image self-interaction:** A defect (dislocation, vacancy cluster, or charged ion) interacts elastically or electrostatically with its own periodic images separated by $L$.
-        - **Suppressed critical fluctuations & nucleation:** Phase transitions or critical fluctuations whose correlation length $\xi \gtrsim L$ are artificially stabilized or suppressed.
-        - **Cubic box anisotropy:** The periodic lattice of images has cubic symmetry rather than true isotropic rotational invariance.
+      In a 3D cluster of $N = n^3$ atoms with **free boundaries** (e.g., an isolated droplet or nanoparticle in vacuum), any
+      atom within a surface shell of thickness $d$ atomic layers experiences an under-coordinated, non-bulk environment. The
+      number of strictly interior (bulk) atoms is:
 
-    - id: concept_surface_scaling
-      type: concept_cell
-      title: "Interactive Explorer: Surface Atom Fraction in Finite 3D Clusters"
-      description_markdown: "Adjust the cubic cluster side length $n$ ($N = n^3$ atoms) and the surface interaction shell thickness $d$ (in atomic layers) to see why free boundaries cannot approximate bulk behavior without millions of atoms."
-      render_function: render_surface_vs_bulk_scaling
-      layout: figure_left
-      controls:
-        n_side:
-          kind: slider
-          label: "Cube Side n (Atoms per edge)"
-          min: 6
-          max: 100
-          step: 2
-          default: 10
-        d_surf:
-          kind: slider
-          label: "Surface Shell Thickness d (layers)"
-          min: 1
-          max: 5
-          step: 1
-          default: 1
-      takeaway_markdown: "**Key Takeaway:** Because surface fraction decays only as $N^{-1/3}$, eliminating surface artifacts by brute-force cluster size is computationally prohibitive. Periodic Boundary Conditions (PBC) eliminate surfaces entirely at any $N$."
+      $$N_{\text{bulk}} = (n - 2d)^3 = \left(N^{1/3} - 2d\right)^3$$
 
-    - id: q01_surface_fraction_1000
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by:
-        - sec_surface_pbc_intro
-        - concept_surface_scaling
-      prompt_markdown: |
-        Consider a 3D simple cubic nanocrystal containing $N = 1000$ atoms arranged as a $10 \times 10 \times 10$ cube in vacuum (free boundary conditions). If the outermost single layer of atoms ($d = 1$) on all six faces is considered the surface shell, what **percentage** of the atoms in this cluster are surface atoms? (Enter a number between 0 and 100, e.g., `48.8`.)
-      hint_markdown: "Count the interior bulk atoms first: removing 1 layer from each end of the 3 axes leaves an $(10 - 2) \\times (10 - 2) \\times (10 - 2) = 8^3$ interior cube."
-      correct:
-        value: 48.8
-        tolerance: 0.2
-      rationale_markdown: "The interior bulk cube contains $(10 - 2)^3 = 8^3 = 512$ atoms. Therefore, $1000 - 512 = 488$ atoms lie on the surface, which is $488 / 1000 = 48.8\\%$ of the entire system."
+      Expanding for large $N$, the fraction of atoms residing in the surface layer scales slowly as an inverse cube root:
 
-    - id: q02_surface_fraction_million
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_surface_pbc_intro
-        - concept_surface_scaling
-      prompt_markdown: |
-        As discussed in the lecture notes, suppose a simulated droplet has $N = 10^6 = (100)^3$ atoms on a cubic grid, and the surface region affected by under-coordination is $d = 5$ atomic layers thick on every face. Calculate the **exact percentage** of atoms that lie within this 5-atom-thick surface region.
-      hint_markdown: "With $n = 100$ and $d = 5$ on both sides of each axis, the unaffected interior cube has side length $n - 2d = 100 - 10 = 90$."
-      correct:
-        value: 27.1
-        tolerance: 0.5
-      rationale_markdown: "The unaffected core has $(100 - 2 \\times 5)^3 = 90^3 = 729,000$ atoms. The surface shell therefore contains $1,000,000 - 729,000 = 271,000$ atoms, or $27.1\\%$ (often approximated as $\\approx 25\text{–}30\\%$ via $6d/n = 30\\%$)."
+      $$\frac{N_{\text{surf}}}{N} = 1 - \left(1 - \frac{2d}{N^{1/3}}\right)^3 \approx \frac{6d}{N^{1/3}} \propto N^{-1/3}$$
 
-    - id: q03_surface_scaling_exponent
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_surface_pbc_intro
-      prompt_markdown: |
-        In a $D$-dimensional cluster of $N$ particles with free boundaries, the surface-to-volume ratio (fraction of atoms near the surface) scales asymptotically with particle count $N$ as:
-      hint_markdown: "Linear dimension $L \\propto N^{1/D}$, volume $\\propto L^D$, and surface area $\\propto L^{D-1}$."
-      options:
-        - id: a
-          text: "$N^{-1/3}$ in 3D (and $N^{-1/D}$ in $D$ dimensions)"
-        - id: b
-          text: "$N^{-1}$ in all dimensions"
-        - id: c
-          text: "$N^{-2/3}$ in 3D"
-        - id: d
-          text: "$N^{-1/2}$ in 3D"
-      correct: a
-      rationale_markdown: "In $D$ dimensions, $N \\propto L^D \\implies L \\propto N^{1/D}$. The surface region contains $N_{\\text{surf}} \\propto L^{D-1} \\propto N^{(D-1)/D}$ atoms, so the surface fraction $N_{\\text{surf}}/N \\propto N^{-1/D}$ ($N^{-1/3}$ in 3D). Reducing the surface fraction by $10\\times$ in 3D requires $1000\\times$ more atoms!"
+      - For a $N = 10^3 = 1000$ atom cube with a 1-atom surface layer ($d=1$), $N_{\text{bulk}} = 8^3 = 512$, leaving **$488$
+      atoms ($48.8\%$) on the surface**!
 
-    - id: q04_pbc_purpose
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_surface_pbc_intro
-      prompt_markdown: |
-        What is the primary physical motivation for applying 3D Periodic Boundary Conditions (PBC) in an atomistic simulation of $N = 4000$ liquid Argon atoms?
-      hint_markdown: "Consider what happens to atoms near the boundary of the primary simulation cell."
-      options:
-        - id: a
-          text: "To eliminate free surfaces so that every atom experiences a bulk-like local environment despite small $N$"
-        - id: b
-          text: "To make the total number of degrees of freedom strictly infinite in computer memory"
-        - id: c
-          text: "To force all interatomic forces to vanish beyond $r = L$"
-        - id: d
-          text: "To prevent atoms from ever crossing the walls of the primary simulation box"
-      correct: a
-      rationale_markdown: "Under 3D PBC, the primary box is surrounded by periodic replicas, completely eliminating free surfaces and allowing a small sample of $10^3\\text{–}10^4$ atoms to reproduce bulk thermodynamic properties."
+      - Even for $N = 10^6 = (100)^3$ atoms with a $d=5$ atom thick surface interaction region, $1 - (90/100)^3 = 27.1\%$
+      (roughly **a quarter of all atoms**) are still dominated by surface forces!
 
-    - id: q05_mixed_boundary_selection
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_surface_pbc_intro
-      prompt_markdown: |
-        You want to use Molecular Dynamics to measure the surface tension and inward surface relaxation of a Copper $(001)$ crystal facet exposed to vacuum. Which spatial boundary condition setup is most appropriate?
-      hint_markdown: "You want an infinite macroscopic crystal plane along $x$ and $y$, but an exposed free surface normal to $z$."
-      options:
-        - id: a
-          text: "Mixed (slab) boundaries: periodic in $x$ and $y$, free boundaries (vacuum gap) in $z$"
-        - id: b
-          text: "3D Periodic Boundary Conditions with zero vacuum gap in $x$, $y$, and $z$"
-        - id: c
-          text: "Free boundary conditions in all three directions ($x$, $y$, and $z$)"
-        - id: d
-          text: "Spherical boundary conditions on a 4D hypersphere"
-      correct: a
-      rationale_markdown: "A slab geometry applies PBC in the in-plane directions ($x, y$) to mimic an infinite crystal plane while leaving the $z$-direction free (or separated by a wide vacuum layer) so that two flat $(001)$ surfaces are exposed without edge/corner artifacts."
 
-    - id: q06_pbc_remaining_artifacts
-      type: problem
-      question_type: multi_select
-      difficulty: medium
-      taught_by:
-        - sec_surface_pbc_intro
-      prompt_markdown: |
-        Even though 3D Periodic Boundary Conditions eliminate free surfaces, finite-size artifacts remain in a cubic simulation box of side length $L$. Select **all** true finite-size artifacts that can occur under 3D PBC:
-      hint_markdown: "Think about acoustic wavelengths, defect fields, and critical fluctuations relative to box length $L$."
-      options:
-        - id: a
-          text: "Phonons and capillary waves with wavelengths $\\lambda > L$ are suppressed because wavevectors must satisfy $\\mathbf{k} = \\frac{2\\pi}{L}(n_x, n_y, n_z)$"
-        - id: b
-          text: "A point defect, dislocation, or charged ion can interact spuriously with its own periodic images across the box length $L$"
-        - id: c
-          text: "Phase nucleation or critical fluctuations with correlation length $\\xi > L$ cannot form properly"
-        - id: d
-          text: "Approximately $49\\%$ of the atoms in a $N=1000$ periodic box lose half their coordination partners at the box faces"
-      correct:
-        - a
-        - b
-        - c
-      rationale_markdown: "Options (A), (B), and (C) are classic PBC finite-size artifacts: long-wavelength modes ($\\lambda > L$) are cut off, defects feel their own periodic image fields, and correlation lengths $\\xi > L$ are truncated. Option (D) is false because atoms near a PBC face interact seamlessly across the boundary with periodic images, retaining full bulk coordination."
+      ### Types of Boundary Conditions
 
-    - id: q07_max_phonon_wavelength
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_surface_pbc_intro
-      prompt_markdown: |
-        A 3D periodic simulation cell of crystalline Silicon has cubic side length $L = 5.43\text{ nm}$. What is the **longest non-zero acoustic phonon wavelength** $\lambda_{\max}$ (in $\text{nm}$) that can propagate parallel to the $[100]$ axis ($x$-axis) in this simulation?
-      hint_markdown: "Periodic boundary conditions require $u(x + L) = u(x)$, so an integer number of wavelengths must fit inside $L$: $n \\lambda = L$."
-      correct:
-        value: 5.43
-        tolerance: 0.05
-      rationale_markdown: "Because the displacement field must satisfy $u(x + L) = u(x)$, the allowed wavevectors along $x$ are $k_x = 2\\pi n_x / L$ for integer $n_x \\ge 1$. The fundamental mode ($n_x = 1$) has wavelength $\\lambda_{\\max} = 2\\pi / k_{\\min} = L = 5.43\\text{ nm}$."
+      1. **Free boundaries:** Isolated cluster, droplet, or protein in vacuum.
 
-    # =========================================================================
-    # PART 2: COORDINATE WRAPPING, MINIMUM IMAGE CONVENTION & CUTOFFS
-    # =========================================================================
-    - id: sec_mic_and_cutoffs
-      type: markdown_section
-      title: "2. Coordinate Wrapping, Minimum Image Convention & Potential Truncation"
-      body_markdown: |
-        In a periodic cubic box of side length $L$ spanning $[0, L)^3$, we must distinguish between two fundamental operations: **wrapping particle coordinates** back into the primary box, and computing the **Minimum Image Convention (MIC) displacement vector** between a pair of particles.
+      2. **Periodic Boundary Conditions (PBC):** The primary simulation box of side $L$ is replicated infinitely in all directions.
+      When a particle leaves through one face, its periodic image simultaneously enters through the opposite face. PBC **completely
+      eliminates free surfaces**, allowing small $N$ to probe bulk solids, liquids, gases, and plasmas.
 
-        ### 1. Coordinate Wrapping (Keeping Particles in $[0, L)$)
-        When a particle moves outside $[0, L)$ during an integration step, its position is wrapped back into the primary cell using the **floor** function (or modulo operator `%` in Python):
-        $$x_{\text{wrapped}} = x - L \lfloor x / L \rfloor \quad \in [0, L)$$
+      3. **Mixed (Slab) boundaries:** Periodic in $x$ and $y$, but free (or reflective/wall-bounded) in $z$—ideal for studying
+      free surfaces, thin films, or solid-liquid interfaces.
 
-        ### 2. Minimum Image Convention (MIC) for Pair Displacements
-        To compute the force between particle $i$ at $\mathbf{r}_i$ and particle $j$ at $\mathbf{r}_j$, particle $i$ must interact only with the **single closest periodic image** of particle $j$:
-        $$|\mathbf{r}_{ij}|_{\text{M}} = \min_{\mathbf{n} \in \mathbb{Z}^3} |\mathbf{r}_i - \mathbf{r}_j + \mathbf{n}L|$$
-        Component-wise along each axis $d \in \{x, y, z\}$, with $\Delta x = x_i - x_j$:
-        $$\Delta x_{\text{mic}} = \Delta x - L \cdot \operatorname{nint}\!\left(\frac{\Delta x}{L}\right) \quad \in \left[-\frac{L}{2}, +\frac{L}{2}\right]$$
-        where $\operatorname{nint}(u)$ rounds $u$ to the **nearest integer**. If $x_i, x_j \in [0, L)$ are already wrapped, this is equivalently implemented with conditional shifts:
-        ```python
-        dx = x[i] - x[j]
-        for d in range(3):
-            if dx[d] >  L[d] / 2: dx[d] -= L[d]
-            if dx[d] < -L[d] / 2: dx[d] += L[d]
-        ```
+      4. **Coupled / Embedded boundaries:** Embedding an atomistic quantum or MD region inside a continuum elastic or coarse-grained
+      bath via boundary forces and displacements.
 
-        ### 3. The Strict Cutoff Condition: $r_c < L/2$
-        For a spherically truncated short-range potential ($V_c(r) = 0$ for $r > r_c$), the cutoff radius $r_c$ must be **strictly less than half the box length**:
-        $$r_c < \frac{L}{2}$$
-        Why? The region of space closer to $\mathbf{r}_i$ than to any of its periodic images is a cube of side $L$ centered at $\mathbf{r}_i$, spanning $[-L/2, +L/2]^3$. The largest sphere inscribed inside this cube has radius $L/2$. If $r_c \ge L/2$, the cutoff sphere extends outside the minimum-image cube, allowing particle $i$ to interact simultaneously with **two or more periodic images of the same particle $j$** (or causing discontinuous jumps in force as a particle crosses the $\pm L/2$ midplane).
 
-        ### 4. Handling the Tail of the Potential at $r = r_c$
-        Simply setting $V(r) = 0$ for $r > r_c$ creates a step discontinuity $\Delta V = -V(r_c)$ at $r = r_c$, which corresponds to an infinite delta-function impulse force $-\nabla V$ whenever a pair crosses $r_c$, destroying energy conservation in NVE MD! Three standard remedies exist:
-        1. **Shifted Potential (Continuous $V$, Discontinuous $F$):**
-           $$V_c(r) = V(r) - V(r_c) \quad (r \le r_c)$$
-           Removes the jump in potential energy at $r_c$, though the force $F(r_c) = -V'(r_c) \ne 0$ still has a small jump.
-        2. **Shifted-Force Potential (Continuous $V$ and Continuous $F$):**
-           $$V_{\text{sf}}(r) = V(r) - V(r_c) - \left.\frac{dV}{dr}\right|_{r_c}(r - r_c) \quad (r \le r_c)$$
-           Both $V_{\text{sf}}(r_c) = 0$ and $F_{\text{sf}}(r_c) = 0$ vanish smoothly at the cutoff, yielding excellent MD energy conservation.
-        3. **Long-Range Image Potential (Ewald Summation):**
-           For potentials that decay as $r^{-\alpha}$ with $\alpha \le d$ (such as Coulomb $1/r$ in 3D), the tail integral $\int_{r_c}^\infty 4\pi r^2 V(r)\,dr$ diverges! One cannot truncate Coulomb interactions; instead, one sums over all periodic images $V_{\text{image}}(\mathbf{r}_{ij}) = \sum_{\mathbf{n}} V(\mathbf{r}_i - \mathbf{r}_j + \mathbf{n}L)$ using **Ewald summation** ($\mathcal{O}(N^{3/2})$ or $\mathcal{O}(N\log N)$ with PME) or the **Fast Multipole Method** ($\mathcal{O}(N)$).
+      ### Remaining Finite-Size Artifacts Under PBC
 
-    - id: concept_minimum_image
-      type: concept_cell
-      title: "Interactive Explorer: Minimum Image Convention & The $r_c < L/2$ Limit"
-      description_markdown: "Move target particle $j$'s coordinates $(x_j, y_j)$ inside the primary box $[0, L]^2$ and vary the cutoff radius $r_c / L$. Compare the dashed gray primary-box vector $\\Delta\\mathbf{r}_{\\mathrm{raw}}$ against the green Minimum Image vector $\\Delta\\mathbf{r}_{\\mathrm{mic}}$, and observe what happens when $r_c \\ge 0.50L$."
-      render_function: render_minimum_image_explorer
-      layout: figure_left
-      controls:
-        xj:
-          kind: slider
-          label: "Particle j Position x_j / L"
-          min: 0.05
-          max: 0.95
-          step: 0.05
-          default: 0.85
-        yj:
-          kind: slider
-          label: "Particle j Position y_j / L"
-          min: 0.05
-          max: 0.95
-          step: 0.05
-          default: 0.80
-        rc:
-          kind: slider
-          label: "Cutoff Radius r_c / L"
-          min: 0.20
-          max: 0.65
-          step: 0.02
-          default: 0.42
-      takeaway_markdown: "**Key Takeaway:** Whenever $|x_i - x_j| > L/2$, the closest image of particle $j$ lives in an adjacent periodic tile rather than the primary box. Keeping $r_c < L/2$ guarantees that the cutoff circle stays strictly inside the yellow $L \\times L$ minimum-image square."
+      Although PBC removes free surfaces, the system is still periodic with period $L$, NOT truly infinite:
 
-    - id: q08_wrap_vs_mic_formula
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        In a 1D periodic box of length $L$ spanning $[0, L)$, which pair of formulas correctly distinguishes **wrapping a coordinate $x$ into $[0, L)$** from **computing the Minimum Image displacement $\Delta x_{\text{mic}} \in [-L/2, L/2]$**?
-      hint_markdown: "Coordinate wrapping maps into $[0, L)$ using `floor`, whereas minimum-image displacement maps into $[-L/2, L/2]$ using nearest integer `nint`/`round`."
-      options:
-        - id: a
-          text: "Wrap: $x \\leftarrow x - L\\lfloor x/L \\rfloor$; Minimum Image: $\\Delta x \\leftarrow \\Delta x - L\\operatorname{nint}(\\Delta x/L)$"
-        - id: b
-          text: "Wrap: $x \\leftarrow x - L\\operatorname{nint}(x/L)$; Minimum Image: $\\Delta x \\leftarrow \\Delta x - L\\lfloor \\Delta x/L \\rfloor$"
-        - id: c
-          text: "Both operations use $u \\leftarrow u - L\\lfloor u/L \\rfloor$"
-        - id: d
-          text: "Both operations use $u \\leftarrow u - L\\lceil u/L \\rceil$"
-      correct: a
-      rationale_markdown: "`floor(x/L)` maps any real coordinate $x$ into $[0, L)$, whereas `nint(dx/L)` (nearest integer rounding) maps a pair displacement $\\Delta x$ into the symmetric interval $[-L/2, +L/2]$."
+      - **Long-wavelength cutoff ($\lambda > L$):** Any collective excitation (phonon, acoustic wave, or capillary wave) must
+      be commensurate with the box: $\mathbf{k} = \frac{2\pi}{L}(n_x, n_y, n_z)$, suppressing wavelengths $\lambda > L$.
 
-    - id: q09_coordinate_wrapping_calc
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        A cubic simulation box has side length $L = 10.0\text{ Å}$ spanning $[0, 10.0)\text{ Å}$. After a Verlet position update, an atom's $x$-coordinate is $x = -2.3\text{ Å}$. What is its wrapped $x$-coordinate (in $\text{Å}$) inside the primary box $[0, L)$?
-      hint_markdown: "Apply $x_{\\text{wrapped}} = x - L \\lfloor x/L \\rfloor$ with $\\lfloor -0.23 \\rfloor = -1$."
-      correct:
-        value: 7.7
-        tolerance: 0.02
-      rationale_markdown: "Using $x_{\\text{wrapped}} = -2.3 - 10.0 \\times \\lfloor -2.3 / 10.0 \\rfloor = -2.3 - 10.0 \\times (-1) = 7.7\\text{ Å}$."
+      - **Periodic image self-interaction:** A defect (dislocation, vacancy cluster, or charged ion) interacts elastically
+      or electrostatically with its own periodic images separated by $L$.
 
-    - id: q10_mic_1d_displacement
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by:
-        - sec_mic_and_cutoffs
-        - concept_minimum_image
-      prompt_markdown: |
-        In a 1D periodic box of length $L = 10.0\text{ Å}$, particle $i$ is at $x_i = 1.2\text{ Å}$ and particle $j$ is at $x_j = 8.9\text{ Å}$. What is the signed Minimum Image displacement $\Delta x_{\text{mic}} = (x_i - x_j)_{\text{mic}}$ in $\text{Å}$? (Include the correct sign!)
-      hint_markdown: "First compute $\\Delta x = x_i - x_j = 1.2 - 8.9 = -7.7\\text{ Å}$. Since $\\Delta x < -L/2$, add $L$."
-      correct:
-        value: 2.3
-        tolerance: 0.02
-      rationale_markdown: "The raw displacement is $\\Delta x = 1.2 - 8.9 = -7.7\\text{ Å}$. Because $-7.7 < -5.0$, the closest periodic image of particle $j$ is at $x_j - L = -1.1\\text{ Å}$, giving $\\Delta x_{\\text{mic}} = -7.7 + 10.0 = +2.3\\text{ Å}$."
+      - **Suppressed critical fluctuations & nucleation:** Phase transitions or critical fluctuations whose correlation length
+      $\xi \gtrsim L$ are artificially stabilized or suppressed.
 
-    - id: q11_mic_3d_distance
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-        - concept_minimum_image
-      prompt_markdown: |
-        In a 3D cubic periodic box of side length $L = 10.0\text{ Å}$, atom $A$ is at $\mathbf{r}_A = (1.0, 9.0, 2.0)\text{ Å}$ and atom $B$ is at $\mathbf{r}_B = (8.0, 2.0, 6.0)\text{ Å}$. Calculate the Minimum Image distance $|\mathbf{r}_{AB}|_{\text{M}}$ in $\text{Å}$.
-      hint_markdown: "Find the minimum-image displacement along each axis first: $\\Delta x_{\\text{mic}}, \\Delta y_{\\text{mic}}, \\Delta z_{\\text{mic}} \\in [-5, 5]$, then take the Euclidean norm."
-      correct:
-        value: 5.831
-        tolerance: 0.05
-      rationale_markdown: "Raw differences $\\mathbf{r}_A - \\mathbf{r}_B = (-7.0, +7.0, -4.0)\\text{ Å}$. Applying MIC ($L=10$): $\\Delta x_{\\text{mic}} = -7.0 + 10 = +3.0\\text{ Å}$, $\\Delta y_{\\text{mic}} = 7.0 - 10 = -3.0\\text{ Å}$, and $\\Delta z_{\\text{mic}} = -4.0\\text{ Å}$ (already within $[-5, 5]$). Thus $|\\mathbf{r}_{AB}|_{\\text{M}} = \\sqrt{3.0^2 + (-3.0)^2 + (-4.0)^2} = \\sqrt{9 + 9 + 16} = \\sqrt{34} \\approx 5.831\\text{ Å}$."
+      - **Cubic box anisotropy:** The periodic lattice of images has cubic symmetry rather than true isotropic rotational
+      invariance.'
+  - id: concept_surface_scaling
+    type: concept_cell
+    title: 'Interactive Explorer: Surface Atom Fraction in Finite 3D Clusters'
+    description_markdown: Adjust the cubic cluster side length $n$ ($N = n^3$ atoms) and the surface interaction shell thickness
+      $d$ (in atomic layers) to see why free boundaries cannot approximate bulk behavior without millions of atoms.
+    render_function: render_surface_vs_bulk_scaling
+    layout: figure_left
+    controls:
+      n_side:
+        kind: slider
+        label: Cube Side n (Atoms per edge)
+        min: 6
+        max: 100
+        step: 2
+        default: 10
+      d_surf:
+        kind: slider
+        label: Surface Shell Thickness d (layers)
+        min: 1
+        max: 5
+        step: 1
+        default: 1
+    takeaway_markdown: '**Key Takeaway:** Because surface fraction decays only as $N^{-1/3}$, eliminating surface artifacts
+      by brute-force cluster size is computationally prohibitive. Periodic Boundary Conditions (PBC) eliminate surfaces entirely
+      at any $N$.'
+  - id: q01_surface_fraction_1000
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by:
+    - sec_surface_pbc_intro
+    - concept_surface_scaling
+    prompt_markdown: Consider a 3D simple cubic nanocrystal containing $N = 1000$ atoms arranged as a $10 \times 10 \times
+      10$ cube in vacuum (free boundary conditions). If the outermost single layer of atoms ($d = 1$) on all six faces is
+      considered the surface shell, what **percentage** of the atoms in this cluster are surface atoms? (Enter a number between
+      0 and 100, e.g., `48.8`.)
+    hint_markdown: 'Count the interior bulk atoms first: removing 1 layer from each end of the 3 axes leaves an $(10 - 2)
+      \times (10 - 2) \times (10 - 2) = 8^3$ interior cube.'
+    correct:
+      value: 48.8
+      tolerance: 0.2
+    rationale_markdown: The interior bulk cube contains $(10 - 2)^3 = 8^3 = 512$ atoms. Therefore, $1000 - 512 = 488$ atoms
+      lie on the surface, which is $488 / 1000 = 48.8\%$ of the entire system.
+  - id: q02_surface_fraction_million
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_surface_pbc_intro
+    - concept_surface_scaling
+    prompt_markdown: As discussed in the lecture notes, suppose a simulated droplet has $N = 10^6 = (100)^3$ atoms on a cubic
+      grid, and the surface region affected by under-coordination is $d = 5$ atomic layers thick on every face. Calculate
+      the **exact percentage** of atoms that lie within this 5-atom-thick surface region.
+    hint_markdown: With $n = 100$ and $d = 5$ on both sides of each axis, the unaffected interior cube has side length $n
+      - 2d = 100 - 10 = 90$.
+    correct:
+      value: 27.1
+      tolerance: 0.5
+    rationale_markdown: "The unaffected core has $(100 - 2 \\times 5)^3 = 90^3 = 729,000$ atoms. The surface shell therefore\
+      \ contains $1,000,000 - 729,000 = 271,000$ atoms, or $27.1\\%$ (often approximated as $\\approx 25\text{–}30\\%$ via\
+      \ $6d/n = 30\\%$)."
+  - id: q03_surface_scaling_exponent
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_surface_pbc_intro
+    prompt_markdown: 'In a $D$-dimensional cluster of $N$ particles with free boundaries, the surface-to-volume ratio (fraction
+      of atoms near the surface) scales asymptotically with particle count $N$ as:'
+    hint_markdown: Linear dimension $L \propto N^{1/D}$, volume $\propto L^D$, and surface area $\propto L^{D-1}$.
+    options:
+    - id: a
+      text: $N^{-1/3}$ in 3D (and $N^{-1/D}$ in $D$ dimensions)
+    - id: b
+      text: $N^{-1}$ in all dimensions
+    - id: c
+      text: $N^{-2/3}$ in 3D
+    - id: d
+      text: $N^{-1/2}$ in 3D
+    correct: a
+    rationale_markdown: In $D$ dimensions, $N \propto L^D \implies L \propto N^{1/D}$. The surface region contains $N_{\text{surf}}
+      \propto L^{D-1} \propto N^{(D-1)/D}$ atoms, so the surface fraction $N_{\text{surf}}/N \propto N^{-1/D}$ ($N^{-1/3}$
+      in 3D). Reducing the surface fraction by $10\times$ in 3D requires $1000\times$ more atoms!
+  - id: q04_pbc_purpose
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_surface_pbc_intro
+    prompt_markdown: What is the primary physical motivation for applying 3D Periodic Boundary Conditions (PBC) in an atomistic
+      simulation of $N = 4000$ liquid Argon atoms?
+    hint_markdown: Consider what happens to atoms near the boundary of the primary simulation cell.
+    options:
+    - id: a
+      text: To eliminate free surfaces so that every atom experiences a bulk-like local environment despite small $N$
+    - id: b
+      text: To make the total number of degrees of freedom strictly infinite in computer memory
+    - id: c
+      text: To force all interatomic forces to vanish beyond $r = L$
+    - id: d
+      text: To prevent atoms from ever crossing the walls of the primary simulation box
+    correct: a
+    rationale_markdown: Under 3D PBC, the primary box is surrounded by periodic replicas, completely eliminating free surfaces
+      and allowing a small sample of $10^3\text{–}10^4$ atoms to reproduce bulk thermodynamic properties.
+  - id: q05_mixed_boundary_selection
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_surface_pbc_intro
+    prompt_markdown: You want to use Molecular Dynamics to measure the surface tension and inward surface relaxation of a
+      Copper $(001)$ crystal facet exposed to vacuum. Which spatial boundary condition setup is most appropriate?
+    hint_markdown: You want an infinite macroscopic crystal plane along $x$ and $y$, but an exposed free surface normal to
+      $z$.
+    options:
+    - id: a
+      text: 'Mixed (slab) boundaries: periodic in $x$ and $y$, free boundaries (vacuum gap) in $z$'
+    - id: b
+      text: 3D Periodic Boundary Conditions with zero vacuum gap in $x$, $y$, and $z$
+    - id: c
+      text: Free boundary conditions in all three directions ($x$, $y$, and $z$)
+    - id: d
+      text: Spherical boundary conditions on a 4D hypersphere
+    correct: a
+    rationale_markdown: A slab geometry applies PBC in the in-plane directions ($x, y$) to mimic an infinite crystal plane
+      while leaving the $z$-direction free (or separated by a wide vacuum layer) so that two flat $(001)$ surfaces are exposed
+      without edge/corner artifacts.
+  - id: q06_pbc_remaining_artifacts
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by:
+    - sec_surface_pbc_intro
+    prompt_markdown: 'Even though 3D Periodic Boundary Conditions eliminate free surfaces, finite-size artifacts remain in
+      a cubic simulation box of side length $L$. Select **all** true finite-size artifacts that can occur under 3D PBC:'
+    hint_markdown: Think about acoustic wavelengths, defect fields, and critical fluctuations relative to box length $L$.
+    options:
+    - id: a
+      text: Phonons and capillary waves with wavelengths $\lambda > L$ are suppressed because wavevectors must satisfy $\mathbf{k}
+        = \frac{2\pi}{L}(n_x, n_y, n_z)$
+    - id: b
+      text: A point defect, dislocation, or charged ion can interact spuriously with its own periodic images across the box
+        length $L$
+    - id: c
+      text: Phase nucleation or critical fluctuations with correlation length $\xi > L$ cannot form properly
+    - id: d
+      text: Approximately $49\%$ of the atoms in a $N=1000$ periodic box lose half their coordination partners at the box
+        faces
+    correct:
+    - a
+    - b
+    - c
+    rationale_markdown: 'Options (A), (B), and (C) are classic PBC finite-size artifacts: long-wavelength modes ($\lambda
+      > L$) are cut off, defects feel their own periodic image fields, and correlation lengths $\xi > L$ are truncated. Option
+      (D) is false because atoms near a PBC face interact seamlessly across the boundary with periodic images, retaining full
+      bulk coordination.'
+  - id: q07_max_phonon_wavelength
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_surface_pbc_intro
+    prompt_markdown: A 3D periodic simulation cell of crystalline Silicon has cubic side length $L = 5.43\text{ nm}$. What
+      is the **longest non-zero acoustic phonon wavelength** $\lambda_{\max}$ (in $\text{nm}$) that can propagate parallel
+      to the $[100]$ axis ($x$-axis) in this simulation?
+    hint_markdown: 'Periodic boundary conditions require $u(x + L) = u(x)$, so an integer number of wavelengths must fit inside
+      $L$: $n \lambda = L$.'
+    correct:
+      value: 5.43
+      tolerance: 0.05
+    rationale_markdown: Because the displacement field must satisfy $u(x + L) = u(x)$, the allowed wavevectors along $x$ are
+      $k_x = 2\pi n_x / L$ for integer $n_x \ge 1$. The fundamental mode ($n_x = 1$) has wavelength $\lambda_{\max} = 2\pi
+      / k_{\min} = L = 5.43\text{ nm}$.
+  - id: sec_mic_and_cutoffs
+    type: markdown_section
+    title: 2. Coordinate Wrapping, Minimum Image Convention & Potential Truncation
+    body_markdown: "In a periodic cubic box of side length $L$ spanning $[0, L)^3$, we must distinguish between two fundamental\
+      \ operations: **wrapping particle coordinates** back into the primary box, and computing the **Minimum Image Convention\
+      \ (MIC) displacement vector** between a pair of particles.\n\n### 1. Coordinate Wrapping (Keeping Particles in $[0,\
+      \ L)$)\nWhen a particle moves outside $[0, L)$ during an integration step, its position is wrapped back into the primary\
+      \ cell using the **floor** function (or modulo operator `%` in Python):\n$$x_{\\text{wrapped}} = x - L \\lfloor x /\
+      \ L \\rfloor \\quad \\in [0, L)$$\n\n### 2. Minimum Image Convention (MIC) for Pair Displacements\nTo compute the force\
+      \ between particle $i$ at $\\mathbf{r}_i$ and particle $j$ at $\\mathbf{r}_j$, particle $i$ must interact only with\
+      \ the **single closest periodic image** of particle $j$:\n$$|\\mathbf{r}_{ij}|_{\\text{M}} = \\min_{\\mathbf{n} \\in\
+      \ \\mathbb{Z}^3} |\\mathbf{r}_i - \\mathbf{r}_j + \\mathbf{n}L|$$\nComponent-wise along each axis $d \\in \\{x, y, z\\\
+      }$, with $\\Delta x = x_i - x_j$:\n$$\\Delta x_{\\text{mic}} = \\Delta x - L \\cdot \\operatorname{nint}\\!\\left(\\\
+      frac{\\Delta x}{L}\\right) \\quad \\in \\left[-\\frac{L}{2}, +\\frac{L}{2}\\right]$$\nwhere $\\operatorname{nint}(u)$\
+      \ rounds $u$ to the **nearest integer**. If $x_i, x_j \\in [0, L)$ are already wrapped, this is equivalently implemented\
+      \ with conditional shifts:\n```python\ndx = x[i] - x[j]\nfor d in range(3):\n if dx[d] > L[d] / 2: dx[d] -= L[d]\n if\
+      \ dx[d] < -L[d] / 2: dx[d] += L[d]\n```\n\n### 3. The Strict Cutoff Condition: $r_c < L/2$\nFor a spherically truncated\
+      \ short-range potential ($V_c(r) = 0$ for $r > r_c$), the cutoff radius $r_c$ must be **strictly less than half the\
+      \ box length**:\n$$r_c < \\frac{L}{2}$$\nWhy? The region of space closer to $\\mathbf{r}_i$ than to any of its periodic\
+      \ images is a cube of side $L$ centered at $\\mathbf{r}_i$, spanning $[-L/2, +L/2]^3$. The largest sphere inscribed\
+      \ inside this cube has radius $L/2$. If $r_c \\ge L/2$, the cutoff sphere extends outside the minimum-image cube, allowing\
+      \ particle $i$ to interact simultaneously with **two or more periodic images of the same particle $j$** (or causing\
+      \ discontinuous jumps in force as a particle crosses the $\\pm L/2$ midplane).\n\n### 4. Handling the Tail of the Potential\
+      \ at $r = r_c$\nSimply setting $V(r) = 0$ for $r > r_c$ creates a step discontinuity $\\Delta V = -V(r_c)$ at $r = r_c$,\
+      \ which corresponds to an infinite delta-function impulse force $-\\nabla V$ whenever a pair crosses $r_c$, destroying\
+      \ energy conservation in NVE MD! Three standard remedies exist:\n1. **Shifted Potential (Continuous $V$, Discontinuous\
+      \ $F$):**\n $$V_c(r) = V(r) - V(r_c) \\quad (r \\le r_c)$$\n Removes the jump in potential energy at $r_c$, though the\
+      \ force $F(r_c) = -V'(r_c) \\ne 0$ still has a small jump.\n2. **Shifted-Force Potential (Continuous $V$ and Continuous\
+      \ $F$):**\n $$V_{\\text{sf}}(r) = V(r) - V(r_c) - \\left.\\frac{dV}{dr}\\right|_{r_c}(r - r_c) \\quad (r \\le r_c)$$\n\
+      \ Both $V_{\\text{sf}}(r_c) = 0$ and $F_{\\text{sf}}(r_c) = 0$ vanish smoothly at the cutoff, yielding excellent MD\
+      \ energy conservation.\n3. **Long-Range Image Potential (Ewald Summation):**\n For potentials that decay as $r^{-\\\
+      alpha}$ with $\\alpha \\le d$ (such as Coulomb $1/r$ in 3D), the tail integral $\\int_{r_c}^\\infty 4\\pi r^2 V(r)\\\
+      ,dr$ diverges! One cannot truncate Coulomb interactions; instead, one sums over all periodic images $V_{\\text{image}}(\\\
+      mathbf{r}_{ij}) = \\sum_{\\mathbf{n}} V(\\mathbf{r}_i - \\mathbf{r}_j + \\mathbf{n}L)$ using **Ewald summation** ($\\\
+      mathcal{O}(N^{3/2})$ or $\\mathcal{O}(N\\log N)$ with PME) or the **Fast Multipole Method** ($\\mathcal{O}(N)$)."
+  - id: concept_minimum_image
+    type: concept_cell
+    title: 'Interactive Explorer: Minimum Image Convention & The $r_c < L/2$ Limit'
+    description_markdown: Move target particle $j$'s coordinates $(x_j, y_j)$ inside the primary box $[0, L]^2$ and vary the
+      cutoff radius $r_c / L$. Compare the dashed gray primary-box vector $\Delta\mathbf{r}_{\mathrm{raw}}$ against the green
+      Minimum Image vector $\Delta\mathbf{r}_{\mathrm{mic}}$, and observe what happens when $r_c \ge 0.50L$.
+    render_function: render_minimum_image_explorer
+    layout: figure_left
+    controls:
+      xj:
+        kind: slider
+        label: Particle j Position x_j / L
+        min: 0.05
+        max: 0.95
+        step: 0.05
+        default: 0.85
+      yj:
+        kind: slider
+        label: Particle j Position y_j / L
+        min: 0.05
+        max: 0.95
+        step: 0.05
+        default: 0.8
+      rc:
+        kind: slider
+        label: Cutoff Radius r_c / L
+        min: 0.2
+        max: 0.65
+        step: 0.02
+        default: 0.42
+    takeaway_markdown: '**Key Takeaway:** Whenever $|x_i - x_j| > L/2$, the closest image of particle $j$ lives in an adjacent
+      periodic tile rather than the primary box. Keeping $r_c < L/2$ guarantees that the cutoff circle stays strictly inside
+      the yellow $L \times L$ minimum-image square.'
+  - id: q08_wrap_vs_mic_formula
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: In a 1D periodic box of length $L$ spanning $[0, L)$, which pair of formulas correctly distinguishes
+      **wrapping a coordinate $x$ into $[0, L)$** from **computing the Minimum Image displacement $\Delta x_{\text{mic}} \in
+      [-L/2, L/2]$**?
+    hint_markdown: Coordinate wrapping maps into $[0, L)$ using `floor`, whereas minimum-image displacement maps into $[-L/2,
+      L/2]$ using nearest integer `nint`/`round`.
+    options:
+    - id: a
+      text: 'Wrap: $x \leftarrow x - L\lfloor x/L \rfloor$; Minimum Image: $\Delta x \leftarrow \Delta x - L\operatorname{nint}(\Delta
+        x/L)$'
+    - id: b
+      text: 'Wrap: $x \leftarrow x - L\operatorname{nint}(x/L)$; Minimum Image: $\Delta x \leftarrow \Delta x - L\lfloor \Delta
+        x/L \rfloor$'
+    - id: c
+      text: Both operations use $u \leftarrow u - L\lfloor u/L \rfloor$
+    - id: d
+      text: Both operations use $u \leftarrow u - L\lceil u/L \rceil$
+    correct: a
+    rationale_markdown: '`floor(x/L)` maps any real coordinate $x$ into $[0, L)$, whereas `nint(dx/L)` (nearest integer rounding)
+      maps a pair displacement $\Delta x$ into the symmetric interval $[-L/2, +L/2]$.'
+  - id: q09_coordinate_wrapping_calc
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: A cubic simulation box has side length $L = 10.0\text{ Å}$ spanning $[0, 10.0)\text{ Å}$. After a Verlet
+      position update, an atom's $x$-coordinate is $x = -2.3\text{ Å}$. What is its wrapped $x$-coordinate (in $\text{Å}$)
+      inside the primary box $[0, L)$?
+    hint_markdown: Apply $x_{\text{wrapped}} = x - L \lfloor x/L \rfloor$ with $\lfloor -0.23 \rfloor = -1$.
+    correct:
+      value: 7.7
+      tolerance: 0.02
+    rationale_markdown: Using $x_{\text{wrapped}} = -2.3 - 10.0 \times \lfloor -2.3 / 10.0 \rfloor = -2.3 - 10.0 \times (-1)
+      = 7.7\text{ Å}$.
+  - id: q10_mic_1d_displacement
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by:
+    - sec_mic_and_cutoffs
+    - concept_minimum_image
+    prompt_markdown: In a 1D periodic box of length $L = 10.0\text{ Å}$, particle $i$ is at $x_i = 1.2\text{ Å}$ and particle
+      $j$ is at $x_j = 8.9\text{ Å}$. What is the signed Minimum Image displacement $\Delta x_{\text{mic}} = (x_i - x_j)_{\text{mic}}$
+      in $\text{Å}$? (Include the correct sign!)
+    hint_markdown: First compute $\Delta x = x_i - x_j = 1.2 - 8.9 = -7.7\text{ Å}$. Since $\Delta x < -L/2$, add $L$.
+    correct:
+      value: 2.3
+      tolerance: 0.02
+    rationale_markdown: The raw displacement is $\Delta x = 1.2 - 8.9 = -7.7\text{ Å}$. Because $-7.7 < -5.0$, the closest
+      periodic image of particle $j$ is at $x_j - L = -1.1\text{ Å}$, giving $\Delta x_{\text{mic}} = -7.7 + 10.0 = +2.3\text{
+      Å}$.
+  - id: q11_mic_3d_distance
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    - concept_minimum_image
+    prompt_markdown: In a 3D cubic periodic box of side length $L = 10.0\text{ Å}$, atom $A$ is at $\mathbf{r}_A = (1.0, 9.0,
+      2.0)\text{ Å}$ and atom $B$ is at $\mathbf{r}_B = (8.0, 2.0, 6.0)\text{ Å}$. Calculate the Minimum Image distance $|\mathbf{r}_{AB}|_{\text{M}}$
+      in $\text{Å}$.
+    hint_markdown: 'Find the minimum-image displacement along each axis first: $\Delta x_{\text{mic}}, \Delta y_{\text{mic}},
+      \Delta z_{\text{mic}} \in [-5, 5]$, then take the Euclidean norm.'
+    correct:
+      value: 5.831
+      tolerance: 0.05
+    rationale_markdown: 'Raw differences $\mathbf{r}_A - \mathbf{r}_B = (-7.0, +7.0, -4.0)\text{ Å}$. Applying MIC ($L=10$):
+      $\Delta x_{\text{mic}} = -7.0 + 10 = +3.0\text{ Å}$, $\Delta y_{\text{mic}} = 7.0 - 10 = -3.0\text{ Å}$, and $\Delta
+      z_{\text{mic}} = -4.0\text{ Å}$ (already within $[-5, 5]$). Thus $|\mathbf{r}_{AB}|_{\text{M}} = \sqrt{3.0^2 + (-3.0)^2
+      + (-4.0)^2} = \sqrt{9 + 9 + 16} = \sqrt{34} \approx 5.831\text{ Å}$.'
+  - id: q12_cutoff_half_box_limit
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    - concept_minimum_image
+    prompt_markdown: Why must the spherical potential cutoff radius $r_c$ strictly satisfy $r_c < L/2$ when using the Minimum
+      Image Convention in a cubic periodic box of side length $L$?
+    hint_markdown: 'Look at the interactive explorer when $r_c > 0.5L$: how many images of particle $j$ can fall inside $r_c$?'
+    options:
+    - id: a
+      text: If $r_c \ge L/2$, a particle's cutoff sphere extends beyond the $[-L/2, L/2]^3$ Wigner-Seitz cell and can include
+        multiple periodic images of the same neighbor
+    - id: b
+      text: If $r_c \ge L/2$, the Lennard-Jones potential becomes repulsive at all distances
+    - id: c
+      text: If $r_c \ge L/2$, coordinates can no longer be wrapped into $[0, L)$ using `floor`
+    - id: d
+      text: If $r_c \ge L/2$, Newton's third law $\mathbf{F}_{ij} = -\mathbf{F}_{ji}$ is violated inside $r < L/4$
+    correct: a
+    rationale_markdown: The Minimum Image Convention checks only the single nearest image of particle $j$ inside the cube
+      $[-L/2, L/2]^3$. The largest sphere that fits inside a cube of side $L$ has radius $L/2$. If $r_c \ge L/2$, two periodic
+      images of $j$ can lie within distance $r_c$ of $i$, violating consistent single-image truncation.
+  - id: q13_min_fcc_atoms_for_cutoff
+    type: problem
+    question_type: numeric
+    difficulty: hard
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: You are setting up a 3D periodic FCC Argon crystal with conventional cubic lattice constant $a = 1.55\,\sigma$
+      ($4$ atoms per unit cell) and a Lennard-Jones cutoff of $r_c = 2.5\,\sigma$. To strictly satisfy $r_c < L/2$ for an
+      $M \times M \times M$ supercell of FCC unit cells (where $L = M a$), what is the **minimum total number of atoms $N
+      = 4M^3$** required?
+    hint_markdown: First find the minimum integer $M$ such that $L = M a > 2 r_c = 5.0\,\sigma$, then compute $N = 4M^3$.
+    correct:
+      value: 256
+      tolerance: 0.5
+    rationale_markdown: We require $L = M a > 2 r_c = 5.0\,\sigma \implies M > 5.0 / 1.55 = 3.226$. Since $M$ must be an integer
+      number of unit cells per edge, the smallest valid supercell is $M = 4$ ($L = 6.2\,\sigma > 5.0\,\sigma$). An FCC supercell
+      with $M = 4$ contains $N = 4 M^3 = 4 \times 4^3 = 256$ atoms.
+  - id: q14_max_mic_corner_distance
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: In a 3D cubic periodic box of side length $L$, what is the **maximum possible Minimum Image distance**
+      $|\mathbf{r}_{ij}|_{\text{M}}$ between any two points in the box?
+    hint_markdown: Each component $\Delta x_{\text{mic}}, \Delta y_{\text{mic}}, \Delta z_{\text{mic}}$ can be as large in
+      magnitude as $L/2$.
+    options:
+    - id: a
+      text: $\frac{\sqrt{3}}{2} L \approx 0.866 L$
+    - id: b
+      text: $\frac{1}{2} L = 0.500 L$
+    - id: c
+      text: $\frac{\sqrt{2}}{2} L \approx 0.707 L$
+    - id: d
+      text: $\sqrt{3} L \approx 1.732 L$
+    correct: a
+    rationale_markdown: In 3D, each minimum-image coordinate difference satisfies $|\Delta x_{\text{mic}}|, |\Delta y_{\text{mic}}|,
+      |\Delta z_{\text{mic}}| \le L/2$. At the body-diagonal corner of the Wigner-Seitz cube, $|\mathbf{r}_{ij}|_{\text{M}}
+      = \sqrt{(L/2)^2 + (L/2)^2 + (L/2)^2} = \frac{\sqrt{3}}{2}L \approx 0.866L$.
+  - id: q15_potential_truncation_schemes
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: 'In the lecture notes on handling the tail of a short-range potential at $r = r_c$, the **continuous
+      potential and continuous force** (shifted-force) modification for $r \le r_c$ is defined as:'
+    hint_markdown: Subtract a first-order Taylor linear term at $r_c$ so both $V_c(r_c) = 0$ and $V_c'(r_c) = 0$.
+    options:
+    - id: a
+      text: $V_c(r) = V(r) - V(r_c) - \left.\frac{dV}{dr}\right|_{r_c}(r - r_c)$
+    - id: b
+      text: $V_c(r) = V(r) - V(r_c)$
+    - id: c
+      text: $V_c(r) = V(r) + \left.\frac{dV}{dr}\right|_{r_c} r$
+    - id: d
+      text: $V_c(r) = V(r) \cdot \exp(-r / r_c)$
+    correct: a
+    rationale_markdown: Subtracting $V(r_c) + V'(r_c)(r - r_c)$ ensures $V_c(r_c) = 0$ and $-dV_c/dr|_{r_c} = -V'(r_c) + V'(r_c)
+      = 0$, eliminating both the potential step and the force discontinuity at $r = r_c$.
+  - id: q16_lj_shift_value
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: For a Lennard-Jones 12-6 potential $V(r) = 4\varepsilon\left[(\sigma/r)^{12} - (\sigma/r)^6\right]$ truncated
+      and shifted at $r_c = 2.5\,\sigma$ so that $V_c(r) = V(r) - V(r_c)$, what is the value of the potential energy at the
+      cutoff prior to shifting, $V(r_c)/\varepsilon$? (Include the negative sign, e.g., `-0.0163`.)
+    hint_markdown: Compute $4 \times (2.5^{-12} - 2.5^{-6})$.
+    correct:
+      value: -0.0163
+      tolerance: 0.001
+    rationale_markdown: At $r_c = 2.5\,\sigma$, $(1/2.5)^6 = 0.4^6 = 0.004096$ and $(1/2.5)^{12} = 1.6777 \times 10^{-5}$.
+      Thus $V(2.5\,\sigma)/\varepsilon = 4(0.00001678 - 0.004096) = -0.016317$.
+  - id: q17_force_loop_code_analysis
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: "Inspect the Lennard-Jones force loop: ```python\nfor i in range(Natoms):\n for j in range(i+1, Natoms):\n\
+      \ dx = x[i] - x[j]\n for d in range(3):\n if dx[d] > L[d]/2: dx[d] -= L[d]\n if dx[d] < -L[d]/2: dx[d] += L[d]\n r2\
+      \ = sum(dx*dx)\n if r2 > rcutoff2: continue...\n F[i] = F[i] + rforce * dx\n F[j] = F[j] - rforce * dx\n```\nSelect\
+      \ **all** true statements about the computational design of this loop:"
+    hint_markdown: Look at the loop bounds `j in range(i+1, Natoms)`, the `r2 > rcutoff2` check, and the updates to `F[i]`
+      and `F[j]`.
+    options:
+    - id: a
+      text: Starting the inner loop at `j = i + 1` and updating both `F[i]` and `F[j]` exploits Newton's 3rd Law ($\mathbf{F}_{ij}
+        = -\mathbf{F}_{ji}$), halving the number of pair evaluations to $N(N-1)/2$
+    - id: b
+      text: Comparing squared distances `r2 > rcutoff2` avoids computing an expensive square root `sqrt(r2)` for every pair
+    - id: c
+      text: Before entering the outer `for i` loop at each MD step, the force array and potential energy must be zeroed (`F.fill(0)`,
+        `pot = 0`)
+    - id: d
+      text: 'Because of the `if r2 > rcutoff2: continue` statement, the total complexity of this nested loop is $\mathcal{O}(N)$'
+    correct:
+    - a
+    - b
+    - c
+    rationale_markdown: 'Statements (A), (B), and (C) are all key optimizations highlighted in the lecture slides. Statement
+      (D) is false: even though `continue` skips the LJ arithmetic outside $r_c$, the nested loop still computes `dx`, MIC
+      shifts, and `r2` for all $N(N-1)/2 = \mathcal{O}(N^2)$ pairs!'
+  - id: q18_long_range_potentials_complexity
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_mic_and_cutoffs
+    prompt_markdown: Why can't a Coulomb interaction $V(r) = q_i q_j / r$ in 3D simply be truncated at $r_c < L/2$ like a
+      Lennard-Jones potential, and what is the scaling of standard Ewald summation vs. The Fast Multipole Method (FMM)?
+    hint_markdown: In 3D, a shell at radius $r$ has volume $4\pi r^2 dr$, so the tail integral $\int r^2 (1/r) dr$ diverges;
+      check of the reference notes for Ewald and FMM scaling.
+    options:
+    - id: a
+      text: The $1/r$ tail integral diverges in 3D; standard Ewald summation scales as $\mathcal{O}(N^{3/2})$ while Fast Multipole
+        Algorithms scale as $\mathcal{O}(N)$ for very large $N$
+    - id: b
+      text: The $1/r$ potential is short-ranged; Ewald summation scales as $\mathcal{O}(N^3)$ and FMM scales as $\mathcal{O}(N^2)$
+    - id: c
+      text: Coulomb forces violate Newton's third law; Ewald summation scales as $\mathcal{O}(\log N)$
+    - id: d
+      text: Truncation works accurately for $1/r$ as long as $r_c = 2.5\,\sigma$; Ewald summation is only used for hard spheres
+    correct: a
+    rationale_markdown: Because $1/r$ decays slower than $r^{-3}$ in 3D, truncating it causes severe electrostatic artifacts.
+      Summing over periodic images via Ewald summation with optimal real/reciprocal space cutoffs scales as $\mathcal{O}(N^{3/2})$
+      (or $\mathcal{O}(N\log N)$ with mesh FFTs), while Fast Multipole Algorithms achieve $\mathcal{O}(N)$ for very large
+      $N$.
+  - id: sec_verlet_neighbor_lists
+    type: markdown_section
+    title: '3. $\mathcal{O}(N^2) \to \mathcal{O}(N)$: Verlet Neighbor Lists & Skin Depth $\Delta$'
+    body_markdown: "### The $\\mathcal{O}(N^2)$ All-Pairs Bottleneck\nIn a system of $N$ atoms with a short-range potential\
+      \ ($V_c(r) = 0$ for $r > r_c$), each atom interacts on average with only:\n$$m \\approx \\frac{4}{3}\\pi r_c^3 \\rho$$\n\
+      neighbors inside its cutoff sphere, where $\\rho = N/V$ is the number density. Crucially, **$m$ is independent of system\
+      \ size $N$** (typically $m \\sim 30\\text{–}80$ in a liquid or solid). Yet the naive double loop checks all $\\frac{1}{2}N(N-1)\
+      \ \\approx \\mathcal{O}(N^2)$ pairs just to discover that almost all of them have $r_{ij} > r_c$!\n\n### Verlet Neighbor\
+      \ Lists (Explicit Neighbor Tables)\nIntroduced by Loup Verlet (1967), a **Verlet neighbor list** stores a table of nearby\
+      \ neighbor indices for each atom $i$.\n- Instead of cutting off the table at $r_c$, we construct the neighbor table\
+      \ using a slightly larger **Verlet sphere radius**:\n $$r_v = r_c + \\Delta$$\n where $\\Delta$ is the **skin depth**\
+      \ (buffer thickness).\n- **During force evaluation steps:** We loop *only* over the pre-stored neighbor table (averaging\
+      \ $m_v \\approx \\frac{4}{3}\\pi (r_c + \\Delta)^3 \\rho$ entries per atom), checking whether $r_{ij} \\le r_c$. This\
+      \ force evaluation step costs strictly **$\\mathcal{O}(m_v N) = \\mathcal{O}(N)$**!\n\n### Exact Rebuild Criterion ($d_1\
+      \ + d_2 \\ge \\Delta$)\nBecause particles move slowly per timestep ($\\Delta r \\sim 0.01\\sigma$), a particle initially\
+      \ outside the Verlet sphere ($r_{ij}^{(0)} > r_c + \\Delta$) cannot penetrate inside the force cutoff sphere ($r_{ij}(t)\
+      \ < r_c$) until the combined distance traveled by the pair since the last table build reaches $\\Delta$.\n- Let $\\\
+      Delta\\mathbf{r}_i = \\mathbf{r}_i(t) - \\mathbf{r}_i(t_{\\text{build}})$ be the displacement of atom $i$ since the\
+      \ table was last constructed.\n- Track the **two largest displacements** across the entire system: $d_1 = \\max_i |\\\
+      Delta\\mathbf{r}_i|$ and $d_2 = \\text{second largest } |\\Delta\\mathbf{r}_j|$.\n- **Rebuild trigger:** Whenever\n\
+      \ $$d_1 + d_2 \\ge \\Delta \\quad (\\text{or conservatively } 2 d_{\\max} \\ge \\Delta)$$\n we must reconstruct the\
+      \ neighbor table!\n\n### The Skin Depth $\\Delta$ Optimization Trade-off\n- **If $\\Delta$ is too small:** Very few\
+      \ excess particles lie in the skin ($m_v \\approx m$), so each force step is fast, **but** $d_1 + d_2 \\ge \\Delta$\
+      \ triggers almost every step! Since a pure Verlet table rebuild must check all pairs ($\\mathcal{O}(N^2)$), frequent\
+      \ rebuilds ruin performance.\n- **If $\\Delta$ is too large:** The table rarely needs rebuilding ($n_{\\text{reb}}$\
+      \ is large), **but** the number of candidate pairs checked at every step grows cubically as $(r_c + \\Delta)^3$.\n-\
+      \ Modern MD codes dynamically optimize $\\Delta$ by timing blocks of steps, fitting CPU time $t(\\Delta)$ to a polynomial,\
+      \ and minimizing $t(\\Delta)$."
+  - id: concept_verlet_skin
+    type: concept_cell
+    title: 'Interactive Explorer: Verlet Neighbor List Skin Depth Optimization'
+    description_markdown: Vary the system size $N$ and reduced temperature $T^*$ to see how the per-step force evaluation
+      cost $\propto N(r_c + \Delta)^3$ competes against the amortized $\mathcal{O}(N^2)$ list rebuild cost $\propto N^2 /
+      n_{\mathrm{reb}}(\Delta)$.
+    render_function: render_verlet_skin_optimizer
+    layout: figure_left
+    controls:
+      n_atoms:
+        kind: slider
+        label: System Size N (atoms)
+        min: 500
+        max: 8000
+        step: 500
+        default: 2000
+      temp_star:
+        kind: slider
+        label: Reduced Temperature T*
+        min: 0.2
+        max: 3.0
+        step: 0.2
+        default: 1.0
+    takeaway_markdown: '**Key Takeaway:** There is a well-defined optimal skin depth $\Delta^*/r_c$ (typically $0.15\text{–}0.35$,
+      rebuilding every $10\text{–}25$ steps). Increasing $N$ or $T^*$ makes $\mathcal{O}(N^2)$ rebuilds more costly per step,
+      shifting $\Delta^*$ to larger values.'
+  - id: q19_all_pairs_count
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by:
+    - sec_verlet_neighbor_lists
+    prompt_markdown: In an all-pairs force calculation using Newton's third law (`j in range(i+1, N)`), how many distinct
+      pair distance checks $\frac{1}{2}N(N-1)$ are performed per MD timestep for a system of $N = 4000$ atoms? (Enter the
+      exact integer.)
+    hint_markdown: Compute $4000 \times 3999 / 2$.
+    correct:
+      value: 7998000
+      tolerance: 1
+    rationale_markdown: The number of unique pairs is $N(N-1)/2 = 4000 \times 3999 / 2 = 7,998,000$ distance evaluations per
+      timestep.
+  - id: q20_average_neighbors_independence
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_verlet_neighbor_lists
+    prompt_markdown: 'Consider two bulk liquid Argon simulations at the same number density $\rho = 0.84\,\sigma^{-3}$ and
+      cutoff $r_c = 2.5\,\sigma$: System A has $N = 1000$ atoms and System B has $N = 1,000,000$ atoms. How does the average
+      number of interacting neighbors $m$ inside $r_c$ for a single atom compare between System A and System B?'
+    hint_markdown: Recall $m \approx \frac{4}{3}\pi r_c^3 \rho$.
+    options:
+    - id: a
+      text: $m$ is identical in both systems (approx. $55$ neighbors) because $m \approx \frac{4}{3}\pi r_c^3 \rho$ depends
+        only on local density $\rho$ and $r_c$, not $N$
+    - id: b
+      text: $m$ is $1000\times$ larger in System B because $N$ is $1000\times$ larger
+    - id: c
+      text: $m$ is $10\times$ larger in System B because box length $L$ is $10\times$ larger
+    - id: d
+      text: $m$ is smaller in System B because periodic boundary conditions dilute the density
+    correct: a
+    rationale_markdown: For a short-range potential, the average number of neighbors inside the cutoff sphere is $m \approx
+      \frac{4}{3}\pi r_c^3 \rho \approx \frac{4}{3}\pi (2.5)^3 (0.84) \approx 55$, which is intensive (independent of system
+      size $N$). Once a neighbor table is available, force calculation therefore scales as $mN/2 = \mathcal{O}(N)$.
+  - id: q21_verlet_rebuild_criterion
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_verlet_neighbor_lists
+    - concept_verlet_skin
+    prompt_markdown: In a Verlet neighbor list with force cutoff $r_c$ and skin depth $\Delta$ (outer list radius $r_v = r_c
+      + \Delta$), let $d_1$ and $d_2$ be the two largest atomic displacements $|\mathbf{r}_i(t) - \mathbf{r}_i(t_{\text{build}})|$
+      accumulated **since the neighbor list was last built**. What is the exact condition that guarantees no unrecorded pair
+      has entered $r < r_c$, and when must the list be rebuilt?
+    hint_markdown: In the worst case, two atoms initially just outside $r_c + \Delta$ move directly toward each other by distances
+      $d_1$ and $d_2$.
+    options:
+    - id: a
+      text: Rebuild as soon as $d_1 + d_2 \ge \Delta$ (or conservatively $2 d_1 \ge \Delta$), measured relative to positions
+        at the last rebuild
+    - id: b
+      text: Rebuild only when $d_1 \ge r_c + \Delta$, measured over a single timestep $\Delta t$
+    - id: c
+      text: Rebuild when the average displacement $\langle d_i \rangle \ge \Delta / 2$
+    - id: d
+      text: Rebuild only when the total system energy drifts by more than $\Delta$
+    correct: a
+    rationale_markdown: Two atoms $i$ and $j$ initially separated by $r_{ij}(t_{\text{build}}) > r_c + \Delta$ can decrease
+      their separation by at most $|\Delta\mathbf{r}_i| + |\Delta\mathbf{r}_j| \le d_1 + d_2$. As long as $d_1 + d_2 < \Delta$,
+      their current separation exceeds $r_c$; as soon as $d_1 + d_2 \ge \Delta$, the table must be rebuilt.
+  - id: q22_verlet_displacement_reference_bug
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by:
+    - sec_verlet_neighbor_lists
+    prompt_markdown: A student implements a Verlet neighbor list rebuild check by computing `d_i = norm(r[i, t] - r[i, t -
+      dt])` (the displacement during the *current single timestep* $\Delta t$) and rebuilding when `max1(d) + max2(d) >= Delta`.
+      Why is this implementation **fundamentally buggy**?
+    hint_markdown: What happens if an atom moves by $0.05\,\Delta$ per step in the same direction for 15 consecutive steps?
+    options:
+    - id: a
+      text: Displacements accumulate over multiple timesteps; checking only the single-step displacement $\mathbf{r}(t) -
+        \mathbf{r}(t-\Delta t)$ misses atoms that drift steadily across the skin $\Delta$ over several steps
+    - id: b
+      text: Single-step displacements are always larger than multi-step displacements, causing rebuilds on every step
+    - id: c
+      text: The rebuild check must use velocities $\mathbf{v}_i$ instead of positions
+    - id: d
+      text: The skin depth $\Delta$ must be divided by $N$ when checking single-step displacements
+    correct: a
+    rationale_markdown: In a typical MD timestep, an atom moves only $\sim 0.01\,\sigma \ll \Delta$, so single-step $d_1 +
+      d_2$ would *never* exceed $\Delta$, and the neighbor list would never rebuild! You must store reference positions `r_ref[i]`
+      from the moment the table was last built and compute `d_i = norm(r[i] - r_ref[i])`.
+  - id: q23_verlet_skin_volume_ratio
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_verlet_neighbor_lists
+    - concept_verlet_skin
+    prompt_markdown: In a 3D simulation with force cutoff $r_c = 2.5\,\sigma$ and Verlet skin thickness $\Delta = 0.5\,\sigma$
+      (so $r_v = r_c + \Delta = 3.0\,\sigma$), by what factor $(r_v / r_c)^3$ does the volume of the Verlet sphere (and thus
+      the average number of neighbors stored in the list per atom) exceed the actual force cutoff sphere? (Enter a number
+      to 3 decimal places, e.g., `1.728`.)
+    hint_markdown: In 3D, sphere volume scales as $r^3$, so compute $(3.0 / 2.5)^3 = 1.2^3$.
+    correct:
+      value: 1.728
+      tolerance: 0.01
+    rationale_markdown: The ratio of the Verlet sphere volume to the force cutoff sphere volume is $(r_v / r_c)^3 = ((2.5
+      + 0.5) / 2.5)^3 = (1.2)^3 = 1.728$. Thus, about $42\%$ of the pairs stored in the Verlet list lie in the skin shell
+      $[r_c, r_v]$ and have zero force on any given step.
+  - id: q24_verlet_skin_zero_limit
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_verlet_neighbor_lists
+    - concept_verlet_skin
+    prompt_markdown: What happens to the computational efficiency of a Verlet neighbor list algorithm if you set the skin
+      depth to $\Delta = 0$ ($r_v = r_c$)?
+    hint_markdown: If $\Delta = 0$, how many timesteps can the table be reused before $d_1 + d_2 \ge 0$?
+    options:
+    - id: a
+      text: The table must be rebuilt at every single timestep ($\mathcal{O}(N^2)$ every step), making it slower than having
+        no neighbor list at all due to table-construction overhead
+    - id: b
+      text: It achieves the theoretical minimum CPU time because no extra pairs in the skin are ever checked
+    - id: c
+      text: The simulation remains $\mathcal{O}(N)$ per step with zero memory overhead
+    - id: d
+      text: Particles are frozen in place because $d_1 + d_2 \le 0$
+    correct: a
+    rationale_markdown: With $\Delta = 0$, any infinitesimal motion immediately allows a pair at $r_c + \epsilon$ to cross
+      inside $r_c$. The $\mathcal{O}(N^2)$ table rebuild is triggered on *every* timestep, eliminating all savings.
+  - id: q25_verlet_force_eval_check
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_verlet_neighbor_lists
+    prompt_markdown: During a regular MD timestep (between list rebuilds), when iterating over the pairs $(i, j)$ stored in
+      the Verlet neighbor table (built with radius $r_v = r_c + \Delta$), must the code still check `if r2 <= rcutoff2` before
+      computing the pair force?
+    hint_markdown: Remember that the Verlet table contains all neighbors up to $r_v = r_c + \Delta$, not just $r_c$.
+    options:
+    - id: a
+      text: Yes, because the Verlet table includes buffer particles in the skin shell $r_c < r_{ij} \le r_c + \Delta$ whose
+        interaction potential is zero
+    - id: b
+      text: No, all particles in the Verlet neighbor table are guaranteed to have $r_{ij} \le r_c$
+    - id: c
+      text: No, because particles in the skin $r_c < r_{ij} \le r_v$ should also exert full Lennard-Jones forces
+    - id: d
+      text: Only on steps when the neighbor table is being rebuilt
+    correct: a
+    rationale_markdown: 'The Verlet list records all neighbors within $r_v = r_c + \Delta$. On each timestep, pairs currently
+      in the buffer zone $r_c < r_{ij} \le r_v$ do not interact, so the inner loop must still test `if r2 > rcutoff2: continue`.'
+  - id: q26_pure_verlet_asymptotic_complexity
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_verlet_neighbor_lists
+    - concept_verlet_skin
+    prompt_markdown: If a Verlet neighbor list is reconstructed every $n_{\text{reb}} = 15$ steps using a standard all-pairs
+      loop (without cell binning), what is the formal asymptotic complexity per step as $N \to \infty$?
+    hint_markdown: 'Amortize the $\mathcal{O}(N^2)$ rebuild cost over $n_{\text{reb}}$ steps: $c_1 N + \frac{c_2}{n_{\text{reb}}}
+      N^2$.'
+    options:
+    - id: a
+      text: Still $\mathcal{O}(N^2)$ asymptotically (with a prefactor reduced by $1/n_{\text{reb}}$), because the rebuild
+        step itself checks all $N(N-1)/2$ pairs
+    - id: b
+      text: Strictly $\mathcal{O}(N)$ for all $N \to \infty$
+    - id: c
+      text: Strictly $\mathcal{O}(\log N)$
+    - id: d
+      text: $\mathcal{O}(N^{3/2})$
+    correct: a
+    rationale_markdown: Although the Verlet list reduces the prefactor of the $\mathcal{O}(N^2)$ term by $n_{\text{reb}} \sim
+      10\text{–}20\times$, constructing the table by checking all pairs still costs $\mathcal{O}(N^2)$ every $n_{\text{reb}}$
+      steps. For very large $N$, we must combine Verlet lists with the Cell Method to make rebuilds $\mathcal{O}(N)$ as well.
+  - id: q27_verlet_memory_scaling
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_verlet_neighbor_lists
+    prompt_markdown: 'storing an explicit Verlet neighbor table for $N$ atoms where each atom has on average $m_v$ neighbors
+      in its list requires memory scaling as:'
+    hint_markdown: Each of the $N$ columns/rows in the neighbor table stores up to $\sim m_v$ neighbor indices.
+    options:
+    - id: a
+      text: $\mathcal{O}(m_v N)$ integers
+    - id: b
+      text: $\mathcal{O}(N^2)$ integers
+    - id: c
+      text: $\mathcal{O}(1)$ integers
+    - id: d
+      text: $\mathcal{O}(m_v^3)$ integers
+    correct: a
+    rationale_markdown: An explicit Verlet neighbor table stores $\sim m_v$ neighbor indices for each of the $N$ particles,
+      requiring $\mathcal{O}(m_v N)$ memory.
+  - id: q28_steps_between_rebuilds_calc
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_verlet_neighbor_lists
+    - concept_verlet_skin
+    prompt_markdown: In a liquid MD simulation with timestep $\Delta t = 0.005\,\tau$ and skin depth $\Delta = 0.40\,\sigma$,
+      the fastest atoms move at $v_{\max} = 4.0\,\sigma/\tau$. Assuming the worst-case bound where the two fastest atoms travel
+      straight lines ($d_1 = d_2 = v_{\max} n \Delta t$), after how many timesteps $n$ will the rebuild condition $d_1 + d_2
+      \ge \Delta$ be triggered?
+    hint_markdown: Solve $2 v_{\max} n \Delta t = \Delta$ for $n$.
+    correct:
+      value: 10
+      tolerance: 0.5
+    rationale_markdown: Each step increases $d_1 + d_2$ by at most $2 v_{\max} \Delta t = 2 \times 4.0 \times 0.005 = 0.04\,\sigma$.
+      Reaching $\Delta = 0.40\,\sigma$ requires $n = 0.40 / 0.04 = 10$ timesteps.
+  - id: sec_cell_linked_lists
+    type: markdown_section
+    title: 4. The Cell Linked-List (Bin Sort) Method & Hybrid $\mathcal{O}(N)$ Synergy
+    body_markdown: "To eliminate the $\\mathcal{O}(N^2)$ cost of constructing neighbor tables, we partition the simulation\
+      \ box of side $L$ into a regular $M \\times M \\times M$ grid of cubic **cells (bins)** of side length:\n$$l_c = \\\
+      frac{L}{M} \\ge r_c \\quad (\\text{or } l_c \\ge r_c + \\Delta \\text{ when building a Verlet list})$$\nwhere $M = \\\
+      lfloor L / r_c \\rfloor$.\n\n### Why is the Cell Method Strictly $\\mathcal{O}(N)$?\n1. **Binning particles ($\\mathcal{O}(N)$):**\
+      \ Each particle $i$ is assigned to its cell index in $\\mathcal{O}(1)$ arithmetic operations via `cx = int(x[i] / lc)`,\
+      \ `cy = int(y[i] / lc)`, `cz = int(z[i] / lc)`.\n2. **Local cell stencil search ($\\mathcal{O}(N)$):** Because $l_c\
+      \ \\ge r_c$, any particle within distance $r_c$ of atom $i$ **must reside either in atom $i$'s own cell or in one of\
+      \ the immediately adjacent cells**:\n - In **2D**: $3^2 = \\mathbf{9}$ cells total (or **5 cells** using Newton's 3rd\
+      \ Law half-stencil).\n - In **3D**: $3^3 = \\mathbf{27}$ cells total (or $1 + \\frac{26}{2} = \\mathbf{14}$ cells using\
+      \ Newton's 3rd Law half-stencil).\n Since each cell contains a constant average number of particles $N_c = N / M^3 \\\
+      approx \\rho r_c^3$, checking 27 cells per particle takes $\\mathcal{O}(1)$ work per particle $\\implies$ **strictly\
+      \ $\\mathcal{O}(N)$ total time**!\n\n### The `head[c]` and `list[i]` Linked-List Data Structure\nInstead of allocating\
+      \ variable-length 2D arrays for every cell, MD codes represent all cell contents using just **two 1D static integer\
+      \ arrays** (with `-1` denoting the end-of-list sentinel):\n- `head[c]` (length $M^d$): stores the index of the **first**\
+      \ (most recently inserted) particle in cell `c`, or `-1` if cell `c` is empty.\n- `list[i]` (length $N$): stores the\
+      \ index of the **next** particle in the same cell as particle `i`, or `-1` if `i` is the last particle in that cell.\n\
+      \n**$\\mathcal{O}(N)$ Construction Loop:**\n```python\nhead[:] = -1\nfor i in range(N):\n c = cell_index(r[i])\n list[i]\
+      \ = head[c] # point i to previous head of cell c\n head[c] = i # make i the new head of cell c\n```\n- **Memory footprint:**\
+      \ Requires only $M^d + N = \\mathcal{O}(N)$ integers (rather than $\\mathcal{O}(mN)$ for an explicit Verlet table!),\
+      \ with zero dynamic memory allocation.\n\n### Hybrid Cell + Verlet Neighbor List (Best of Both Worlds)\nWhy do state-of-the-art\
+      \ MD codes (like LAMMPS and GROMACS) use **Cell Linked-Lists to build a Verlet Neighbor List** every $10\\text{–}20$\
+      \ steps, rather than evaluating forces directly from the 27-cell stencil at every step?\n- Compare the **search volume**\
+      \ per atom:\n - 27 cubic cells of side $l_c = r_c$ have volume $V_{\\text{cells}} = 27 r_c^3$.\n - A spherical cutoff\
+      \ (or Verlet sphere) has volume $V_{\\text{sphere}} = \\frac{4}{3}\\pi r_c^3 \\approx 4.189 r_c^3$.\n - Ratio:\n $$\\\
+      frac{V_{\\text{cells}}}{V_{\\text{sphere}}} = \\frac{27 r_c^3}{\\frac{4}{3}\\pi r_c^3} = \\frac{81}{4\\pi} \\approx\
+      \ 6.45$$\n- Directly scanning 27 cells checks **$6.45\\times$ more candidate pairs** than actually lie inside the sphere\
+      \ $r_c$! By using the $\\mathcal{O}(N)$ Cell Linked-List only once every $\\sim 15$ steps to populate a tight spherical\
+      \ Verlet list of radius $r_c + \\Delta$, both the rebuild step and the force step are **strictly $\\mathcal{O}(N)$**\
+      \ *and* we only check $\\sim (1 + \\Delta/r_c)^3 \\approx 1.7\\times$ the sphere volume on intermediate steps!"
+  - id: concept_cell_linked_list
+    type: concept_cell
+    title: 'Interactive Explorer: 2D Cell Linked-List Pointer Chain & Stencil'
+    description_markdown: Select any cell $c \in \{0..8\}$ in the $3 \times 3$ periodic grid and toggle between the full 9-cell
+      stencil and Newton's 3rd-law 5-cell half-stencil. Trace how `head[c]` and `list[i]` chain particles inside each cell
+      using only 1D integer arrays.
+    render_function: render_cell_linked_list
+    layout: figure_left
+    controls:
+      selected_cell:
+        kind: slider
+        label: Selected Cell Index c (0 to 8)
+        min: 0
+        max: 8
+        step: 1
+        default: 4
+      use_newton_half:
+        kind: dropdown
+        label: Neighbor Cell Stencil Mode
+        options:
+        - label: Full 2D Stencil (9 cells)
+          value: 0
+        - label: Newton 3rd Law Half-Stencil (5 cells)
+          value: 1
+        default: 0
+    takeaway_markdown: '**Key Takeaway:** When particles `5`, `6`, and `7` are inserted sequentially into Cell 4 (`list[i]
+      = head[4]; head[4] = i`), `head[4]` holds `7`, `list[7] = 6`, `list[6] = 5`, and `list[5] = -1` (LIFO order).'
+  - id: q29_cell_size_condition
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: In the Cell Method (when used directly for force evaluation with cutoff $r_c$, or when building a Verlet
+      list with cutoff $r_v = r_c + \Delta$), what condition must the cell edge length $l_c = L / M$ satisfy so that we only
+      need to search a particle's own cell and immediately adjacent cells?
+    hint_markdown: If a neighbor cell is separated by one full cell width $l_c$ between non-adjacent cells, we need $l_c$
+      to be at least the interaction/list cutoff.
+    options:
+    - id: a
+      text: $l_c \ge r_c$ (or $l_c \ge r_c + \Delta$ when constructing a Verlet list), so $M = \lfloor L / r_c \rfloor$
+    - id: b
+      text: $l_c \le r_c / 4$
+    - id: c
+      text: $l_c = L / N$
+    - id: d
+      text: $l_c > L / 2$
+    correct: a
+    rationale_markdown: Two cells separated by at least one intervening cell are at distance $\ge l_c$ apart. Setting $l_c
+      \ge r_c$ (or $l_c \ge r_c + \Delta$) guarantees that no interacting neighbor can lie beyond the immediately adjacent
+      layer of cells.
+  - id: q30_max_cells_1d_calc
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: A 3D cubic periodic simulation box has side length $L = 22.0\,\sigma$, and you use the Cell Method to
+      build a Verlet neighbor list of radius $r_v = r_c + \Delta = 3.0\,\sigma$. What is the **maximum number of cells per
+      edge $M$** (where $l_c = L / M \ge r_v$) that you can partition the box into along each axis?
+    hint_markdown: Compute $M = \lfloor L / r_v \rfloor = \lfloor 22.0 / 3.0 \rfloor$.
+    correct:
+      value: 7
+      tolerance: 0.1
+    rationale_markdown: We require $l_c = L / M \ge 3.0\,\sigma \implies M \le 22.0 / 3.0 = 7.333$. Since $M$ must be an integer,
+      $M = 7$ cells per axis (giving $7^3 = 343$ cells of side $l_c = 3.143\,\sigma \ge 3.0\,\sigma$).
+  - id: q31_3d_stencil_counts
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: In a **3D** Cell Linked-List simulation ($M \ge 3$), how many cells (including the central cell itself)
+      must be searched for each cell without Newton's 3rd Law, and how many when exploiting Newton's 3rd Law ($\mathbf{F}_{ij}
+      = -\mathbf{F}_{ji}$) to avoid double-checking pairs of cells?
+    hint_markdown: 'In 3D, a $3 \times 3 \times 3$ cube has $27$ cells: $1$ central cell plus $26 / 2 = 13$ forward neighbor
+      cells.'
+    options:
+    - id: a
+      text: 27 cells total without Newton's 3rd Law; 14 cells (1 self + 13 forward neighbors) with Newton's 3rd Law
+    - id: b
+      text: 9 cells total without Newton's 3rd Law; 5 cells with Newton's 3rd Law
+    - id: c
+      text: 6 cells total without Newton's 3rd Law; 3 cells with Newton's 3rd Law
+    - id: d
+      text: 64 cells total without Newton's 3rd Law; 32 cells with Newton's 3rd Law
+    correct: a
+    rationale_markdown: A $3 \times 3 \times 3$ stencil has $3^3 = 27$ cells. Pairing opposite neighbor cells $(\Delta c_x,
+      \Delta c_y, \Delta c_z)$ and $(-\Delta c_x, -\Delta c_y, -\Delta c_z)$ via Newton's 3rd Law leaves the central cell
+      plus $26/2 = 13$ unique neighbor cells, totaling $14$ cells.
+  - id: q32_linked_list_trace_head
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_cell_linked_lists
+    - concept_cell_linked_list
+    prompt_markdown: 'Suppose `head` is initialized to `-1` for all cells. While looping `i = 0, 1,..., 9` in ascending order,
+      particles `i = 2`, `i = 5`, and `i = 8` are the only particles that map to cell `c = 3` using:
 
-    - id: q12_cutoff_half_box_limit
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-        - concept_minimum_image
-      prompt_markdown: |
-        Why must the spherical potential cutoff radius $r_c$ strictly satisfy $r_c < L/2$ when using the Minimum Image Convention in a cubic periodic box of side length $L$?
-      hint_markdown: "Look at the interactive explorer when $r_c > 0.5L$: how many images of particle $j$ can fall inside $r_c$?"
-      options:
-        - id: a
-          text: "If $r_c \\ge L/2$, a particle's cutoff sphere extends beyond the $[-L/2, L/2]^3$ Wigner-Seitz cell and can include multiple periodic images of the same neighbor"
-        - id: b
-          text: "If $r_c \\ge L/2$, the Lennard-Jones potential becomes repulsive at all distances"
-        - id: c
-          text: "If $r_c \\ge L/2$, coordinates can no longer be wrapped into $[0, L)$ using `floor`"
-        - id: d
-          text: "If $r_c \\ge L/2$, Newton's third law $\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$ is violated inside $r < L/4$"
-      correct: a
-      rationale_markdown: "The Minimum Image Convention checks only the single nearest image of particle $j$ inside the cube $[-L/2, L/2]^3$. The largest sphere that fits inside a cube of side $L$ has radius $L/2$. If $r_c \\ge L/2$, two periodic images of $j$ can lie within distance $r_c$ of $i$, violating consistent single-image truncation."
+      ```python
 
-    - id: q13_min_fcc_atoms_for_cutoff
-      type: problem
-      question_type: numeric
-      difficulty: hard
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        You are setting up a 3D periodic FCC Argon crystal with conventional cubic lattice constant $a = 1.55\,\sigma$ ($4$ atoms per unit cell) and a Lennard-Jones cutoff of $r_c = 2.5\,\sigma$. To strictly satisfy $r_c < L/2$ for an $M \times M \times M$ supercell of FCC unit cells (where $L = M a$), what is the **minimum total number of atoms $N = 4M^3$** required?
-      hint_markdown: "First find the minimum integer $M$ such that $L = M a > 2 r_c = 5.0\\,\\sigma$, then compute $N = 4M^3$."
-      correct:
-        value: 256
-        tolerance: 0.5
-      rationale_markdown: "We require $L = M a > 2 r_c = 5.0\\,\\sigma \\implies M > 5.0 / 1.55 = 3.226$. Since $M$ must be an integer number of unit cells per edge, the smallest valid supercell is $M = 4$ ($L = 6.2\\,\\sigma > 5.0\\,\\sigma$). An FCC supercell with $M = 4$ contains $N = 4 M^3 = 4 \\times 4^3 = 256$ atoms."
+      list[i] = head[c]
 
-    - id: q14_max_mic_corner_distance
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        In a 3D cubic periodic box of side length $L$, what is the **maximum possible Minimum Image distance** $|\mathbf{r}_{ij}|_{\text{M}}$ between any two points in the box?
-      hint_markdown: "Each component $\\Delta x_{\\text{mic}}, \\Delta y_{\\text{mic}}, \\Delta z_{\\text{mic}}$ can be as large in magnitude as $L/2$."
-      options:
-        - id: a
-          text: "$\\frac{\\sqrt{3}}{2} L \\approx 0.866 L$"
-        - id: b
-          text: "$\\frac{1}{2} L = 0.500 L$"
-        - id: c
-          text: "$\\frac{\\sqrt{2}}{2} L \\approx 0.707 L$"
-        - id: d
-          text: "$\\sqrt{3} L \\approx 1.732 L$"
-      correct: a
-      rationale_markdown: "In 3D, each minimum-image coordinate difference satisfies $|\\Delta x_{\\text{mic}}|, |\\Delta y_{\\text{mic}}|, |\\Delta z_{\\text{mic}}| \\le L/2$. At the body-diagonal corner of the Wigner-Seitz cube, $|\\mathbf{r}_{ij}|_{\\text{M}} = \\sqrt{(L/2)^2 + (L/2)^2 + (L/2)^2} = \\frac{\\sqrt{3}}{2}L \\approx 0.866L$."
+      head[c] = i
 
-    - id: q15_potential_truncation_schemes
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        In the lecture notes on handling the tail of a short-range potential at $r = r_c$, the **continuous potential and continuous force** (shifted-force) modification for $r \le r_c$ is defined as:
-      hint_markdown: "Subtract a first-order Taylor linear term at $r_c$ so both $V_c(r_c) = 0$ and $V_c'(r_c) = 0$."
-      options:
-        - id: a
-          text: "$V_c(r) = V(r) - V(r_c) - \\left.\\frac{dV}{dr}\\right|_{r_c}(r - r_c)$"
-        - id: b
-          text: "$V_c(r) = V(r) - V(r_c)$"
-        - id: c
-          text: "$V_c(r) = V(r) + \\left.\\frac{dV}{dr}\\right|_{r_c} r$"
-        - id: d
-          text: "$V_c(r) = V(r) \\cdot \\exp(-r / r_c)$"
-      correct: a
-      rationale_markdown: "Subtracting $V(r_c) + V'(r_c)(r - r_c)$ ensures $V_c(r_c) = 0$ and $-dV_c/dr|_{r_c} = -V'(r_c) + V'(r_c) = 0$, eliminating both the potential step and the force discontinuity at $r = r_c$."
+      ```
 
-    - id: q16_lj_shift_value
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        For a Lennard-Jones 12-6 potential $V(r) = 4\varepsilon\left[(\sigma/r)^{12} - (\sigma/r)^6\right]$ truncated and shifted at $r_c = 2.5\,\sigma$ so that $V_c(r) = V(r) - V(r_c)$, what is the value of the potential energy at the cutoff prior to shifting, $V(r_c)/\varepsilon$? (Include the negative sign, e.g., `-0.0163`.)
-      hint_markdown: "Compute $4 \\times (2.5^{-12} - 2.5^{-6})$."
-      correct:
-        value: -0.0163
-        tolerance: 0.001
-      rationale_markdown: "At $r_c = 2.5\\,\\sigma$, $(1/2.5)^6 = 0.4^6 = 0.004096$ and $(1/2.5)^{12} = 1.6777 \\times 10^{-5}$. Thus $V(2.5\\,\\sigma)/\\varepsilon = 4(0.00001678 - 0.004096) = -0.016317$."
-
-    - id: q17_force_loop_code_analysis
-      type: problem
-      question_type: multi_select
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        Inspect the Lennard-Jones force loop from the lecture slides:
-        ```python
-        for i in range(Natoms):
-            for j in range(i+1, Natoms):
-                dx = x[i] - x[j]
-                for d in range(3):
-                    if dx[d] >  L[d]/2: dx[d] -= L[d]
-                    if dx[d] < -L[d]/2: dx[d] += L[d]
-                r2 = sum(dx*dx)
-                if r2 > rcutoff2: continue
-                ...
-                F[i] = F[i] + rforce * dx
-                F[j] = F[j] - rforce * dx
-        ```
-        Select **all** true statements about the computational design of this loop:
-      hint_markdown: "Look at the loop bounds `j in range(i+1, Natoms)`, the `r2 > rcutoff2` check, and the updates to `F[i]` and `F[j]`."
-      options:
-        - id: a
-          text: "Starting the inner loop at `j = i + 1` and updating both `F[i]` and `F[j]` exploits Newton's 3rd Law ($\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$), halving the number of pair evaluations to $N(N-1)/2$"
-        - id: b
-          text: "Comparing squared distances `r2 > rcutoff2` avoids computing an expensive square root `sqrt(r2)` for every pair"
-        - id: c
-          text: "Before entering the outer `for i` loop at each MD step, the force array and potential energy must be zeroed (`F.fill(0)`, `pot = 0`)"
-        - id: d
-          text: "Because of the `if r2 > rcutoff2: continue` statement, the total complexity of this nested loop is $\\mathcal{O}(N)$"
-      correct:
-        - a
-        - b
-        - c
-      rationale_markdown: "Statements (A), (B), and (C) are all key optimizations highlighted in the lecture slides. Statement (D) is false: even though `continue` skips the LJ arithmetic outside $r_c$, the nested loop still computes `dx`, MIC shifts, and `r2` for all $N(N-1)/2 = \\mathcal{O}(N^2)$ pairs!"
-
-    - id: q18_long_range_potentials_complexity
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_mic_and_cutoffs
-      prompt_markdown: |
-        Why can't a Coulomb interaction $V(r) = q_i q_j / r$ in 3D simply be truncated at $r_c < L/2$ like a Lennard-Jones potential, and what is the scaling of standard Ewald summation vs. the Fast Multipole Method (FMM)?
-      hint_markdown: "In 3D, a shell at radius $r$ has volume $4\\pi r^2 dr$, so the tail integral $\\int r^2 (1/r) dr$ diverges; check slide 6 of `05.PBC-neighbors.pdf` for Ewald and FMM scaling."
-      options:
-        - id: a
-          text: "The $1/r$ tail integral diverges in 3D; standard Ewald summation scales as $\\mathcal{O}(N^{3/2})$ while Fast Multipole Algorithms scale as $\\mathcal{O}(N)$ for very large $N$"
-        - id: b
-          text: "The $1/r$ potential is short-ranged; Ewald summation scales as $\\mathcal{O}(N^3)$ and FMM scales as $\\mathcal{O}(N^2)$"
-        - id: c
-          text: "Coulomb forces violate Newton's third law; Ewald summation scales as $\\mathcal{O}(\\log N)$"
-        - id: d
-          text: "Truncation works accurately for $1/r$ as long as $r_c = 2.5\\,\\sigma$; Ewald summation is only used for hard spheres"
-      correct: a
-      rationale_markdown: "Because $1/r$ decays slower than $r^{-3}$ in 3D, truncating it causes severe electrostatic artifacts. Summing over periodic images via Ewald summation with optimal real/reciprocal space cutoffs scales as $\\mathcal{O}(N^{3/2})$ (or $\\mathcal{O}(N\\log N)$ with mesh FFTs), while Fast Multipole Algorithms achieve $\\mathcal{O}(N)$ for very large $N$."
-
-    # =========================================================================
-    # PART 3: FORCE COMPLEXITY & VERLET NEIGHBOR LISTS
-    # =========================================================================
-    - id: sec_verlet_neighbor_lists
-      type: markdown_section
-      title: "3. $\\mathcal{O}(N^2) \\to \\mathcal{O}(N)$: Verlet Neighbor Lists & Skin Depth $\\Delta$"
-      body_markdown: |
-        ### The $\mathcal{O}(N^2)$ All-Pairs Bottleneck
-        In a system of $N$ atoms with a short-range potential ($V_c(r) = 0$ for $r > r_c$), each atom interacts on average with only:
-        $$m \approx \frac{4}{3}\pi r_c^3 \rho$$
-        neighbors inside its cutoff sphere, where $\rho = N/V$ is the number density. Crucially, **$m$ is independent of system size $N$** (typically $m \sim 30\text{–}80$ in a liquid or solid). Yet the naive double loop checks all $\frac{1}{2}N(N-1) \approx \mathcal{O}(N^2)$ pairs just to discover that almost all of them have $r_{ij} > r_c$!
-
-        ### Verlet Neighbor Lists (Explicit Neighbor Tables)
-        Introduced by Loup Verlet (1967), a **Verlet neighbor list** stores a table of nearby neighbor indices for each atom $i$.
-        - Instead of cutting off the table at $r_c$, we construct the neighbor table using a slightly larger **Verlet sphere radius**:
-          $$r_v = r_c + \Delta$$
-          where $\Delta$ is the **skin depth** (buffer thickness).
-        - **During force evaluation steps:** We loop *only* over the pre-stored neighbor table (averaging $m_v \approx \frac{4}{3}\pi (r_c + \Delta)^3 \rho$ entries per atom), checking whether $r_{ij} \le r_c$. This force evaluation step costs strictly **$\mathcal{O}(m_v N) = \mathcal{O}(N)$**!
-
-        ### Exact Rebuild Criterion ($d_1 + d_2 \ge \Delta$)
-        Because particles move slowly per timestep ($\Delta r \sim 0.01\sigma$), a particle initially outside the Verlet sphere ($r_{ij}^{(0)} > r_c + \Delta$) cannot penetrate inside the force cutoff sphere ($r_{ij}(t) < r_c$) until the combined distance traveled by the pair since the last table build reaches $\Delta$.
-        - Let $\Delta\mathbf{r}_i = \mathbf{r}_i(t) - \mathbf{r}_i(t_{\text{build}})$ be the displacement of atom $i$ since the table was last constructed.
-        - Track the **two largest displacements** across the entire system: $d_1 = \max_i |\Delta\mathbf{r}_i|$ and $d_2 = \text{second largest } |\Delta\mathbf{r}_j|$.
-        - **Rebuild trigger:** Whenever
-          $$d_1 + d_2 \ge \Delta \quad (\text{or conservatively } 2 d_{\max} \ge \Delta)$$
-          we must reconstruct the neighbor table!
-
-        ### The Skin Depth $\Delta$ Optimization Trade-off
-        - **If $\Delta$ is too small:** Very few excess particles lie in the skin ($m_v \approx m$), so each force step is fast, **but** $d_1 + d_2 \ge \Delta$ triggers almost every step! Since a pure Verlet table rebuild must check all pairs ($\mathcal{O}(N^2)$), frequent rebuilds ruin performance.
-        - **If $\Delta$ is too large:** The table rarely needs rebuilding ($n_{\text{reb}}$ is large), **but** the number of candidate pairs checked at every step grows cubically as $(r_c + \Delta)^3$.
-        - Modern MD codes dynamically optimize $\Delta$ by timing blocks of steps, fitting CPU time $t(\Delta)$ to a polynomial, and minimizing $t(\Delta)$.
-
-    - id: concept_verlet_skin
-      type: concept_cell
-      title: "Interactive Explorer: Verlet Neighbor List Skin Depth Optimization"
-      description_markdown: "Vary the system size $N$ and reduced temperature $T^*$ to see how the per-step force evaluation cost $\\propto N(r_c + \\Delta)^3$ competes against the amortized $\\mathcal{O}(N^2)$ list rebuild cost $\\propto N^2 / n_{\\mathrm{reb}}(\\Delta)$."
-      render_function: render_verlet_skin_optimizer
-      layout: figure_left
-      controls:
-        n_atoms:
-          kind: slider
-          label: "System Size N (atoms)"
-          min: 500
-          max: 8000
-          step: 500
-          default: 2000
-        temp_star:
-          kind: slider
-          label: "Reduced Temperature T*"
-          min: 0.2
-          max: 3.0
-          step: 0.2
-          default: 1.0
-      takeaway_markdown: "**Key Takeaway:** There is a well-defined optimal skin depth $\\Delta^*/r_c$ (typically $0.15\\text{–}0.35$, rebuilding every $10\\text{–}25$ steps). Increasing $N$ or $T^*$ makes $\\mathcal{O}(N^2)$ rebuilds more costly per step, shifting $\\Delta^*$ to larger values."
-
-    - id: q19_all_pairs_count
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by:
-        - sec_verlet_neighbor_lists
-      prompt_markdown: |
-        In an all-pairs force calculation using Newton's third law (`j in range(i+1, N)`), how many distinct pair distance checks $\frac{1}{2}N(N-1)$ are performed per MD timestep for a system of $N = 4000$ atoms? (Enter the exact integer.)
-      hint_markdown: "Compute $4000 \\times 3999 / 2$."
-      correct:
-        value: 7998000
-        tolerance: 1
-      rationale_markdown: "The number of unique pairs is $N(N-1)/2 = 4000 \\times 3999 / 2 = 7,998,000$ distance evaluations per timestep."
-
-    - id: q20_average_neighbors_independence
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_verlet_neighbor_lists
-      prompt_markdown: |
-        Consider two bulk liquid Argon simulations at the same number density $\rho = 0.84\,\sigma^{-3}$ and cutoff $r_c = 2.5\,\sigma$: System A has $N = 1000$ atoms and System B has $N = 1,000,000$ atoms. How does the average number of interacting neighbors $m$ inside $r_c$ for a single atom compare between System A and System B?
-      hint_markdown: "Recall $m \\approx \\frac{4}{3}\\pi r_c^3 \\rho$."
-      options:
-        - id: a
-          text: "$m$ is identical in both systems (approx. $55$ neighbors) because $m \\approx \\frac{4}{3}\\pi r_c^3 \\rho$ depends only on local density $\\rho$ and $r_c$, not $N$"
-        - id: b
-          text: "$m$ is $1000\\times$ larger in System B because $N$ is $1000\\times$ larger"
-        - id: c
-          text: "$m$ is $10\\times$ larger in System B because box length $L$ is $10\\times$ larger"
-        - id: d
-          text: "$m$ is smaller in System B because periodic boundary conditions dilute the density"
-      correct: a
-      rationale_markdown: "For a short-range potential, the average number of neighbors inside the cutoff sphere is $m \\approx \\frac{4}{3}\\pi r_c^3 \\rho \\approx \\frac{4}{3}\\pi (2.5)^3 (0.84) \\approx 55$, which is intensive (independent of system size $N$). Once a neighbor table is available, force calculation therefore scales as $mN/2 = \\mathcal{O}(N)$."
-
-    - id: q21_verlet_rebuild_criterion
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_verlet_neighbor_lists
-        - concept_verlet_skin
-      prompt_markdown: |
-        In a Verlet neighbor list with force cutoff $r_c$ and skin depth $\Delta$ (outer list radius $r_v = r_c + \Delta$), let $d_1$ and $d_2$ be the two largest atomic displacements $|\mathbf{r}_i(t) - \mathbf{r}_i(t_{\text{build}})|$ accumulated **since the neighbor list was last built**. What is the exact condition that guarantees no unrecorded pair has entered $r < r_c$, and when must the list be rebuilt?
-      hint_markdown: "In the worst case, two atoms initially just outside $r_c + \\Delta$ move directly toward each other by distances $d_1$ and $d_2$."
-      options:
-        - id: a
-          text: "Rebuild as soon as $d_1 + d_2 \\ge \\Delta$ (or conservatively $2 d_1 \\ge \\Delta$), measured relative to positions at the last rebuild"
-        - id: b
-          text: "Rebuild only when $d_1 \\ge r_c + \\Delta$, measured over a single timestep $\\Delta t$"
-        - id: c
-          text: "Rebuild when the average displacement $\\langle d_i \\rangle \\ge \\Delta / 2$"
-        - id: d
-          text: "Rebuild only when the total system energy drifts by more than $\\Delta$"
-      correct: a
-      rationale_markdown: "Two atoms $i$ and $j$ initially separated by $r_{ij}(t_{\\text{build}}) > r_c + \\Delta$ can decrease their separation by at most $|\\Delta\\mathbf{r}_i| + |\\Delta\\mathbf{r}_j| \\le d_1 + d_2$. As long as $d_1 + d_2 < \\Delta$, their current separation exceeds $r_c$; as soon as $d_1 + d_2 \\ge \\Delta$, the table must be rebuilt."
-
-    - id: q22_verlet_displacement_reference_bug
-      type: problem
-      question_type: single_select
-      difficulty: hard
-      taught_by:
-        - sec_verlet_neighbor_lists
-      prompt_markdown: |
-        A student implements a Verlet neighbor list rebuild check by computing `d_i = norm(r[i, t] - r[i, t - dt])` (the displacement during the *current single timestep* $\Delta t$) and rebuilding when `max1(d) + max2(d) >= Delta`. Why is this implementation **fundamentally buggy**?
-      hint_markdown: "What happens if an atom moves by $0.05\\,\\Delta$ per step in the same direction for 15 consecutive steps?"
-      options:
-        - id: a
-          text: "Displacements accumulate over multiple timesteps; checking only the single-step displacement $\\mathbf{r}(t) - \\mathbf{r}(t-\\Delta t)$ misses atoms that drift steadily across the skin $\\Delta$ over several steps"
-        - id: b
-          text: "Single-step displacements are always larger than multi-step displacements, causing rebuilds on every step"
-        - id: c
-          text: "The rebuild check must use velocities $\\mathbf{v}_i$ instead of positions"
-        - id: d
-          text: "The skin depth $\\Delta$ must be divided by $N$ when checking single-step displacements"
-      correct: a
-      rationale_markdown: "In a typical MD timestep, an atom moves only $\\sim 0.01\\,\\sigma \\ll \\Delta$, so single-step $d_1 + d_2$ would *never* exceed $\\Delta$, and the neighbor list would never rebuild! You must store reference positions `r_ref[i]` from the moment the table was last built and compute `d_i = norm(r[i] - r_ref[i])`."
-
-    - id: q23_verlet_skin_volume_ratio
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_verlet_neighbor_lists
-        - concept_verlet_skin
-      prompt_markdown: |
-        In a 3D simulation with force cutoff $r_c = 2.5\,\sigma$ and Verlet skin thickness $\Delta = 0.5\,\sigma$ (so $r_v = r_c + \Delta = 3.0\,\sigma$), by what factor $(r_v / r_c)^3$ does the volume of the Verlet sphere (and thus the average number of neighbors stored in the list per atom) exceed the actual force cutoff sphere? (Enter a number to 3 decimal places, e.g., `1.728`.)
-      hint_markdown: "In 3D, sphere volume scales as $r^3$, so compute $(3.0 / 2.5)^3 = 1.2^3$."
-      correct:
-        value: 1.728
-        tolerance: 0.01
-      rationale_markdown: "The ratio of the Verlet sphere volume to the force cutoff sphere volume is $(r_v / r_c)^3 = ((2.5 + 0.5) / 2.5)^3 = (1.2)^3 = 1.728$. Thus, about $42\\%$ of the pairs stored in the Verlet list lie in the skin shell $[r_c, r_v]$ and have zero force on any given step."
-
-    - id: q24_verlet_skin_zero_limit
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_verlet_neighbor_lists
-        - concept_verlet_skin
-      prompt_markdown: |
-        What happens to the computational efficiency of a Verlet neighbor list algorithm if you set the skin depth to $\Delta = 0$ ($r_v = r_c$)?
-      hint_markdown: "If $\\Delta = 0$, how many timesteps can the table be reused before $d_1 + d_2 \\ge 0$?"
-      options:
-        - id: a
-          text: "The table must be rebuilt at every single timestep ($\\mathcal{O}(N^2)$ every step), making it slower than having no neighbor list at all due to table-construction overhead"
-        - id: b
-          text: "It achieves the theoretical minimum CPU time because no extra pairs in the skin are ever checked"
-        - id: c
-          text: "The simulation remains $\\mathcal{O}(N)$ per step with zero memory overhead"
-        - id: d
-          text: "Particles are frozen in place because $d_1 + d_2 \\le 0$"
-      correct: a
-      rationale_markdown: "With $\\Delta = 0$, any infinitesimal motion immediately allows a pair at $r_c + \\epsilon$ to cross inside $r_c$. The $\\mathcal{O}(N^2)$ table rebuild is triggered on *every* timestep, eliminating all savings."
-
-    - id: q25_verlet_force_eval_check
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_verlet_neighbor_lists
-      prompt_markdown: |
-        During a regular MD timestep (between list rebuilds), when iterating over the pairs $(i, j)$ stored in the Verlet neighbor table (built with radius $r_v = r_c + \Delta$), must the code still check `if r2 <= rcutoff2` before computing the pair force?
-      hint_markdown: "Remember that the Verlet table contains all neighbors up to $r_v = r_c + \\Delta$, not just $r_c$."
-      options:
-        - id: a
-          text: "Yes, because the Verlet table includes buffer particles in the skin shell $r_c < r_{ij} \\le r_c + \\Delta$ whose interaction potential is zero"
-        - id: b
-          text: "No, all particles in the Verlet neighbor table are guaranteed to have $r_{ij} \\le r_c$"
-        - id: c
-          text: "No, because particles in the skin $r_c < r_{ij} \\le r_v$ should also exert full Lennard-Jones forces"
-        - id: d
-          text: "Only on steps when the neighbor table is being rebuilt"
-      correct: a
-      rationale_markdown: "The Verlet list records all neighbors within $r_v = r_c + \\Delta$. On each timestep, pairs currently in the buffer zone $r_c < r_{ij} \\le r_v$ do not interact, so the inner loop must still test `if r2 > rcutoff2: continue`."
-
-    - id: q26_pure_verlet_asymptotic_complexity
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_verlet_neighbor_lists
-        - concept_verlet_skin
-      prompt_markdown: |
-        If a Verlet neighbor list is reconstructed every $n_{\text{reb}} = 15$ steps using a standard all-pairs loop (without cell binning), what is the formal asymptotic complexity per step as $N \to \infty$?
-      hint_markdown: "Amortize the $\\mathcal{O}(N^2)$ rebuild cost over $n_{\\text{reb}}$ steps: $c_1 N + \\frac{c_2}{n_{\\text{reb}}} N^2$."
-      options:
-        - id: a
-          text: "Still $\\mathcal{O}(N^2)$ asymptotically (with a prefactor reduced by $1/n_{\\text{reb}}$), because the rebuild step itself checks all $N(N-1)/2$ pairs"
-        - id: b
-          text: "Strictly $\\mathcal{O}(N)$ for all $N \\to \\infty$"
-        - id: c
-          text: "Strictly $\\mathcal{O}(\\log N)$"
-        - id: d
-          text: "$\\mathcal{O}(N^{3/2})$"
-      correct: a
-      rationale_markdown: "Although the Verlet list reduces the prefactor of the $\\mathcal{O}(N^2)$ term by $n_{\\text{reb}} \\sim 10\\text{–}20\\times$, constructing the table by checking all pairs still costs $\\mathcal{O}(N^2)$ every $n_{\\text{reb}}$ steps. For very large $N$, we must combine Verlet lists with the Cell Method to make rebuilds $\\mathcal{O}(N)$ as well."
-
-    - id: q27_verlet_memory_scaling
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_verlet_neighbor_lists
-      prompt_markdown: |
-        As shown on slide 8 & 10 of `05.PBC-neighbors.pdf`, storing an explicit Verlet neighbor table for $N$ atoms where each atom has on average $m_v$ neighbors in its list requires memory scaling as:
-      hint_markdown: "Each of the $N$ columns/rows in the neighbor table stores up to $\\sim m_v$ neighbor indices."
-      options:
-        - id: a
-          text: "$\\mathcal{O}(m_v N)$ integers"
-        - id: b
-          text: "$\\mathcal{O}(N^2)$ integers"
-        - id: c
-          text: "$\\mathcal{O}(1)$ integers"
-        - id: d
-          text: "$\\mathcal{O}(m_v^3)$ integers"
-      correct: a
-      rationale_markdown: "An explicit Verlet neighbor table stores $\\sim m_v$ neighbor indices for each of the $N$ particles, requiring $\\mathcal{O}(m_v N)$ memory."
-
-    - id: q28_steps_between_rebuilds_calc
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_verlet_neighbor_lists
-        - concept_verlet_skin
-      prompt_markdown: |
-        In a liquid MD simulation with timestep $\Delta t = 0.005\,\tau$ and skin depth $\Delta = 0.40\,\sigma$, the fastest atoms move at $v_{\max} = 4.0\,\sigma/\tau$. Assuming the worst-case bound where the two fastest atoms travel straight lines ($d_1 = d_2 = v_{\max} n \Delta t$), after how many timesteps $n$ will the rebuild condition $d_1 + d_2 \ge \Delta$ be triggered?
-      hint_markdown: "Solve $2 v_{\\max} n \\Delta t = \\Delta$ for $n$."
-      correct:
-        value: 10
-        tolerance: 0.5
-      rationale_markdown: "Each step increases $d_1 + d_2$ by at most $2 v_{\\max} \\Delta t = 2 \\times 4.0 \\times 0.005 = 0.04\\,\\sigma$. Reaching $\\Delta = 0.40\\,\\sigma$ requires $n = 0.40 / 0.04 = 10$ timesteps."
-
-    # =========================================================================
-    # PART 4: CELL LINKED-LIST (BIN SORT) METHOD & HYBRID SYNERGY
-    # =========================================================================
-    - id: sec_cell_linked_lists
-      type: markdown_section
-      title: "4. The Cell Linked-List (Bin Sort) Method & Hybrid $\\mathcal{O}(N)$ Synergy"
-      body_markdown: |
-        To eliminate the $\mathcal{O}(N^2)$ cost of constructing neighbor tables, we partition the simulation box of side $L$ into a regular $M \times M \times M$ grid of cubic **cells (bins)** of side length:
-        $$l_c = \frac{L}{M} \ge r_c \quad (\text{or } l_c \ge r_c + \Delta \text{ when building a Verlet list})$$
-        where $M = \lfloor L / r_c \rfloor$.
-
-        ### Why is the Cell Method Strictly $\mathcal{O}(N)$?
-        1. **Binning particles ($\mathcal{O}(N)$):** Each particle $i$ is assigned to its cell index in $\mathcal{O}(1)$ arithmetic operations via `cx = int(x[i] / lc)`, `cy = int(y[i] / lc)`, `cz = int(z[i] / lc)`.
-        2. **Local cell stencil search ($\mathcal{O}(N)$):** Because $l_c \ge r_c$, any particle within distance $r_c$ of atom $i$ **must reside either in atom $i$'s own cell or in one of the immediately adjacent cells**:
-           - In **2D**: $3^2 = \mathbf{9}$ cells total (or **5 cells** using Newton's 3rd Law half-stencil).
-           - In **3D**: $3^3 = \mathbf{27}$ cells total (or $1 + \frac{26}{2} = \mathbf{14}$ cells using Newton's 3rd Law half-stencil).
-           Since each cell contains a constant average number of particles $N_c = N / M^3 \approx \rho r_c^3$, checking 27 cells per particle takes $\mathcal{O}(1)$ work per particle $\implies$ **strictly $\mathcal{O}(N)$ total time**!
-
-        ### The `head[c]` and `list[i]` Linked-List Data Structure
-        Instead of allocating variable-length 2D arrays for every cell, MD codes represent all cell contents using just **two 1D static integer arrays** (with `-1` denoting the end-of-list sentinel):
-        - `head[c]` (length $M^d$): stores the index of the **first** (most recently inserted) particle in cell `c`, or `-1` if cell `c` is empty.
-        - `list[i]` (length $N$): stores the index of the **next** particle in the same cell as particle `i`, or `-1` if `i` is the last particle in that cell.
-
-        **$\mathcal{O}(N)$ Construction Loop:**
-        ```python
-        head[:] = -1
-        for i in range(N):
-            c = cell_index(r[i])
-            list[i] = head[c]   # point i to previous head of cell c
-            head[c] = i         # make i the new head of cell c
-        ```
-        - **Memory footprint:** Requires only $M^d + N = \mathcal{O}(N)$ integers (rather than $\mathcal{O}(mN)$ for an explicit Verlet table!), with zero dynamic memory allocation.
-
-        ### Hybrid Cell + Verlet Neighbor List (Best of Both Worlds)
-        Why do state-of-the-art MD codes (like LAMMPS and GROMACS) use **Cell Linked-Lists to build a Verlet Neighbor List** every $10\text{–}20$ steps, rather than evaluating forces directly from the 27-cell stencil at every step?
-        - Compare the **search volume** per atom:
-          - 27 cubic cells of side $l_c = r_c$ have volume $V_{\text{cells}} = 27 r_c^3$.
-          - A spherical cutoff (or Verlet sphere) has volume $V_{\text{sphere}} = \frac{4}{3}\pi r_c^3 \approx 4.189 r_c^3$.
-          - Ratio:
-            $$\frac{V_{\text{cells}}}{V_{\text{sphere}}} = \frac{27 r_c^3}{\frac{4}{3}\pi r_c^3} = \frac{81}{4\pi} \approx 6.45$$
-        - Directly scanning 27 cells checks **$6.45\times$ more candidate pairs** than actually lie inside the sphere $r_c$! By using the $\mathcal{O}(N)$ Cell Linked-List only once every $\sim 15$ steps to populate a tight spherical Verlet list of radius $r_c + \Delta$, both the rebuild step and the force step are **strictly $\mathcal{O}(N)$** *and* we only check $\sim (1 + \Delta/r_c)^3 \approx 1.7\times$ the sphere volume on intermediate steps!
-
-    - id: concept_cell_linked_list
-      type: concept_cell
-      title: "Interactive Explorer: 2D Cell Linked-List Pointer Chain & Stencil"
-      description_markdown: "Select any cell $c \\in \\{0..8\\}$ in the $3 \\times 3$ periodic grid and toggle between the full 9-cell stencil and Newton's 3rd-law 5-cell half-stencil. Trace how `head[c]` and `list[i]` chain particles inside each cell using only 1D integer arrays."
-      render_function: render_cell_linked_list
-      layout: figure_left
-      controls:
-        selected_cell:
-          kind: slider
-          label: "Selected Cell Index c (0 to 8)"
-          min: 0
-          max: 8
-          step: 1
-          default: 4
-        use_newton_half:
-          kind: dropdown
-          label: "Neighbor Cell Stencil Mode"
-          options:
-            - label: "Full 2D Stencil (9 cells)"
-              value: 0
-            - label: "Newton 3rd Law Half-Stencil (5 cells)"
-              value: 1
-          default: 0
-      takeaway_markdown: "**Key Takeaway:** When particles `5`, `6`, and `7` are inserted sequentially into Cell 4 (`list[i] = head[4]; head[4] = i`), `head[4]` holds `7`, `list[7] = 6`, `list[6] = 5`, and `list[5] = -1` (LIFO order)."
-
-    - id: q29_cell_size_condition
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        In the Cell Method (when used directly for force evaluation with cutoff $r_c$, or when building a Verlet list with cutoff $r_v = r_c + \Delta$), what condition must the cell edge length $l_c = L / M$ satisfy so that we only need to search a particle's own cell and immediately adjacent cells?
-      hint_markdown: "If a neighbor cell is separated by one full cell width $l_c$ between non-adjacent cells, we need $l_c$ to be at least the interaction/list cutoff."
-      options:
-        - id: a
-          text: "$l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$ when constructing a Verlet list), so $M = \\lfloor L / r_c \\rfloor$"
-        - id: b
-          text: "$l_c \\le r_c / 4$"
-        - id: c
-          text: "$l_c = L / N$"
-        - id: d
-          text: "$l_c > L / 2$"
-      correct: a
-      rationale_markdown: "Two cells separated by at least one intervening cell are at distance $\\ge l_c$ apart. Setting $l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$) guarantees that no interacting neighbor can lie beyond the immediately adjacent layer of cells."
-
-    - id: q30_max_cells_1d_calc
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        A 3D cubic periodic simulation box has side length $L = 22.0\,\sigma$, and you use the Cell Method to build a Verlet neighbor list of radius $r_v = r_c + \Delta = 3.0\,\sigma$. What is the **maximum number of cells per edge $M$** (where $l_c = L / M \ge r_v$) that you can partition the box into along each axis?
-      hint_markdown: "Compute $M = \\lfloor L / r_v \\rfloor = \\lfloor 22.0 / 3.0 \\rfloor$."
-      correct:
-        value: 7
-        tolerance: 0.1
-      rationale_markdown: "We require $l_c = L / M \\ge 3.0\\,\\sigma \\implies M \\le 22.0 / 3.0 = 7.333$. Since $M$ must be an integer, $M = 7$ cells per axis (giving $7^3 = 343$ cells of side $l_c = 3.143\\,\\sigma \\ge 3.0\\,\\sigma$)."
-
-    - id: q31_3d_stencil_counts
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        In a **3D** Cell Linked-List simulation ($M \ge 3$), how many cells (including the central cell itself) must be searched for each cell without Newton's 3rd Law, and how many when exploiting Newton's 3rd Law ($\mathbf{F}_{ij} = -\mathbf{F}_{ji}$) to avoid double-checking pairs of cells?
-      hint_markdown: "In 3D, a $3 \\times 3 \\times 3$ cube has $27$ cells: $1$ central cell plus $26 / 2 = 13$ forward neighbor cells."
-      options:
-        - id: a
-          text: "27 cells total without Newton's 3rd Law; 14 cells (1 self + 13 forward neighbors) with Newton's 3rd Law"
-        - id: b
-          text: "9 cells total without Newton's 3rd Law; 5 cells with Newton's 3rd Law"
-        - id: c
-          text: "6 cells total without Newton's 3rd Law; 3 cells with Newton's 3rd Law"
-        - id: d
-          text: "64 cells total without Newton's 3rd Law; 32 cells with Newton's 3rd Law"
-      correct: a
-      rationale_markdown: "A $3 \\times 3 \\times 3$ stencil has $3^3 = 27$ cells. Pairing opposite neighbor cells $(\\Delta c_x, \\Delta c_y, \\Delta c_z)$ and $(-\\Delta c_x, -\\Delta c_y, -\\Delta c_z)$ via Newton's 3rd Law leaves the central cell plus $26/2 = 13$ unique neighbor cells, totaling $14$ cells."
-
-    - id: q32_linked_list_trace_head
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_cell_linked_lists
-        - concept_cell_linked_list
-      prompt_markdown: |
-        Suppose `head` is initialized to `-1` for all cells. While looping `i = 0, 1, ..., 9` in ascending order, particles `i = 2`, `i = 5`, and `i = 8` are the only particles that map to cell `c = 3` using:
-        ```python
-        list[i] = head[c]
-        head[c] = i
-        ```
-        After the loop finishes, what integer value is stored in `head[3]`?
-      hint_markdown: "Each insertion prepends the new particle to the front (head) of the linked list (LIFO order)."
-      correct:
-        value: 8
-        tolerance: 0.1
-      rationale_markdown: "Initially `head[3] = -1`. When `i = 2`: `list[2] = -1, head[3] = 2`. When `i = 5`: `list[5] = 2, head[3] = 5`. When `i = 8`: `list[8] = 5, head[3] = 8`. Thus `head[3] = 8`."
-
-    - id: q33_linked_list_trace_next
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_cell_linked_lists
-        - concept_cell_linked_list
-      prompt_markdown: |
-        In the same scenario as the previous question (particles `2`, `5`, and `8` inserted sequentially into cell `c = 3`), what integer value is stored in `list[5]` after the construction loop finishes?
-      hint_markdown: "When `i = 5` was inserted, what was the value of `head[3]` right before `head[3]` was overwritten with `5`?"
-      correct:
-        value: 2
-        tolerance: 0.1
-      rationale_markdown: "When `i = 5` is processed, `head[3]` currently holds `2` (the previously inserted particle in cell 3). Executing `list[5] = head[3]` sets `list[5] = 2`."
-
-    - id: q34_linked_list_memory_advantage
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        According to slide 10 of `05.PBC-neighbors.pdf` ("Improvements: the Cell Method"), how does the memory requirement of the Cell Linked-List method compare to an explicit Verlet neighbor table?
-      hint_markdown: "Count the size of `list[0..N-1]` plus `head[0..M^3-1]` versus a table storing $m$ neighbors for each of the $N$ atoms."
-      options:
-        - id: a
-          text: "Cell Linked-List memory scales as $\\mathcal{O}(N)$ (specifically $N + M^3$ integers), whereas an explicit neighbor table requires $\\mathcal{O}(mN)$ memory"
-        - id: b
-          text: "Cell Linked-List memory scales as $\\mathcal{O}(N^2)$, whereas an explicit neighbor table requires $\\mathcal{O}(N)$"
-        - id: c
-          text: "Both require $\\mathcal{O}(N^2)$ floating-point arrays"
-        - id: d
-          text: "Cell Linked-List requires dynamic heap allocations (`malloc`) for every pair interaction"
-      correct: a
-      rationale_markdown: "The Cell Linked-List requires only one integer per particle (`list[N]`) plus one integer per cell (`head[M^3]`), which is $\\mathcal{O}(N)$ memory rather than $\\mathcal{O}(mN)$."
-
-    - id: q35_cell_vs_sphere_volume_ratio
-      type: problem
-      question_type: numeric
-      difficulty: hard
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        In 3D, suppose the cell size equals the cutoff radius ($l_c = r_c$). The 27 neighbor cells searched around an atom have total volume $V_{\text{cells}} = 27 r_c^3$, whereas the actual interaction sphere has volume $V_{\text{sphere}} = \frac{4}{3}\pi r_c^3$. Calculate the ratio $V_{\text{cells}} / V_{\text{sphere}} = \frac{81}{4\pi}$ to two decimal places (e.g., `6.45`).
-      hint_markdown: "Divide $27$ by $(4\\pi / 3) \\approx 4.18879$."
-      correct:
-        value: 6.45
-        tolerance: 0.05
-      rationale_markdown: "$V_{\\text{cells}} / V_{\\text{sphere}} = 27 / (\\frac{4}{3}\\pi) = 81 / (4\\pi) \\approx 6.4458 \\approx 6.45$. Thus only $\\sim 15.5\\%$ of the particles inside the 27-cell cube actually lie within distance $r_c$!"
-
-    - id: q36_hybrid_verlet_cell_synergy
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        Why do production MD codes (such as LAMMPS) combine **both** the Cell Linked-List method and a Verlet Neighbor List (using cells of size $l_c \ge r_c + \Delta$ to rebuild the Verlet list when $d_1 + d_2 \ge \Delta$)?
-      hint_markdown: "Combine the $\\mathcal{O}(N)$ rebuild scaling of Cell lists with the smaller spherical volume of Verlet lists on intermediate steps."
-      options:
-        - id: a
-          text: "The Cell method makes neighbor list rebuilds strictly $\\mathcal{O}(N)$ instead of $\\mathcal{O}(N^2)$, while the spherical Verlet list avoids checking the $\\sim 6.45\\times$ excess volume of the 27 cubic cells on every intermediate timestep"
-        - id: b
-          text: "The Cell method alone is $\\mathcal{O}(N^3)$, so it needs a Verlet list to become $\\mathcal{O}(N^2)$"
-        - id: c
-          text: "Combining them allows the cutoff $r_c$ to exceed the box length $L$"
-        - id: d
-          text: "The Verlet list eliminates the need for Periodic Boundary Conditions"
-      correct: a
-      rationale_markdown: "Using the Cell Linked-List to construct the Verlet list achieves $\\mathcal{O}(N)$ list rebuilds, while iterating over the spherical Verlet list on steps between rebuilds avoids the $\\sim 6.45\\times$ cubic-to-spherical volume overhead of scanning 27 cells every step."
-
-    - id: q37_when_cell_method_fails_small_box
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        In a small simulation where the box length is $L = 6.0\,\sigma$ and the cutoff is $r_c = 2.5\,\sigma$, what happens when you attempt to partition the box into $M = \lfloor L / r_c \rfloor$ cells per axis for the 27-cell stencil method?
-      hint_markdown: "Calculate $M = \\lfloor 6.0 / 2.5 \\rfloor$. How many cells exist in a $3 \\times 3 \\times 3$ stencil if $M < 3$?"
-      options:
-        - id: a
-          text: "$M = \\lfloor 6.0 / 2.5 \\rfloor = 2 < 3$, so a $3 \\times 3 \\times 3$ neighbor stencil wraps around and visits the same cells multiple times; the standard 27-cell stencil requires $M \\ge 3$ ($L \\ge 3 r_c$)"
-        - id: b
-          text: "The Minimum Image Convention $r_c < L/2$ is violated because $2.5 > 6.0 / 2$"
-        - id: c
-          text: "The `head` array requires infinite memory when $M = 2$"
-        - id: d
-          text: "The cell method works without modification for any $M \\ge 1$"
-      correct: a
-      rationale_markdown: "For the 27 neighbor offsets $\\Delta c_x, \\Delta c_y, \\Delta c_z \\in \\{-1, 0, +1\\}$ to refer to 27 *distinct* cells under periodic wrapping, there must be at least $M \\ge 3$ cells per axis ($L \\ge 3 l_c \\ge 3 r_c$). Here $M = 2$, so $+1$ and $-1$ wrap to the exact same neighbor cell!"
-
-    - id: q38_complexity_summary_comparison
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_verlet_neighbor_lists
-        - sec_cell_linked_lists
-      prompt_markdown: |
-        Which of the following correctly summarizes the asymptotic time complexity of (1) Naive all-pairs force evaluation, (2) Force evaluation using a pre-built Verlet neighbor table, and (3) Neighbor table construction using the Cell Linked-List method, for a short-range potential at fixed density $\rho$?
-      hint_markdown: "Review slides 6, 7, and 10 of `05.PBC-neighbors.pdf`."
-      options:
-        - id: a
-          text: "(1) All-pairs: $\\mathcal{O}(N^2)$ · (2) Force step with neighbor table: $\\mathcal{O}(N)$ · (3) Cell Linked-List construction: $\\mathcal{O}(N)$"
-        - id: b
-          text: "(1) All-pairs: $\\mathcal{O}(N^2)$ · (2) Force step with neighbor table: $\\mathcal{O}(N \\log N)$ · (3) Cell Linked-List construction: $\\mathcal{O}(N^2)$"
-        - id: c
-          text: "(1) All-pairs: $\\mathcal{O}(N^{3/2})$ · (2) Force step with neighbor table: $\\mathcal{O}(N)$ · (3) Cell Linked-List construction: $\\mathcal{O}(N \\log N)$"
-        - id: d
-          text: "(1) All-pairs: $\\mathcal{O}(N^3)$ · (2) Force step with neighbor table: $\\mathcal{O}(N^2)$ · (3) Cell Linked-List construction: $\\mathcal{O}(N)$"
-      correct: a
-      rationale_markdown: "All-pairs checks $N(N-1)/2 = \\mathcal{O}(N^2)$ pairs; evaluating forces from a neighbor table checks $mN/2 = \\mathcal{O}(N)$ pairs; and binning particles into a Cell Linked-List plus scanning 27 neighbor cells costs $\\mathcal{O}(N)$."
+      After the loop finishes, what integer value is stored in `head[3]`?'
+    hint_markdown: Each insertion prepends the new particle to the front (head) of the linked list (LIFO order).
+    correct:
+      value: 8
+      tolerance: 0.1
+    rationale_markdown: 'Initially `head[3] = -1`. When `i = 2`: `list[2] = -1, head[3] = 2`. When `i = 5`: `list[5] = 2,
+      head[3] = 5`. When `i = 8`: `list[8] = 5, head[3] = 8`. Thus `head[3] = 8`.'
+  - id: q33_linked_list_trace_next
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_cell_linked_lists
+    - concept_cell_linked_list
+    prompt_markdown: In the same scenario as the previous question (particles `2`, `5`, and `8` inserted sequentially into
+      cell `c = 3`), what integer value is stored in `list[5]` after the construction loop finishes?
+    hint_markdown: When `i = 5` was inserted, what was the value of `head[3]` right before `head[3]` was overwritten with
+      `5`?
+    correct:
+      value: 2
+      tolerance: 0.1
+    rationale_markdown: When `i = 5` is processed, `head[3]` currently holds `2` (the previously inserted particle in cell
+      3). Executing `list[5] = head[3]` sets `list[5] = 2`.
+  - id: q34_linked_list_memory_advantage
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: 'According to of the reference notes ("Improvements: the Cell Method"), how does the memory requirement
+      of the Cell Linked-List method compare to an explicit Verlet neighbor table?'
+    hint_markdown: Count the size of `list[0..N-1]` plus `head[0..M^3-1]` versus a table storing $m$ neighbors for each of
+      the $N$ atoms.
+    options:
+    - id: a
+      text: Cell Linked-List memory scales as $\mathcal{O}(N)$ (specifically $N + M^3$ integers), whereas an explicit neighbor
+        table requires $\mathcal{O}(mN)$ memory
+    - id: b
+      text: Cell Linked-List memory scales as $\mathcal{O}(N^2)$, whereas an explicit neighbor table requires $\mathcal{O}(N)$
+    - id: c
+      text: Both require $\mathcal{O}(N^2)$ floating-point arrays
+    - id: d
+      text: Cell Linked-List requires dynamic heap allocations (`malloc`) for every pair interaction
+    correct: a
+    rationale_markdown: The Cell Linked-List requires only one integer per particle (`list[N]`) plus one integer per cell
+      (`head[M^3]`), which is $\mathcal{O}(N)$ memory rather than $\mathcal{O}(mN)$.
+  - id: q35_cell_vs_sphere_volume_ratio
+    type: problem
+    question_type: numeric
+    difficulty: hard
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: In 3D, suppose the cell size equals the cutoff radius ($l_c = r_c$). The 27 neighbor cells searched around
+      an atom have total volume $V_{\text{cells}} = 27 r_c^3$, whereas the actual interaction sphere has volume $V_{\text{sphere}}
+      = \frac{4}{3}\pi r_c^3$. Calculate the ratio $V_{\text{cells}} / V_{\text{sphere}} = \frac{81}{4\pi}$ to two decimal
+      places (e.g., `6.45`).
+    hint_markdown: Divide $27$ by $(4\pi / 3) \approx 4.18879$.
+    correct:
+      value: 6.45
+      tolerance: 0.05
+    rationale_markdown: $V_{\text{cells}} / V_{\text{sphere}} = 27 / (\frac{4}{3}\pi) = 81 / (4\pi) \approx 6.4458 \approx
+      6.45$. Thus only $\sim 15.5\%$ of the particles inside the 27-cell cube actually lie within distance $r_c$!
+  - id: q36_hybrid_verlet_cell_synergy
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: Why do production MD codes (such as LAMMPS) combine **both** the Cell Linked-List method and a Verlet
+      Neighbor List (using cells of size $l_c \ge r_c + \Delta$ to rebuild the Verlet list when $d_1 + d_2 \ge \Delta$)?
+    hint_markdown: Combine the $\mathcal{O}(N)$ rebuild scaling of Cell lists with the smaller spherical volume of Verlet
+      lists on intermediate steps.
+    options:
+    - id: a
+      text: The Cell method makes neighbor list rebuilds strictly $\mathcal{O}(N)$ instead of $\mathcal{O}(N^2)$, while the
+        spherical Verlet list avoids checking the $\sim 6.45\times$ excess volume of the 27 cubic cells on every intermediate
+        timestep
+    - id: b
+      text: The Cell method alone is $\mathcal{O}(N^3)$, so it needs a Verlet list to become $\mathcal{O}(N^2)$
+    - id: c
+      text: Combining them allows the cutoff $r_c$ to exceed the box length $L$
+    - id: d
+      text: The Verlet list eliminates the need for Periodic Boundary Conditions
+    correct: a
+    rationale_markdown: Using the Cell Linked-List to construct the Verlet list achieves $\mathcal{O}(N)$ list rebuilds, while
+      iterating over the spherical Verlet list on steps between rebuilds avoids the $\sim 6.45\times$ cubic-to-spherical volume
+      overhead of scanning 27 cells every step.
+  - id: q37_when_cell_method_fails_small_box
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_cell_linked_lists
+    prompt_markdown: In a small simulation where the box length is $L = 6.0\,\sigma$ and the cutoff is $r_c = 2.5\,\sigma$,
+      what happens when you attempt to partition the box into $M = \lfloor L / r_c \rfloor$ cells per axis for the 27-cell
+      stencil method?
+    hint_markdown: Calculate $M = \lfloor 6.0 / 2.5 \rfloor$. How many cells exist in a $3 \times 3 \times 3$ stencil if $M
+      < 3$?
+    options:
+    - id: a
+      text: $M = \lfloor 6.0 / 2.5 \rfloor = 2 < 3$, so a $3 \times 3 \times 3$ neighbor stencil wraps around and visits the
+        same cells multiple times; the standard 27-cell stencil requires $M \ge 3$ ($L \ge 3 r_c$)
+    - id: b
+      text: The Minimum Image Convention $r_c < L/2$ is violated because $2.5 > 6.0 / 2$
+    - id: c
+      text: The `head` array requires infinite memory when $M = 2$
+    - id: d
+      text: The cell method works without modification for any $M \ge 1$
+    correct: a
+    rationale_markdown: For the 27 neighbor offsets $\Delta c_x, \Delta c_y, \Delta c_z \in \{-1, 0, +1\}$ to refer to 27
+      *distinct* cells under periodic wrapping, there must be at least $M \ge 3$ cells per axis ($L \ge 3 l_c \ge 3 r_c$).
+      Here $M = 2$, so $+1$ and $-1$ wrap to the exact same neighbor cell!
+  - id: q38_complexity_summary_comparison
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_verlet_neighbor_lists
+    - sec_cell_linked_lists
+    prompt_markdown: Which of the following correctly summarizes the asymptotic time complexity of (1) Naive all-pairs force
+      evaluation, (2) Force evaluation using a pre-built Verlet neighbor table, and (3) Neighbor table construction using
+      the Cell Linked-List method, for a short-range potential at fixed density $\rho$?
+    hint_markdown: Review, and 10 of the reference notes.
+    options:
+    - id: a
+      text: '(1) All-pairs: $\mathcal{O}(N^2)$ · (2) Force step with neighbor table: $\mathcal{O}(N)$ · (3) Cell Linked-List
+        construction: $\mathcal{O}(N)$'
+    - id: b
+      text: '(1) All-pairs: $\mathcal{O}(N^2)$ · (2) Force step with neighbor table: $\mathcal{O}(N \log N)$ · (3) Cell Linked-List
+        construction: $\mathcal{O}(N^2)$'
+    - id: c
+      text: '(1) All-pairs: $\mathcal{O}(N^{3/2})$ · (2) Force step with neighbor table: $\mathcal{O}(N)$ · (3) Cell Linked-List
+        construction: $\mathcal{O}(N \log N)$'
+    - id: d
+      text: '(1) All-pairs: $\mathcal{O}(N^3)$ · (2) Force step with neighbor table: $\mathcal{O}(N^2)$ · (3) Cell Linked-List
+        construction: $\mathcal{O}(N)$'
+    correct: a
+    rationale_markdown: All-pairs checks $N(N-1)/2 = \mathcal{O}(N^2)$ pairs; evaluating forces from a neighbor table checks
+      $mN/2 = \mathcal{O}(N)$ pairs; and binning particles into a Cell Linked-List plus scanning 27 neighbor cells costs $\mathcal{O}(N)$.

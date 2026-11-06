@@ -88,7 +88,18 @@ def _extract_taught_by_ids(taught_by_raw: Any) -> list[str]:
 
 
 def get_course_dir(course_id: str) -> Path:
-    return WORKSPACE_ROOT / "courses" / course_id
+    direct = WORKSPACE_ROOT / "courses" / course_id
+    if direct.is_dir():
+        return direct
+    # Normalized lookup: case-insensitive, space/underscore/hyphen insensitive
+    norm = course_id.lower().replace(" ", "").replace("_", "").replace("-", "")
+    courses_dir = WORKSPACE_ROOT / "courses"
+    if courses_dir.is_dir():
+        for d in sorted(courses_dir.iterdir()):
+            if d.is_dir() and not d.name.startswith("."):
+                if d.name.lower().replace(" ", "").replace("_", "").replace("-", "") == norm:
+                    return d
+    return direct
 
 
 def list_courses() -> list[str]:

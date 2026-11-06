@@ -1,1044 +1,1345 @@
 worksheet:
   id: lesson_09_static_correlations_and_structure
-  title: "Lesson 09 — Static Correlations, Order Parameters, and Structure Factor"
+  title: Lesson 09 — Static Correlations, Order Parameters, and Structure Factor
   estimated_minutes: 110
   learning_objectives:
-    - "Classify thermodynamic estimators into direct mechanical averages, variance-based response functions, and thermal-only partition-function quantities."
-    - "Define the microscopic particle density in real space and reciprocal space, and explain how spontaneous symmetry breaking and the Lindemann criterion characterize phase transitions."
-    - "Compute and normalize the radial distribution function g(r) under periodic boundary conditions, and extract coordination numbers, excess internal energy, and virial pressure."
-    - "Relate the static structure factor S(k) to X-ray/neutron scattering, Debye-Waller thermal attenuation of Bragg peaks, and the long-wavelength isothermal compressibility limit."
-
+  - Classify thermodynamic estimators into direct mechanical averages, variance-based response functions, and thermal-only
+    partition-function quantities.
+  - Define the microscopic particle density in real space and reciprocal space, and explain how spontaneous symmetry breaking
+    and the Lindemann criterion characterize phase transitions.
+  - Compute and normalize the radial distribution function g(r) under periodic boundary conditions, and extract coordination
+    numbers, excess internal energy, and virial pressure.
+  - Relate the static structure factor S(k) to X-ray/neutron scattering, Debye-Waller thermal attenuation of Bragg peaks,
+    and the long-wavelength isothermal compressibility limit.
   sections:
-    - id: sec_thermo_estimators
-      type: markdown_section
-      title: "1. Thermodynamic Estimators: Mechanical vs. Thermal Quantities"
-      body_markdown: |
-        Once an atomic-scale simulation (Molecular Dynamics or Monte Carlo) reaches thermal equilibrium, we extract macroscopic properties by averaging microscopic estimators over the generated trajectory or ensemble. However, not all thermodynamic properties are equally easy to compute:
-
-        | Property | Thermodynamic Derivative | Microscopic Estimator | Integral via Pair Correlation $g(r)$ |
-        | :--- | :--- | :--- | :--- |
-        | **Kinetic Energy** $K$ | $m \frac{dF}{dm}$ | $\frac{1}{2}\sum_{i=1}^N m_i v_i^2 = \frac{1}{2} N_{\text{dof}} k_B T$ | $\frac{3}{2} N k_B T$ (in 3D) |
-        | **Potential Energy** $U$ | — | $\sum_{i<j} V(r_{ij})$ | $\frac{N\rho}{2}\int d^3r\, V(r) g(r) = 2\pi N \rho \int_0^\infty V(r) g(r) r^2 dr$ |
-        | **Pressure** $P$ | $-\left(\frac{\partial F}{\partial \Omega}\right)_T$ | $\frac{1}{3\Omega}\left[2K - \sum_{i<j} r_{ij}\frac{dV}{dr_{ij}}\right]$ | $\rho k_B T - \frac{2\pi\rho^2}{3}\int_0^\infty r\frac{dV}{dr} g(r) r^2 dr$ |
-        | **Specific Heat** $C_V$ | $\left(\frac{\partial E}{\partial T}\right)_\Omega$ | $\frac{\langle (E - \langle E\rangle)^2 \rangle}{(k_B T)^2}$ | $\frac{3}{2}N k_B + \frac{\langle V^2\rangle - \langle V\rangle^2}{(k_B T)^2}$ |
-        | **Helmholtz Free Energy** $F$ | $-k_B T \ln Z$ | *Not a direct Boltzmann average!* | Requires thermodynamic integration or umbrella sampling |
-        | **Entropy** $S$ | $-\left(\frac{\partial F}{\partial T}\right)_\Omega = \frac{E-F}{T}$ | *Not a direct Boltzmann average!* | Measures total accessible phase-space volume |
-
-        ### Intensive vs. Extensive Scaling
-        - **Extensive quantities** scale linearly with particle number $N$ (and volume $\Omega$) in the thermodynamic limit: total internal energy $E = K + U$, total heat capacity $C_V$, free energy $F$, and entropy $S$.
-        - **Intensive quantities** are independent of system size: temperature $T$, pressure $P$, number density $\rho = N/\Omega$, energy per particle $E/N$, and specific heat per particle $c_V = C_V/N$.
-        - **Why Free Energy $F$ and Entropy $S$ Are Special:** Standard MC and MD sample states with probability $p(\mathbf{R}) = e^{-\beta V(\mathbf{R})}/Z_c$. Any mechanical observable $A(\mathbf{R})$ can be averaged directly via $\langle A\rangle = \int d\mathbf{R}\, p(\mathbf{R}) A(\mathbf{R})$. In contrast, $F = -k_B T \ln Z_c$ depends on the normalizing partition function $Z_c = \int d\mathbf{R}\, e^{-\beta V(\mathbf{R})}$ itself—measuring the *total volume* of accessible phase space rather than the average of a function over visited states. Trying to rewrite $Z_c = \langle e^{+\beta V(\mathbf{R})}\rangle$ fails catastrophically because the exponential factor $e^{+\beta V}$ puts dominant weight on high-energy overlap regions that a Boltzmann walk almost never visits.
-
-    - id: q01_mechanical_vs_thermal
-      type: problem
-      taught_by: sec_thermo_estimators
-      difficulty: easy
-      question_type: multi_select
-      prompt_markdown: |
-        Which of the following thermodynamic quantities **cannot** be computed directly as a simple ensemble average $\langle A(\mathbf{R})\rangle$ over a single canonical ($NVT$) simulation at fixed temperature $T$ and volume $\Omega$? (Select all that apply.)
-      hint_markdown: "Identify the thermal quantities that depend explicitly on the total partition function $Z$ (the total volume of accessible phase space) rather than an average over visited states."
-      options:
-        - id: a
-          text: "Helmholtz free energy $F = -k_B T \\ln Z$"
-        - id: b
-          text: "Configurational entropy $S = (E - F)/T$"
-        - id: c
-          text: "Virial pressure $P$"
-        - id: d
-          text: "Constant-volume heat capacity $C_V$"
-        - id: e
-          text: "Average potential energy $U = \\langle V(\\mathbf{R}) \\rangle$"
-      correct: [a, b]
-      rationale_markdown: |
-        Both the Helmholtz free energy $F = -k_B T \ln Z$ (**A**) and the entropy $S = (E - F)/T$ (**B**) depend on the absolute normalization constant $Z$ of the probability distribution, which measures the total accessible volume of phase space rather than the average of a mechanical observable over visited states. Pressure (**C**), heat capacity (**D**), and potential energy (**E**) are direct averages (or fluctuation variances) over the Boltzmann distribution.
-
-    - id: q02_intensive_extensive
-      type: problem
-      taught_by: sec_thermo_estimators
-      difficulty: easy
-      question_type: multi_select
-      prompt_markdown: |
-        Suppose you replicate an equilibrated cubic simulation box of $N$ particles at density $\rho$ and temperature $T$ into a $2\times 2\times 2$ supercell containing $8N$ particles at the same density and temperature. Which of the following estimators remain **invariant** ($O(1)$, intensive) as $N \to 8N$? (Select all that apply.)
-      hint_markdown: "Intensive properties do not grow when identical subsystems are combined at fixed density and temperature."
-      options:
-        - id: a
-          text: "Virial pressure $P$"
-        - id: b
-          text: "Total potential energy $U = \\sum_{i<j} V(r_{ij})$"
-        - id: c
-          text: "Kinetic temperature $T = \\frac{2\\langle K\\rangle}{3 N k_B}$"
-        - id: d
-          text: "Total energy variance $\\langle (E - \\langle E\\rangle)^2 \\rangle$"
-        - id: e
-          text: "Pair correlation function $g(r)$ for $r < L/2$"
-      correct: [a, c, e]
-      rationale_markdown: |
-        Pressure $P$ (**A**), temperature $T$ (**C**), and the radial distribution function $g(r)$ (**E**) are **intensive** properties. Total potential energy $U$ (**B**) and total energy variance $\langle (\delta E)^2\rangle = k_B T^2 C_V$ (**D**) are **extensive** and scale linearly with $N$ (increasing by a factor of $8$).
-
-    - id: q03_virial_pressure_sign
-      type: problem
-      taught_by: sec_thermo_estimators
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        The microscopic virial estimator for pressure in a 3D box of volume $\Omega$ is:
-        $$P = \frac{N k_B T}{\Omega} - \frac{1}{3\Omega} \left\langle \sum_{i<j} r_{ij} \frac{dV(r_{ij})}{dr_{ij}} \right\rangle$$
-        If all particle pairs in a dense fluid are predominantly separated by distances in the **repulsive core** where $V(r)$ decreases steeply with distance ($dV/dr < 0$), how does the interaction virial affect the total pressure $P$ compared to an ideal gas at the same $\rho$ and $T$?
-      hint_markdown: "Check the sign of $-r_{ij} (dV/dr_{ij})$ when $dV/dr_{ij} < 0$."
-      options:
-        - id: a
-          text: "It increases the pressure above the ideal-gas value $\\rho k_B T$ because $dV/dr < 0$ makes $-r(dV/dr) > 0$."
-        - id: b
-          text: "It decreases the pressure below $\\rho k_B T$ because repulsive forces push particles inward."
-        - id: c
-          text: "It leaves the pressure equal to $\\rho k_B T$ because pairwise internal forces cancel by Newton's third law."
-        - id: d
-          text: "It makes the total pressure negative."
-      correct: a
-      rationale_markdown: |
-        When two particles repel each other, the potential $V(r)$ decreases as $r$ increases, so $dV/dr < 0$ (and the radial force is $f_r = -dV/dr > 0$). Substituting $dV/dr < 0$ into $-\frac{1}{3\Omega}\sum r_{ij}\frac{dV}{dr_{ij}}$ gives a **positive** excess pressure contribution (**A**), raising $P$ above the ideal-gas kinetic contribution $\rho k_B T$.
-
-    - id: q04_cv_potential_fluctuation
-      type: problem
-      taught_by: sec_thermo_estimators
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        In a canonical ($NVT$) Monte Carlo simulation of $N = 200$ classical monatomic particles in 3D, momentum coordinates are integrated out analytically, giving the ideal-gas kinetic heat capacity contribution $\frac{3}{2} N k_B$. During the MC run at $k_B T = 1.2\,\varepsilon$, you measure the potential energy variance to be:
-        $$\langle V^2 \rangle - \langle V \rangle^2 = 432\,\varepsilon^2$$
-        Using the estimator $C_V / k_B = \frac{3}{2}N + \frac{\langle V^2\rangle - \langle V\rangle^2}{(k_B T)^2}$, calculate the dimensionless total heat capacity $C_V / k_B$.
-      hint_markdown: "Compute $(3/2) \\times 200 + 432 / (1.2)^2$."
-      correct:
-        value: 600.0
-        tolerance: 0.5
-      rationale_markdown: |
-        The kinetic contribution is $\frac{3}{2}N = \frac{3}{2}(200) = 300$. The excess configurational contribution is:
-        $$\frac{\langle V^2\rangle - \langle V\rangle^2}{(k_B T)^2} = \frac{432}{(1.2)^2} = \frac{432}{1.44} = 300$$
-        Summing both contributions gives $C_V / k_B = 300 + 300 = 600$.
-
-    - id: q05_specific_heat_relative_fluctuation
-      type: problem
-      taught_by: sec_thermo_estimators
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        Because both the mean total energy $\langle E \rangle$ and the energy variance $\langle (\delta E)^2 \rangle = k_B T^2 C_V$ are extensive ($O(N)$), how does the **relative** root-mean-square energy fluctuation $\sigma_E / |\langle E\rangle| = \sqrt{\langle (\delta E)^2\rangle} / |\langle E\rangle|$ scale with particle number $N$ away from a critical point?
-      hint_markdown: "Take the square root of an $O(N)$ variance and divide by an $O(N)$ mean."
-      options:
-        - id: a
-          text: "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$."
-        - id: b
-          text: "It remains constant ($O(1)$) regardless of system size $N$."
-        - id: c
-          text: "It grows as $N^{+1/2}$."
-        - id: d
-          text: "It scales as $N^{-1}$."
-      correct: a
-      rationale_markdown: |
-        Since $\langle (\delta E)^2 \rangle \propto N$, the standard deviation scales as $\sigma_E \propto \sqrt{N}$. Dividing by the extensive mean $|\langle E\rangle| \propto N$ yields $\sigma_E / |\langle E\rangle| \propto N^{-1/2}$ (**A**), which is why different statistical ensembles become equivalent in the thermodynamic limit $N \to \infty$.
-
-    - id: sec_density_and_order_parameters
-      type: markdown_section
-      title: "2. Microscopic Density, Symmetry Breaking, and Lindemann's Criterion"
-      body_markdown: |
-        ### Real-Space and Reciprocal-Space Density
-        The microscopic local particle density operator for an $N$-particle configuration $\{\mathbf{r}_1, \dots, \mathbf{r}_N\}$ is a sum of Dirac delta functions:
-        $$\rho(\mathbf{r}) = \left\langle \sum_{i=1}^N \delta(\mathbf{r} - \mathbf{r}_i) \right\rangle$$
-        Because delta functions are singular, taking the spatial Fourier transform provides a natural way to smooth and analyze periodic density modulations:
-        $$\rho_{\mathbf{k}} = \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}} \sum_{i=1}^N \delta(\mathbf{r} - \mathbf{r}_i) = \sum_{i=1}^N e^{i\mathbf{k}\cdot\mathbf{r}_i}$$
-        Note that at $\mathbf{k} = \mathbf{0}$, $\rho_{\mathbf{0}} = \sum_{i=1}^N e^0 = N$ identically for every configuration.
-
-        ### Allowed Wavevectors in Periodic Boundary Conditions (PBC)
-        In an orthorhombic simulation box of side lengths $(L_x, L_y, L_z)$, any plane wave $e^{i\mathbf{k}\cdot\mathbf{r}}$ compatible with periodic boundary conditions must satisfy $e^{i k_\alpha L_\alpha} = 1$, restricting $\mathbf{k}$ to a discrete reciprocal grid:
-        $$\mathbf{k} = \left(\frac{2\pi n_x}{L_x},\, \frac{2\pi n_y}{L_y},\, \frac{2\pi n_z}{L_z}\right), \qquad n_x, n_y, n_z \in \mathbb{Z}$$
-        Consequently, **wavelengths longer than the simulation box ($\lambda > L$, or $0 < k < 2\pi/L$) cannot exist** in the simulation!
-
-        ### Spontaneous Symmetry Breaking & Order Parameters
-        At high temperatures, a fluid or paramagnetic phase exhibits the full symmetry of the underlying Hamiltonian (e.g., continuous translational and rotational invariance in a gas/liquid, where $\langle \rho(\mathbf{r})\rangle = N/\Omega = \text{const}$). As the system cools through a phase transition, symmetries are **spontaneously broken**, and we track the transition via an **order parameter**:
-        - **Liquid–Gas Condensation:** Droplets and vapor regions form; spatial homogeneity is broken and the **local density difference** $\rho_{\text{liq}} - \rho_{\text{gas}}$ acts as the order parameter.
-        - **Liquid–Solid Freezing:** Both continuous **translational** and **rotational** symmetries are broken down to a discrete crystal space group. The average density $\langle\rho(\mathbf{r})\rangle$ is periodic, so the Fourier component $\langle \rho_{\mathbf{G}} \rangle / N$ at a reciprocal lattice vector $\mathbf{G} \neq \mathbf{0}$ is non-zero and serves as the crystalline order parameter.
-        - **Ferromagnetic Ising Transition:** Spin-inversion ($\mathbb{Z}_2$) symmetry is broken below $T_c$, with average magnetization $m = \frac{1}{N}\langle \sum_i \sigma_i \rangle$ as the order parameter.
-
-        ### Lindemann's Melting Criterion
-        In a crystal at finite temperature, atoms vibrate around their equilibrium lattice sites $\mathbf{r}_i^0$. **Lindemann's ratio** measures the dimensionless root-mean-square (RMS) thermal displacement relative to the nearest-neighbor lattice spacing $d$:
-        $$L_{\text{Lindemann}} = \frac{\sqrt{\langle u^2 \rangle}}{d}, \qquad \langle u^2 \rangle = \frac{1}{N}\sum_{i=1}^N \left\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \right\rangle$$
-        **Lindemann's criterion** states that when the RMS thermal vibration amplitude reaches roughly **$10\%\text{–}15\%$ of the nearest-neighbor spacing** ($\sqrt{\langle u^2\rangle}/d \approx 0.10\text{–}0.15$, or $\langle (\mathbf{r}_i - \mathbf{r}_i^0)^2\rangle / d^2 \approx 0.01\text{–}0.0225$), neighboring atomic cages collide and the crystal melts into a liquid.
-
-    - id: q06_fourier_density_k_zero
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: easy
-      question_type: numeric
-      prompt_markdown: |
-        In a canonical ($NVT$) simulation of $N = 512$ silicon atoms in a periodic cubic box of side length $L = 20\,\text{Å}$, what is the exact value of the Fourier-transformed microscopic density $\rho_{\mathbf{k}} = \sum_{i=1}^N e^{i\mathbf{k}\cdot\mathbf{r}_i}$ evaluated at wavevector $\mathbf{k} = (0, 0, 0)$?
-      hint_markdown: "Substitute $\\mathbf{k} = \\mathbf{0}$ into $e^{i\\mathbf{k}\\cdot\\mathbf{r}_i} = e^0 = 1$ and sum over all $N$ atoms."
-      correct:
-        value: 512.0
-        tolerance: 0.01
-      rationale_markdown: |
-        At $\mathbf{k} = \mathbf{0}$, every exponential term equals $e^{i \mathbf{0}\cdot\mathbf{r}_i} = 1$, so $\rho_{\mathbf{0}} = \sum_{i=1}^N 1 = N = 512$ identically for every configuration, reflecting particle number conservation.
-
-    - id: q07_pbc_k_grid_minimum
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: easy
-      question_type: numeric
-      prompt_markdown: |
-        You simulate a fluid in a cubic periodic box of side length $L = 31.416\,\text{Å}$ ($\approx 10\pi\,\text{Å}$). What is the magnitude $k_{\min}$ (in $\text{Å}^{-1}$) of the smallest non-zero wavevector allowed by periodic boundary conditions?
-      hint_markdown: "Use $k_{\\min} = 2\\pi / L$ corresponding to $\\mathbf{n} = (1, 0, 0)$."
-      correct:
-        value: 0.20
-        tolerance: 0.005
-      rationale_markdown: |
-        The allowed wavevectors are $\mathbf{k} = \frac{2\pi}{L}(n_x, n_y, n_z)$. The smallest non-zero wavevector has $|\mathbf{n}| = 1$ (e.g., $(1,0,0)$), giving:
-        $$k_{\min} = \frac{2\pi}{L} = \frac{6.2832}{31.416} = 0.20\,\text{Å}^{-1}$$
-        Modes with wavelengths longer than $L$ ($k < 0.20\,\text{Å}^{-1}$) are absent in a finite periodic box.
-
-    - id: q08_liquid_solid_broken_symmetry
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        When an isotropic liquid cools and freezes into a crystalline solid, which continuous spatial symmetries of the Hamiltonian are spontaneously broken?
-      hint_markdown: "Compare a homogeneous, isotropic fluid with a periodic crystal lattice that has specific crystallographic axes and planes."
-      options:
-        - id: a
-          text: "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken."
-        - id: b
-          text: "Only continuous translational symmetry is broken; rotational symmetry remains unbroken."
-        - id: c
-          text: "Only rotational symmetry is broken; translational symmetry remains continuous."
-        - id: d
-          text: "Time-reversal symmetry and particle-exchange symmetry are broken."
-      correct: a
-      rationale_markdown: |
-        A liquid is invariant under arbitrary translations and rotations ($\langle\rho(\mathbf{r})\rangle = \text{const}$). Freezing into a crystal selects both discrete lattice positions and specific crystallographic orientations, breaking **both** continuous translational and continuous rotational symmetry (**A**).
-
-    - id: q09_order_parameter_matching
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        Why is the Fourier component of the density $\langle \rho_{\mathbf{G}} \rangle = \left\langle \sum_{j=1}^N e^{i\mathbf{G}\cdot\mathbf{r}_j} \right\rangle$ at a non-zero reciprocal lattice vector $\mathbf{G} \neq \mathbf{0}$ a diagnostic order parameter to distinguish a crystal from a homogeneous fluid?
-      hint_markdown: "In a homogeneous fluid, $\\mathbf{r}_j$ is uniformly distributed across all phases $\\mathbf{G}\\cdot\\mathbf{r}_j \\in [0, 2\\pi)$, whereas in a crystal $\\mathbf{G}\\cdot\\mathbf{r}_j^0 = 2\\pi m$."
-      options:
-        - id: a
-          text: "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$."
-        - id: b
-          text: "In a fluid $\\langle \\rho_{\\mathbf{G}} \\rangle = N$, whereas in a crystal $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$."
-        - id: c
-          text: "$\\rho_{\\mathbf{G}}$ measures the average kinetic energy of the crystal."
-        - id: d
-          text: "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point."
-      correct: a
-      rationale_markdown: |
-        For any non-zero reciprocal lattice vector $\mathbf{G}$, ideal lattice sites satisfy $\mathbf{G}\cdot\mathbf{r}_j^0 = 2\pi \times \text{integer}$, so $e^{i\mathbf{G}\cdot\mathbf{r}_j}$ adds constructively across all $N$ atoms to give $\langle\rho_{\mathbf{G}}\rangle \propto N$. In a translationally invariant fluid, atomic positions are uniform over space and the phase factors cancel to zero (**A**).
-
-    - id: q10_lindemann_criterion_concept
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        According to **Lindemann's melting criterion**, at approximately what root-mean-square (RMS) thermal displacement $\sqrt{\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \rangle}$ relative to the nearest-neighbor distance $d$ does a 3D crystalline solid melt?
-      hint_markdown: "Check the lecture slide on Lindemann's ratio for the percentage of lattice spacing at which a solid melts."
-      options:
-        - id: a
-          text: "Approximately $10\\%\\text{–}15\\%$ of the nearest-neighbor spacing $d$"
-        - id: b
-          text: "Approximately $1\\%\\text{–}2\\%$ of the nearest-neighbor spacing $d$"
-        - id: c
-          text: "Approximately $50\\%$ of the nearest-neighbor spacing $d$"
-        - id: d
-          text: "Exactly $100\\%$ of the simulation box length $L$"
-      correct: a
-      rationale_markdown: |
-        Lindemann's empirical rule states that crystals melt when the RMS thermal vibration amplitude $\sqrt{\langle (\mathbf{r}_i - \mathbf{r}_i^0)^2 \rangle}$ exceeds roughly $10\%\text{–}15\%$ of the nearest-neighbor interatomic spacing $d$ (**A**).
-
-    - id: q11_lindemann_numeric
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        In an MD simulation of FCC aluminum with nearest-neighbor distance $d = 2.86\,\text{Å}$ near its melting point, you measure the mean-squared thermal deviation from ideal lattice sites to be $\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \rangle = 0.184\,\text{Å}^2$. Calculate the dimensionless RMS Lindemann ratio $\sqrt{\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \rangle} / d$.
-      hint_markdown: "Take $\\sqrt{0.184}$ and divide by $2.86$."
-      correct:
-        value: 0.15
-        tolerance: 0.005
-      rationale_markdown: |
-        The RMS thermal displacement is $\sqrt{0.184\,\text{Å}^2} \approx 0.42895\,\text{Å}$. Dividing by the nearest-neighbor spacing $d = 2.86\,\text{Å}$ gives:
-        $$\frac{\sqrt{\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \rangle}}{d} = \frac{0.42895}{2.86} \approx 0.150$$
-        which sits right at the $\sim 15\%$ Lindemann melting threshold.
-
-    - id: sec_rdf_theory_and_algorithm
-      type: markdown_section
-      title: "3. The Pair Correlation Function (Radial Distribution Function) g(r)"
-      body_markdown: |
-        The most important structural observable in a fluid or amorphous solid is the **pair correlation function**—also called the **radial distribution function (RDF)** $g(r)$. Physically, $\rho g(r)\, 4\pi r^2 dr$ is the average number of neighbor atoms found in a spherical shell of thickness $dr$ at distance $r$ from a tagged reference atom.
-
-        ### Microscopic Definition & Normalization
-        $$g(r) = \frac{2\Omega}{N^2} \left\langle \sum_{i<j} \delta(r - |\mathbf{r}_i - \mathbf{r}_j|) \right\rangle$$
-        In practice, we replace the Dirac delta function with a finite histogram of bin width $\Delta r$:
-        1. Loop over all unique pairs $i < j$ (inside the force calculation loop) and compute the minimum-image separation vector $\mathbf{r}_{ij} = \mathbf{r}_i - \mathbf{r}_j - L\,\text{nint}((\mathbf{r}_i - \mathbf{r}_j)/L)$.
-        2. Increment bin `index = int(r_ij / dr)` by $1$ (or by $2$ if counting ordered pairs $i \neq j$).
-        3. Normalize the average count $\langle \Delta N_{\text{pairs}}(r) \rangle$ in shell $[r, r+\Delta r]$ by the number of pairs expected in an uncorrelated **ideal gas** of the same bulk density $\rho = N/\Omega$:
-        $$\Delta N_{\text{ideal}}(r) = \frac{N(N-1)}{2} \frac{V_{\text{shell}}(r)}{\Omega} \approx \frac{N}{2} \rho \left(4\pi r^2 \Delta r\right)$$
-        where the exact spherical shell volume is $V_{\text{shell}}(r) = \frac{4\pi}{3}\left[(r+\Delta r)^3 - r^3\right] \approx 4\pi r^2 \Delta r$.
-
-        ### Key Physical Features & Limits of $g(r)$
-        - **Short-Range Core Exclusion ($r \to 0$):** Strong Pauli/steric repulsion prevents atomic overlap, creating an **exclusion hole** $g(r) = 0$ for $r \lesssim \sigma$.
-        - **Long-Range Uncorrelated Limit ($r \to \infty$):** In a fluid or gas without long-range order, pair positions decorrelate at large distances, so $g(r \to \infty) = 1$. In an **ideal gas** ($V(r)=0$), $g(r) = 1$ for all $r > 0$. In a **low-density real gas** ($\rho \to 0$), $g(r) \approx e^{-\beta V(r)}$.
-        - **Periodic Box Cutoff ($r < L/2$):** Without explicitly summing over periodic images beyond the primary minimum-image sphere inscribed inside the cubic box, $g(r)$ can only be computed unambiguously out to **$r_{\max} = L/2$**.
-        - **First Coordination Number $Z_1$:** Integrating $\rho g(r)$ over the first coordination shell up to the first minimum $r_{\min}$ gives the average number of nearest neighbors:
-        $$Z_1 = 4\pi\rho \int_0^{r_{\min}} g(r)\, r^2 dr$$
-        - **Lattices & Alloys:** At $T=0$, a crystal has discrete delta-function peaks at coordination shell distances (e.g., $r/\sigma = 1, \sqrt{2}, \sqrt{3}, 2$ in FCC; $1, \sqrt{4/3}, \sqrt{8/3}$ in BCC). At finite $T$, thermal motion broadens these peaks into Gaussians, with a solid often showing a characteristic **shoulder/splitting** on the second peak. For multicomponent alloys (A, B), partial RDFs $g_{\alpha\beta}(r)$ quantify chemical short-range order (preferential A–B bonding vs. A–A clustering).
-
-    - id: concept_rdf_explorer
-      type: concept_cell
-      title: "Interactive Explorer: Radial Distribution Function g(r) Across Phases"
-      description_markdown: |
-        Use the dropdown and sliders below to compare $g(r)$ and the running coordination number $N(r) = 4\pi\rho \int_0^r g(r')r'^2 dr'$ across five canonical regimes: **Ideal Gas**, **Low-Density Gas**, **Dense LJ Liquid**, **Warm FCC Crystal**, and **Cold FCC Crystal**. Adjust `r_cutoff_shell` to integrate the first and second coordination shells.
-      render_function: render_rdf_across_phases
-      layout: figure_left
-      controls:
-        phase:
-          kind: dropdown
-          label: "Phase / Regime"
-          default: dense_liquid
-          options:
-            - {label: "Ideal Gas (g(r) = 1)", value: ideal_gas}
-            - {label: "Low-Density LJ Gas (exp(-βV))", value: low_density_gas}
-            - {label: "Dense LJ Liquid (Short-Range Order)", value: dense_liquid}
-            - {label: "Warm FCC Crystal (Thermal Broadening)", value: warm_crystal}
-            - {label: "Cold FCC Crystal (Discrete Shells)", value: cold_crystal}
-        rho:
-          kind: slider
-          label: "Reduced Number Density ρσ³"
-          min: 0.10
-          max: 1.10
-          step: 0.02
-          default: 0.84
-        r_cutoff_shell:
-          kind: slider
-          label: "Integration Upper Radius r / σ"
-          min: 0.80
-          max: 3.00
-          step: 0.05
-          default: 1.55
-      takeaway_markdown: |
-        **Key Takeaway:** Notice how in both the **Dense LJ Liquid** and the **FCC Crystal**, integrating up to the first minimum ($r_{\min} \approx 1.50\sigma$) gives $N(r_{\min}) \approx 12$ nearest neighbors! In the crystal, further shells appear at $r/r_1 = 1, \sqrt{2}\approx 1.41, \sqrt{3}\approx 1.73, 2.0$, adding steps of $+12, +6, +24, +12$ to $N(r)$.
-
-    - id: q12_rdf_limits
-      type: problem
-      taught_by: [sec_rdf_theory_and_algorithm, concept_rdf_explorer]
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        For a simple fluid of interacting particles (such as liquid argon modeled by a Lennard-Jones potential), what are the asymptotic values of the radial distribution function $g(r)$ as $r \to 0$ and as $r \to \infty$?
-      hint_markdown: "At $r \\to 0$, hard-core repulsion forbids overlap; at $r \\to \\infty$, a fluid has no long-range positional correlation."
-      options:
-        - id: a
-          text: "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated."
-        - id: b
-          text: "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$."
-        - id: c
-          text: "$g(r \\to 0) = \\infty$ and $g(r \\to \\infty) = \\rho$."
-        - id: d
-          text: "$g(r) = 1$ for all $r$ including $r \\to 0$."
-      correct: a
-      rationale_markdown: |
-        Strong short-range repulsion ($V(r\to 0) \to +\infty$) makes the probability of two atoms overlapping zero, producing the exclusion hole $g(r\to 0) = 0$. At large distances in a fluid, positions decorrelate and the local density around a reference particle equals the bulk density $\rho$, so $g(r\to\infty) = 1$ (**A**).
-
-    - id: q13_rdf_ideal_and_low_density_gas
-      type: problem
-      taught_by: [sec_rdf_theory_and_algorithm, concept_rdf_explorer]
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        Switch the interactive explorer to **Low-Density LJ Gas** ($\rho \to 0$). In the dilute gas limit where three-body and higher packing correlations are negligible, how is $g(r)$ related to the pair potential $V(r)$ at temperature $T$?
-      hint_markdown: "In the two-body low-density limit, the probability of finding two particles at distance $r$ is proportional to the Boltzmann factor of their direct pair interaction."
-      options:
-        - id: a
-          text: "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations."
-        - id: b
-          text: "$g(r) = 1 - \\beta V(r)$ with strong oscillations out to $r = 5\\sigma$."
-        - id: c
-          text: "$g(r) = 0$ everywhere because the gas density approaches zero."
-        - id: d
-          text: "$g(r) = \\beta V(r)$."
-      correct: a
-      rationale_markdown: |
-        In the low-density limit ($\rho\sigma^3 \ll 1$), only direct two-body interactions matter, so $g(r) \to e^{-\beta V(r)}$ (**A**). At the Lennard-Jones minimum $V(r_{\min}) = -\varepsilon$, $g(r)$ reaches $e^{+\varepsilon/(k_B T)} > 1$ and then decays monotonically to $1$ without the multi-shell packing oscillations seen in dense liquids.
-
-    - id: q14_rdf_pbc_max_radius
-      type: problem
-      taught_by: sec_rdf_theory_and_algorithm
-      difficulty: easy
-      question_type: numeric
-      prompt_markdown: |
-        You simulate liquid helium in a cubic periodic box of side length $L = 18.0\,\text{Å}$ using the minimum-image convention without explicitly summing additional periodic image shells. What is the maximum pair separation $r_{\max}$ (in $\text{Å}$) out to which the spherical shell normalization of $g(r)$ is valid?
-      hint_markdown: "The largest full sphere that fits inside a cube of side $L$ has radius $L/2$."
-      correct:
-        value: 9.0
-        tolerance: 0.05
-      rationale_markdown: |
-        Under the minimum-image convention in a cubic box of side $L$, a spherical shell of radius $r$ lies entirely inside the primary Wigner-Seitz cube only for $r < L/2 = 18.0 / 2 = 9.0\,\text{Å}$. Beyond $L/2$, the corners of the cube clip the spherical shell and distances wrap around periodic boundaries.
-
-    - id: q15_rdf_normalization_shell_numeric
-      type: problem
-      taught_by: sec_rdf_theory_and_algorithm
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        In a simulation of $N = 500$ atoms at bulk number density $\rho = 0.05\,\text{Å}^{-3}$, you histogram all **ordered** pairs ($i \neq j$, so each unordered pair is counted twice, once from each reference atom) in a radial bin centered at $r = 3.0\,\text{Å}$ with bin width $\Delta r = 0.1\,\text{Å}$. Across $1000$ independent snapshots, the average total count in this bin across all $N$ reference atoms is $\langle \Delta N_{\text{ordered}}(r) \rangle = 1413.72$.
-
-        Using the thin-shell formula $g(r) = \frac{\langle \Delta N_{\text{ordered}}(r) \rangle}{N \rho (4\pi r^2 \Delta r)}$, calculate $g(r)$ at $r = 3.0\,\text{Å}$.
-      hint_markdown: "Compute the ideal count $N \\rho (4\\pi r^2 \\Delta r) = 500 \\times 0.05 \\times 4\\pi (3.0)^2 (0.1) = 282.743$ and divide $1413.72$ by it."
-      correct:
-        value: 5.0
-        tolerance: 0.05
-      rationale_markdown: |
-        For a single reference atom in an ideal gas of density $\rho = 0.05\,\text{Å}^{-3}$, the expected number of neighbors in $[r, r+\Delta r]$ is:
-        $$\rho \cdot 4\pi r^2 \Delta r = 0.05 \times 4\pi (3.0)^2 (0.1) \approx 0.565487$$
-        Summing over all $N = 500$ reference atoms gives the ideal ordered-pair count $500 \times 0.565487 \approx 282.743$. Dividing the observed count $1413.72$ by $282.743$ gives $g(3.0\,\text{Å}) = 5.00$.
-
-    - id: q16_rdf_algorithm_complexity
-      type: problem
-      taught_by: sec_rdf_theory_and_algorithm
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        In the lecture code for computing `g[index] += 1`, why is the $g(r)$ histogram typically accumulated **inside the same double loop** (`for i in range(Natoms): for j in range(i+1, Natoms):`) used for pairwise force calculations?
-      hint_markdown: "Both force evaluation and $g(r)$ binning require minimum-image pair distances $r_{ij}$ for all $N(N-1)/2$ pairs."
-      options:
-        - id: a
-          text: "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass."
-        - id: b
-          text: "Because $g(r)$ cannot be computed in Monte Carlo simulations, only in Molecular Dynamics force loops."
-        - id: c
-          text: "Because binning $g(r)$ modifies the atomic forces at each time step."
-        - id: d
-          text: "Because `g[index]` automatically normalizes the pressure without needing a volume factor."
-      correct: a
-      rationale_markdown: |
-        Computing minimum-image pair distances for all $N(N-1)/2$ pairs is the most expensive $O(N^2)$ part of a simulation step. Accumulating the $g(r)$ histogram simultaneously inside the force/energy pair loop reuses `r2` with almost zero extra overhead (**A**).
-
-    - id: q17_first_coordination_number_numeric
-      type: problem
-      taught_by: [sec_rdf_theory_and_algorithm, concept_rdf_explorer]
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        For a molten metal at number density $\rho = 0.080\,\text{Å}^{-3}$, numerical integration of $r^2 g(r)$ from $r = 0$ up to the first minimum of $g(r)$ at $r_{\min} = 3.2\,\text{Å}$ yields:
-        $$\int_0^{r_{\min}} g(r)\, r^2 dr = 11.937\,\text{Å}^3$$
-        What is the average first-shell coordination number $Z_1$? (Round to one decimal place.)
-      hint_markdown: "Use $Z_1 = 4\\pi \\rho \\int_0^{r_{\\min}} g(r) r^2 dr$."
-      correct:
-        value: 12.0
-        tolerance: 0.15
-      rationale_markdown: |
-        Multiplying the radial integral by $4\pi\rho$ gives:
-        $$Z_1 = 4\pi (0.080\,\text{Å}^{-3}) (11.937\,\text{Å}^3) \approx 1.00531 \times 11.937 \approx 12.0$$
-        Dense close-packed liquids and FCC/HCP solids typically have $Z_1 \approx 12$ nearest neighbors in their first coordination shell.
-
-    - id: q18_fcc_shell_distances
-      type: problem
-      taught_by: [sec_rdf_theory_and_algorithm, concept_rdf_explorer]
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        In a perfect face-centered cubic (FCC) lattice with nearest-neighbor distance $d = \sigma$ (such as the Haile hard-sphere lattice shown in lecture and the **Cold FCC Crystal** mode in the interactive explorer), what are the distances of the **1st, 2nd, and 3rd** neighbor shells in units of $\sigma$?
-      hint_markdown: "In FCC with conventional cubic lattice constant $a = \\sqrt{2}\\sigma$, the 1st neighbors are at $(a/2, a/2, 0)$ ($r_1=\\sigma$), the 2nd neighbors are at $(a, 0, 0)$ ($r_2 = a = \\sqrt{2}\\sigma$), and the 3rd neighbors are at $(a, a/2, a/2)$ ($r_3 = \\sqrt{3}\\sigma$)."
-      options:
-        - id: a
-          text: "$1.0\\sigma,\\; \\sqrt{2}\\sigma \\approx 1.414\\sigma,\\; \\sqrt{3}\\sigma \\approx 1.732\\sigma$"
-        - id: b
-          text: "$1.0\\sigma,\\; 2.0\\sigma,\\; 3.0\\sigma$"
-        - id: c
-          text: "$1.0\\sigma,\\; \\sqrt{4/3}\\sigma \\approx 1.155\\sigma,\\; \\sqrt{8/3}\\sigma \\approx 1.633\\sigma$"
-        - id: d
-          text: "$0.5\\sigma,\\; 1.0\\sigma,\\; 1.5\\sigma$"
-      correct: a
-      rationale_markdown: |
-        In an FCC crystal of nearest-neighbor spacing $\sigma$, the conventional cubic unit cell edge is $a = \sqrt{2}\sigma$. The 12 first-nearest neighbors sit at face diagonals $\frac{a}{\sqrt{2}} = 1.0\sigma$; the 6 second-nearest neighbors sit along cube edges at $a = \sqrt{2}\sigma \approx 1.414\sigma$; and the 24 third-nearest neighbors sit at $\sqrt{a^2 + (a/2)^2 + (a/2)^2} = \sqrt{3}\sigma \approx 1.732\sigma$ (**A**).
-
-    - id: q19_chemical_short_range_order
-      type: problem
-      taught_by: sec_rdf_theory_and_algorithm
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        In the *ab initio* MD simulations of molten $\text{Ni}_{400}\text{X}_{100}$ alloys ($\text{X} = \text{W}, \text{Re}, \text{Al}$) shown in lecture, the partial solute–solute radial distribution function $g_{\text{X–X}}(r)$ has a dramatically lower first peak for $\text{Al–Al}$ than for $\text{W–W}$ or $\text{Re–Re}$. What does a suppressed first peak in $g_{\text{Al–Al}}(r)$ indicate physically?
-      hint_markdown: "Recall that $g_{\\text{Al–Al}}(r)$ measures the relative probability of finding two Al solute atoms at separation $r$ compared to a random mixture."
-      options:
-        - id: a
-          text: "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni–Al hetero-coordination over Al–Al clustering)."
-        - id: b
-          text: "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix."
-        - id: c
-          text: "That aluminum atoms have zero atomic radius in molten nickel."
-        - id: d
-          text: "That the simulation box is too small to resolve Al–Al distances."
-      correct: a
-      rationale_markdown: |
-        In a binary alloy, partial pair correlation functions $g_{\alpha\beta}(r)$ reveal chemical short-range order. A suppressed first peak in $g_{\text{Al–Al}}(r)$ means Al atoms are much less likely to sit next to other Al atoms than in a clustering alloy, reflecting strong exothermic Ni–Al attraction that favors hetero-atomic Ni–Al nearest neighbors (**A**).
-
-    - id: q20_water_orientational_rdf
-      type: problem
-      taught_by: sec_rdf_theory_and_algorithm
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        For molecular fluids such as water ($\text{H}_2\text{O}$), why do we examine both site–site RDFs ($g_{\text{OO}}(r)$, $g_{\text{OH}}(r)$, $g_{\text{HH}}(r)$) and angle-dependent pair correlations $g(r_{\text{OO}}, \alpha)$ where $\alpha$ is the angle between molecular dipoles?
-      hint_markdown: "Water molecules are non-spherical and form directional hydrogen bonds."
-      options:
-        - id: a
-          text: "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$."
-        - id: b
-          text: "Because $g_{\\text{OO}}(r)$ is identically $1$ at all distances in liquid water."
-        - id: c
-          text: "Because oxygen atoms do not scatter X-rays or neutrons."
-        - id: d
-          text: "Because periodic boundary conditions only apply to dipolar angles $\\alpha$."
-      correct: a
-      rationale_markdown: |
-        Unlike spherically symmetric noble gases, water molecules interact via strongly directional hydrogen bonds and dipole-dipole interactions. Consequently, a single radial coordinate $r_{\text{OO}}$ averages over orientations, whereas $g(r_{\text{OO}}, \alpha)$ and the distinct site-site functions ($g_{\text{OO}}, g_{\text{OH}}, g_{\text{HH}}$) capture tetrahedral hydrogen-bonding geometry (**A**).
-
-    - id: sec_static_structure_factor
-      type: markdown_section
-      title: "4. The Static Structure Factor S(k), Diffraction, and Debye-Waller Attenuation"
-      body_markdown: |
-        ### Definition and Connection to $g(\mathbf{r})$
-        While $g(r)$ describes pair correlations in real space, scattering experiments (X-ray diffraction and neutron scattering) directly measure its Fourier-space counterpart: the **static structure factor** $S(\mathbf{k})$:
-        $$S(\mathbf{k}) = \frac{1}{N} \left\langle |\rho_{\mathbf{k}}|^2 \right\rangle = \frac{1}{N} \left\langle \sum_{i=1}^N \sum_{j=1}^N e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)} \right\rangle = 1 + \rho \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}} \left[g(\mathbf{r}) - 1\right]$$
-        For an isotropic fluid where $g(\mathbf{r}) = g(r)$, angular integration over $\theta$ yields:
-        $$S(k) = 1 + 4\pi\rho \int_0^\infty dr\, r^2 \frac{\sin(kr)}{kr} \left[g(r) - 1\right]$$
-        **Why compute $S(\mathbf{k}) = \langle |\rho_{\mathbf{k}}|^2\rangle / N$ directly rather than Fourier-transforming $g(r)$?**
-        1. $g(r)$ is truncated at $r < L/2$ in a periodic box; truncating the Fourier integral produces severe unphysical ripples unless $g(r)$ is extended to $\infty$.
-        2. In an anisotropic crystal, pair correlations depend on the 3D vector $\mathbf{r}$, not just scalar $r$.
-
-        ### Bragg Peaks and the Debye-Waller Factor
-        - **Perfect Lattice at $T = 0$:** At a reciprocal lattice vector $\mathbf{G} \neq \mathbf{0}$, every atom satisfies $\mathbf{G}\cdot\mathbf{r}_i^0 = 2\pi m_i$, so $\rho_{\mathbf{G}} = N$ and the **Bragg peak height scales linearly with particle number**:
-          $$S(\mathbf{G}) = \frac{N^2}{N} = N$$
-        - **Crystal at Finite Temperature (or Quantum Zero-Point Motion):** Let $\mathbf{r}_i = \mathbf{r}_i^0 + \mathbf{u}_i$, where $\mathbf{u}_i$ is an isotropic Gaussian thermal displacement with mean-squared value $\langle u^2 \rangle = \langle |\mathbf{u}_i|^2 \rangle$ (so $\langle u_x^2\rangle = \langle u^2\rangle / 3$). Evaluating the $i=j$ self term ($1$) and the $N(N-1)$ distinct-pair terms ($e^{i\mathbf{G}\cdot(\mathbf{u}_i - \mathbf{u}_j)}$) yields:
-          $$S(\mathbf{G}) = 1 + (N - 1) \exp\!\left(-\frac{G^2 \langle u^2 \rangle}{3}\right)$$
-          where $e^{-G^2\langle u^2\rangle / 3} = e^{-2W}$ is the **Debye-Waller factor**. Thermal vibrations attenuate high-$G$ Bragg peaks exponentially and redistribute the lost intensity into a diffuse thermal background $1 - e^{-k^2\langle u^2\rangle / 3}$, without broadening the sharp $\delta(\mathbf{k}-\mathbf{G})$ Bragg width!
-        - **Distinguishing a Crystal from a Liquid or Glass:** In a crystal, $S(\mathbf{G}) \propto N$ grows linearly as the simulation box is enlarged. In a liquid or glass, $S(k)$ exhibits broad rings whose peak heights remain $O(1)$ independent of $N$.
-
-        ### Long-Wavelength Compressibility Limit ($k \to 0$)
-        As $k \to 0$, $S(k)$ measures macroscopic number fluctuations in grand-canonical subvolumes, which are governed by the **isothermal compressibility** $\chi_T = -\frac{1}{\Omega}\left(\frac{\partial \Omega}{\partial P}\right)_T$:
-        $$\lim_{k \to 0} S(k) = 1 + \rho \int d^3r\,\left[g(r) - 1\right] = \rho k_B T \chi_T$$
-        At a **liquid–gas critical point** (or spinodal), large-scale density fluctuations cause $\chi_T \to \infty$, so $S(k \to 0)$ diverges (critical opalescence).
-
-    - id: concept_structure_factor_dw
-      type: concept_cell
-      title: "Interactive Explorer: Structure Factor S(k), Bragg Scaling, and Debye-Waller Factor"
-      description_markdown: |
-        Explore how the static structure factor $S(k)$ of a crystal responds to thermal vibrations (via the RMS Lindemann ratio $u/d = \sqrt{\langle u^2\rangle}/d$) and system size $N$. Toggle `compare_liquid` to overlay a liquid structure factor.
-      render_function: render_structure_factor_debye_waller
-      layout: figure_left
-      controls:
-        lindemann_u:
-          kind: slider
-          label: "RMS Thermal Displacement u / d"
-          min: 0.00
-          max: 0.22
-          step: 0.01
-          default: 0.08
-        n_atoms:
-          kind: slider
-          label: "Number of Atoms N"
-          min: 16
-          max: 64
-          step: 8
-          default: 32
-        compare_liquid:
-          kind: dropdown
-          label: "Overlay Liquid S(k)?"
-          default: 0
-          options:
-            - {label: "Crystal Only", value: 0}
-            - {label: "Compare Crystal vs. Liquid", value: 1}
-      takeaway_markdown: |
-        **Key Takeaway:** Increasing $N$ scales the crystalline Bragg peaks linearly ($S(\mathbf{G}) \propto N$), whereas a liquid's peaks stay $O(1)$. Increasing the thermal amplitude $u/d$ damps higher-$G$ Bragg peaks exponentially via $\exp(-G^2\langle u^2\rangle/3)$ while raising the diffuse background $1 - \exp(-k^2\langle u^2\rangle/3)$.
-
-    - id: concept_thermo_integrals
-      type: concept_cell
-      title: "Interactive Explorer: Thermodynamic Integrals & Compressibility from g(r)"
-      description_markdown: |
-        Switch between the three radial kernels—**Excess Potential Energy** $2\pi\rho V(r)g(r)r^2$, **Virial Pressure** $-\frac{2\pi\rho^2}{3} r V'(r)g(r)r^2$, and **Compressibility** $4\pi\rho[g(r)-1]r^2$—while varying density $\rho^*$ and temperature $T^*$.
-      render_function: render_compressibility_and_thermodynamics
-      layout: figure_left
-      controls:
-        kernel_mode:
-          kind: dropdown
-          label: "Integrand Kernel"
-          default: potential_energy
-          options:
-            - {label: "Excess Potential Energy U/N", value: potential_energy}
-            - {label: "Excess Virial Pressure P_ex", value: virial_pressure}
-            - {label: "Compressibility Kernel [g(r)-1]r²", value: compressibility}
-        rho:
-          kind: slider
-          label: "Reduced Density ρ*"
-          min: 0.20
-          max: 1.00
-          step: 0.05
-          default: 0.80
-        temperature:
-          kind: slider
-          label: "Reduced Temperature T*"
-          min: 0.70
-          max: 2.50
-          step: 0.05
-          default: 1.15
-      takeaway_markdown: |
-        **Key Takeaway:** Knowing $g(r)$ and the pair potential $V(r)$ completely determines all two-body thermodynamic properties ($U/N$, $P$, and $\chi_T$)! Notice how the first peak of $g(r)$ straddles both the repulsive wall ($r < 2^{1/6}\sigma$, contributing positive pressure) and the attractive well ($r > 2^{1/6}\sigma$, contributing negative energy and negative pressure).
-
-    - id: q21_structure_factor_definition
-      type: problem
-      taught_by: sec_static_structure_factor
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        Which expression correctly defines the static structure factor $S(\mathbf{k})$ in terms of the Fourier-transformed microscopic density $\rho_{\mathbf{k}} = \sum_{j=1}^N e^{i\mathbf{k}\cdot\mathbf{r}_j}$?
-      hint_markdown: "Check the normalization factor $1/N$ that makes $S(k \\to \\infty) = 1$."
-      options:
-        - id: a
-          text: "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
-        - id: b
-          text: "$S(\\mathbf{k}) = \\frac{1}{N^2} \\langle \\rho_{\\mathbf{k}} \\rangle$"
-        - id: c
-          text: "$S(\\mathbf{k}) = \\Omega \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
-        - id: d
-          text: "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$"
-      correct: a
-      rationale_markdown: |
-        The static structure factor is defined as $S(\mathbf{k}) = \frac{1}{N}\langle |\rho_{\mathbf{k}}|^2\rangle = \frac{1}{N}\langle \rho_{\mathbf{k}}\rho_{-\mathbf{k}}\rangle$ (**A**). The $1/N$ normalization ensures that the $N$ diagonal self-terms ($i=j$, where $e^{i\mathbf{k}\cdot(\mathbf{r}_i-\mathbf{r}_i)} = 1$) contribute exactly $N/N = 1$ at large $k$.
-
-    - id: q22_s_k_large_k_limit
-      type: problem
-      taught_by: [sec_static_structure_factor, concept_structure_factor_dw]
-      difficulty: easy
-      question_type: numeric
-      prompt_markdown: |
-        In any system of $N$ point particles (gas, liquid, glass, or finite-temperature crystal), as the wavevector magnitude becomes very large ($k \to \infty$), distinct pair phases $e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)}$ ($i \neq j$) oscillate rapidly and average to zero, leaving only the $i = j$ self terms in $S(\mathbf{k}) = \frac{1}{N}\left\langle \sum_{i,j} e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)}\right\rangle$.
-
-        What asymptotic numerical value does $S(k)$ approach as $k \to \infty$?
-      hint_markdown: "Evaluate $\\frac{1}{N} \\sum_{i=1}^N e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\mathbf{r}_i)}$."
-      correct:
-        value: 1.0
-        tolerance: 0.01
-      rationale_markdown: |
-        When $i = j$, $\mathbf{r}_i - \mathbf{r}_j = \mathbf{0}$ and $e^0 = 1$. Summing the $N$ diagonal terms and dividing by $N$ gives $\lim_{k\to\infty} S(k) = N/N = 1.0$.
-
-    - id: q23_s_k_ideal_gas
-      type: problem
-      taught_by: sec_static_structure_factor
-      difficulty: easy
-      question_type: numeric
-      prompt_markdown: |
-        For a classical ideal gas in which particle positions are completely uncorrelated ($g(r) = 1$ for all $r > 0$), what is the value of $S(k)$ for any non-zero wavevector $k > 0$?
-      hint_markdown: "Substitute $g(r) = 1$ into $S(k) = 1 + \\rho \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}}[g(r) - 1]$."
-      correct:
-        value: 1.0
-        tolerance: 0.01
-      rationale_markdown: |
-        Since $g(r) - 1 = 0$ everywhere in an ideal gas, the integral vanishes identically and $S(k) = 1$ for all $k > 0$.
-
-    - id: q24_why_not_ft_of_gr
-      type: problem
-      taught_by: sec_static_structure_factor
-      difficulty: medium
-      question_type: multi_select
-      prompt_markdown: |
-        Although $S(\mathbf{k}) = 1 + \rho \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}}[g(\mathbf{r}) - 1]$ is mathematically exact in an infinite system, why is it usually better in a finite periodic simulation to compute $S(\mathbf{k}) = \frac{1}{N}\langle |\rho_{\mathbf{k}}|^2\rangle$ directly on the reciprocal grid rather than numerically Fourier-transforming the radial histogram $g(r)$? (Select all that apply.)
-      hint_markdown: "Review the two problems with the integral listed on Slide 15 of the lecture notes."
-      options:
-        - id: a
-          text: "Because $g(r)$ is only known up to $r < L/2$ in periodic boundary conditions, and truncating the Fourier integral introduces unphysical cutoff ripples at small $k$."
-        - id: b
-          text: "Because in an anisotropic crystal or oriented phase, pair correlations depend on the 3D vector $\\mathbf{r}$ rather than just the spherically averaged scalar distance $r$."
-        - id: c
-          text: "Because $g(r)$ can only be defined in 1D systems."
-        - id: d
-          text: "Because $S(\\mathbf{k})$ does not exist in fluids."
-      correct: [a, b]
-      rationale_markdown: |
-        As highlighted in the lecture notes, numerically integrating $g(r)$ suffers from two major issues: (1) $g(r)$ is cut off at $r = L/2$, so one would have to extrapolate $g(r)$ to infinity to avoid truncation artifacts at small $k$ (**A**), and (2) in solids or anisotropic phases, one needs the full 3D $g(\mathbf{r})$ rather than the spherically averaged $g(r)$ (**B**).
-
-    - id: q25_bragg_peak_scaling_n
-      type: problem
-      taught_by: [sec_static_structure_factor, concept_structure_factor_dw]
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        How do you definitively distinguish a crystalline solid from a dense liquid or glass in a finite-size scaling study of the static structure factor $S(\mathbf{k})$ as the number of atoms $N$ is increased at fixed density and temperature?
-      hint_markdown: "Check how $S(\\mathbf{G}) = 1 + (N-1)e^{-G^2\\langle u^2\\rangle/3}$ scales with $N$ in the interactive explorer."
-      options:
-        - id: a
-          text: "In a crystal, the Bragg peaks $S(\\mathbf{G})$ at reciprocal lattice vectors scale linearly with the number of atoms ($S(\\mathbf{G}) \\propto N$), whereas in a liquid or glass all peaks of $S(k)$ remain $O(1)$ as $N$ grows."
-        - id: b
-          text: "In a liquid, the main peak of $S(k)$ scales as $N^2$, whereas in a crystal it scales as $N$."
-        - id: c
-          text: "In a crystal, $S(k) = 0$ for all $k$, whereas in a liquid $S(k) = N$."
-        - id: d
-          text: "Both crystals and glasses have $S(\\mathbf{G}) \\propto N$."
-      correct: a
-      rationale_markdown: |
-        In a crystal, long-range positional order causes all $N$ atoms to scatter in phase at reciprocal lattice vectors $\mathbf{G}$, so $S(\mathbf{G}) = 1 + (N-1)e^{-G^2\langle u^2\rangle/3} \propto N$. In a liquid or amorphous glass, correlations decay over a finite correlation length, so $S(k)$ peaks remain $O(1)$ regardless of system size $N$ (**A**).
-
-    - id: q26_debye_waller_numeric
-      type: problem
-      taught_by: [sec_static_structure_factor, concept_structure_factor_dw]
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        Consider a crystalline solid of $N = 101$ atoms at a finite temperature where the mean-squared 3D thermal displacement is $\langle u^2 \rangle = 0.03\,\text{Å}^2$. At a reciprocal lattice vector of magnitude $G = 10.0\,\text{Å}^{-1}$, calculate the height of the Bragg peak $S(\mathbf{G})$ using the Debye-Waller formula:
-        $$S(\mathbf{G}) = 1 + (N - 1)\exp\!\left(-\frac{G^2 \langle u^2 \rangle}{3}\right)$$
-        (Round your answer to one decimal place.)
-      hint_markdown: "First compute the exponent $-G^2 \\langle u^2 \\rangle / 3 = -(100)(0.03)/3 = -1.0$, then evaluate $1 + 100 e^{-1}$."
-      correct:
-        value: 37.8
-        tolerance: 0.2
-      rationale_markdown: |
-        The Debye-Waller exponent is:
-        $$-\frac{G^2 \langle u^2 \rangle}{3} = -\frac{(10.0)^2 (0.03)}{3} = -1.0$$
-        Substituting $N - 1 = 100$ and $e^{-1} \approx 0.36788$ gives:
-        $$S(\mathbf{G}) = 1 + 100 \times 0.36788 \approx 37.8$$
-
-    - id: q27_debye_waller_high_g_dependence
-      type: problem
-      taught_by: [sec_static_structure_factor, concept_structure_factor_dw]
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        In a warm crystal with uncorrelated Gaussian thermal vibrations $\langle u^2 \rangle > 0$, how does the Debye-Waller factor $\exp(-G^2 \langle u^2 \rangle / 3)$ affect higher-order Bragg reflections (large $G$) compared to the fundamental low-$G$ Bragg reflection?
-      hint_markdown: "Look at the $G^2$ dependence in the exponent of the Debye-Waller ceiling curve in the interactive explorer."
-      options:
-        - id: a
-          text: "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$."
-        - id: b
-          text: "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks."
-        - id: c
-          text: "All Bragg peaks are reduced by the exact same constant fraction independent of $G$."
-        - id: d
-          text: "The Bragg peaks shift to $G = 0$."
-      correct: a
-      rationale_markdown: |
-        Because the Debye-Waller factor decays as $\exp(-G^2 \langle u^2 \rangle / 3)$, short-wavelength (large-$G$) reflections are much more sensitive to small atomic displacements than low-$G$ reflections and are strongly damped (**A**). The lost Bragg intensity is transferred into the thermal diffuse background $1 - \exp(-k^2\langle u^2\rangle/3)$.
-
-    - id: q28_compressibility_from_s0_numeric
-      type: problem
-      taught_by: [sec_static_structure_factor, concept_thermo_integrals]
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        In a simulation of a fluid at reduced number density $\rho^* = 0.60$ and reduced temperature $k_B T / \varepsilon = 1.25$, extrapolating the static structure factor to $k \to 0$ yields $S(0) = 0.45$. Calculate the reduced isothermal compressibility $\chi_T^* = \chi_T \varepsilon / \sigma^3$ using:
-        $$\chi_T = \frac{S(0)}{\rho k_B T}$$
-      hint_markdown: "Divide $S(0) = 0.45$ by $\\rho^* T^* = 0.60 \\times 1.25 = 0.75$."
-      correct:
-        value: 0.60
-        tolerance: 0.01
-      rationale_markdown: |
-        Using the compressibility relation $\chi_T = S(0) / (\rho k_B T)$:
-        $$\chi_T^* = \frac{0.45}{0.60 \times 1.25} = \frac{0.45}{0.75} = 0.60$$
-
-    - id: q29_critical_point_s0_divergence
-      type: problem
-      taught_by: sec_static_structure_factor
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        As a fluid approaches its **liquid–gas critical point**, large-scale density fluctuations (droplets and vapor cavities across all length scales) cause the isothermal compressibility $\chi_T$ to diverge. How does this manifest in the static structure factor $S(k)$?
-      hint_markdown: "Use $S(0) = \\rho k_B T \\chi_T$."
-      options:
-        - id: a
-          text: "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence."
-        - id: b
-          text: "$S(k \\to 0)$ drops to zero because the fluid becomes incompressible."
-        - id: c
-          text: "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$."
-        - id: d
-          text: "$S(k)$ becomes negative at small $k$."
-      correct: a
-      rationale_markdown: |
-        Since $\lim_{k\to 0} S(k) = \rho k_B T \chi_T$, a diverging compressibility at the liquid–gas transition causes $S(k)$ to shoot up sharply as $k \to 0$ (**A**). In experiments, this strong small-angle scattering of visible light is observed as critical opalescence.
-
-    - id: q30_excess_potential_energy_from_gr_numeric
-      type: problem
-      taught_by: [sec_thermo_estimators, concept_thermo_integrals]
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        For a fluid of $N$ particles at number density $\rho = 0.80\,\sigma^{-3}$ and temperature $k_B T = 1.0\,\varepsilon$, numerical evaluation of the radial pair-energy integral gives:
-        $$\int_0^\infty V(r)\, g(r)\, r^2 dr = -1.10\,\varepsilon\sigma^3$$
-        Using $\frac{E}{N} = \frac{3}{2} k_B T + 2\pi\rho \int_0^\infty V(r) g(r) r^2 dr$, calculate the total internal energy per particle $E/N$ in units of $\varepsilon$. (Round to two decimal places.)
-      hint_markdown: "Compute $1.5(1.0) + 2\\pi (0.80)(-1.10) = 1.5 - 5.5292$."
-      correct:
-        value: -4.03
-        tolerance: 0.05
-      rationale_markdown: |
-        The ideal kinetic energy per particle is $\frac{3}{2}k_B T = 1.50\,\varepsilon$. The excess potential energy per particle is:
-        $$\frac{U}{N} = 2\pi\rho \int_0^\infty V(r) g(r) r^2 dr = 2\pi (0.80)(-1.10)\,\varepsilon \approx -5.529\,\varepsilon$$
-        Adding the two gives $E/N = 1.50 - 5.529 \approx -4.03\,\varepsilon$.
-
-    - id: q31_virial_pressure_from_gr_numeric
-      type: problem
-      taught_by: [sec_thermo_estimators, concept_thermo_integrals]
-      difficulty: hard
-      question_type: numeric
-      prompt_markdown: |
-        For a fluid at reduced density $\rho = 0.75\,\sigma^{-3}$ and temperature $k_B T = 1.20\,\varepsilon$, you evaluate the radial virial integral:
-        $$\int_0^\infty r \frac{dV(r)}{dr} g(r) r^2 dr = -0.90\,\varepsilon\sigma^3$$
-        Using the pressure equation $P = \rho k_B T - \frac{2\pi\rho^2}{3} \int_0^\infty r\frac{dV}{dr} g(r) r^2 dr$, calculate the total reduced pressure $P$ in units of $\varepsilon/\sigma^3$. (Round to two decimal places.)
-      hint_markdown: "Compute $\\rho k_B T = 0.75 \\times 1.20 = 0.90$, then add $-\\frac{2\\pi (0.75)^2}{3} (-0.90) = +1.0603$."
-      correct:
-        value: 1.96
-        tolerance: 0.03
-      rationale_markdown: |
-        The ideal kinetic pressure is $\rho k_B T = 0.75 \times 1.20 = 0.90\,\varepsilon/\sigma^3$. The excess virial contribution is:
-        $$P_{\text{ex}} = -\frac{2\pi (0.75)^2}{3} (-0.90) = +\frac{2\pi (0.5625)(0.90)}{3} \approx +1.0603\,\varepsilon/\sigma^3$$
-        Summing both terms yields $P = 0.90 + 1.0603 \approx 1.96\,\varepsilon/\sigma^3$.
-
-    - id: sec_glasses_mixtures_and_advanced
-      type: markdown_section
-      title: "5. Deep Dive: Binary Mixtures, Quantum Wigner Crystals, and the Glass Puzzle"
-      body_markdown: |
-        ### Binary Mixtures & Concentration-Concentration Correlations
-        When simulating a two-component mixture of species $A$ and $B$ (such as the red/blue binary mixture in Slide 18 or the $\text{Ni–X}$ alloys in Slide 14), the total number density $\rho(\mathbf{r}) = \rho_A(\mathbf{r}) + \rho_B(\mathbf{r})$ may remain nearly uniform even while the mixture demixes or orders chemically!
-        - To detect **phase separation (unmixing)** or **chemical ordering (B2/L1$_2$ superlattices)**, we track the **local composition / concentration field** $c(\mathbf{r}) = \rho_A(\mathbf{r}) - \rho_B(\mathbf{r})$ and the **partial pair correlation functions** $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the Bhatia-Thornton concentration-concentration structure factor $S_{cc}(k)$).
-        - If like species segregate into separate domains (demixing), $g_{AA}(r) > g_{AB}(r)$ at short/intermediate range and $S_{cc}(k \to 0)$ diverges!
-        - If unlike species alternate on a lattice (chemical short-range order), the first peak of $g_{AB}(r)$ is enhanced while $g_{AA}(r)$ and $g_{BB}(r)$ are suppressed.
-
-        ### Defects, Quantum Wigner Crystals, and Glasses
-        - **Defects in Real-Space Density Maps (Slide 8):** Time-averaging the microscopic density $\langle \rho(\mathbf{r}) \rangle$ over a short window reveals stationary lattice positions in a crystal or glass, while point defects (vacancies, interstitials, dislocations) and local diffusive hops stand out clearly.
-        - **2D Quantum Wigner Crystal (Slide 7):** At very low electron density where Coulomb repulsion $e^2/r$ dominates over quantum kinetic energy $\hbar^2/(m r^2)$, electrons crystallize into a triangular **Wigner lattice**. Path-integral quantum Monte Carlo snapshots show ring-exchange tunneling (e.g., 3-electron cyclic exchange) slightly delocalizing the density peaks.
-        - **The Glass Question (Slide 19): How do we distinguish a Glass from a Liquid and from a Crystal?**
-          1. **Glass vs. Crystal:** A crystal has broken translational symmetry with sharp Bragg peaks $S(\mathbf{G}) \propto N$. A **glass is amorphous**: its static pair correlation $g(r)$ and structure factor $S(k)$ look almost identical to an isotropic liquid (broad $O(1)$ rings, no $\propto N$ Bragg peaks), though $g(r)$ often exhibits a split second peak.
-          2. **Glass vs. Liquid:** Static two-point spatial correlations $g(r)$ and $S(k)$ change very little across the glass transition! Instead, a glass is distinguished by **frozen local density fluctuations** (broken ergodicity) and **dynamical arrest**: particles are trapped in disordered cages so that the time-averaged local density $\langle \rho(\mathbf{r}) \rangle_t$ is spatially inhomogeneous (non-zero **Edwards-Anderson overlap order parameter** $q_{\text{EA}} = \lim_{t\to\infty} F(k, t)/S(k) > 0$), the self-diffusion constant drops to $D \approx 0$, and the shear viscosity $\eta$ exceeds $10^{12}\,\text{Pa}\cdot\text{s}$.
-
-    - id: q32_binary_mixture_correlation
-      type: problem
-      taught_by: sec_glasses_mixtures_and_advanced
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        In Slide 18 of the lecture, you are shown a snapshot of a dense binary mixture of red ($A$) and blue ($B$) particles that has segregated into a red-rich upper region and a blue-rich lower region at constant total packing density. Which correlation function is most informative for quantifying this compositional order?
-      hint_markdown: "Since the total number density $\\rho_A + \\rho_B$ is uniform everywhere, total $g(r)$ barely changes; you need species-resolved correlations."
-      options:
-        - id: a
-          text: "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$)."
-        - id: b
-          text: "The species-blind total radial distribution function $g_{\\text{tot}}(r)$ that ignores particle colors."
-        - id: c
-          text: "The average total kinetic energy $\\langle K \\rangle$."
-        - id: d
-          text: "The ideal-gas partition function."
-      correct: a
-      rationale_markdown: |
-        When two equally sized species demix at constant total density, the species-blind total $g(r)$ remains almost unchanged. Resolving the **partial RDFs** $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ or the concentration structure factor $S_{cc}(k) = \frac{1}{N}\langle |\rho_A(\mathbf{k}) - \rho_B(\mathbf{k})|^2\rangle$ directly detects whether like particles cluster ($g_{AA} > g_{AB}$, $S_{cc}(k\to 0)$ large) or alternate (**A**).
-
-    - id: q33_glass_vs_crystal_static
-      type: problem
-      taught_by: sec_glasses_mixtures_and_advanced
-      difficulty: easy
-      question_type: single_select
-      prompt_markdown: |
-        How do you distinguish an amorphous **structural glass** from a **crystalline solid** using static diffraction ($S(\mathbf{k})$)?
-      hint_markdown: "Does a glass have a periodic reciprocal lattice with $S(\\mathbf{G}) \\propto N$?"
-      options:
-        - id: a
-          text: "A crystal exhibits discrete, sharp Bragg peaks $S(\\mathbf{G}) \\propto N$ at reciprocal lattice vectors, whereas a glass is isotropic and displays only broad, $O(1)$ diffuse scattering rings like a liquid."
-        - id: b
-          text: "A glass has $S(\\mathbf{G}) = N^2$, whereas a crystal has $S(\\mathbf{G}) = N$."
-        - id: c
-          text: "A glass has $g(r) = 1$ everywhere like an ideal gas."
-        - id: d
-          text: "A crystal has no exclusion hole at small $r$ in $g(r)$."
-      correct: a
-      rationale_markdown: |
-        A glass lacks long-range periodic translational order. Therefore, its static structure factor $S(\mathbf{k})$ has no $\propto N$ Bragg peaks, showing only broad, isotropic $O(1)$ rings similar to a dense liquid (**A**).
-
-    - id: q34_glass_vs_liquid_distinction
-      type: problem
-      taught_by: sec_glasses_mixtures_and_advanced
-      difficulty: medium
-      question_type: multi_select
-      prompt_markdown: |
-        Since a structural glass and a dense liquid have nearly indistinguishable static two-point functions $g(r)$ and $S(k)$, how do we distinguish a **glass** from an equilibrium **liquid** in an atomic-scale simulation? (Select all that apply.)
-      hint_markdown: "Consider whether atoms in a glass diffuse freely over long times or remain trapped in frozen, disordered local cages."
-      options:
-        - id: a
-          text: "By measuring time-dependent correlations and transport: in a glass, particles are dynamically arrested in cages ($D \\to 0$, intermediate scattering function $F(k, t)$ plateaus at a non-zero Edwards-Anderson order parameter $q_{\\text{EA}} > 0$)."
-        - id: b
-          text: "By inspecting the time-averaged local density $\\langle \\rho(\\mathbf{r}) \\rangle_t$: in a liquid it smears out to a uniform constant $\\rho_0$, whereas in a glass it remains spatially inhomogeneous around the frozen amorphous atomic positions."
-        - id: c
-          text: "By checking if $g(r \\to \\infty) = 0$ in the liquid and $g(r \\to \\infty) = 10$ in the glass."
-        - id: d
-          text: "By checking if the kinetic energy violates equipartition $\\langle K \\rangle = \\frac{3}{2} N k_B T$ in a classical glass."
-      correct: [a, b]
-      rationale_markdown: |
-        A glass is an ergodic-broken, dynamically arrested state: (1) its time-correlation functions fail to decay to zero over observation timescales ($q_{\text{EA}} > 0$, self-diffusion $D \to 0$) (**A**), and (2) its time-averaged real-space density $\langle \rho(\mathbf{r}) \rangle_t$ remains localized at frozen disordered sites rather than averaging out to a flat constant $\rho_0$ as in an ergodic liquid (**B**). Classical equipartition still holds for momenta (**D** is false), and $g(r\to\infty)=1$ in both (**C** is false).
-
-    - id: q35_second_peak_splitting
-      type: problem
-      taught_by: [sec_rdf_theory_and_algorithm, sec_glasses_mixtures_and_advanced]
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        In Slide 11 (liquid and solid helium) and in supercooled liquids/glasses, what structural feature typically appears on the **second peak** of $g(r)$ ($r \approx 1.7\sigma\text{–}2.0\sigma$) as the liquid freezes or vitrifies into a dense solid?
-      hint_markdown: "Check the bullet point on Slide 11 ('Crystal shows up as shoulders') and compare the FCC neighbor distances $\\sqrt{2}\\sigma, \\sqrt{3}\\sigma, 2\\sigma$."
-      options:
-        - id: a
-          text: "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation."
-        - id: b
-          text: "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$."
-        - id: c
-          text: "The exclusion hole at $r < \\sigma$ disappears."
-        - id: d
-          text: "The first peak shifts to $r = 0$."
-      correct: a
-      rationale_markdown: |
-        In a liquid, the second coordination shell is a single broad oscillation. Upon freezing into a crystal (or forming a dense metallic glass with icosahedral/polytetrahedral local packing), distinct geometric distances (such as colinear $2\sigma$ vs. triangular $\sqrt{3}\sigma$ paths) produce characteristic **shoulders or splitting** on the second peak of $g(r)$ (**A**).
-
-    - id: q36_wigner_crystal_physics
-      type: problem
-      taught_by: sec_glasses_mixtures_and_advanced
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        Slide 7 shows the electron density of a **2D quantum Wigner crystal** during a 3-particle ring exchange. Under what physical regime do electrons—which repel via the $e^2/r$ Coulomb potential—spontaneously break translational symmetry to form a Wigner crystal?
-      hint_markdown: "Compare the potential energy $e^2/r_s$ (which scales as $r_s^{-1}$) against the quantum zero-point kinetic energy $\\hbar^2 / (m r_s^2)$ (which scales as $r_s^{-2}$) as inter-electron spacing $r_s$ increases."
-      options:
-        - id: a
-          text: "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$."
-        - id: b
-          text: "At extremely high temperature $T \\to \\infty$ where thermal kinetic energy dominates."
-        - id: c
-          text: "Only when the Coulomb interaction is turned off ($e = 0$)."
-        - id: d
-          text: "At infinite density ($r_s \\to 0$) where electrons behave as an ideal Fermi gas."
-      correct: a
-      rationale_markdown: |
-        For quantum particles with mass $m$ and spacing $r_s$, zero-point kinetic energy scales as $\hbar^2/(m r_s^2)$ while Coulomb repulsion scales as $e^2/r_s$. At **low density** (large $r_s$) and low $T$, Coulomb repulsion dominates over quantum delocalization, causing the electrons to crystallize into a Wigner lattice (**A**).
-
-    - id: q37_hard_sphere_pressure_virial
-      type: problem
-      taught_by: [sec_thermo_estimators, sec_rdf_theory_and_algorithm]
-      difficulty: hard
-      question_type: single_select
-      prompt_markdown: |
-        For a fluid of **hard spheres** of diameter $\sigma$ ($V(r) = \infty$ for $r < \sigma$ and $V(r) = 0$ for $r > \sigma$), the Boltzmann factor $e^{-\beta V(r)}$ is a Heaviside step function $\Theta(r - \sigma)$, so its derivative is a Dirac delta function $\frac{d}{dr}e^{-\beta V(r)} = -\beta \frac{dV}{dr} e^{-\beta V(r)} = \delta(r - \sigma)$.
-
-        What does the general virial pressure equation $P = \rho k_B T - \frac{2\pi\rho^2}{3} \int_0^\infty r \frac{dV}{dr} g(r) r^2 dr$ simplify to for hard spheres in 3D?
-      hint_markdown: "Replace $-\\frac{dV}{dr} g(r)$ by $k_B T \\delta(r - \\sigma) g(\\sigma^+)$ inside the integral."
-      options:
-        - id: a
-          text: "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$."
-        - id: b
-          text: "$P = \\rho k_B T$ identically at all densities because $V(r) = 0$ for $r > \\sigma$."
-        - id: c
-          text: "$P = 0$ at all temperatures."
-        - id: d
-          text: "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$."
-      correct: a
-      rationale_markdown: |
-        Because the hard-sphere potential jumps from $\infty$ to $0$ at $r = \sigma$, impulsive collisions occur exclusively at contact $r = \sigma^+$. Writing $g(r) = e^{-\beta V(r)} y(r)$ where $y(r)$ is continuous across $r=\sigma$, we have $-\beta \frac{dV}{dr} g(r) = \delta(r-\sigma) g(\sigma^+)$. Integrating over $r$ yields $P = \rho k_B T \left[1 + \frac{2\pi}{3}\rho\sigma^3 g(\sigma^+)\right]$ (**A**).
-
-    - id: q38_hard_sphere_contact_pressure_numeric
-      type: problem
-      taught_by: [sec_thermo_estimators, sec_rdf_theory_and_algorithm]
-      difficulty: hard
-      question_type: numeric
-      prompt_markdown: |
-        In a 3D hard-sphere simulation at reduced density $\rho\sigma^3 = 0.50$, you measure the contact value of the radial distribution function to be $g(\sigma^+) = 2.20$. Using the hard-sphere virial equation:
-        $$\frac{P}{\rho k_B T} = 1 + \frac{2\pi}{3} (\rho\sigma^3)\, g(\sigma^+)$$
-        calculate the compressibility factor $Z = \frac{P}{\rho k_B T}$. (Round to two decimal places.)
-      hint_markdown: "Compute $1 + (2\\pi / 3) \\times 0.50 \\times 2.20 = 1 + 1.10\\pi / 1.5$."
-      correct:
-        value: 3.30
-        tolerance: 0.03
-      rationale_markdown: |
-        Substituting $\rho\sigma^3 = 0.50$ and $g(\sigma^+) = 2.20$:
-        $$Z = 1 + \frac{2\pi}{3}(0.50)(2.20) = 1 + \frac{1.10\pi}{1.5} \approx 1 + 2.3038 \approx 3.30$$
-
-    - id: q39_ising_spin_correlations
-      type: problem
-      taught_by: sec_density_and_order_parameters
-      difficulty: medium
-      question_type: single_select
-      prompt_markdown: |
-        Slide 6 shows three typical spin configurations of the 2D ferromagnetic Ising lattice at $T \ll T_c$ (left), $T \sim T_c$ (center), and $T \gg T_c$ (right). How does the spin-spin correlation function $G(r) = \langle \sigma_0 \sigma_r \rangle - \langle \sigma \rangle^2$ behave across these three regimes?
-      hint_markdown: "At $T \\sim T_c$, domains of all sizes (fractal clusters) appear, giving power-law decay rather than short-range exponential decay."
-      options:
-        - id: a
-          text: "For $T \\gg T_c$ and $T \\ll T_c$, connected correlations $G(r)$ decay exponentially over a finite correlation length $\\xi$, whereas at $T = T_c$ the correlation length diverges ($\\xi \\to \\infty$) and $G(r)$ decays algebraically as a power law."
-        - id: b
-          text: "For $T \\gg T_c$, $G(r) = 1$ for all $r$, whereas at $T = T_c$, $G(r) = 0$ for all $r > 0$."
-        - id: c
-          text: "The correlation length $\\xi$ is largest at $T \\to \\infty$."
-        - id: d
-          text: "$\\langle \\sigma \\rangle = 1$ for $T \\gg T_c$ and $\\langle \\sigma \\rangle = 0$ for $T \\ll T_c$."
-      correct: a
-      rationale_markdown: |
-        Away from the critical temperature ($T \ll T_c$ or $T \gg T_c$), spin fluctuations are correlated only over a finite correlation length $\xi$, so $G(r) \sim e^{-r/\xi}$. Right at $T \sim T_c$ (center panel of Slide 6), scale-free fractal spin domains span the entire box, $\xi \to \infty$, and $G(r)$ decays slowly as a power law $r^{-(d-2+\eta)}$ (**A**).
-
-    - id: q40_debye_waller_extract_u2_numeric
-      type: problem
-      taught_by: [sec_static_structure_factor, concept_structure_factor_dw]
-      difficulty: hard
-      question_type: numeric
-      prompt_markdown: |
-        In an X-ray diffraction simulation of a crystal with $N = 1001$ atoms, the ideal $T = 0$ Bragg peak at reciprocal lattice vector $G = 5.0\,\text{Å}^{-1}$ has height $S_0(G) = 1001$. At temperature $T = 500\,\text{K}$, you measure the Bragg peak height at the same $G$ to be $S(G) = 607.53$.
-
-        Using $S(G) = 1 + (N - 1)\exp(-G^2 \langle u^2 \rangle / 3)$, solve for the 3D mean-squared thermal displacement $\langle u^2 \rangle$ in $\text{Å}^2$. (Round to two decimal places.)
-      hint_markdown: "First solve $\\exp(-G^2 \\langle u^2 \\rangle / 3) = (607.53 - 1) / 1000 = 0.60653$, take the natural log ($\\ln(0.60653) = -0.50$), and multiply by $-3 / G^2 = -3 / 25$."
-      correct:
-        value: 0.06
-        tolerance: 0.005
-      rationale_markdown: |
-        Isolating the Debye-Waller factor gives:
-        $$\exp\!\left(-\frac{G^2 \langle u^2 \rangle}{3}\right) = \frac{S(G) - 1}{N - 1} = \frac{607.53 - 1}{1000} = 0.60653$$
-        Taking the natural logarithm yields $-\frac{G^2 \langle u^2 \rangle}{3} = \ln(0.60653) \approx -0.500$. Solving for $\langle u^2 \rangle$ with $G^2 = 25.0\,\text{Å}^{-2}$:
-        $$\langle u^2 \rangle = \frac{3 \times 0.500}{25.0} = 0.06\,\text{Å}^2$$
-
-    - id: q41_bcc_coordination_shells
-      type: problem
-      taught_by: sec_rdf_theory_and_algorithm
-      difficulty: medium
-      question_type: numeric
-      prompt_markdown: |
-        In a body-centered cubic (BCC) crystal (such as solid iron or sodium), each atom has $Z_1 = 8$ first-nearest neighbors at distance $r_1 = \frac{\sqrt{3}}{2}a$ (body diagonals) and $Z_2 = 6$ second-nearest neighbors at distance $r_2 = a$ (cube edges), which is only $15.5\%$ farther than $r_1$ ($r_2 / r_1 = \sqrt{4/3} \approx 1.155$).
-
-        If the first and second peaks of $g(r)$ merge into a single composite peak at high temperature and you integrate the running coordination number $N(r) = 4\pi\rho \int_0^r g(r')r'^2 dr'$ out to the minimum just beyond $r_2$, what total coordination number $Z_1 + Z_2$ do you obtain?
-      hint_markdown: "Sum the 8 first-nearest neighbors and 6 second-nearest neighbors of the BCC lattice."
-      correct:
-        value: 14.0
-        tolerance: 0.1
-      rationale_markdown: |
-        In a BCC lattice, the $Z_1 = 8$ nearest neighbors at $0.866a$ and the $Z_2 = 6$ next-nearest neighbors at $1.000a$ sit very close together. Integrating $4\pi\rho g(r)r^2$ across both shells yields $Z_1 + Z_2 = 8 + 6 = 14$ neighbors.
-
-    - id: q42_thermodynamic_estimator_summary
-      type: problem
-      taught_by: [sec_thermo_estimators, sec_static_structure_factor]
-      difficulty: medium
-      question_type: multi_select
-      prompt_markdown: |
-        Which of the following statements about static correlations and thermodynamic estimators in atomic-scale simulations are **true**? (Select all that apply.)
-      hint_markdown: "Verify each statement against the Thermodynamic Estimators table and the properties of $g(r)$ and $S(k)$."
-      options:
-        - id: a
-          text: "For any pairwise-additive potential $V(\\mathbf{R}) = \\sum_{i<j} v(r_{ij})$, both the average potential energy $U$ and the excess virial pressure $P_{\\text{ex}}$ can be expressed exactly as 1D radial integrals involving $g(r)$."
-        - id: b
-          text: "The isothermal compressibility $\\chi_T$ is directly proportional to the long-wavelength limit of the static structure factor, $\\chi_T = S(0) / (\\rho k_B T)$."
-        - id: c
-          text: "In a canonical ($NVT$) simulation, the specific heat $C_V$ is determined by the variance of total energy fluctuations divided by $(k_B T)^2$."
-        - id: d
-          text: "The radial distribution function $g(r)$ of a crystalline solid scales linearly with the total number of particles $N$ at large $r$."
-      correct: [a, b, c]
-      rationale_markdown: |
-        Statements **A**, **B**, and **C** are exact fundamental identities from statistical mechanics (Slides 2, 3, 9, and 16). Statement **D** is false: $g(r)$ is normalized so that its spatial average is $1$ ($O(1)$, intensive), whereas it is the reciprocal-space Bragg peak $S(\mathbf{G})$ that scales linearly with $N$.
+  - id: sec_thermo_estimators
+    type: markdown_section
+    title: '1. Thermodynamic Estimators: Mechanical vs. Thermal Quantities'
+    body_markdown: 'Once an atomic-scale simulation (Molecular Dynamics or Monte Carlo) reaches thermal equilibrium, we extract
+      macroscopic properties by averaging microscopic estimators over the generated trajectory or ensemble. However, not all
+      thermodynamic properties are equally easy to compute:
+
+
+      | Property | Thermodynamic Derivative | Microscopic Estimator | Integral via Pair Correlation $g(r)$ |
+
+      |:--- |:--- |:--- |:--- |
+
+      | **Kinetic Energy** $K$ | $m \frac{dF}{dm}$ | $\frac{1}{2}\sum_{i=1}^N m_i v_i^2 = \frac{1}{2} N_{\text{dof}} k_B T$
+      | $\frac{3}{2} N k_B T$ (in 3D) |
+
+      | **Potential Energy** $U$ | — | $\sum_{i<j} V(r_{ij})$ | $\frac{N\rho}{2}\int d^3r\, V(r) g(r) = 2\pi N \rho \int_0^\infty
+      V(r) g(r) r^2 dr$ |
+
+      | **Pressure** $P$ | $-\left(\frac{\partial F}{\partial \Omega}\right)_T$ | $\frac{1}{3\Omega}\left[2K - \sum_{i<j}
+      r_{ij}\frac{dV}{dr_{ij}}\right]$ | $\rho k_B T - \frac{2\pi\rho^2}{3}\int_0^\infty r\frac{dV}{dr} g(r) r^2 dr$ |
+
+      | **Specific Heat** $C_V$ | $\left(\frac{\partial E}{\partial T}\right)_\Omega$ | $\frac{\langle (E - \langle E\rangle)^2
+      \rangle}{(k_B T)^2}$ | $\frac{3}{2}N k_B + \frac{\langle V^2\rangle - \langle V\rangle^2}{(k_B T)^2}$ |
+
+      | **Helmholtz Free Energy** $F$ | $-k_B T \ln Z$ | *Not a direct Boltzmann average!* | Requires thermodynamic integration
+      or umbrella sampling |
+
+      | **Entropy** $S$ | $-\left(\frac{\partial F}{\partial T}\right)_\Omega = \frac{E-F}{T}$ | *Not a direct Boltzmann average!*
+      | Measures total accessible phase-space volume |
+
+
+      ### Intensive vs. Extensive Scaling
+
+      - **Extensive quantities** scale linearly with particle number $N$ (and volume $\Omega$) in the thermodynamic limit:
+      total internal energy $E = K + U$, total heat capacity $C_V$, free energy $F$, and entropy $S$.
+
+      - **Intensive quantities** are independent of system size: temperature $T$, pressure $P$, number density $\rho = N/\Omega$,
+      energy per particle $E/N$, and specific heat per particle $c_V = C_V/N$.
+
+      - **Why Free Energy $F$ and Entropy $S$ Are Special:** Standard MC and MD sample states with probability $p(\mathbf{R})
+      = e^{-\beta V(\mathbf{R})}/Z_c$. Any mechanical observable $A(\mathbf{R})$ can be averaged directly via $\langle A\rangle
+      = \int d\mathbf{R}\, p(\mathbf{R}) A(\mathbf{R})$. In contrast, $F = -k_B T \ln Z_c$ depends on the normalizing partition
+      function $Z_c = \int d\mathbf{R}\, e^{-\beta V(\mathbf{R})}$ itself—measuring the *total volume* of accessible phase
+      space rather than the average of a function over visited states. Trying to rewrite $Z_c = \langle e^{+\beta V(\mathbf{R})}\rangle$
+      fails catastrophically because the exponential factor $e^{+\beta V}$ puts dominant weight on high-energy overlap regions
+      that a Boltzmann walk almost never visits.'
+  - id: q01_mechanical_vs_thermal
+    type: problem
+    taught_by: sec_thermo_estimators
+    difficulty: easy
+    question_type: multi_select
+    prompt_markdown: Which of the following thermodynamic quantities **cannot** be computed directly as a simple ensemble
+      average $\langle A(\mathbf{R})\rangle$ over a single canonical ($NVT$) simulation at fixed temperature $T$ and volume
+      $\Omega$? (Select all that apply.)
+    hint_markdown: Identify the thermal quantities that depend explicitly on the total partition function $Z$ (the total volume
+      of accessible phase space) rather than an average over visited states.
+    options:
+    - id: a
+      text: Helmholtz free energy $F = -k_B T \ln Z$
+    - id: b
+      text: Configurational entropy $S = (E - F)/T$
+    - id: c
+      text: Virial pressure $P$
+    - id: d
+      text: Constant-volume heat capacity $C_V$
+    - id: e
+      text: Average potential energy $U = \langle V(\mathbf{R}) \rangle$
+    correct:
+    - a
+    - b
+    rationale_markdown: Both the Helmholtz free energy $F = -k_B T \ln Z$ (**A**) and the entropy $S = (E - F)/T$ (**B**)
+      depend on the absolute normalization constant $Z$ of the probability distribution, which measures the total accessible
+      volume of phase space rather than the average of a mechanical observable over visited states. Pressure (**C**), heat
+      capacity (**D**), and potential energy (**E**) are direct averages (or fluctuation variances) over the Boltzmann distribution.
+  - id: q02_intensive_extensive
+    type: problem
+    taught_by: sec_thermo_estimators
+    difficulty: easy
+    question_type: multi_select
+    prompt_markdown: Suppose you replicate an equilibrated cubic simulation box of $N$ particles at density $\rho$ and temperature
+      $T$ into a $2\times 2\times 2$ supercell containing $8N$ particles at the same density and temperature. Which of the
+      following estimators remain **invariant** ($O(1)$, intensive) as $N \to 8N$? (Select all that apply.)
+    hint_markdown: Intensive properties do not grow when identical subsystems are combined at fixed density and temperature.
+    options:
+    - id: a
+      text: Virial pressure $P$
+    - id: b
+      text: Total potential energy $U = \sum_{i<j} V(r_{ij})$
+    - id: c
+      text: Kinetic temperature $T = \frac{2\langle K\rangle}{3 N k_B}$
+    - id: d
+      text: Total energy variance $\langle (E - \langle E\rangle)^2 \rangle$
+    - id: e
+      text: Pair correlation function $g(r)$ for $r < L/2$
+    correct:
+    - a
+    - c
+    - e
+    rationale_markdown: Pressure $P$ (**A**), temperature $T$ (**C**), and the radial distribution function $g(r)$ (**E**)
+      are **intensive** properties. Total potential energy $U$ (**B**) and total energy variance $\langle (\delta E)^2\rangle
+      = k_B T^2 C_V$ (**D**) are **extensive** and scale linearly with $N$ (increasing by a factor of $8$).
+  - id: q03_virial_pressure_sign
+    type: problem
+    taught_by: sec_thermo_estimators
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: 'The microscopic virial estimator for pressure in a 3D box of volume $\Omega$ is:
+
+      $$P = \frac{N k_B T}{\Omega} - \frac{1}{3\Omega} \left\langle \sum_{i<j} r_{ij} \frac{dV(r_{ij})}{dr_{ij}} \right\rangle$$
+
+      If all particle pairs in a dense fluid are predominantly separated by distances in the **repulsive core** where $V(r)$
+      decreases steeply with distance ($dV/dr < 0$), how does the interaction virial affect the total pressure $P$ compared
+      to an ideal gas at the same $\rho$ and $T$?'
+    hint_markdown: Check the sign of $-r_{ij} (dV/dr_{ij})$ when $dV/dr_{ij} < 0$.
+    options:
+    - id: a
+      text: It increases the pressure above the ideal-gas value $\rho k_B T$ because $dV/dr < 0$ makes $-r(dV/dr) > 0$.
+    - id: b
+      text: It decreases the pressure below $\rho k_B T$ because repulsive forces push particles inward.
+    - id: c
+      text: It leaves the pressure equal to $\rho k_B T$ because pairwise internal forces cancel by Newton's third law.
+    - id: d
+      text: It makes the total pressure negative.
+    correct: a
+    rationale_markdown: When two particles repel each other, the potential $V(r)$ decreases as $r$ increases, so $dV/dr <
+      0$ (and the radial force is $f_r = -dV/dr > 0$). Substituting $dV/dr < 0$ into $-\frac{1}{3\Omega}\sum r_{ij}\frac{dV}{dr_{ij}}$
+      gives a **positive** excess pressure contribution (**A**), raising $P$ above the ideal-gas kinetic contribution $\rho
+      k_B T$.
+  - id: q04_cv_potential_fluctuation
+    type: problem
+    taught_by: sec_thermo_estimators
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'In a canonical ($NVT$) Monte Carlo simulation of $N = 200$ classical monatomic particles in 3D, momentum
+      coordinates are integrated out analytically, giving the ideal-gas kinetic heat capacity contribution $\frac{3}{2} N
+      k_B$. During the MC run at $k_B T = 1.2\,\varepsilon$, you measure the potential energy variance to be:
+
+      $$\langle V^2 \rangle - \langle V \rangle^2 = 432\,\varepsilon^2$$
+
+      Using the estimator $C_V / k_B = \frac{3}{2}N + \frac{\langle V^2\rangle - \langle V\rangle^2}{(k_B T)^2}$, calculate
+      the dimensionless total heat capacity $C_V / k_B$.'
+    hint_markdown: Compute $(3/2) \times 200 + 432 / (1.2)^2$.
+    correct:
+      value: 600.0
+      tolerance: 0.5
+    rationale_markdown: 'The kinetic contribution is $\frac{3}{2}N = \frac{3}{2}(200) = 300$. The excess configurational contribution
+      is:
+
+      $$\frac{\langle V^2\rangle - \langle V\rangle^2}{(k_B T)^2} = \frac{432}{(1.2)^2} = \frac{432}{1.44} = 300$$
+
+      Summing both contributions gives $C_V / k_B = 300 + 300 = 600$.'
+  - id: q05_specific_heat_relative_fluctuation
+    type: problem
+    taught_by: sec_thermo_estimators
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: Because both the mean total energy $\langle E \rangle$ and the energy variance $\langle (\delta E)^2
+      \rangle = k_B T^2 C_V$ are extensive ($O(N)$), how does the **relative** root-mean-square energy fluctuation $\sigma_E
+      / |\langle E\rangle| = \sqrt{\langle (\delta E)^2\rangle} / |\langle E\rangle|$ scale with particle number $N$ away
+      from a critical point?
+    hint_markdown: Take the square root of an $O(N)$ variance and divide by an $O(N)$ mean.
+    options:
+    - id: a
+      text: It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \to \infty$.
+    - id: b
+      text: It remains constant ($O(1)$) regardless of system size $N$.
+    - id: c
+      text: It grows as $N^{+1/2}$.
+    - id: d
+      text: It scales as $N^{-1}$.
+    correct: a
+    rationale_markdown: Since $\langle (\delta E)^2 \rangle \propto N$, the standard deviation scales as $\sigma_E \propto
+      \sqrt{N}$. Dividing by the extensive mean $|\langle E\rangle| \propto N$ yields $\sigma_E / |\langle E\rangle| \propto
+      N^{-1/2}$ (**A**), which is why different statistical ensembles become equivalent in the thermodynamic limit $N \to
+      \infty$.
+  - id: sec_density_and_order_parameters
+    type: markdown_section
+    title: 2. Microscopic Density, Symmetry Breaking, and Lindemann's Criterion
+    body_markdown: '### Real-Space and Reciprocal-Space Density
+
+      The microscopic local particle density operator for an $N$-particle configuration $\{\mathbf{r}_1, \dots, \mathbf{r}_N\}$
+      is a sum of Dirac delta functions:
+
+      $$\rho(\mathbf{r}) = \left\langle \sum_{i=1}^N \delta(\mathbf{r} - \mathbf{r}_i) \right\rangle$$
+
+      Because delta functions are singular, taking the spatial Fourier transform provides a natural way to smooth and analyze
+      periodic density modulations:
+
+      $$\rho_{\mathbf{k}} = \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}} \sum_{i=1}^N \delta(\mathbf{r} - \mathbf{r}_i) = \sum_{i=1}^N
+      e^{i\mathbf{k}\cdot\mathbf{r}_i}$$
+
+      Note that at $\mathbf{k} = \mathbf{0}$, $\rho_{\mathbf{0}} = \sum_{i=1}^N e^0 = N$ identically for every configuration.
+
+
+      ### Allowed Wavevectors in Periodic Boundary Conditions (PBC)
+
+      In an orthorhombic simulation box of side lengths $(L_x, L_y, L_z)$, any plane wave $e^{i\mathbf{k}\cdot\mathbf{r}}$
+      compatible with periodic boundary conditions must satisfy $e^{i k_\alpha L_\alpha} = 1$, restricting $\mathbf{k}$ to
+      a discrete reciprocal grid:
+
+      $$\mathbf{k} = \left(\frac{2\pi n_x}{L_x},\, \frac{2\pi n_y}{L_y},\, \frac{2\pi n_z}{L_z}\right), \qquad n_x, n_y, n_z
+      \in \mathbb{Z}$$
+
+      Consequently, **wavelengths longer than the simulation box ($\lambda > L$, or $0 < k < 2\pi/L$) cannot exist** in the
+      simulation!
+
+
+      ### Spontaneous Symmetry Breaking & Order Parameters
+
+      At high temperatures, a fluid or paramagnetic phase exhibits the full symmetry of the underlying Hamiltonian (e.g.,
+      continuous translational and rotational invariance in a gas/liquid, where $\langle \rho(\mathbf{r})\rangle = N/\Omega
+      = \text{const}$). As the system cools through a phase transition, symmetries are **spontaneously broken**, and we track
+      the transition via an **order parameter**:
+
+      - **Liquid–Gas Condensation:** Droplets and vapor regions form; spatial homogeneity is broken and the **local density
+      difference** $\rho_{\text{liq}} - \rho_{\text{gas}}$ acts as the order parameter.
+
+      - **Liquid–Solid Freezing:** Both continuous **translational** and **rotational** symmetries are broken down to a discrete
+      crystal space group. The average density $\langle\rho(\mathbf{r})\rangle$ is periodic, so the Fourier component $\langle
+      \rho_{\mathbf{G}} \rangle / N$ at a reciprocal lattice vector $\mathbf{G} \neq \mathbf{0}$ is non-zero and serves as
+      the crystalline order parameter.
+
+      - **Ferromagnetic Ising Transition:** Spin-inversion ($\mathbb{Z}_2$) symmetry is broken below $T_c$, with average magnetization
+      $m = \frac{1}{N}\langle \sum_i \sigma_i \rangle$ as the order parameter.
+
+
+      ### Lindemann''s Melting Criterion
+
+      In a crystal at finite temperature, atoms vibrate around their equilibrium lattice sites $\mathbf{r}_i^0$. **Lindemann''s
+      ratio** measures the dimensionless root-mean-square (RMS) thermal displacement relative to the nearest-neighbor lattice
+      spacing $d$:
+
+      $$L_{\text{Lindemann}} = \frac{\sqrt{\langle u^2 \rangle}}{d}, \qquad \langle u^2 \rangle = \frac{1}{N}\sum_{i=1}^N
+      \left\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \right\rangle$$
+
+      **Lindemann''s criterion** states that when the RMS thermal vibration amplitude reaches roughly **$10\%\text{–}15\%$
+      of the nearest-neighbor spacing** ($\sqrt{\langle u^2\rangle}/d \approx 0.10\text{–}0.15$, or $\langle (\mathbf{r}_i
+      - \mathbf{r}_i^0)^2\rangle / d^2 \approx 0.01\text{–}0.0225$), neighboring atomic cages collide and the crystal melts
+      into a liquid.'
+  - id: q06_fourier_density_k_zero
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: easy
+    question_type: numeric
+    prompt_markdown: In a canonical ($NVT$) simulation of $N = 512$ silicon atoms in a periodic cubic box of side length $L
+      = 20\,\text{Å}$, what is the exact value of the Fourier-transformed microscopic density $\rho_{\mathbf{k}} = \sum_{i=1}^N
+      e^{i\mathbf{k}\cdot\mathbf{r}_i}$ evaluated at wavevector $\mathbf{k} = (0, 0, 0)$?
+    hint_markdown: Substitute $\mathbf{k} = \mathbf{0}$ into $e^{i\mathbf{k}\cdot\mathbf{r}_i} = e^0 = 1$ and sum over all
+      $N$ atoms.
+    correct:
+      value: 512.0
+      tolerance: 0.01
+    rationale_markdown: At $\mathbf{k} = \mathbf{0}$, every exponential term equals $e^{i \mathbf{0}\cdot\mathbf{r}_i} = 1$,
+      so $\rho_{\mathbf{0}} = \sum_{i=1}^N 1 = N = 512$ identically for every configuration, reflecting particle number conservation.
+  - id: q07_pbc_k_grid_minimum
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: easy
+    question_type: numeric
+    prompt_markdown: You simulate a fluid in a cubic periodic box of side length $L = 31.416\,\text{Å}$ ($\approx 10\pi\,\text{Å}$).
+      What is the magnitude $k_{\min}$ (in $\text{Å}^{-1}$) of the smallest non-zero wavevector allowed by periodic boundary
+      conditions?
+    hint_markdown: Use $k_{\min} = 2\pi / L$ corresponding to $\mathbf{n} = (1, 0, 0)$.
+    correct:
+      value: 0.2
+      tolerance: 0.005
+    rationale_markdown: 'The allowed wavevectors are $\mathbf{k} = \frac{2\pi}{L}(n_x, n_y, n_z)$. The smallest non-zero wavevector
+      has $|\mathbf{n}| = 1$ (e.g., $(1,0,0)$), giving:
+
+      $$k_{\min} = \frac{2\pi}{L} = \frac{6.2832}{31.416} = 0.20\,\text{Å}^{-1}$$
+
+      Modes with wavelengths longer than $L$ ($k < 0.20\,\text{Å}^{-1}$) are absent in a finite periodic box.'
+  - id: q08_liquid_solid_broken_symmetry
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: When an isotropic liquid cools and freezes into a crystalline solid, which continuous spatial symmetries
+      of the Hamiltonian are spontaneously broken?
+    hint_markdown: Compare a homogeneous, isotropic fluid with a periodic crystal lattice that has specific crystallographic
+      axes and planes.
+    options:
+    - id: a
+      text: Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken.
+    - id: b
+      text: Only continuous translational symmetry is broken; rotational symmetry remains unbroken.
+    - id: c
+      text: Only rotational symmetry is broken; translational symmetry remains continuous.
+    - id: d
+      text: Time-reversal symmetry and particle-exchange symmetry are broken.
+    correct: a
+    rationale_markdown: A liquid is invariant under arbitrary translations and rotations ($\langle\rho(\mathbf{r})\rangle
+      = \text{const}$). Freezing into a crystal selects both discrete lattice positions and specific crystallographic orientations,
+      breaking **both** continuous translational and continuous rotational symmetry (**A**).
+  - id: q09_order_parameter_matching
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: Why is the Fourier component of the density $\langle \rho_{\mathbf{G}} \rangle = \left\langle \sum_{j=1}^N
+      e^{i\mathbf{G}\cdot\mathbf{r}_j} \right\rangle$ at a non-zero reciprocal lattice vector $\mathbf{G} \neq \mathbf{0}$
+      a diagnostic order parameter to distinguish a crystal from a homogeneous fluid?
+    hint_markdown: In a homogeneous fluid, $\mathbf{r}_j$ is uniformly distributed across all phases $\mathbf{G}\cdot\mathbf{r}_j
+      \in [0, 2\pi)$, whereas in a crystal $\mathbf{G}\cdot\mathbf{r}_j^0 = 2\pi m$.
+    options:
+    - id: a
+      text: In a homogeneous fluid, random phases cause $\langle \rho_{\mathbf{G}} \rangle = 0$ for $\mathbf{G} \neq \mathbf{0}$,
+        whereas in a crystal $e^{i\mathbf{G}\cdot\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$.
+    - id: b
+      text: In a fluid $\langle \rho_{\mathbf{G}} \rangle = N$, whereas in a crystal $\langle \rho_{\mathbf{G}} \rangle =
+        0$.
+    - id: c
+      text: $\rho_{\mathbf{G}}$ measures the average kinetic energy of the crystal.
+    - id: d
+      text: $\rho_{\mathbf{G}}$ is non-zero only at the liquid-gas critical point.
+    correct: a
+    rationale_markdown: For any non-zero reciprocal lattice vector $\mathbf{G}$, ideal lattice sites satisfy $\mathbf{G}\cdot\mathbf{r}_j^0
+      = 2\pi \times \text{integer}$, so $e^{i\mathbf{G}\cdot\mathbf{r}_j}$ adds constructively across all $N$ atoms to give
+      $\langle\rho_{\mathbf{G}}\rangle \propto N$. In a translationally invariant fluid, atomic positions are uniform over
+      space and the phase factors cancel to zero (**A**).
+  - id: q10_lindemann_criterion_concept
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: According to **Lindemann's melting criterion**, at approximately what root-mean-square (RMS) thermal
+      displacement $\sqrt{\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \rangle}$ relative to the nearest-neighbor distance $d$
+      does a 3D crystalline solid melt?
+    hint_markdown: Check the lecture slide on Lindemann's ratio for the percentage of lattice spacing at which a solid melts.
+    options:
+    - id: a
+      text: Approximately $10\%\text{–}15\%$ of the nearest-neighbor spacing $d$
+    - id: b
+      text: Approximately $1\%\text{–}2\%$ of the nearest-neighbor spacing $d$
+    - id: c
+      text: Approximately $50\%$ of the nearest-neighbor spacing $d$
+    - id: d
+      text: Exactly $100\%$ of the simulation box length $L$
+    correct: a
+    rationale_markdown: Lindemann's empirical rule states that crystals melt when the RMS thermal vibration amplitude $\sqrt{\langle
+      (\mathbf{r}_i - \mathbf{r}_i^0)^2 \rangle}$ exceeds roughly $10\%\text{–}15\%$ of the nearest-neighbor interatomic spacing
+      $d$ (**A**).
+  - id: q11_lindemann_numeric
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: In an MD simulation of FCC aluminum with nearest-neighbor distance $d = 2.86\,\text{Å}$ near its melting
+      point, you measure the mean-squared thermal deviation from ideal lattice sites to be $\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2
+      \rangle = 0.184\,\text{Å}^2$. Calculate the dimensionless RMS Lindemann ratio $\sqrt{\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2
+      \rangle} / d$.
+    hint_markdown: Take $\sqrt{0.184}$ and divide by $2.86$.
+    correct:
+      value: 0.15
+      tolerance: 0.005
+    rationale_markdown: 'The RMS thermal displacement is $\sqrt{0.184\,\text{Å}^2} \approx 0.42895\,\text{Å}$. Dividing by
+      the nearest-neighbor spacing $d = 2.86\,\text{Å}$ gives:
+
+      $$\frac{\sqrt{\langle |\mathbf{r}_i - \mathbf{r}_i^0|^2 \rangle}}{d} = \frac{0.42895}{2.86} \approx 0.150$$
+
+      which sits right at the $\sim 15\%$ Lindemann melting threshold.'
+  - id: sec_rdf_theory_and_algorithm
+    type: markdown_section
+    title: 3. The Pair Correlation Function (Radial Distribution Function) g(r)
+    body_markdown: 'The most important structural observable in a fluid or amorphous solid is the **pair correlation function**—also
+      called the **radial distribution function (RDF)** $g(r)$. Physically, $\rho g(r)\, 4\pi r^2 dr$ is the average number
+      of neighbor atoms found in a spherical shell of thickness $dr$ at distance $r$ from a tagged reference atom.
+
+
+      ### Microscopic Definition & Normalization
+
+      $$g(r) = \frac{2\Omega}{N^2} \left\langle \sum_{i<j} \delta(r - |\mathbf{r}_i - \mathbf{r}_j|) \right\rangle$$
+
+      In practice, we replace the Dirac delta function with a finite histogram of bin width $\Delta r$:
+
+      1. Loop over all unique pairs $i < j$ (inside the force calculation loop) and compute the minimum-image separation vector
+      $\mathbf{r}_{ij} = \mathbf{r}_i - \mathbf{r}_j - L\,\text{nint}((\mathbf{r}_i - \mathbf{r}_j)/L)$.
+
+      2. Increment bin `index = int(r_ij / dr)` by $1$ (or by $2$ if counting ordered pairs $i \neq j$).
+
+      3. Normalize the average count $\langle \Delta N_{\text{pairs}}(r) \rangle$ in shell $[r, r+\Delta r]$ by the number
+      of pairs expected in an uncorrelated **ideal gas** of the same bulk density $\rho = N/\Omega$:
+
+      $$\Delta N_{\text{ideal}}(r) = \frac{N(N-1)}{2} \frac{V_{\text{shell}}(r)}{\Omega} \approx \frac{N}{2} \rho \left(4\pi
+      r^2 \Delta r\right)$$
+
+      where the exact spherical shell volume is $V_{\text{shell}}(r) = \frac{4\pi}{3}\left[(r+\Delta r)^3 - r^3\right] \approx
+      4\pi r^2 \Delta r$.
+
+
+      ### Key Physical Features & Limits of $g(r)$
+
+      - **Short-Range Core Exclusion ($r \to 0$):** Strong Pauli/steric repulsion prevents atomic overlap, creating an **exclusion
+      hole** $g(r) = 0$ for $r \lesssim \sigma$.
+
+      - **Long-Range Uncorrelated Limit ($r \to \infty$):** In a fluid or gas without long-range order, pair positions decorrelate
+      at large distances, so $g(r \to \infty) = 1$. In an **ideal gas** ($V(r)=0$), $g(r) = 1$ for all $r > 0$. In a **low-density
+      real gas** ($\rho \to 0$), $g(r) \approx e^{-\beta V(r)}$.
+
+      - **Periodic Box Cutoff ($r < L/2$):** Without explicitly summing over periodic images beyond the primary minimum-image
+      sphere inscribed inside the cubic box, $g(r)$ can only be computed unambiguously out to **$r_{\max} = L/2$**.
+
+      - **First Coordination Number $Z_1$:** Integrating $\rho g(r)$ over the first coordination shell up to the first minimum
+      $r_{\min}$ gives the average number of nearest neighbors:
+
+      $$Z_1 = 4\pi\rho \int_0^{r_{\min}} g(r)\, r^2 dr$$
+
+      - **Lattices & Alloys:** At $T=0$, a crystal has discrete delta-function peaks at coordination shell distances (e.g.,
+      $r/\sigma = 1, \sqrt{2}, \sqrt{3}, 2$ in FCC; $1, \sqrt{4/3}, \sqrt{8/3}$ in BCC). At finite $T$, thermal motion broadens
+      these peaks into Gaussians, with a solid often showing a characteristic **shoulder/splitting** on the second peak. For
+      multicomponent alloys (A, B), partial RDFs $g_{\alpha\beta}(r)$ quantify chemical short-range order (preferential A–B
+      bonding vs. A–A clustering).'
+  - id: concept_rdf_explorer
+    type: concept_cell
+    title: 'Interactive Explorer: Radial Distribution Function g(r) Across Phases'
+    description_markdown: 'Use the dropdown and sliders below to compare $g(r)$ and the running coordination number $N(r)
+      = 4\pi\rho \int_0^r g(r'')r''^2 dr''$ across five canonical regimes: **Ideal Gas**, **Low-Density Gas**, **Dense LJ
+      Liquid**, **Warm FCC Crystal**, and **Cold FCC Crystal**. Adjust `r_cutoff_shell` to integrate the first and second
+      coordination shells.'
+    render_function: render_rdf_across_phases
+    layout: figure_left
+    controls:
+      phase:
+        kind: dropdown
+        label: Phase / Regime
+        default: dense_liquid
+        options:
+        - label: Ideal Gas (g(r) = 1)
+          value: ideal_gas
+        - label: Low-Density LJ Gas (exp(-βV))
+          value: low_density_gas
+        - label: Dense LJ Liquid (Short-Range Order)
+          value: dense_liquid
+        - label: Warm FCC Crystal (Thermal Broadening)
+          value: warm_crystal
+        - label: Cold FCC Crystal (Discrete Shells)
+          value: cold_crystal
+      rho:
+        kind: slider
+        label: Reduced Number Density ρσ³
+        min: 0.1
+        max: 1.1
+        step: 0.02
+        default: 0.84
+      r_cutoff_shell:
+        kind: slider
+        label: Integration Upper Radius r / σ
+        min: 0.8
+        max: 3.0
+        step: 0.05
+        default: 1.55
+    takeaway_markdown: '**Key Takeaway:** Notice how in both the **Dense LJ Liquid** and the **FCC Crystal**, integrating
+      up to the first minimum ($r_{\min} \approx 1.50\sigma$) gives $N(r_{\min}) \approx 12$ nearest neighbors! In the crystal,
+      further shells appear at $r/r_1 = 1, \sqrt{2}\approx 1.41, \sqrt{3}\approx 1.73, 2.0$, adding steps of $+12, +6, +24,
+      +12$ to $N(r)$.'
+  - id: q12_rdf_limits
+    type: problem
+    taught_by:
+    - sec_rdf_theory_and_algorithm
+    - concept_rdf_explorer
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: For a simple fluid of interacting particles (such as liquid argon modeled by a Lennard-Jones potential),
+      what are the asymptotic values of the radial distribution function $g(r)$ as $r \to 0$ and as $r \to \infty$?
+    hint_markdown: At $r \to 0$, hard-core repulsion forbids overlap; at $r \to \infty$, a fluid has no long-range positional
+      correlation.
+    options:
+    - id: a
+      text: $g(r \to 0) = 0$ due to core repulsion, and $g(r \to \infty) = 1$ as pair positions become uncorrelated.
+    - id: b
+      text: $g(r \to 0) = 1$ and $g(r \to \infty) = 0$.
+    - id: c
+      text: $g(r \to 0) = \infty$ and $g(r \to \infty) = \rho$.
+    - id: d
+      text: $g(r) = 1$ for all $r$ including $r \to 0$.
+    correct: a
+    rationale_markdown: Strong short-range repulsion ($V(r\to 0) \to +\infty$) makes the probability of two atoms overlapping
+      zero, producing the exclusion hole $g(r\to 0) = 0$. At large distances in a fluid, positions decorrelate and the local
+      density around a reference particle equals the bulk density $\rho$, so $g(r\to\infty) = 1$ (**A**).
+  - id: q13_rdf_ideal_and_low_density_gas
+    type: problem
+    taught_by:
+    - sec_rdf_theory_and_algorithm
+    - concept_rdf_explorer
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: Switch the interactive explorer to **Low-Density LJ Gas** ($\rho \to 0$). In the dilute gas limit where
+      three-body and higher packing correlations are negligible, how is $g(r)$ related to the pair potential $V(r)$ at temperature
+      $T$?
+    hint_markdown: In the two-body low-density limit, the probability of finding two particles at distance $r$ is proportional
+      to the Boltzmann factor of their direct pair interaction.
+    options:
+    - id: a
+      text: $g(r) = \exp(-\beta V(r))$, exhibiting a single peak of height $e^{+\beta\varepsilon} > 1$ at the potential minimum
+        and no second-shell oscillations.
+    - id: b
+      text: $g(r) = 1 - \beta V(r)$ with strong oscillations out to $r = 5\sigma$.
+    - id: c
+      text: $g(r) = 0$ everywhere because the gas density approaches zero.
+    - id: d
+      text: $g(r) = \beta V(r)$.
+    correct: a
+    rationale_markdown: In the low-density limit ($\rho\sigma^3 \ll 1$), only direct two-body interactions matter, so $g(r)
+      \to e^{-\beta V(r)}$ (**A**). At the Lennard-Jones minimum $V(r_{\min}) = -\varepsilon$, $g(r)$ reaches $e^{+\varepsilon/(k_B
+      T)} > 1$ and then decays monotonically to $1$ without the multi-shell packing oscillations seen in dense liquids.
+  - id: q14_rdf_pbc_max_radius
+    type: problem
+    taught_by: sec_rdf_theory_and_algorithm
+    difficulty: easy
+    question_type: numeric
+    prompt_markdown: You simulate liquid helium in a cubic periodic box of side length $L = 18.0\,\text{Å}$ using the minimum-image
+      convention without explicitly summing additional periodic image shells. What is the maximum pair separation $r_{\max}$
+      (in $\text{Å}$) out to which the spherical shell normalization of $g(r)$ is valid?
+    hint_markdown: The largest full sphere that fits inside a cube of side $L$ has radius $L/2$.
+    correct:
+      value: 9.0
+      tolerance: 0.05
+    rationale_markdown: Under the minimum-image convention in a cubic box of side $L$, a spherical shell of radius $r$ lies
+      entirely inside the primary Wigner-Seitz cube only for $r < L/2 = 18.0 / 2 = 9.0\,\text{Å}$. Beyond $L/2$, the corners
+      of the cube clip the spherical shell and distances wrap around periodic boundaries.
+  - id: q15_rdf_normalization_shell_numeric
+    type: problem
+    taught_by: sec_rdf_theory_and_algorithm
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'In a simulation of $N = 500$ atoms at bulk number density $\rho = 0.05\,\text{Å}^{-3}$, you histogram
+      all **ordered** pairs ($i \neq j$, so each unordered pair is counted twice, once from each reference atom) in a radial
+      bin centered at $r = 3.0\,\text{Å}$ with bin width $\Delta r = 0.1\,\text{Å}$. Across $1000$ independent snapshots,
+      the average total count in this bin across all $N$ reference atoms is $\langle \Delta N_{\text{ordered}}(r) \rangle
+      = 1413.72$.
+
+
+      Using the thin-shell formula $g(r) = \frac{\langle \Delta N_{\text{ordered}}(r) \rangle}{N \rho (4\pi r^2 \Delta r)}$,
+      calculate $g(r)$ at $r = 3.0\,\text{Å}$.'
+    hint_markdown: Compute the ideal count $N \rho (4\pi r^2 \Delta r) = 500 \times 0.05 \times 4\pi (3.0)^2 (0.1) = 282.743$
+      and divide $1413.72$ by it.
+    correct:
+      value: 5.0
+      tolerance: 0.05
+    rationale_markdown: 'For a single reference atom in an ideal gas of density $\rho = 0.05\,\text{Å}^{-3}$, the expected
+      number of neighbors in $[r, r+\Delta r]$ is:
+
+      $$\rho \cdot 4\pi r^2 \Delta r = 0.05 \times 4\pi (3.0)^2 (0.1) \approx 0.565487$$
+
+      Summing over all $N = 500$ reference atoms gives the ideal ordered-pair count $500 \times 0.565487 \approx 282.743$.
+      Dividing the observed count $1413.72$ by $282.743$ gives $g(3.0\,\text{Å}) = 5.00$.'
+  - id: q16_rdf_algorithm_complexity
+    type: problem
+    taught_by: sec_rdf_theory_and_algorithm
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: 'In the lecture code for computing `g[index] += 1`, why is the $g(r)$ histogram typically accumulated
+      **inside the same double loop** (`for i in range(Natoms): for j in range(i+1, Natoms):`) used for pairwise force calculations?'
+    hint_markdown: Both force evaluation and $g(r)$ binning require minimum-image pair distances $r_{ij}$ for all $N(N-1)/2$
+      pairs.
+    options:
+    - id: a
+      text: Because minimum-image pair displacements $\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the
+        $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass.
+    - id: b
+      text: Because $g(r)$ cannot be computed in Monte Carlo simulations, only in Molecular Dynamics force loops.
+    - id: c
+      text: Because binning $g(r)$ modifies the atomic forces at each time step.
+    - id: d
+      text: Because `g[index]` automatically normalizes the pressure without needing a volume factor.
+    correct: a
+    rationale_markdown: Computing minimum-image pair distances for all $N(N-1)/2$ pairs is the most expensive $O(N^2)$ part
+      of a simulation step. Accumulating the $g(r)$ histogram simultaneously inside the force/energy pair loop reuses `r2`
+      with almost zero extra overhead (**A**).
+  - id: q17_first_coordination_number_numeric
+    type: problem
+    taught_by:
+    - sec_rdf_theory_and_algorithm
+    - concept_rdf_explorer
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'For a molten metal at number density $\rho = 0.080\,\text{Å}^{-3}$, numerical integration of $r^2 g(r)$
+      from $r = 0$ up to the first minimum of $g(r)$ at $r_{\min} = 3.2\,\text{Å}$ yields:
+
+      $$\int_0^{r_{\min}} g(r)\, r^2 dr = 11.937\,\text{Å}^3$$
+
+      What is the average first-shell coordination number $Z_1$? (Round to one decimal place.)'
+    hint_markdown: Use $Z_1 = 4\pi \rho \int_0^{r_{\min}} g(r) r^2 dr$.
+    correct:
+      value: 12.0
+      tolerance: 0.15
+    rationale_markdown: 'Multiplying the radial integral by $4\pi\rho$ gives:
+
+      $$Z_1 = 4\pi (0.080\,\text{Å}^{-3}) (11.937\,\text{Å}^3) \approx 1.00531 \times 11.937 \approx 12.0$$
+
+      Dense close-packed liquids and FCC/HCP solids typically have $Z_1 \approx 12$ nearest neighbors in their first coordination
+      shell.'
+  - id: q18_fcc_shell_distances
+    type: problem
+    taught_by:
+    - sec_rdf_theory_and_algorithm
+    - concept_rdf_explorer
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: In a perfect face-centered cubic (FCC) lattice with nearest-neighbor distance $d = \sigma$ (such as the
+      Haile hard-sphere lattice shown in lecture and the **Cold FCC Crystal** mode in the interactive explorer), what are
+      the distances of the **1st, 2nd, and 3rd** neighbor shells in units of $\sigma$?
+    hint_markdown: In FCC with conventional cubic lattice constant $a = \sqrt{2}\sigma$, the 1st neighbors are at $(a/2, a/2,
+      0)$ ($r_1=\sigma$), the 2nd neighbors are at $(a, 0, 0)$ ($r_2 = a = \sqrt{2}\sigma$), and the 3rd neighbors are at
+      $(a, a/2, a/2)$ ($r_3 = \sqrt{3}\sigma$).
+    options:
+    - id: a
+      text: $1.0\sigma,\; \sqrt{2}\sigma \approx 1.414\sigma,\; \sqrt{3}\sigma \approx 1.732\sigma$
+    - id: b
+      text: $1.0\sigma,\; 2.0\sigma,\; 3.0\sigma$
+    - id: c
+      text: $1.0\sigma,\; \sqrt{4/3}\sigma \approx 1.155\sigma,\; \sqrt{8/3}\sigma \approx 1.633\sigma$
+    - id: d
+      text: $0.5\sigma,\; 1.0\sigma,\; 1.5\sigma$
+    correct: a
+    rationale_markdown: In an FCC crystal of nearest-neighbor spacing $\sigma$, the conventional cubic unit cell edge is $a
+      = \sqrt{2}\sigma$. The 12 first-nearest neighbors sit at face diagonals $\frac{a}{\sqrt{2}} = 1.0\sigma$; the 6 second-nearest
+      neighbors sit along cube edges at $a = \sqrt{2}\sigma \approx 1.414\sigma$; and the 24 third-nearest neighbors sit at
+      $\sqrt{a^2 + (a/2)^2 + (a/2)^2} = \sqrt{3}\sigma \approx 1.732\sigma$ (**A**).
+  - id: q19_chemical_short_range_order
+    type: problem
+    taught_by: sec_rdf_theory_and_algorithm
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: In the *ab initio* MD simulations of molten $\text{Ni}_{400}\text{X}_{100}$ alloys ($\text{X} = \text{W},
+      \text{Re}, \text{Al}$) shown in lecture, the partial solute–solute radial distribution function $g_{\text{X–X}}(r)$
+      has a dramatically lower first peak for $\text{Al–Al}$ than for $\text{W–W}$ or $\text{Re–Re}$. What does a suppressed
+      first peak in $g_{\text{Al–Al}}(r)$ indicate physically?
+    hint_markdown: Recall that $g_{\text{Al–Al}}(r)$ measures the relative probability of finding two Al solute atoms at separation
+      $r$ compared to a random mixture.
+    options:
+    - id: a
+      text: Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni–Al
+        hetero-coordination over Al–Al clustering).
+    - id: b
+      text: Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix.
+    - id: c
+      text: That aluminum atoms have zero atomic radius in molten nickel.
+    - id: d
+      text: That the simulation box is too small to resolve Al–Al distances.
+    correct: a
+    rationale_markdown: In a binary alloy, partial pair correlation functions $g_{\alpha\beta}(r)$ reveal chemical short-range
+      order. A suppressed first peak in $g_{\text{Al–Al}}(r)$ means Al atoms are much less likely to sit next to other Al
+      atoms than in a clustering alloy, reflecting strong exothermic Ni–Al attraction that favors hetero-atomic Ni–Al nearest
+      neighbors (**A**).
+  - id: q20_water_orientational_rdf
+    type: problem
+    taught_by: sec_rdf_theory_and_algorithm
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: For molecular fluids such as water ($\text{H}_2\text{O}$), why do we examine both site–site RDFs ($g_{\text{OO}}(r)$,
+      $g_{\text{OH}}(r)$, $g_{\text{HH}}(r)$) and angle-dependent pair correlations $g(r_{\text{OO}}, \alpha)$ where $\alpha$
+      is the angle between molecular dipoles?
+    hint_markdown: Water molecules are non-spherical and form directional hydrogen bonds.
+    options:
+    - id: a
+      text: Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both
+        center-of-mass distance $r$ and relative molecular orientation $\alpha$.
+    - id: b
+      text: Because $g_{\text{OO}}(r)$ is identically $1$ at all distances in liquid water.
+    - id: c
+      text: Because oxygen atoms do not scatter X-rays or neutrons.
+    - id: d
+      text: Because periodic boundary conditions only apply to dipolar angles $\alpha$.
+    correct: a
+    rationale_markdown: Unlike spherically symmetric noble gases, water molecules interact via strongly directional hydrogen
+      bonds and dipole-dipole interactions. Consequently, a single radial coordinate $r_{\text{OO}}$ averages over orientations,
+      whereas $g(r_{\text{OO}}, \alpha)$ and the distinct site-site functions ($g_{\text{OO}}, g_{\text{OH}}, g_{\text{HH}}$)
+      capture tetrahedral hydrogen-bonding geometry (**A**).
+  - id: sec_static_structure_factor
+    type: markdown_section
+    title: 4. The Static Structure Factor S(k), Diffraction, and Debye-Waller Attenuation
+    body_markdown: "### Definition and Connection to $g(\\mathbf{r})$\nWhile $g(r)$ describes pair correlations in real space,\
+      \ scattering experiments (X-ray diffraction and neutron scattering) directly measure its Fourier-space counterpart:\
+      \ the **static structure factor** $S(\\mathbf{k})$:\n$$S(\\mathbf{k}) = \\frac{1}{N} \\left\\langle |\\rho_{\\mathbf{k}}|^2\
+      \ \\right\\rangle = \\frac{1}{N} \\left\\langle \\sum_{i=1}^N \\sum_{j=1}^N e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i - \\\
+      mathbf{r}_j)} \\right\\rangle = 1 + \\rho \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} \\left[g(\\mathbf{r}) - 1\\\
+      right]$$\nFor an isotropic fluid where $g(\\mathbf{r}) = g(r)$, angular integration over $\\theta$ yields:\n$$S(k) =\
+      \ 1 + 4\\pi\\rho \\int_0^\\infty dr\\, r^2 \\frac{\\sin(kr)}{kr} \\left[g(r) - 1\\right]$$\n**Why compute $S(\\mathbf{k})\
+      \ = \\langle |\\rho_{\\mathbf{k}}|^2\\rangle / N$ directly rather than Fourier-transforming $g(r)$?**\n1. $g(r)$ is\
+      \ truncated at $r < L/2$ in a periodic box; truncating the Fourier integral produces severe unphysical ripples unless\
+      \ $g(r)$ is extended to $\\infty$.\n2. In an anisotropic crystal, pair correlations depend on the 3D vector $\\mathbf{r}$,\
+      \ not just scalar $r$.\n\n### Bragg Peaks and the Debye-Waller Factor\n- **Perfect Lattice at $T = 0$:** At a reciprocal\
+      \ lattice vector $\\mathbf{G} \\neq \\mathbf{0}$, every atom satisfies $\\mathbf{G}\\cdot\\mathbf{r}_i^0 = 2\\pi m_i$,\
+      \ so $\\rho_{\\mathbf{G}} = N$ and the **Bragg peak height scales linearly with particle number**:\n $$S(\\mathbf{G})\
+      \ = \\frac{N^2}{N} = N$$\n- **Crystal at Finite Temperature (or Quantum Zero-Point Motion):** Let $\\mathbf{r}_i = \\\
+      mathbf{r}_i^0 + \\mathbf{u}_i$, where $\\mathbf{u}_i$ is an isotropic Gaussian thermal displacement with mean-squared\
+      \ value $\\langle u^2 \\rangle = \\langle |\\mathbf{u}_i|^2 \\rangle$ (so $\\langle u_x^2\\rangle = \\langle u^2\\rangle\
+      \ / 3$). Evaluating the $i=j$ self term ($1$) and the $N(N-1)$ distinct-pair terms ($e^{i\\mathbf{G}\\cdot(\\mathbf{u}_i\
+      \ - \\mathbf{u}_j)}$) yields:\n $$S(\\mathbf{G}) = 1 + (N - 1) \\exp\\!\\left(-\\frac{G^2 \\langle u^2 \\rangle}{3}\\\
+      right)$$\n where $e^{-G^2\\langle u^2\\rangle / 3} = e^{-2W}$ is the **Debye-Waller factor**. Thermal vibrations attenuate\
+      \ high-$G$ Bragg peaks exponentially and redistribute the lost intensity into a diffuse thermal background $1 - e^{-k^2\\\
+      langle u^2\\rangle / 3}$, without broadening the sharp $\\delta(\\mathbf{k}-\\mathbf{G})$ Bragg width!\n- **Distinguishing\
+      \ a Crystal from a Liquid or Glass:** In a crystal, $S(\\mathbf{G}) \\propto N$ grows linearly as the simulation box\
+      \ is enlarged. In a liquid or glass, $S(k)$ exhibits broad rings whose peak heights remain $O(1)$ independent of $N$.\n\
+      \n### Long-Wavelength Compressibility Limit ($k \\to 0$)\nAs $k \\to 0$, $S(k)$ measures macroscopic number fluctuations\
+      \ in grand-canonical subvolumes, which are governed by the **isothermal compressibility** $\\chi_T = -\\frac{1}{\\Omega}\\\
+      left(\\frac{\\partial \\Omega}{\\partial P}\\right)_T$:\n$$\\lim_{k \\to 0} S(k) = 1 + \\rho \\int d^3r\\,\\left[g(r)\
+      \ - 1\\right] = \\rho k_B T \\chi_T$$\nAt a **liquid–gas critical point** (or spinodal), large-scale density fluctuations\
+      \ cause $\\chi_T \\to \\infty$, so $S(k \\to 0)$ diverges (critical opalescence)."
+  - id: concept_structure_factor_dw
+    type: concept_cell
+    title: 'Interactive Explorer: Structure Factor S(k), Bragg Scaling, and Debye-Waller Factor'
+    description_markdown: Explore how the static structure factor $S(k)$ of a crystal responds to thermal vibrations (via
+      the RMS Lindemann ratio $u/d = \sqrt{\langle u^2\rangle}/d$) and system size $N$. Toggle `compare_liquid` to overlay
+      a liquid structure factor.
+    render_function: render_structure_factor_debye_waller
+    layout: figure_left
+    controls:
+      lindemann_u:
+        kind: slider
+        label: RMS Thermal Displacement u / d
+        min: 0.0
+        max: 0.22
+        step: 0.01
+        default: 0.08
+      n_atoms:
+        kind: slider
+        label: Number of Atoms N
+        min: 16
+        max: 64
+        step: 8
+        default: 32
+      compare_liquid:
+        kind: dropdown
+        label: Overlay Liquid S(k)?
+        default: 0
+        options:
+        - label: Crystal Only
+          value: 0
+        - label: Compare Crystal vs. Liquid
+          value: 1
+    takeaway_markdown: '**Key Takeaway:** Increasing $N$ scales the crystalline Bragg peaks linearly ($S(\mathbf{G}) \propto
+      N$), whereas a liquid''s peaks stay $O(1)$. Increasing the thermal amplitude $u/d$ damps higher-$G$ Bragg peaks exponentially
+      via $\exp(-G^2\langle u^2\rangle/3)$ while raising the diffuse background $1 - \exp(-k^2\langle u^2\rangle/3)$.'
+  - id: concept_thermo_integrals
+    type: concept_cell
+    title: 'Interactive Explorer: Thermodynamic Integrals & Compressibility from g(r)'
+    description_markdown: Switch between the three radial kernels—**Excess Potential Energy** $2\pi\rho V(r)g(r)r^2$, **Virial
+      Pressure** $-\frac{2\pi\rho^2}{3} r V'(r)g(r)r^2$, and **Compressibility** $4\pi\rho[g(r)-1]r^2$—while varying density
+      $\rho^*$ and temperature $T^*$.
+    render_function: render_compressibility_and_thermodynamics
+    layout: figure_left
+    controls:
+      kernel_mode:
+        kind: dropdown
+        label: Integrand Kernel
+        default: potential_energy
+        options:
+        - label: Excess Potential Energy U/N
+          value: potential_energy
+        - label: Excess Virial Pressure P_ex
+          value: virial_pressure
+        - label: Compressibility Kernel [g(r)-1]r²
+          value: compressibility
+      rho:
+        kind: slider
+        label: Reduced Density ρ*
+        min: 0.2
+        max: 1.0
+        step: 0.05
+        default: 0.8
+      temperature:
+        kind: slider
+        label: Reduced Temperature T*
+        min: 0.7
+        max: 2.5
+        step: 0.05
+        default: 1.15
+    takeaway_markdown: '**Key Takeaway:** Knowing $g(r)$ and the pair potential $V(r)$ completely determines all two-body
+      thermodynamic properties ($U/N$, $P$, and $\chi_T$)! Notice how the first peak of $g(r)$ straddles both the repulsive
+      wall ($r < 2^{1/6}\sigma$, contributing positive pressure) and the attractive well ($r > 2^{1/6}\sigma$, contributing
+      negative energy and negative pressure).'
+  - id: q21_structure_factor_definition
+    type: problem
+    taught_by: sec_static_structure_factor
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: Which expression correctly defines the static structure factor $S(\mathbf{k})$ in terms of the Fourier-transformed
+      microscopic density $\rho_{\mathbf{k}} = \sum_{j=1}^N e^{i\mathbf{k}\cdot\mathbf{r}_j}$?
+    hint_markdown: Check the normalization factor $1/N$ that makes $S(k \to \infty) = 1$.
+    options:
+    - id: a
+      text: $S(\mathbf{k}) = \frac{1}{N} \langle |\rho_{\mathbf{k}}|^2 \rangle$
+    - id: b
+      text: $S(\mathbf{k}) = \frac{1}{N^2} \langle \rho_{\mathbf{k}} \rangle$
+    - id: c
+      text: $S(\mathbf{k}) = \Omega \langle |\rho_{\mathbf{k}}|^2 \rangle$
+    - id: d
+      text: $S(\mathbf{k}) = \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}} V(r)$
+    correct: a
+    rationale_markdown: The static structure factor is defined as $S(\mathbf{k}) = \frac{1}{N}\langle |\rho_{\mathbf{k}}|^2\rangle
+      = \frac{1}{N}\langle \rho_{\mathbf{k}}\rho_{-\mathbf{k}}\rangle$ (**A**). The $1/N$ normalization ensures that the $N$
+      diagonal self-terms ($i=j$, where $e^{i\mathbf{k}\cdot(\mathbf{r}_i-\mathbf{r}_i)} = 1$) contribute exactly $N/N = 1$
+      at large $k$.
+  - id: q22_s_k_large_k_limit
+    type: problem
+    taught_by:
+    - sec_static_structure_factor
+    - concept_structure_factor_dw
+    difficulty: easy
+    question_type: numeric
+    prompt_markdown: 'In any system of $N$ point particles (gas, liquid, glass, or finite-temperature crystal), as the wavevector
+      magnitude becomes very large ($k \to \infty$), distinct pair phases $e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)}$
+      ($i \neq j$) oscillate rapidly and average to zero, leaving only the $i = j$ self terms in $S(\mathbf{k}) = \frac{1}{N}\left\langle
+      \sum_{i,j} e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_j)}\right\rangle$.
+
+
+      What asymptotic numerical value does $S(k)$ approach as $k \to \infty$?'
+    hint_markdown: Evaluate $\frac{1}{N} \sum_{i=1}^N e^{i\mathbf{k}\cdot(\mathbf{r}_i - \mathbf{r}_i)}$.
+    correct:
+      value: 1.0
+      tolerance: 0.01
+    rationale_markdown: When $i = j$, $\mathbf{r}_i - \mathbf{r}_j = \mathbf{0}$ and $e^0 = 1$. Summing the $N$ diagonal terms
+      and dividing by $N$ gives $\lim_{k\to\infty} S(k) = N/N = 1.0$.
+  - id: q23_s_k_ideal_gas
+    type: problem
+    taught_by: sec_static_structure_factor
+    difficulty: easy
+    question_type: numeric
+    prompt_markdown: For a classical ideal gas in which particle positions are completely uncorrelated ($g(r) = 1$ for all
+      $r > 0$), what is the value of $S(k)$ for any non-zero wavevector $k > 0$?
+    hint_markdown: Substitute $g(r) = 1$ into $S(k) = 1 + \rho \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}}[g(r) - 1]$.
+    correct:
+      value: 1.0
+      tolerance: 0.01
+    rationale_markdown: Since $g(r) - 1 = 0$ everywhere in an ideal gas, the integral vanishes identically and $S(k) = 1$
+      for all $k > 0$.
+  - id: q24_why_not_ft_of_gr
+    type: problem
+    taught_by: sec_static_structure_factor
+    difficulty: medium
+    question_type: multi_select
+    prompt_markdown: Although $S(\mathbf{k}) = 1 + \rho \int d^3r\, e^{i\mathbf{k}\cdot\mathbf{r}}[g(\mathbf{r}) - 1]$ is
+      mathematically exact in an infinite system, why is it usually better in a finite periodic simulation to compute $S(\mathbf{k})
+      = \frac{1}{N}\langle |\rho_{\mathbf{k}}|^2\rangle$ directly on the reciprocal grid rather than numerically Fourier-transforming
+      the radial histogram $g(r)$? (Select all that apply.)
+    hint_markdown: Review the two problems with the integral listed of the lecture notes.
+    options:
+    - id: a
+      text: Because $g(r)$ is only known up to $r < L/2$ in periodic boundary conditions, and truncating the Fourier integral
+        introduces unphysical cutoff ripples at small $k$.
+    - id: b
+      text: Because in an anisotropic crystal or oriented phase, pair correlations depend on the 3D vector $\mathbf{r}$ rather
+        than just the spherically averaged scalar distance $r$.
+    - id: c
+      text: Because $g(r)$ can only be defined in 1D systems.
+    - id: d
+      text: Because $S(\mathbf{k})$ does not exist in fluids.
+    correct:
+    - a
+    - b
+    rationale_markdown: 'As highlighted in the lecture notes, numerically integrating $g(r)$ suffers from two major issues:
+      (1) $g(r)$ is cut off at $r = L/2$, so one would have to extrapolate $g(r)$ to infinity to avoid truncation artifacts
+      at small $k$ (**A**), and (2) in solids or anisotropic phases, one needs the full 3D $g(\mathbf{r})$ rather than the
+      spherically averaged $g(r)$ (**B**).'
+  - id: q25_bragg_peak_scaling_n
+    type: problem
+    taught_by:
+    - sec_static_structure_factor
+    - concept_structure_factor_dw
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: How do you definitively distinguish a crystalline solid from a dense liquid or glass in a finite-size
+      scaling study of the static structure factor $S(\mathbf{k})$ as the number of atoms $N$ is increased at fixed density
+      and temperature?
+    hint_markdown: Check how $S(\mathbf{G}) = 1 + (N-1)e^{-G^2\langle u^2\rangle/3}$ scales with $N$ in the interactive explorer.
+    options:
+    - id: a
+      text: In a crystal, the Bragg peaks $S(\mathbf{G})$ at reciprocal lattice vectors scale linearly with the number of
+        atoms ($S(\mathbf{G}) \propto N$), whereas in a liquid or glass all peaks of $S(k)$ remain $O(1)$ as $N$ grows.
+    - id: b
+      text: In a liquid, the main peak of $S(k)$ scales as $N^2$, whereas in a crystal it scales as $N$.
+    - id: c
+      text: In a crystal, $S(k) = 0$ for all $k$, whereas in a liquid $S(k) = N$.
+    - id: d
+      text: Both crystals and glasses have $S(\mathbf{G}) \propto N$.
+    correct: a
+    rationale_markdown: In a crystal, long-range positional order causes all $N$ atoms to scatter in phase at reciprocal lattice
+      vectors $\mathbf{G}$, so $S(\mathbf{G}) = 1 + (N-1)e^{-G^2\langle u^2\rangle/3} \propto N$. In a liquid or amorphous
+      glass, correlations decay over a finite correlation length, so $S(k)$ peaks remain $O(1)$ regardless of system size
+      $N$ (**A**).
+  - id: q26_debye_waller_numeric
+    type: problem
+    taught_by:
+    - sec_static_structure_factor
+    - concept_structure_factor_dw
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'Consider a crystalline solid of $N = 101$ atoms at a finite temperature where the mean-squared 3D thermal
+      displacement is $\langle u^2 \rangle = 0.03\,\text{Å}^2$. At a reciprocal lattice vector of magnitude $G = 10.0\,\text{Å}^{-1}$,
+      calculate the height of the Bragg peak $S(\mathbf{G})$ using the Debye-Waller formula:
+
+      $$S(\mathbf{G}) = 1 + (N - 1)\exp\!\left(-\frac{G^2 \langle u^2 \rangle}{3}\right)$$
+
+      (Round your answer to one decimal place.)'
+    hint_markdown: First compute the exponent $-G^2 \langle u^2 \rangle / 3 = -(100)(0.03)/3 = -1.0$, then evaluate $1 + 100
+      e^{-1}$.
+    correct:
+      value: 37.8
+      tolerance: 0.2
+    rationale_markdown: 'The Debye-Waller exponent is:
+
+      $$-\frac{G^2 \langle u^2 \rangle}{3} = -\frac{(10.0)^2 (0.03)}{3} = -1.0$$
+
+      Substituting $N - 1 = 100$ and $e^{-1} \approx 0.36788$ gives:
+
+      $$S(\mathbf{G}) = 1 + 100 \times 0.36788 \approx 37.8$$'
+  - id: q27_debye_waller_high_g_dependence
+    type: problem
+    taught_by:
+    - sec_static_structure_factor
+    - concept_structure_factor_dw
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: In a warm crystal with uncorrelated Gaussian thermal vibrations $\langle u^2 \rangle > 0$, how does the
+      Debye-Waller factor $\exp(-G^2 \langle u^2 \rangle / 3)$ affect higher-order Bragg reflections (large $G$) compared
+      to the fundamental low-$G$ Bragg reflection?
+    hint_markdown: Look at the $G^2$ dependence in the exponent of the Debye-Waller ceiling curve in the interactive explorer.
+    options:
+    - id: a
+      text: Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing
+        intensity appears as diffuse thermal background $1 - e^{-k^2\langle u^2\rangle/3}$.
+    - id: b
+      text: Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks.
+    - id: c
+      text: All Bragg peaks are reduced by the exact same constant fraction independent of $G$.
+    - id: d
+      text: The Bragg peaks shift to $G = 0$.
+    correct: a
+    rationale_markdown: Because the Debye-Waller factor decays as $\exp(-G^2 \langle u^2 \rangle / 3)$, short-wavelength (large-$G$)
+      reflections are much more sensitive to small atomic displacements than low-$G$ reflections and are strongly damped (**A**).
+      The lost Bragg intensity is transferred into the thermal diffuse background $1 - \exp(-k^2\langle u^2\rangle/3)$.
+  - id: q28_compressibility_from_s0_numeric
+    type: problem
+    taught_by:
+    - sec_static_structure_factor
+    - concept_thermo_integrals
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'In a simulation of a fluid at reduced number density $\rho^* = 0.60$ and reduced temperature $k_B T
+      / \varepsilon = 1.25$, extrapolating the static structure factor to $k \to 0$ yields $S(0) = 0.45$. Calculate the reduced
+      isothermal compressibility $\chi_T^* = \chi_T \varepsilon / \sigma^3$ using:
+
+      $$\chi_T = \frac{S(0)}{\rho k_B T}$$'
+    hint_markdown: Divide $S(0) = 0.45$ by $\rho^* T^* = 0.60 \times 1.25 = 0.75$.
+    correct:
+      value: 0.6
+      tolerance: 0.01
+    rationale_markdown: 'Using the compressibility relation $\chi_T = S(0) / (\rho k_B T)$:
+
+      $$\chi_T^* = \frac{0.45}{0.60 \times 1.25} = \frac{0.45}{0.75} = 0.60$$'
+  - id: q29_critical_point_s0_divergence
+    type: problem
+    taught_by: sec_static_structure_factor
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: As a fluid approaches its **liquid–gas critical point**, large-scale density fluctuations (droplets and
+      vapor cavities across all length scales) cause the isothermal compressibility $\chi_T$ to diverge. How does this manifest
+      in the static structure factor $S(k)$?
+    hint_markdown: Use $S(0) = \rho k_B T \chi_T$.
+    options:
+    - id: a
+      text: $S(k)$ diverges as $k \to 0$ ($S(0) \to \infty$), corresponding to critical opalescence.
+    - id: b
+      text: $S(k \to 0)$ drops to zero because the fluid becomes incompressible.
+    - id: c
+      text: Sharp Bragg peaks appear at large reciprocal lattice vectors $\mathbf{G}$.
+    - id: d
+      text: $S(k)$ becomes negative at small $k$.
+    correct: a
+    rationale_markdown: Since $\lim_{k\to 0} S(k) = \rho k_B T \chi_T$, a diverging compressibility at the liquid–gas transition
+      causes $S(k)$ to shoot up sharply as $k \to 0$ (**A**). In experiments, this strong small-angle scattering of visible
+      light is observed as critical opalescence.
+  - id: q30_excess_potential_energy_from_gr_numeric
+    type: problem
+    taught_by:
+    - sec_thermo_estimators
+    - concept_thermo_integrals
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'For a fluid of $N$ particles at number density $\rho = 0.80\,\sigma^{-3}$ and temperature $k_B T = 1.0\,\varepsilon$,
+      numerical evaluation of the radial pair-energy integral gives:
+
+      $$\int_0^\infty V(r)\, g(r)\, r^2 dr = -1.10\,\varepsilon\sigma^3$$
+
+      Using $\frac{E}{N} = \frac{3}{2} k_B T + 2\pi\rho \int_0^\infty V(r) g(r) r^2 dr$, calculate the total internal energy
+      per particle $E/N$ in units of $\varepsilon$. (Round to two decimal places.)'
+    hint_markdown: Compute $1.5(1.0) + 2\pi (0.80)(-1.10) = 1.5 - 5.5292$.
+    correct:
+      value: -4.03
+      tolerance: 0.05
+    rationale_markdown: 'The ideal kinetic energy per particle is $\frac{3}{2}k_B T = 1.50\,\varepsilon$. The excess potential
+      energy per particle is:
+
+      $$\frac{U}{N} = 2\pi\rho \int_0^\infty V(r) g(r) r^2 dr = 2\pi (0.80)(-1.10)\,\varepsilon \approx -5.529\,\varepsilon$$
+
+      Adding the two gives $E/N = 1.50 - 5.529 \approx -4.03\,\varepsilon$.'
+  - id: q31_virial_pressure_from_gr_numeric
+    type: problem
+    taught_by:
+    - sec_thermo_estimators
+    - concept_thermo_integrals
+    difficulty: hard
+    question_type: numeric
+    prompt_markdown: 'For a fluid at reduced density $\rho = 0.75\,\sigma^{-3}$ and temperature $k_B T = 1.20\,\varepsilon$,
+      you evaluate the radial virial integral:
+
+      $$\int_0^\infty r \frac{dV(r)}{dr} g(r) r^2 dr = -0.90\,\varepsilon\sigma^3$$
+
+      Using the pressure equation $P = \rho k_B T - \frac{2\pi\rho^2}{3} \int_0^\infty r\frac{dV}{dr} g(r) r^2 dr$, calculate
+      the total reduced pressure $P$ in units of $\varepsilon/\sigma^3$. (Round to two decimal places.)'
+    hint_markdown: Compute $\rho k_B T = 0.75 \times 1.20 = 0.90$, then add $-\frac{2\pi (0.75)^2}{3} (-0.90) = +1.0603$.
+    correct:
+      value: 1.96
+      tolerance: 0.03
+    rationale_markdown: 'The ideal kinetic pressure is $\rho k_B T = 0.75 \times 1.20 = 0.90\,\varepsilon/\sigma^3$. The excess
+      virial contribution is:
+
+      $$P_{\text{ex}} = -\frac{2\pi (0.75)^2}{3} (-0.90) = +\frac{2\pi (0.5625)(0.90)}{3} \approx +1.0603\,\varepsilon/\sigma^3$$
+
+      Summing both terms yields $P = 0.90 + 1.0603 \approx 1.96\,\varepsilon/\sigma^3$.'
+  - id: sec_glasses_mixtures_and_advanced
+    type: markdown_section
+    title: '5. Deep Dive: Binary Mixtures, Quantum Wigner Crystals, and the Glass Puzzle'
+    body_markdown: "### Binary Mixtures & Concentration-Concentration Correlations\nWhen simulating a two-component mixture\
+      \ of species $A$ and $B$ (such as the red/blue binary mixture or the $\\text{Ni–X}$ alloys ), the total number density\
+      \ $\\rho(\\mathbf{r}) = \\rho_A(\\mathbf{r}) + \\rho_B(\\mathbf{r})$ may remain nearly uniform even while the mixture\
+      \ demixes or orders chemically!\n- To detect **phase separation (unmixing)** or **chemical ordering (B2/L1$_2$ superlattices)**,\
+      \ we track the **local composition / concentration field** $c(\\mathbf{r}) = \\rho_A(\\mathbf{r}) - \\rho_B(\\mathbf{r})$\
+      \ and the **partial pair correlation functions** $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the Bhatia-Thornton concentration-concentration\
+      \ structure factor $S_{cc}(k)$).\n- If like species segregate into separate domains (demixing), $g_{AA}(r) > g_{AB}(r)$\
+      \ at short/intermediate range and $S_{cc}(k \\to 0)$ diverges!\n- If unlike species alternate on a lattice (chemical\
+      \ short-range order), the first peak of $g_{AB}(r)$ is enhanced while $g_{AA}(r)$ and $g_{BB}(r)$ are suppressed.\n\n\
+      ### Defects, Quantum Wigner Crystals, and Glasses\n- **Defects in Real-Space Density Maps:** Time-averaging the microscopic\
+      \ density $\\langle \\rho(\\mathbf{r}) \\rangle$ over a short window reveals stationary lattice positions in a crystal\
+      \ or glass, while point defects (vacancies, interstitials, dislocations) and local diffusive hops stand out clearly.\n\
+      - **2D Quantum Wigner Crystal:** At very low electron density where Coulomb repulsion $e^2/r$ dominates over quantum\
+      \ kinetic energy $\\hbar^2/(m r^2)$, electrons crystallize into a triangular **Wigner lattice**. Path-integral quantum\
+      \ Monte Carlo snapshots show ring-exchange tunneling (e.g., 3-electron cyclic exchange) slightly delocalizing the density\
+      \ peaks.\n- **The Glass Question: How do we distinguish a Glass from a Liquid and from a Crystal?**\n 1. **Glass vs.\
+      \ Crystal:** A crystal has broken translational symmetry with sharp Bragg peaks $S(\\mathbf{G}) \\propto N$. A **glass\
+      \ is amorphous**: its static pair correlation $g(r)$ and structure factor $S(k)$ look almost identical to an isotropic\
+      \ liquid (broad $O(1)$ rings, no $\\propto N$ Bragg peaks), though $g(r)$ often exhibits a split second peak.\n 2. **Glass\
+      \ vs. Liquid:** Static two-point spatial correlations $g(r)$ and $S(k)$ change very little across the glass transition!\
+      \ Instead, a glass is distinguished by **frozen local density fluctuations** (broken ergodicity) and **dynamical arrest**:\
+      \ particles are trapped in disordered cages so that the time-averaged local density $\\langle \\rho(\\mathbf{r}) \\\
+      rangle_t$ is spatially inhomogeneous (non-zero **Edwards-Anderson overlap order parameter** $q_{\\text{EA}} = \\lim_{t\\\
+      to\\infty} F(k, t)/S(k) > 0$), the self-diffusion constant drops to $D \\approx 0$, and the shear viscosity $\\eta$\
+      \ exceeds $10^{12}\\,\\text{Pa}\\cdot\\text{s}$."
+  - id: q32_binary_mixture_correlation
+    type: problem
+    taught_by: sec_glasses_mixtures_and_advanced
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: of the lecture, you are shown a snapshot of a dense binary mixture of red ($A$) and blue ($B$) particles
+      that has segregated into a red-rich upper region and a blue-rich lower region at constant total packing density. Which
+      correlation function is most informative for quantifying this compositional order?
+    hint_markdown: Since the total number density $\rho_A + \rho_B$ is uniform everywhere, total $g(r)$ barely changes; you
+      need species-resolved correlations.
+    options:
+    - id: a
+      text: The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure
+        factor $S_{cc}(k)$ of $\rho_A - \rho_B$).
+    - id: b
+      text: The species-blind total radial distribution function $g_{\text{tot}}(r)$ that ignores particle colors.
+    - id: c
+      text: The average total kinetic energy $\langle K \rangle$.
+    - id: d
+      text: The ideal-gas partition function.
+    correct: a
+    rationale_markdown: When two equally sized species demix at constant total density, the species-blind total $g(r)$ remains
+      almost unchanged. Resolving the **partial RDFs** $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ or the concentration structure factor
+      $S_{cc}(k) = \frac{1}{N}\langle |\rho_A(\mathbf{k}) - \rho_B(\mathbf{k})|^2\rangle$ directly detects whether like particles
+      cluster ($g_{AA} > g_{AB}$, $S_{cc}(k\to 0)$ large) or alternate (**A**).
+  - id: q33_glass_vs_crystal_static
+    type: problem
+    taught_by: sec_glasses_mixtures_and_advanced
+    difficulty: easy
+    question_type: single_select
+    prompt_markdown: How do you distinguish an amorphous **structural glass** from a **crystalline solid** using static diffraction
+      ($S(\mathbf{k})$)?
+    hint_markdown: Does a glass have a periodic reciprocal lattice with $S(\mathbf{G}) \propto N$?
+    options:
+    - id: a
+      text: A crystal exhibits discrete, sharp Bragg peaks $S(\mathbf{G}) \propto N$ at reciprocal lattice vectors, whereas
+        a glass is isotropic and displays only broad, $O(1)$ diffuse scattering rings like a liquid.
+    - id: b
+      text: A glass has $S(\mathbf{G}) = N^2$, whereas a crystal has $S(\mathbf{G}) = N$.
+    - id: c
+      text: A glass has $g(r) = 1$ everywhere like an ideal gas.
+    - id: d
+      text: A crystal has no exclusion hole at small $r$ in $g(r)$.
+    correct: a
+    rationale_markdown: A glass lacks long-range periodic translational order. Therefore, its static structure factor $S(\mathbf{k})$
+      has no $\propto N$ Bragg peaks, showing only broad, isotropic $O(1)$ rings similar to a dense liquid (**A**).
+  - id: q34_glass_vs_liquid_distinction
+    type: problem
+    taught_by: sec_glasses_mixtures_and_advanced
+    difficulty: medium
+    question_type: multi_select
+    prompt_markdown: Since a structural glass and a dense liquid have nearly indistinguishable static two-point functions
+      $g(r)$ and $S(k)$, how do we distinguish a **glass** from an equilibrium **liquid** in an atomic-scale simulation? (Select
+      all that apply.)
+    hint_markdown: Consider whether atoms in a glass diffuse freely over long times or remain trapped in frozen, disordered
+      local cages.
+    options:
+    - id: a
+      text: 'By measuring time-dependent correlations and transport: in a glass, particles are dynamically arrested in cages
+        ($D \to 0$, intermediate scattering function $F(k, t)$ plateaus at a non-zero Edwards-Anderson order parameter $q_{\text{EA}}
+        > 0$).'
+    - id: b
+      text: 'By inspecting the time-averaged local density $\langle \rho(\mathbf{r}) \rangle_t$: in a liquid it smears out
+        to a uniform constant $\rho_0$, whereas in a glass it remains spatially inhomogeneous around the frozen amorphous
+        atomic positions.'
+    - id: c
+      text: By checking if $g(r \to \infty) = 0$ in the liquid and $g(r \to \infty) = 10$ in the glass.
+    - id: d
+      text: By checking if the kinetic energy violates equipartition $\langle K \rangle = \frac{3}{2} N k_B T$ in a classical
+        glass.
+    correct:
+    - a
+    - b
+    rationale_markdown: 'A glass is an ergodic-broken, dynamically arrested state: (1) its time-correlation functions fail
+      to decay to zero over observation timescales ($q_{\text{EA}} > 0$, self-diffusion $D \to 0$) (**A**), and (2) its time-averaged
+      real-space density $\langle \rho(\mathbf{r}) \rangle_t$ remains localized at frozen disordered sites rather than averaging
+      out to a flat constant $\rho_0$ as in an ergodic liquid (**B**). Classical equipartition still holds for momenta (**D**
+      is false), and $g(r\to\infty)=1$ in both (**C** is false).'
+  - id: q35_second_peak_splitting
+    type: problem
+    taught_by:
+    - sec_rdf_theory_and_algorithm
+    - sec_glasses_mixtures_and_advanced
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: and in supercooled liquids/glasses, what structural feature typically appears on the **second peak**
+      of $g(r)$ ($r \approx 1.7\sigma\text{–}2.0\sigma$) as the liquid freezes or vitrifies into a dense solid?
+    hint_markdown: Check the bullet point and compare the FCC neighbor distances $\sqrt{2}\sigma, \sqrt{3}\sigma, 2\sigma$.
+    options:
+    - id: a
+      text: Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\sqrt{3}\sigma$
+        vs. $2\sigma$ shells) resolve out of the smooth liquid oscillation.
+    - id: b
+      text: The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\sigma$.
+    - id: c
+      text: The exclusion hole at $r < \sigma$ disappears.
+    - id: d
+      text: The first peak shifts to $r = 0$.
+    correct: a
+    rationale_markdown: In a liquid, the second coordination shell is a single broad oscillation. Upon freezing into a crystal
+      (or forming a dense metallic glass with icosahedral/polytetrahedral local packing), distinct geometric distances (such
+      as colinear $2\sigma$ vs. Triangular $\sqrt{3}\sigma$ paths) produce characteristic **shoulders or splitting** on the
+      second peak of $g(r)$ (**A**).
+  - id: q36_wigner_crystal_physics
+    type: problem
+    taught_by: sec_glasses_mixtures_and_advanced
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: shows the electron density of a **2D quantum Wigner crystal** during a 3-particle ring exchange. Under
+      what physical regime do electrons—which repel via the $e^2/r$ Coulomb potential—spontaneously break translational symmetry
+      to form a Wigner crystal?
+    hint_markdown: Compare the potential energy $e^2/r_s$ (which scales as $r_s^{-1}$) against the quantum zero-point kinetic
+      energy $\hbar^2 / (m r_s^2)$ (which scales as $r_s^{-2}$) as inter-electron spacing $r_s$ increases.
+    options:
+    - id: a
+      text: At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\propto
+        1/r_s$ dominates over quantum kinetic energy $\propto 1/r_s^2$.
+    - id: b
+      text: At extremely high temperature $T \to \infty$ where thermal kinetic energy dominates.
+    - id: c
+      text: Only when the Coulomb interaction is turned off ($e = 0$).
+    - id: d
+      text: At infinite density ($r_s \to 0$) where electrons behave as an ideal Fermi gas.
+    correct: a
+    rationale_markdown: For quantum particles with mass $m$ and spacing $r_s$, zero-point kinetic energy scales as $\hbar^2/(m
+      r_s^2)$ while Coulomb repulsion scales as $e^2/r_s$. At **low density** (large $r_s$) and low $T$, Coulomb repulsion
+      dominates over quantum delocalization, causing the electrons to crystallize into a Wigner lattice (**A**).
+  - id: q37_hard_sphere_pressure_virial
+    type: problem
+    taught_by:
+    - sec_thermo_estimators
+    - sec_rdf_theory_and_algorithm
+    difficulty: hard
+    question_type: single_select
+    prompt_markdown: 'For a fluid of **hard spheres** of diameter $\sigma$ ($V(r) = \infty$ for $r < \sigma$ and $V(r) = 0$
+      for $r > \sigma$), the Boltzmann factor $e^{-\beta V(r)}$ is a Heaviside step function $\Theta(r - \sigma)$, so its
+      derivative is a Dirac delta function $\frac{d}{dr}e^{-\beta V(r)} = -\beta \frac{dV}{dr} e^{-\beta V(r)} = \delta(r
+      - \sigma)$.
+
+
+      What does the general virial pressure equation $P = \rho k_B T - \frac{2\pi\rho^2}{3} \int_0^\infty r \frac{dV}{dr}
+      g(r) r^2 dr$ simplify to for hard spheres in 3D?'
+    hint_markdown: Replace $-\frac{dV}{dr} g(r)$ by $k_B T \delta(r - \sigma) g(\sigma^+)$ inside the integral.
+    options:
+    - id: a
+      text: $P = \rho k_B T \left[ 1 + \frac{2\pi}{3} \rho \sigma^3 g(\sigma^+) \right]$, where $g(\sigma^+)$ is the contact
+        value of the RDF at $r = \sigma^+$.
+    - id: b
+      text: $P = \rho k_B T$ identically at all densities because $V(r) = 0$ for $r > \sigma$.
+    - id: c
+      text: $P = 0$ at all temperatures.
+    - id: d
+      text: $P = -\frac{2\pi}{3} \rho^2 \sigma^3 k_B T$.
+    correct: a
+    rationale_markdown: Because the hard-sphere potential jumps from $\infty$ to $0$ at $r = \sigma$, impulsive collisions
+      occur exclusively at contact $r = \sigma^+$. Writing $g(r) = e^{-\beta V(r)} y(r)$ where $y(r)$ is continuous across
+      $r=\sigma$, we have $-\beta \frac{dV}{dr} g(r) = \delta(r-\sigma) g(\sigma^+)$. Integrating over $r$ yields $P = \rho
+      k_B T \left[1 + \frac{2\pi}{3}\rho\sigma^3 g(\sigma^+)\right]$ (**A**).
+  - id: q38_hard_sphere_contact_pressure_numeric
+    type: problem
+    taught_by:
+    - sec_thermo_estimators
+    - sec_rdf_theory_and_algorithm
+    difficulty: hard
+    question_type: numeric
+    prompt_markdown: 'In a 3D hard-sphere simulation at reduced density $\rho\sigma^3 = 0.50$, you measure the contact value
+      of the radial distribution function to be $g(\sigma^+) = 2.20$. Using the hard-sphere virial equation:
+
+      $$\frac{P}{\rho k_B T} = 1 + \frac{2\pi}{3} (\rho\sigma^3)\, g(\sigma^+)$$
+
+      calculate the compressibility factor $Z = \frac{P}{\rho k_B T}$. (Round to two decimal places.)'
+    hint_markdown: Compute $1 + (2\pi / 3) \times 0.50 \times 2.20 = 1 + 1.10\pi / 1.5$.
+    correct:
+      value: 3.3
+      tolerance: 0.03
+    rationale_markdown: 'Substituting $\rho\sigma^3 = 0.50$ and $g(\sigma^+) = 2.20$:
+
+      $$Z = 1 + \frac{2\pi}{3}(0.50)(2.20) = 1 + \frac{1.10\pi}{1.5} \approx 1 + 2.3038 \approx 3.30$$'
+  - id: q39_ising_spin_correlations
+    type: problem
+    taught_by: sec_density_and_order_parameters
+    difficulty: medium
+    question_type: single_select
+    prompt_markdown: shows three typical spin configurations of the 2D ferromagnetic Ising lattice at $T \ll T_c$ (left),
+      $T \sim T_c$ (center), and $T \gg T_c$ (right). How does the spin-spin correlation function $G(r) = \langle \sigma_0
+      \sigma_r \rangle - \langle \sigma \rangle^2$ behave across these three regimes?
+    hint_markdown: At $T \sim T_c$, domains of all sizes (fractal clusters) appear, giving power-law decay rather than short-range
+      exponential decay.
+    options:
+    - id: a
+      text: For $T \gg T_c$ and $T \ll T_c$, connected correlations $G(r)$ decay exponentially over a finite correlation length
+        $\xi$, whereas at $T = T_c$ the correlation length diverges ($\xi \to \infty$) and $G(r)$ decays algebraically as
+        a power law.
+    - id: b
+      text: For $T \gg T_c$, $G(r) = 1$ for all $r$, whereas at $T = T_c$, $G(r) = 0$ for all $r > 0$.
+    - id: c
+      text: The correlation length $\xi$ is largest at $T \to \infty$.
+    - id: d
+      text: $\langle \sigma \rangle = 1$ for $T \gg T_c$ and $\langle \sigma \rangle = 0$ for $T \ll T_c$.
+    correct: a
+    rationale_markdown: Away from the critical temperature ($T \ll T_c$ or $T \gg T_c$), spin fluctuations are correlated
+      only over a finite correlation length $\xi$, so $G(r) \sim e^{-r/\xi}$. Right at $T \sim T_c$ (center panel of ), scale-free
+      fractal spin domains span the entire box, $\xi \to \infty$, and $G(r)$ decays slowly as a power law $r^{-(d-2+\eta)}$
+      (**A**).
+  - id: q40_debye_waller_extract_u2_numeric
+    type: problem
+    taught_by:
+    - sec_static_structure_factor
+    - concept_structure_factor_dw
+    difficulty: hard
+    question_type: numeric
+    prompt_markdown: 'In an X-ray diffraction simulation of a crystal with $N = 1001$ atoms, the ideal $T = 0$ Bragg peak
+      at reciprocal lattice vector $G = 5.0\,\text{Å}^{-1}$ has height $S_0(G) = 1001$. At temperature $T = 500\,\text{K}$,
+      you measure the Bragg peak height at the same $G$ to be $S(G) = 607.53$.
+
+
+      Using $S(G) = 1 + (N - 1)\exp(-G^2 \langle u^2 \rangle / 3)$, solve for the 3D mean-squared thermal displacement $\langle
+      u^2 \rangle$ in $\text{Å}^2$. (Round to two decimal places.)'
+    hint_markdown: First solve $\exp(-G^2 \langle u^2 \rangle / 3) = (607.53 - 1) / 1000 = 0.60653$, take the natural log
+      ($\ln(0.60653) = -0.50$), and multiply by $-3 / G^2 = -3 / 25$.
+    correct:
+      value: 0.06
+      tolerance: 0.005
+    rationale_markdown: 'Isolating the Debye-Waller factor gives:
+
+      $$\exp\!\left(-\frac{G^2 \langle u^2 \rangle}{3}\right) = \frac{S(G) - 1}{N - 1} = \frac{607.53 - 1}{1000} = 0.60653$$
+
+      Taking the natural logarithm yields $-\frac{G^2 \langle u^2 \rangle}{3} = \ln(0.60653) \approx -0.500$. Solving for
+      $\langle u^2 \rangle$ with $G^2 = 25.0\,\text{Å}^{-2}$:
+
+      $$\langle u^2 \rangle = \frac{3 \times 0.500}{25.0} = 0.06\,\text{Å}^2$$'
+  - id: q41_bcc_coordination_shells
+    type: problem
+    taught_by: sec_rdf_theory_and_algorithm
+    difficulty: medium
+    question_type: numeric
+    prompt_markdown: 'In a body-centered cubic (BCC) crystal (such as solid iron or sodium), each atom has $Z_1 = 8$ first-nearest
+      neighbors at distance $r_1 = \frac{\sqrt{3}}{2}a$ (body diagonals) and $Z_2 = 6$ second-nearest neighbors at distance
+      $r_2 = a$ (cube edges), which is only $15.5\%$ farther than $r_1$ ($r_2 / r_1 = \sqrt{4/3} \approx 1.155$).
+
+
+      If the first and second peaks of $g(r)$ merge into a single composite peak at high temperature and you integrate the
+      running coordination number $N(r) = 4\pi\rho \int_0^r g(r'')r''^2 dr''$ out to the minimum just beyond $r_2$, what total
+      coordination number $Z_1 + Z_2$ do you obtain?'
+    hint_markdown: Sum the 8 first-nearest neighbors and 6 second-nearest neighbors of the BCC lattice.
+    correct:
+      value: 14.0
+      tolerance: 0.1
+    rationale_markdown: In a BCC lattice, the $Z_1 = 8$ nearest neighbors at $0.866a$ and the $Z_2 = 6$ next-nearest neighbors
+      at $1.000a$ sit very close together. Integrating $4\pi\rho g(r)r^2$ across both shells yields $Z_1 + Z_2 = 8 + 6 = 14$
+      neighbors.
+  - id: q42_thermodynamic_estimator_summary
+    type: problem
+    taught_by:
+    - sec_thermo_estimators
+    - sec_static_structure_factor
+    difficulty: medium
+    question_type: multi_select
+    prompt_markdown: Which of the following statements about static correlations and thermodynamic estimators in atomic-scale
+      simulations are **true**? (Select all that apply.)
+    hint_markdown: Verify each statement against the Thermodynamic Estimators table and the properties of $g(r)$ and $S(k)$.
+    options:
+    - id: a
+      text: For any pairwise-additive potential $V(\mathbf{R}) = \sum_{i<j} v(r_{ij})$, both the average potential energy
+        $U$ and the excess virial pressure $P_{\text{ex}}$ can be expressed exactly as 1D radial integrals involving $g(r)$.
+    - id: b
+      text: The isothermal compressibility $\chi_T$ is directly proportional to the long-wavelength limit of the static structure
+        factor, $\chi_T = S(0) / (\rho k_B T)$.
+    - id: c
+      text: In a canonical ($NVT$) simulation, the specific heat $C_V$ is determined by the variance of total energy fluctuations
+        divided by $(k_B T)^2$.
+    - id: d
+      text: The radial distribution function $g(r)$ of a crystalline solid scales linearly with the total number of particles
+        $N$ at large $r$.
+    correct:
+    - a
+    - b
+    - c
+    rationale_markdown: 'Statements **A**, **B**, and **C** are exact fundamental identities from statistical mechanics (and
+      16). Statement **D** is false: $g(r)$ is normalized so that its spatial average is $1$ ($O(1)$, intensive), whereas
+      it is the reciprocal-space Bragg peak $S(\mathbf{G})$ that scales linearly with $N$.'

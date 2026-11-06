@@ -5,11 +5,15 @@ worksheet:
   learning_objectives:
   - Formulate Hamilton's equations of motion and understand Liouville's theorem of phase-space volume conservation.
   - Derive the basic Verlet, Leapfrog, and Velocity Verlet integration algorithms from forward and backward Taylor expansions.
-  - Explain why symplectic integrators exhibit bounded, oscillatory energy fluctuations without secular drift via shadow (modified) Hamiltonians.
+  - Explain why symplectic integrators exhibit bounded, oscillatory energy fluctuations without secular drift via shadow (modified)
+    Hamiltonians.
   - Contrast symplectic integrators with high-order non-symplectic integrators (Euler, Runge-Kutta 4th order, Gear predictor-corrector).
-  - Apply physical timestep selection criteria based on fastest vibrational frequencies ($T_{\text{vib}}/20$) and identify the Verlet resonance instability at $\Delta t = T_{\text{vib}}/\pi$.
-  - Demonstrate the algebraic time-reversibility of Velocity Verlet and assess the impact of finite-precision floating-point Lyapunov divergence.
-  - Analyze truncated interatomic potentials, compute the impulsive force delta-spike at $r_c$, and implement potential shifting and force smoothing.
+  - Apply physical timestep selection criteria based on fastest vibrational frequencies ($T_{\text{vib}}/20$) and identify
+    the Verlet resonance instability at $\Delta t = T_{\text{vib}}/\pi$.
+  - Demonstrate the algebraic time-reversibility of Velocity Verlet and assess the impact of finite-precision floating-point
+    Lyapunov divergence.
+  - Analyze truncated interatomic potentials, compute the impulsive force delta-spike at $r_c$, and implement potential shifting
+    and force smoothing.
   sections:
   - id: sec_md_architecture_and_equations
     type: markdown_section
@@ -17,7 +21,10 @@ worksheet:
     body_markdown: '### The Molecular Dynamics Paradigm
 
 
-      Molecular Dynamics (MD) simulates the deterministic time evolution of a classical $N$-body system by numerically integrating Newton''s (or Hamilton''s) equations of motion. Given particle positions $\mathbf{r}^N = \{\mathbf{r}_1, \dots, \mathbf{r}_N\}$ and momenta $\mathbf{p}^N = \{\mathbf{p}_1, \dots, \mathbf{p}_N\}$ with interatomic potential $V(\mathbf{r}^N)$, the classical Hamiltonian is:
+      Molecular Dynamics (MD) simulates the deterministic time evolution of a classical $N$-body system by numerically integrating
+      Newton''s (or Hamilton''s) equations of motion. Given particle positions $\mathbf{r}^N = \{\mathbf{r}_1, \dots, \mathbf{r}_N\}$
+      and momenta $\mathbf{p}^N = \{\mathbf{p}_1, \dots, \mathbf{p}_N\}$ with interatomic potential $V(\mathbf{r}^N)$, the
+      classical Hamiltonian is:
 
 
       $$\mathcal{H}(\mathbf{r}^N, \mathbf{p}^N) = \sum_{i=1}^N \frac{|\mathbf{p}_i|^2}{2m_i} + V(\mathbf{r}_1, \dots, \mathbf{r}_N)$$
@@ -26,19 +33,26 @@ worksheet:
       The equations of motion are given by Hamilton''s canonical equations:
 
 
-      $$\dot{\mathbf{r}}_i = \frac{\partial \mathcal{H}}{\partial \mathbf{p}_i} = \frac{\mathbf{p}_i}{m_i} = \mathbf{v}_i, \qquad \dot{\mathbf{p}}_i = -\frac{\partial \mathcal{H}}{\partial \mathbf{r}_i} = -\nabla_i V = \mathbf{F}_i$$
+      $$\dot{\mathbf{r}}_i = \frac{\partial \mathcal{H}}{\partial \mathbf{p}_i} = \frac{\mathbf{p}_i}{m_i} = \mathbf{v}_i,
+      \qquad \dot{\mathbf{p}}_i = -\frac{\partial \mathcal{H}}{\partial \mathbf{r}_i} = -\nabla_i V = \mathbf{F}_i$$
 
 
       ### Liouville''s Theorem and Symplectic Geometry
 
 
-      The phase space $\Gamma = (\mathbf{r}^N, \mathbf{p}^N)$ has dimension $6N$. Under exact Hamiltonian dynamics, the phase-space velocity field $\mathbf{u} = (\dot{\mathbf{r}}^N, \dot{\mathbf{p}}^N)$ has zero divergence:
+      The phase space $\Gamma = (\mathbf{r}^N, \mathbf{p}^N)$ has dimension $6N$. Under exact Hamiltonian dynamics, the phase-space
+      velocity field $\mathbf{u} = (\dot{\mathbf{r}}^N, \dot{\mathbf{p}}^N)$ has zero divergence:
 
 
-      $$\nabla_\Gamma \cdot \mathbf{u} = \sum_{i=1}^N \left( \frac{\partial \dot{\mathbf{r}}_i}{\partial \mathbf{r}_i} + \frac{\partial \dot{\mathbf{p}}_i}{\partial \mathbf{p}_i} \right) = \sum_{i=1}^N \left( \frac{\partial^2 \mathcal{H}}{\partial \mathbf{r}_i \partial \mathbf{p}_i} - \frac{\partial^2 \mathcal{H}}{\partial \mathbf{p}_i \partial \mathbf{r}_i} \right) = 0$$
+      $$\nabla_\Gamma \cdot \mathbf{u} = \sum_{i=1}^N \left( \frac{\partial \dot{\mathbf{r}}_i}{\partial \mathbf{r}_i} + \frac{\partial
+      \dot{\mathbf{p}}_i}{\partial \mathbf{p}_i} \right) = \sum_{i=1}^N \left( \frac{\partial^2 \mathcal{H}}{\partial \mathbf{r}_i
+      \partial \mathbf{p}_i} - \frac{\partial^2 \mathcal{H}}{\partial \mathbf{p}_i \partial \mathbf{r}_i} \right) = 0$$
 
 
-      By the divergence theorem, this implies **Liouville''s Theorem**: phase-space volume elements are strictly conserved along trajectories ($d\Omega / dt = 0$). More fundamentally, Hamiltonian flows preserve the differential 2-form $\omega = \sum_i d\mathbf{r}_i \wedge d\mathbf{p}_i$, a geometric property called **symplecticity**. A numerical integrator that preserves this geometric structure is called a **symplectic integrator**.'
+      By the divergence theorem, this implies **Liouville''s Theorem**: phase-space volume elements are strictly conserved
+      along trajectories ($d\Omega / dt = 0$). More fundamentally, Hamiltonian flows preserve the differential 2-form $\omega
+      = \sum_i d\mathbf{r}_i \wedge d\mathbf{p}_i$, a geometric property called **symplecticity**. A numerical integrator
+      that preserves this geometric structure is called a **symplectic integrator**.'
   - id: sec_integrators_and_symplectic_geometry
     type: markdown_section
     title: '2. Finite-Difference Integrators: Verlet, Velocity Verlet, and Leapfrog'
@@ -48,18 +62,22 @@ worksheet:
       Consider the Taylor expansions of position $\mathbf{r}(t)$ forward and backward by timestep $\Delta t$:
 
 
-      $$\mathbf{r}(t + \Delta t) = \mathbf{r}(t) + \mathbf{v}(t)\Delta t + \frac{1}{2}\mathbf{a}(t)\Delta t^2 + \frac{1}{6}\mathbf{b}(t)\Delta t^3 + \mathcal{O}(\Delta t^4)$$
+      $$\mathbf{r}(t + \Delta t) = \mathbf{r}(t) + \mathbf{v}(t)\Delta t + \frac{1}{2}\mathbf{a}(t)\Delta t^2 + \frac{1}{6}\mathbf{b}(t)\Delta
+      t^3 + \mathcal{O}(\Delta t^4)$$
 
-      $$\mathbf{r}(t - \Delta t) = \mathbf{r}(t) - \mathbf{v}(t)\Delta t + \frac{1}{2}\mathbf{a}(t)\Delta t^2 - \frac{1}{6}\mathbf{b}(t)\Delta t^3 + \mathcal{O}(\Delta t^4)$$
+      $$\mathbf{r}(t - \Delta t) = \mathbf{r}(t) - \mathbf{v}(t)\Delta t + \frac{1}{2}\mathbf{a}(t)\Delta t^2 - \frac{1}{6}\mathbf{b}(t)\Delta
+      t^3 + \mathcal{O}(\Delta t^4)$$
 
 
       Adding these two expansions cancels the odd-order terms (velocity and jerk $\mathbf{b}(t)$):
 
 
-      $$\mathbf{r}(t + \Delta t) = 2\mathbf{r}(t) - \mathbf{r}(t - \Delta t) + \mathbf{a}(t)\Delta t^2 + \mathcal{O}(\Delta t^4)$$
+      $$\mathbf{r}(t + \Delta t) = 2\mathbf{r}(t) - \mathbf{r}(t - \Delta t) + \mathbf{a}(t)\Delta t^2 + \mathcal{O}(\Delta
+      t^4)$$
 
 
-      The local position truncation error is $\mathcal{O}(\Delta t^4)$, yielding an accumulated global position error of $\mathcal{O}(\Delta t^2)$ over time $T$.
+      The local position truncation error is $\mathcal{O}(\Delta t^4)$, yielding an accumulated global position error of $\mathcal{O}(\Delta
+      t^2)$ over time $T$.
 
 
       ### Velocities and the Velocity Verlet Formulation
@@ -71,16 +89,21 @@ worksheet:
       $$\mathbf{v}(t) = \frac{\mathbf{r}(t + \Delta t) - \mathbf{r}(t - \Delta t)}{2\Delta t} + \mathcal{O}(\Delta t^2)$$
 
 
-      However, the basic Verlet algorithm does not store $\mathbf{v}(t)$ explicitly, making kinetic energy evaluation lag by one step. Swope et al. (1982) introduced the mathematically equivalent **Velocity Verlet** scheme, which maintains positions and velocities synchronized at time $t$:
+      However, the basic Verlet algorithm does not store $\mathbf{v}(t)$ explicitly, making kinetic energy evaluation lag
+      by one step. Swope et al. (1982) introduced the mathematically equivalent **Velocity Verlet** scheme, which maintains
+      positions and velocities synchronized at time $t$:
 
 
-      1. Propagate velocity by half-step: $\mathbf{v}(t + \frac{1}{2}\Delta t) = \mathbf{v}(t) + \frac{1}{2}\mathbf{a}(t)\Delta t$
+      1. Propagate velocity by half-step: $\mathbf{v}(t + \frac{1}{2}\Delta t) = \mathbf{v}(t) + \frac{1}{2}\mathbf{a}(t)\Delta
+      t$
 
-      2. Propagate position by full-step: $\mathbf{r}(t + \Delta t) = \mathbf{r}(t) + \mathbf{v}(t + \frac{1}{2}\Delta t)\Delta t = \mathbf{r}(t) + \mathbf{v}(t)\Delta t + \frac{1}{2}\mathbf{a}(t)\Delta t^2$
+      2. Propagate position by full-step: $\mathbf{r}(t + \Delta t) = \mathbf{r}(t) + \mathbf{v}(t + \frac{1}{2}\Delta t)\Delta
+      t = \mathbf{r}(t) + \mathbf{v}(t)\Delta t + \frac{1}{2}\mathbf{a}(t)\Delta t^2$
 
       3. Compute new forces: $\mathbf{a}(t + \Delta t) = \frac{1}{m}\mathbf{F}(\mathbf{r}(t + \Delta t))$
 
-      4. Complete velocity step: $\mathbf{v}(t + \Delta t) = \mathbf{v}(t + \frac{1}{2}\Delta t) + \frac{1}{2}\mathbf{a}(t + \Delta t)\Delta t$
+      4. Complete velocity step: $\mathbf{v}(t + \Delta t) = \mathbf{v}(t + \frac{1}{2}\Delta t) + \frac{1}{2}\mathbf{a}(t
+      + \Delta t)\Delta t$
 
 
       Notice that each step requires exactly **one force evaluation** per particle.'
@@ -89,7 +112,8 @@ worksheet:
     title: 'Interactive Concept: Integrator Shootout (Verlet vs Euler vs RK4)'
     description_markdown: 'Compare numerical integrators on a 1D harmonic oscillator $\ddot{x} + \omega^2 x = 0$.
 
-      Select the integrator (`velocity_verlet`, `verlet`, `euler`, `rk4`), adjust timestep $\Delta t$, and track phase space orbits and energy conservation.'
+      Select the integrator (`velocity_verlet`, `verlet`, `euler`, `rk4`), adjust timestep $\Delta t$, and track phase space
+      orbits and energy conservation.'
     render_function: render_integrator_shootout
     layout:
       kind: matplotlib
@@ -124,7 +148,10 @@ worksheet:
         max: 20
         step: 1
         default: 5
-    takeaway_markdown: '**Key Insight:** Forward Euler spirals outward exponentially (violating phase-space volume conservation). RK4 produces extremely small short-term errors but accumulates steady secular energy drift over long simulations. In contrast, Velocity Verlet and Verlet bound energy fluctuations within a narrow band forever because they exactly conserve a shadow Hamiltonian.'
+    takeaway_markdown: '**Key Insight:** Forward Euler spirals outward exponentially (violating phase-space volume conservation).
+      RK4 produces extremely small short-term errors but accumulates steady secular energy drift over long simulations. In
+      contrast, Velocity Verlet and Verlet bound energy fluctuations within a narrow band forever because they exactly conserve
+      a shadow Hamiltonian.'
   - id: q04_01
     type: problem
     question_type: single_select
@@ -136,8 +163,10 @@ worksheet:
       text_markdown: Total kinetic energy and potential energy are each independently conserved at every point in time.
       text: Total kinetic energy and potential energy are each independently conserved at every point in time.
     - id: b
-      text_markdown: The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\Omega/dt = 0$).
-      text: The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\Omega/dt = 0$).
+      text_markdown: The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\Omega/dt
+        = 0$).
+      text: The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\Omega/dt
+        = 0$).
     - id: c
       text_markdown: The distance between any two nearby trajectories in phase space remains strictly constant.
       text: The distance between any two nearby trajectories in phase space remains strictly constant.
@@ -146,20 +175,25 @@ worksheet:
       text: All microstates in phase space have zero momentum.
     correct: b
     hint_markdown: Recall the divergence of the canonical phase-space velocity field $\nabla_\Gamma \cdot \mathbf{u} = 0$.
-    rationale_markdown: Liouville's theorem states that the phase-space density along a trajectory is constant, meaning any volume element in $6N$-dimensional phase space $(\mathbf{r}^N, \mathbf{p}^N)$ preserves its volume under exact Hamiltonian evolution.
+    rationale_markdown: Liouville's theorem states that the phase-space density along a trajectory is constant, meaning any
+      volume element in $6N$-dimensional phase space $(\mathbf{r}^N, \mathbf{p}^N)$ preserves its volume under exact Hamiltonian
+      evolution.
   - id: q04_02
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_integrators_and_symplectic_geometry
-    prompt_markdown: In the derivation of the standard Verlet algorithm $\mathbf{r}(t+\Delta t) = 2\mathbf{r}(t) - \mathbf{r}(t-\Delta t) + \mathbf{a}(t)\Delta t^2$, why do the odd-power terms in $\Delta t$ vanish?
+    prompt_markdown: In the derivation of the standard Verlet algorithm $\mathbf{r}(t+\Delta t) = 2\mathbf{r}(t) - \mathbf{r}(t-\Delta
+      t) + \mathbf{a}(t)\Delta t^2$, why do the odd-power terms in $\Delta t$ vanish?
     options:
     - id: a
       text_markdown: The odd derivatives of potential energy are identically zero for all physical potentials.
       text: The odd derivatives of potential energy are identically zero for all physical potentials.
     - id: b
-      text_markdown: Adding forward $\mathbf{r}(t+\Delta t)$ and backward $\mathbf{r}(t-\Delta t)$ Taylor expansions cancels all odd powers of $\Delta t$ by symmetry.
-      text: Adding forward $\mathbf{r}(t+\Delta t)$ and backward $\mathbf{r}(t-\Delta t)$ Taylor expansions cancels all odd powers of $\Delta t$ by symmetry.
+      text_markdown: Adding forward $\mathbf{r}(t+\Delta t)$ and backward $\mathbf{r}(t-\Delta t)$ Taylor expansions cancels
+        all odd powers of $\Delta t$ by symmetry.
+      text: Adding forward $\mathbf{r}(t+\Delta t)$ and backward $\mathbf{r}(t-\Delta t)$ Taylor expansions cancels all odd
+        powers of $\Delta t$ by symmetry.
     - id: c
       text_markdown: Newton's second law sets odd time derivatives of position to zero.
       text: Newton's second law sets odd time derivatives of position to zero.
@@ -168,13 +202,16 @@ worksheet:
       text: The kinetic energy cancels out the odd terms.
     correct: b
     hint_markdown: Consider $(+\Delta t)^n + (-\Delta t)^n$ for $n=1, 3, 5$.
-    rationale_markdown: Because $(+\Delta t)^n + (-\Delta t)^n = 0$ for all odd $n$, summing $\mathbf{r}(t+\Delta t)$ and $\mathbf{r}(t-\Delta t)$ eliminates the $\mathbf{v}(t)\Delta t$ and $\frac{1}{6}\mathbf{b}(t)\Delta t^3$ terms, leaving only even powers.
+    rationale_markdown: Because $(+\Delta t)^n + (-\Delta t)^n = 0$ for all odd $n$, summing $\mathbf{r}(t+\Delta t)$ and
+      $\mathbf{r}(t-\Delta t)$ eliminates the $\mathbf{v}(t)\Delta t$ and $\frac{1}{6}\mathbf{b}(t)\Delta t^3$ terms, leaving
+      only even powers.
   - id: q04_03
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_integrators_and_symplectic_geometry
-    prompt_markdown: What are the local position truncation error and global position truncation error of the Verlet algorithm over a fixed simulation time $T$?
+    prompt_markdown: What are the local position truncation error and global position truncation error of the Verlet algorithm
+      over a fixed simulation time $T$?
     options:
     - id: a
       text_markdown: Local error is $\mathcal{O}(\Delta t^2)$, global error is $\mathcal{O}(\Delta t)$.
@@ -189,8 +226,11 @@ worksheet:
       text_markdown: Local error is $\mathcal{O}(\Delta t^4)$, global error is $\mathcal{O}(\Delta t^3)$.
       text: Local error is $\mathcal{O}(\Delta t^4)$, global error is $\mathcal{O}(\Delta t^3)$.
     correct: c
-    hint_markdown: The lowest discarded term in the summed Taylor series is $\frac{2}{4!} \mathbf{r}^{(4)}(t)\Delta t^4$. Over $N_{\text{steps}} = T/\Delta t$ steps, how does error accumulate?
-    rationale_markdown: The local truncation error is $\mathcal{O}(\Delta t^4)$. Integrating over $N_{\text{steps}} = T/\Delta t$ steps multiplies by $1/\Delta t^2$ in second-order ODEs (or accumulates $N$ errors of order $\Delta t^4 / \Delta t^2$), yielding global position error $\mathcal{O}(\Delta t^2)$.
+    hint_markdown: The lowest discarded term in the summed Taylor series is $\frac{2}{4!} \mathbf{r}^{(4)}(t)\Delta t^4$.
+      Over $N_{\text{steps}} = T/\Delta t$ steps, how does error accumulate?
+    rationale_markdown: The local truncation error is $\mathcal{O}(\Delta t^4)$. Integrating over $N_{\text{steps}} = T/\Delta
+      t$ steps multiplies by $1/\Delta t^2$ in second-order ODEs (or accumulates $N$ errors of order $\Delta t^4 / \Delta
+      t^2$), yielding global position error $\mathcal{O}(\Delta t^2)$.
   - id: q04_04
     type: problem
     question_type: single_select
@@ -211,14 +251,17 @@ worksheet:
       text_markdown: '4'
       text: '4'
     correct: a
-    hint_markdown: Notice that the acceleration $\mathbf{a}(t)$ from the end of the previous step is reused at the beginning of the new step.
-    rationale_markdown: Velocity Verlet computes $\mathbf{a}(t+\Delta t)$ exactly once per timestep (in Step 3). This acceleration is used to finish the current velocity update and then reused in Step 1 of the subsequent step.
+    hint_markdown: Notice that the acceleration $\mathbf{a}(t)$ from the end of the previous step is reused at the beginning
+      of the new step.
+    rationale_markdown: Velocity Verlet computes $\mathbf{a}(t+\Delta t)$ exactly once per timestep (in Step 3). This acceleration
+      is used to finish the current velocity update and then reused in Step 1 of the subsequent step.
   - id: q04_05
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: concept_integrator_shootout
-    prompt_markdown: When running the forward Euler integrator on a 1D harmonic oscillator in the Concept Cell, what happens to the total energy and phase space orbit?
+    prompt_markdown: When running the forward Euler integrator on a 1D harmonic oscillator in the Concept Cell, what happens
+      to the total energy and phase space orbit?
     options:
     - id: a
       text_markdown: Energy is exactly conserved and the orbit is a closed circle.
@@ -227,14 +270,18 @@ worksheet:
       text_markdown: Energy decreases monotonically and the orbit spirals into the origin $(0, 0)$.
       text: Energy decreases monotonically and the orbit spirals into the origin $(0, 0)$.
     - id: c
-      text_markdown: Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \omega^2 \Delta t^2)$), causing the phase orbit to spiral outward indefinitely.
-      text: Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \omega^2 \Delta t^2)$), causing the phase orbit to spiral outward indefinitely.
+      text_markdown: Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \omega^2 \Delta t^2)$), causing the phase
+        orbit to spiral outward indefinitely.
+      text: Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \omega^2 \Delta t^2)$), causing the phase orbit
+        to spiral outward indefinitely.
     - id: d
       text_markdown: Energy oscillates periodically with zero net drift.
       text: Energy oscillates periodically with zero net drift.
     correct: c
-    hint_markdown: Calculate $x_{n+1}^2 + v_{n+1}^2$ using $x_{n+1} = x_n + v_n \Delta t$ and $v_{n+1} = v_n - \omega^2 x_n \Delta t$.
-    rationale_markdown: For forward Euler, $x_{n+1}^2 + v_{n+1}^2/\omega^2 = (1 + \omega^2 \Delta t^2)(x_n^2 + v_n^2/\omega^2)$. Since the amplification factor $1 + \omega^2 \Delta t^2 > 1$, energy grows unboundedly and the orbit spirals outwards.
+    hint_markdown: Calculate $x_{n+1}^2 + v_{n+1}^2$ using $x_{n+1} = x_n + v_n \Delta t$ and $v_{n+1} = v_n - \omega^2 x_n
+      \Delta t$.
+    rationale_markdown: For forward Euler, $x_{n+1}^2 + v_{n+1}^2/\omega^2 = (1 + \omega^2 \Delta t^2)(x_n^2 + v_n^2/\omega^2)$.
+      Since the amplification factor $1 + \omega^2 \Delta t^2 > 1$, energy grows unboundedly and the orbit spirals outwards.
   - id: q04_06
     type: problem
     question_type: multi_select
@@ -243,36 +290,47 @@ worksheet:
     prompt_markdown: Which of the following statements about the Leapfrog algorithm are TRUE? (Select all that apply)
     options:
     - id: a
-      text_markdown: Velocities are evaluated at half-integer timesteps $t + \frac{1}{2}\Delta t$, while positions are evaluated at integer timesteps $t$.
-      text: Velocities are evaluated at half-integer timesteps $t + \frac{1}{2}\Delta t$, while positions are evaluated at integer timesteps $t$.
+      text_markdown: Velocities are evaluated at half-integer timesteps $t + \frac{1}{2}\Delta t$, while positions are evaluated
+        at integer timesteps $t$.
+      text: Velocities are evaluated at half-integer timesteps $t + \frac{1}{2}\Delta t$, while positions are evaluated at
+        integer timesteps $t$.
     - id: b
       text_markdown: It requires four force evaluations per particle per timestep.
       text: It requires four force evaluations per particle per timestep.
     - id: c
-      text_markdown: It produces mathematically identical position trajectories to the standard Verlet and Velocity Verlet algorithms.
+      text_markdown: It produces mathematically identical position trajectories to the standard Verlet and Velocity Verlet
+        algorithms.
       text: It produces mathematically identical position trajectories to the standard Verlet and Velocity Verlet algorithms.
     - id: d
-      text_markdown: Kinetic energy and potential energy cannot be evaluated at the exact same instant without an interpolation step.
+      text_markdown: Kinetic energy and potential energy cannot be evaluated at the exact same instant without an interpolation
+        step.
       text: Kinetic energy and potential energy cannot be evaluated at the exact same instant without an interpolation step.
     correct:
     - a
     - c
     - d
     hint_markdown: Think about where velocities live relative to positions in Leapfrog, and how many force calls are needed.
-    rationale_markdown: Leapfrog evaluates $\mathbf{v}$ at half-steps and $\mathbf{r}$ at whole steps (making simultaneous $E_{\text{tot}} = K + V$ require interpolating $\mathbf{v}(t)$). It requires only 1 force evaluation per step and is mathematically equivalent to Verlet.
+    rationale_markdown: Leapfrog evaluates $\mathbf{v}$ at half-steps and $\mathbf{r}$ at whole steps (making simultaneous
+      $E_{\text{tot}} = K + V$ require interpolating $\mathbf{v}(t)$). It requires only 1 force evaluation per step and is
+      mathematically equivalent to Verlet.
   - id: q04_07
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: concept_integrator_shootout
-    prompt_markdown: How does Runge-Kutta 4th order (RK4) compare to Velocity Verlet for long-time ($10^6$ steps) molecular dynamics simulations?
+    prompt_markdown: How does Runge-Kutta 4th order (RK4) compare to Velocity Verlet for long-time ($10^6$ steps) molecular
+      dynamics simulations?
     options:
     - id: a
-      text_markdown: RK4 is superior for long simulations because its $\mathcal{O}(\Delta t^4)$ error guarantees zero energy drift forever.
-      text: RK4 is superior for long simulations because its $\mathcal{O}(\Delta t^4)$ error guarantees zero energy drift forever.
+      text_markdown: RK4 is superior for long simulations because its $\mathcal{O}(\Delta t^4)$ error guarantees zero energy
+        drift forever.
+      text: RK4 is superior for long simulations because its $\mathcal{O}(\Delta t^4)$ error guarantees zero energy drift
+        forever.
     - id: b
-      text_markdown: RK4 is non-symplectic, causing secular energy drift (energy continually ramps up or down) over long times, and it requires 4 force evaluations per step versus 1 for Verlet.
-      text: RK4 is non-symplectic, causing secular energy drift (energy continually ramps up or down) over long times, and it requires 4 force evaluations per step versus 1 for Verlet.
+      text_markdown: RK4 is non-symplectic, causing secular energy drift (energy continually ramps up or down) over long times,
+        and it requires 4 force evaluations per step versus 1 for Verlet.
+      text: RK4 is non-symplectic, causing secular energy drift (energy continually ramps up or down) over long times, and
+        it requires 4 force evaluations per step versus 1 for Verlet.
     - id: c
       text_markdown: RK4 is identical to Velocity Verlet in both computational cost and symplecticity.
       text: RK4 is identical to Velocity Verlet in both computational cost and symplecticity.
@@ -281,13 +339,17 @@ worksheet:
       text: RK4 cannot be applied to systems with velocity-independent forces.
     correct: b
     hint_markdown: Recall the distinction between local truncation error order and symplecticity (conservation of shadow Hamiltonian).
-    rationale_markdown: Although RK4 has very low local error $\mathcal{O}(\Delta t^5)$, it is not symplectic. The phase space Jacobian does not equal 1, resulting in secular energy drift over long simulations. Furthermore, RK4 requires 4 force evaluations per step, making it ~4x more expensive per step.
+    rationale_markdown: Although RK4 has very low local error $\mathcal{O}(\Delta t^5)$, it is not symplectic. The phase space
+      Jacobian does not equal 1, resulting in secular energy drift over long simulations. Furthermore, RK4 requires 4 force
+      evaluations per step, making it ~4x more expensive per step.
   - id: q04_08
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_integrators_and_symplectic_geometry
-    prompt_markdown: In Velocity Verlet, a particle starts at $x(0) = 1.0\text{ nm}$ with velocity $v(0) = 0.5\text{ nm/ps}$ and constant acceleration $a = -2.0\text{ nm/ps}^2$. Using timestep $\Delta t = 0.1\text{ ps}$, calculate its position $x(\Delta t)$ in nm.
+    prompt_markdown: In Velocity Verlet, a particle starts at $x(0) = 1.0\text{ nm}$ with velocity $v(0) = 0.5\text{ nm/ps}$
+      and constant acceleration $a = -2.0\text{ nm/ps}^2$. Using timestep $\Delta t = 0.1\text{ ps}$, calculate its position
+      $x(\Delta t)$ in nm.
     correct: 1.04
     tolerance: 0.001
     unit: nm
@@ -298,7 +360,8 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_integrators_and_symplectic_geometry
-    prompt_markdown: Continuing from the previous problem, assuming the force remains constant so that $a(\Delta t) = -2.0\text{ nm/ps}^2$, calculate the final velocity $v(\Delta t)$ in nm/ps after the step.
+    prompt_markdown: Continuing from the previous problem, assuming the force remains constant so that $a(\Delta t) = -2.0\text{
+      nm/ps}^2$, calculate the final velocity $v(\Delta t)$ in nm/ps after the step.
     correct: 0.3
     tolerance: 0.001
     unit: nm/ps
@@ -309,14 +372,18 @@ worksheet:
     question_type: single_select
     difficulty: hard
     taught_by: sec_md_architecture_and_equations
-    prompt_markdown: Let $\mathbf{M}$ be the Jacobian matrix of a single-step phase space transformation $(\mathbf{r}_{n+1}, \mathbf{p}_{n+1}) = \Phi_{\Delta t}(\mathbf{r}_n, \mathbf{p}_n)$. What is the necessary and sufficient condition for $\Phi_{\Delta t}$ to be a symplectic map?
+    prompt_markdown: Let $\mathbf{M}$ be the Jacobian matrix of a single-step phase space transformation $(\mathbf{r}_{n+1},
+      \mathbf{p}_{n+1}) = \Phi_{\Delta t}(\mathbf{r}_n, \mathbf{p}_n)$. What is the necessary and sufficient condition for
+      $\Phi_{\Delta t}$ to be a symplectic map?
     options:
     - id: a
       text_markdown: $\mathbf{M}^T \mathbf{M} = \mathbf{I}$ (orthogonal matrix)
       text: $\mathbf{M}^T \mathbf{M} = \mathbf{I}$ (orthogonal matrix)
     - id: b
-      text_markdown: $\mathbf{M}^T \mathbf{J} \mathbf{M} = \mathbf{J}$, where $\mathbf{J} = \begin{pmatrix} 0 & \mathbf{I} \\ -\mathbf{I} & 0 \end{pmatrix}$ is the standard symplectic matrix
-      text: $\mathbf{M}^T \mathbf{J} \mathbf{M} = \mathbf{J}$, where $\mathbf{J} = \begin{pmatrix} 0 & \mathbf{I} \\ -\mathbf{I} & 0 \end{pmatrix}$ is the standard symplectic matrix
+      text_markdown: $\mathbf{M}^T \mathbf{J} \mathbf{M} = \mathbf{J}$, where $\mathbf{J} = \begin{pmatrix} 0 & \mathbf{I}
+        \\ -\mathbf{I} & 0 \end{pmatrix}$ is the standard symplectic matrix
+      text: $\mathbf{M}^T \mathbf{J} \mathbf{M} = \mathbf{J}$, where $\mathbf{J} = \begin{pmatrix} 0 & \mathbf{I} \\ -\mathbf{I}
+        & 0 \end{pmatrix}$ is the standard symplectic matrix
     - id: c
       text_markdown: $\text{Tr}(\mathbf{M}) = 0$
       text: $\text{Tr}(\mathbf{M}) = 0$
@@ -325,44 +392,54 @@ worksheet:
       text: All eigenvalues of $\mathbf{M}$ must be strictly real
     correct: b
     hint_markdown: Symplectic maps preserve the canonical Poisson bracket structure and phase space 2-form $\omega$.
-    rationale_markdown: By definition, a linear transformation (or tangent map $\mathbf{M}$) is symplectic if and only if $\mathbf{M}^T \mathbf{J} \mathbf{M} = \mathbf{J}$, which guarantees the preservation of the differential 2-form $\sum_i d\mathbf{r}_i \wedge d\mathbf{p}_i$ and implies $\det(\mathbf{M}) = 1$.
+    rationale_markdown: By definition, a linear transformation (or tangent map $\mathbf{M}$) is symplectic if and only if
+      $\mathbf{M}^T \mathbf{J} \mathbf{M} = \mathbf{J}$, which guarantees the preservation of the differential 2-form $\sum_i
+      d\mathbf{r}_i \wedge d\mathbf{p}_i$ and implies $\det(\mathbf{M}) = 1$.
   - id: sec_shadow_hamiltonian_and_drift
     type: markdown_section
     title: 3. Symplectic Geometry, Shadow Hamiltonians, and Long-Term Stability
     body_markdown: '### Why Doesn''t Verlet Drift in Energy?
 
 
-      In naive numerical integration of non-linear ODEs, one expects numerical errors to accumulate like a random walk or secular trend, causing the computed energy $E(t)$ to diverge systematically over long simulation times.
+      In naive numerical integration of non-linear ODEs, one expects numerical errors to accumulate like a random walk or
+      secular trend, causing the computed energy $E(t)$ to diverge systematically over long simulation times.
 
 
-      Yet in MD simulations lasting millions of steps, Velocity Verlet exhibits **bounded energy oscillations** with **zero secular drift**. This remarkable property is explained by **backward error analysis**:
+      Yet in MD simulations lasting millions of steps, Velocity Verlet exhibits **bounded energy oscillations** with **zero
+      secular drift**. This remarkable property is explained by **backward error analysis**:
 
 
-      A symplectic integrator does not follow the exact trajectory of the true Hamiltonian $\mathcal{H}(\mathbf{r}, \mathbf{p})$, but it follows the *exact* trajectory of a nearby **shadow Hamiltonian** (or modified Hamiltonian) $\widetilde{\mathcal{H}}$:
+      A symplectic integrator does not follow the exact trajectory of the true Hamiltonian $\mathcal{H}(\mathbf{r}, \mathbf{p})$,
+      but it follows the *exact* trajectory of a nearby **shadow Hamiltonian** (or modified Hamiltonian) $\widetilde{\mathcal{H}}$:
 
 
-      $$\widetilde{\mathcal{H}}(\mathbf{r}, \mathbf{p}) = \mathcal{H}(\mathbf{r}, \mathbf{p}) + \Delta t^2 \mathcal{H}_2(\mathbf{r}, \mathbf{p}) + \Delta t^4 \mathcal{H}_4(\mathbf{r}, \mathbf{p}) + \dots$$
+      $$\widetilde{\mathcal{H}}(\mathbf{r}, \mathbf{p}) = \mathcal{H}(\mathbf{r}, \mathbf{p}) + \Delta t^2 \mathcal{H}_2(\mathbf{r},
+      \mathbf{p}) + \Delta t^4 \mathcal{H}_4(\mathbf{r}, \mathbf{p}) + \dots$$
 
 
-      For a 1D harmonic oscillator with $\mathcal{H} = \frac{1}{2}p^2 + \frac{1}{2}\omega^2 x^2$, the shadow Hamiltonian conserved exactly by Velocity Verlet is:
+      For a 1D harmonic oscillator with $\mathcal{H} = \frac{1}{2}p^2 + \frac{1}{2}\omega^2 x^2$, the shadow Hamiltonian conserved
+      exactly by Velocity Verlet is:
 
 
       $$\widetilde{\mathcal{H}} = \frac{p^2}{2(1 - \frac{1}{4}\omega^2 \Delta t^2)} + \frac{1}{2}\omega^2 x^2$$
 
 
-      Because $\widetilde{\mathcal{H}}$ is a true constant of motion for the discrete trajectory, the true energy $\mathcal{H}$ cannot drift away! It merely oscillates around $\widetilde{\mathcal{H}}$ with amplitude $\mathcal{O}(\Delta t^2)$:
+      Because $\widetilde{\mathcal{H}}$ is a true constant of motion for the discrete trajectory, the true energy $\mathcal{H}$
+      cannot drift away! It merely oscillates around $\widetilde{\mathcal{H}}$ with amplitude $\mathcal{O}(\Delta t^2)$:
 
 
       $$|\mathcal{H}(t) - \widetilde{\mathcal{H}}| \le C \Delta t^2$$
 
 
-      Non-symplectic integrators (such as standard Runge-Kutta or Euler) do not conserve any shadow Hamiltonian, which allows their energy to drift linearly with time $\sim t \Delta t^p$.'
+      Non-symplectic integrators (such as standard Runge-Kutta or Euler) do not conserve any shadow Hamiltonian, which allows
+      their energy to drift linearly with time $\sim t \Delta t^p$.'
   - id: concept_cutoff_discontinuity
     type: concept_cell
     title: 'Interactive Concept: Potential Truncation & Force Discontinuity'
     description_markdown: 'Examine the effect of truncating a Lennard-Jones potential at cutoff radius $r_c$.
 
-      Compare the unshifted potential $V(r)$, the shifted potential $V_{\text{shift}}(r) = V(r) - V(r_c)$, and the force $F(r) = -dV/dr$. Notice the delta-function force impulse that occurs when an unshifted potential is cut off abruptly.'
+      Compare the unshifted potential $V(r)$, the shifted potential $V_{\text{shift}}(r) = V(r) - V(r_c)$, and the force $F(r)
+      = -dV/dr$. Notice the delta-function force impulse that occurs when an unshifted potential is cut off abruptly.'
     render_function: render_cutoff_discontinuity
     layout:
       kind: matplotlib
@@ -386,20 +463,27 @@ worksheet:
         - label: Pair Force F(r)
           value: 1
         default: 0
-    takeaway_markdown: '**Key Insight:** Abruptly truncating $V(r)$ at $r_c$ creates a discontinuous potential step $\Delta V = V(r_c) \ne 0$. Taking the negative gradient produces an infinite impulsive force $-V(r_c)\delta(r - r_c)$ whenever an atom crosses $r_c$, destroying energy conservation. Shifting the potential $V_{\text{shift}}(r) = V(r) - V(r_c)$ eliminates the step in $V$, but leaves a jump in force $F(r_c^-) \ne 0$ unless force-shifting or switching functions are applied.'
+    takeaway_markdown: '**Key Insight:** Abruptly truncating $V(r)$ at $r_c$ creates a discontinuous potential step $\Delta
+      V = V(r_c) \ne 0$. Taking the negative gradient produces an infinite impulsive force $-V(r_c)\delta(r - r_c)$ whenever
+      an atom crosses $r_c$, destroying energy conservation. Shifting the potential $V_{\text{shift}}(r) = V(r) - V(r_c)$
+      eliminates the step in $V$, but leaves a jump in force $F(r_c^-) \ne 0$ unless force-shifting or switching functions
+      are applied.'
   - id: q04_11
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_shadow_hamiltonian_and_drift
-    prompt_markdown: Why do symplectic integrators like Velocity Verlet exhibit bounded energy fluctuations without long-term drift?
+    prompt_markdown: Why do symplectic integrators like Velocity Verlet exhibit bounded energy fluctuations without long-term
+      drift?
     options:
     - id: a
       text_markdown: They use variable timesteps that automatically shrink whenever energy starts to drift.
       text: They use variable timesteps that automatically shrink whenever energy starts to drift.
     - id: b
-      text_markdown: They exactly conserve a nearby 'shadow' or modified Hamiltonian $\widetilde{\mathcal{H}} = \mathcal{H} + \mathcal{O}(\Delta t^2)$.
-      text: They exactly conserve a nearby 'shadow' or modified Hamiltonian $\widetilde{\mathcal{H}} = \mathcal{H} + \mathcal{O}(\Delta t^2)$.
+      text_markdown: They exactly conserve a nearby 'shadow' or modified Hamiltonian $\widetilde{\mathcal{H}} = \mathcal{H}
+        + \mathcal{O}(\Delta t^2)$.
+      text: They exactly conserve a nearby 'shadow' or modified Hamiltonian $\widetilde{\mathcal{H}} = \mathcal{H} + \mathcal{O}(\Delta
+        t^2)$.
     - id: c
       text_markdown: Rounding errors from IEEE 754 floating point cancel out the integration truncation errors.
       text: Rounding errors from IEEE 754 floating point cancel out the integration truncation errors.
@@ -408,20 +492,25 @@ worksheet:
       text: They enforce an explicit Lagrange multiplier constraint on the total kinetic energy.
     correct: b
     hint_markdown: Look at backward error analysis and the modified Hamiltonian concept.
-    rationale_markdown: Symplectic integrators exactly trace the continuous flow of an asymptotic modified Hamiltonian $\widetilde{\mathcal{H}} = \mathcal{H} + \Delta t^2 \mathcal{H}_2 + \dots$. Because $\widetilde{\mathcal{H}}$ is strictly conserved, the true Hamiltonian $\mathcal{H}$ oscillates within a narrow band of width $\mathcal{O}(\Delta t^2)$ and cannot secularly drift.
+    rationale_markdown: Symplectic integrators exactly trace the continuous flow of an asymptotic modified Hamiltonian $\widetilde{\mathcal{H}}
+      = \mathcal{H} + \Delta t^2 \mathcal{H}_2 + \dots$. Because $\widetilde{\mathcal{H}}$ is strictly conserved, the true
+      Hamiltonian $\mathcal{H}$ oscillates within a narrow band of width $\mathcal{O}(\Delta t^2)$ and cannot secularly drift.
   - id: q04_12
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_shadow_hamiltonian_and_drift
-    prompt_markdown: For a harmonic oscillator with $\mathcal{H} = \frac{1}{2}p^2 + \frac{1}{2}\omega^2 x^2$, what happens to the shadow Hamiltonian denominator $(1 - \frac{1}{4}\omega^2 \Delta t^2)$ when $\omega \Delta t \to 2$?
+    prompt_markdown: For a harmonic oscillator with $\mathcal{H} = \frac{1}{2}p^2 + \frac{1}{2}\omega^2 x^2$, what happens
+      to the shadow Hamiltonian denominator $(1 - \frac{1}{4}\omega^2 \Delta t^2)$ when $\omega \Delta t \to 2$?
     options:
     - id: a
       text_markdown: It approaches 1, meaning the integrator becomes infinitely accurate.
       text: It approaches 1, meaning the integrator becomes infinitely accurate.
     - id: b
-      text_markdown: It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical orbit blows up.
-      text: It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical orbit blows up.
+      text_markdown: It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the
+        numerical orbit blows up.
+      text: It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical
+        orbit blows up.
     - id: c
       text_markdown: It changes sign smoothly with no effect on trajectory stability.
       text: It changes sign smoothly with no effect on trajectory stability.
@@ -430,13 +519,16 @@ worksheet:
       text: It forces the position to remain zero.
     correct: b
     hint_markdown: Examine the condition $\frac{1}{4}\omega^2 \Delta t^2 = 1 \implies \omega \Delta t = 2$.
-    rationale_markdown: When $\omega \Delta t = 2$ (corresponding to $\Delta t = 2/\omega = T_{\text{vib}}/\pi$), the denominator goes to zero. The eigenvalues of the symplectic step matrix become complex unimodular or real unstable, the shadow Hamiltonian diverges, and the numerical trajectory undergoes catastrophic resonance explosion.
+    rationale_markdown: When $\omega \Delta t = 2$ (corresponding to $\Delta t = 2/\omega = T_{\text{vib}}/\pi$), the denominator
+      goes to zero. The eigenvalues of the symplectic step matrix become complex unimodular or real unstable, the shadow Hamiltonian
+      diverges, and the numerical trajectory undergoes catastrophic resonance explosion.
   - id: q04_13
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_shadow_hamiltonian_and_drift
-    prompt_markdown: If you halve the timestep $\Delta t \to \Delta t / 2$ in a Velocity Verlet simulation, by what factor do the RMS energy fluctuations $\sigma_E$ decrease?
+    prompt_markdown: If you halve the timestep $\Delta t \to \Delta t / 2$ in a Velocity Verlet simulation, by what factor
+      do the RMS energy fluctuations $\sigma_E$ decrease?
     options:
     - id: a
       text_markdown: Factor of 2
@@ -451,21 +543,26 @@ worksheet:
       text_markdown: Factor of 16
       text: Factor of 16
     correct: b
-    hint_markdown: 'Recall the scaling of the difference between true Hamiltonian and shadow Hamiltonian: $|\mathcal{H} - \widetilde{\mathcal{H}}| \sim \Delta t^2$.'
-    rationale_markdown: Because the leading error term in the shadow Hamiltonian is proportional to $\Delta t^2$, halving the timestep decreases the energy fluctuation amplitude by $(1/2)^2 = 1/4$ (a factor of 4).
+    hint_markdown: 'Recall the scaling of the difference between true Hamiltonian and shadow Hamiltonian: $|\mathcal{H} -
+      \widetilde{\mathcal{H}}| \sim \Delta t^2$.'
+    rationale_markdown: Because the leading error term in the shadow Hamiltonian is proportional to $\Delta t^2$, halving
+      the timestep decreases the energy fluctuation amplitude by $(1/2)^2 = 1/4$ (a factor of 4).
   - id: q04_14
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: concept_cutoff_discontinuity
-    prompt_markdown: Why is the simple truncation potential $V_{\text{trunc}}(r) = V(r)$ for $r \le r_c$ and $0$ for $r > r_c$ unacceptable in microcanonical ($NVE$) MD simulations?
+    prompt_markdown: Why is the simple truncation potential $V_{\text{trunc}}(r) = V(r)$ for $r \le r_c$ and $0$ for $r >
+      r_c$ unacceptable in microcanonical ($NVE$) MD simulations?
     options:
     - id: a
       text_markdown: It makes the forces zero everywhere.
       text: It makes the forces zero everywhere.
     - id: b
-      text_markdown: The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$, causing severe energy non-conservation.
-      text: The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$, causing severe energy non-conservation.
+      text_markdown: The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles
+        cross $r_c$, causing severe energy non-conservation.
+      text: The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$,
+        causing severe energy non-conservation.
     - id: c
       text_markdown: It doubles the computational complexity of the neighbor list.
       text: It doubles the computational complexity of the neighbor list.
@@ -474,7 +571,10 @@ worksheet:
       text: It violates Newton's third law $\mathbf{F}_{ij} = -\mathbf{F}_{ji}$.
     correct: b
     hint_markdown: What is the derivative of a step function $\Theta(r_c - r)$?
-    rationale_markdown: Since $\mathbf{F} = -\nabla V$, a step discontinuity in $V(r)$ of magnitude $\Delta V = V(r_c)$ produces a Dirac delta force $\mathbf{F}_{ij} = -V(r_c)\delta(r_{ij} - r_c)\hat{\mathbf{r}}_{ij}$. In discrete timestepping, an atom jumping across $r_c$ gains or loses $V(r_c)$ abruptly without feeling a finite continuous force, destroying $NVE$ energy conservation.
+    rationale_markdown: Since $\mathbf{F} = -\nabla V$, a step discontinuity in $V(r)$ of magnitude $\Delta V = V(r_c)$ produces
+      a Dirac delta force $\mathbf{F}_{ij} = -V(r_c)\delta(r_{ij} - r_c)\hat{\mathbf{r}}_{ij}$. In discrete timestepping,
+      an atom jumping across $r_c$ gains or loses $V(r_c)$ abruptly without feeling a finite continuous force, destroying
+      $NVE$ energy conservation.
   - id: q04_15
     type: problem
     question_type: single_select
@@ -496,20 +596,25 @@ worksheet:
       text: It alters the atomic forces at all distances $r < r_c$.
     correct: a
     hint_markdown: Evaluate $V_{\text{shift}}(r)$ as $r \to r_c^-$.
-    rationale_markdown: By subtracting the constant $V(r_c)$, $V_{\text{shift}}(r_c) = V(r_c) - V(r_c) = 0$. The potential thus approaches 0 continuously as $r \to r_c^-$, matching the exterior value of 0. Furthermore, because subtracting a constant has zero derivative ($d(V(r_c))/dr = 0$), the forces for $r < r_c$ are completely unchanged!
+    rationale_markdown: By subtracting the constant $V(r_c)$, $V_{\text{shift}}(r_c) = V(r_c) - V(r_c) = 0$. The potential
+      thus approaches 0 continuously as $r \to r_c^-$, matching the exterior value of 0. Furthermore, because subtracting
+      a constant has zero derivative ($d(V(r_c))/dr = 0$), the forces for $r < r_c$ are completely unchanged!
   - id: q04_16
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: concept_cutoff_discontinuity
-    prompt_markdown: While the shifted potential $V_{\text{shift}}(r) = V(r) - V(r_c)$ makes the potential energy continuous at $r_c$, what discontinuity remains?
+    prompt_markdown: While the shifted potential $V_{\text{shift}}(r) = V(r) - V(r_c)$ makes the potential energy continuous
+      at $r_c$, what discontinuity remains?
     options:
     - id: a
       text_markdown: The position of particles becomes discontinuous.
       text: The position of particles becomes discontinuous.
     - id: b
-      text_markdown: The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \ne 0$ while $F(r_c^+) = 0$.
-      text: The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \ne 0$ while $F(r_c^+) = 0$.
+      text_markdown: The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \ne 0$
+        while $F(r_c^+) = 0$.
+      text: The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \ne 0$ while $F(r_c^+)
+        = 0$.
     - id: c
       text_markdown: The total momentum is no longer conserved.
       text: The total momentum is no longer conserved.
@@ -518,34 +623,44 @@ worksheet:
       text: The mass of the particles becomes time-dependent.
     correct: b
     hint_markdown: Does shifting by a constant alter the derivative $V'(r_c)$?
-    rationale_markdown: 'Shifting by a constant $V(r_c)$ does not change the derivative: $V_{\text{shift}}''(r) = V''(r)$. At $r = r_c$, the force inside is $F(r_c^-) = -V''(r_c) \ne 0$, whereas outside it is $0$. This jump in force causes small $\mathcal{O}(\Delta t)$ noise and elevated energy fluctuations unless a force-shifted potential or polynomial switching function is used.'
+    rationale_markdown: 'Shifting by a constant $V(r_c)$ does not change the derivative: $V_{\text{shift}}''(r) = V''(r)$.
+      At $r = r_c$, the force inside is $F(r_c^-) = -V''(r_c) \ne 0$, whereas outside it is $0$. This jump in force causes
+      small $\mathcal{O}(\Delta t)$ noise and elevated energy fluctuations unless a force-shifted potential or polynomial
+      switching function is used.'
   - id: q04_17
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: concept_cutoff_discontinuity
-    prompt_markdown: For a standard Lennard-Jones potential $V(r) = 4\epsilon \left[ (\sigma/r)^{12} - (\sigma/r)^6 \right]$ with $\epsilon = 1.0$ and $\sigma = 1.0$, calculate the unshifted potential value $V(r_c)$ at cutoff $r_c = 2.5\sigma$. (Enter as a signed decimal to 4 decimal places).
+    prompt_markdown: For a standard Lennard-Jones potential $V(r) = 4\epsilon \left[ (\sigma/r)^{12} - (\sigma/r)^6 \right]$
+      with $\epsilon = 1.0$ and $\sigma = 1.0$, calculate the unshifted potential value $V(r_c)$ at cutoff $r_c = 2.5\sigma$.
+      (Enter as a signed decimal to 4 decimal places).
     correct: -0.0163
     tolerance: 0.001
     hint_markdown: Calculate $(1/2.5)^{12} - (1/2.5)^6$ and multiply by 4.
-    rationale_markdown: $r = 2.5 \implies r^{-6} = (1/2.5)^6 = 1/244.140625 \approx 0.004096$. Then $r^{-12} = (0.004096)^2 \approx 0.00001678$. Thus $V(2.5) = 4(0.00001678 - 0.004096) = 4(-0.0040792) = -0.016317 \approx -0.0163\epsilon$.
+    rationale_markdown: $r = 2.5 \implies r^{-6} = (1/2.5)^6 = 1/244.140625 \approx 0.004096$. Then $r^{-12} = (0.004096)^2
+      \approx 0.00001678$. Thus $V(2.5) = 4(0.00001678 - 0.004096) = 4(-0.0040792) = -0.016317 \approx -0.0163\epsilon$.
   - id: q04_18
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: concept_cutoff_discontinuity
-    prompt_markdown: Calculate the magnitude of the force jump $|F(r_c)|$ in units of $\epsilon/\sigma$ at $r_c = 2.5\sigma$ for the Lennard-Jones potential with $\epsilon=1, \sigma=1$. (Recall $F(r) = 24\frac{\epsilon}{\sigma}\left[ 2(\sigma/r)^{13} - (\sigma/r)^7 \right]$).
+    prompt_markdown: Calculate the magnitude of the force jump $|F(r_c)|$ in units of $\epsilon/\sigma$ at $r_c = 2.5\sigma$
+      for the Lennard-Jones potential with $\epsilon=1, \sigma=1$. (Recall $F(r) = 24\frac{\epsilon}{\sigma}\left[ 2(\sigma/r)^{13}
+      - (\sigma/r)^7 \right]$).
     correct: 0.039
     tolerance: 0.002
     unit: epsilon/sigma
     hint_markdown: Substitute $r=2.5$ into $24[2(2.5)^{-13} - (2.5)^{-7}]$.
-    rationale_markdown: $2.5^{-7} = 0.0016384$, $2(2.5)^{-13} = 2(0.00000671) = 0.0000134$. Thus $F(2.5) = 24(0.0000134 - 0.0016384) = 24(-0.001625) = -0.0390\epsilon/\sigma$. The magnitude is $0.0390\epsilon/\sigma$.
+    rationale_markdown: $2.5^{-7} = 0.0016384$, $2(2.5)^{-13} = 2(0.00000671) = 0.0000134$. Thus $F(2.5) = 24(0.0000134 -
+      0.0016384) = 24(-0.001625) = -0.0390\epsilon/\sigma$. The magnitude is $0.0390\epsilon/\sigma$.
   - id: q04_19
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: concept_cutoff_discontinuity
-    prompt_markdown: A force-shifted potential $V_{\text{SF}}(r)$ is constructed as $V_{\text{SF}}(r) = V(r) - V(r_c) - \left(\frac{dV}{dr}\right)_{r_c} (r - r_c)$. What two properties does $V_{\text{SF}}(r)$ satisfy at $r = r_c$?
+    prompt_markdown: A force-shifted potential $V_{\text{SF}}(r)$ is constructed as $V_{\text{SF}}(r) = V(r) - V(r_c) - \left(\frac{dV}{dr}\right)_{r_c}
+      (r - r_c)$. What two properties does $V_{\text{SF}}(r)$ satisfy at $r = r_c$?
     options:
     - id: a
       text_markdown: Both $V_{\text{SF}}(r_c) = 0$ and $F_{\text{SF}}(r_c) = -V_{\text{SF}}'(r_c) = 0$.
@@ -561,7 +676,8 @@ worksheet:
       text: The force becomes independent of interatomic distance.
     correct: a
     hint_markdown: Differentiate $V_{\text{SF}}(r)$ with respect to $r$ and evaluate at $r=r_c$.
-    rationale_markdown: At $r=r_c$, $V_{\text{SF}}(r_c) = V(r_c) - V(r_c) - 0 = 0$. Differentiating gives $V_{\text{SF}}'(r) = V'(r) - V'(r_c)$, so at $r=r_c$, $V_{\text{SF}}'(r_c) = 0$, meaning the force drops smoothly to zero with no jump.
+    rationale_markdown: At $r=r_c$, $V_{\text{SF}}(r_c) = V(r_c) - V(r_c) - 0 = 0$. Differentiating gives $V_{\text{SF}}'(r)
+      = V'(r) - V'(r_c)$, so at $r=r_c$, $V_{\text{SF}}'(r_c) = 0$, meaning the force drops smoothly to zero with no jump.
   - id: q04_20
     type: problem
     question_type: multi_select
@@ -588,45 +704,60 @@ worksheet:
     - a
     - b
     - e
-    hint_markdown: 'Remember: classical Verlet variants are symplectic; naive Euler and standard high-order Runge-Kutta methods are not.'
-    rationale_markdown: Velocity Verlet, Leapfrog, and Position Verlet are all symplectic integrators derivable from operator splitting (e.g. Strang splitting of Liouville operators $e^{iL\Delta t} = e^{iL_V \Delta t/2} e^{iL_T \Delta t} e^{iL_V \Delta t/2}$). Forward Euler and standard RK4 are non-symplectic.
+    hint_markdown: 'Remember: classical Verlet variants are symplectic; naive Euler and standard high-order Runge-Kutta methods
+      are not.'
+    rationale_markdown: Velocity Verlet, Leapfrog, and Position Verlet are all symplectic integrators derivable from operator
+      splitting (e.g. Strang splitting of Liouville operators $e^{iL\Delta t} = e^{iL_V \Delta t/2} e^{iL_T \Delta t} e^{iL_V
+      \Delta t/2}$). Forward Euler and standard RK4 are non-symplectic.
   - id: sec_timestep_selection_and_resonance
     type: markdown_section
     title: 4. Timestep Selection Criteria and the Verlet Resonance Instability
     body_markdown: '### How to Choose the Timestep $\Delta t$
 
 
-      In atomic simulations, atoms vibrate around equilibrium lattice positions or molecular covalent bonds. The fastest motion in the system dictates the required integration timestep $\Delta t$.
+      In atomic simulations, atoms vibrate around equilibrium lattice positions or molecular covalent bonds. The fastest motion
+      in the system dictates the required integration timestep $\Delta t$.
 
 
-      1. **Fastest Vibrational Period:** If the highest vibrational frequency in the system is $\omega_{\max}$ (e.g., C-H bond stretching with $\nu \approx 3000\text{ cm}^{-1} \approx 9\times 10^{13}\text{ s}^{-1}$, corresponding to period $T_{\text{vib}} \approx 11\text{ fs}$), the standard empirical rule of thumb is:
+      1. **Fastest Vibrational Period:** If the highest vibrational frequency in the system is $\omega_{\max}$ (e.g., C-H
+      bond stretching with $\nu \approx 3000\text{ cm}^{-1} \approx 9\times 10^{13}\text{ s}^{-1}$, corresponding to period
+      $T_{\text{vib}} \approx 11\text{ fs}$), the standard empirical rule of thumb is:
 
 
       $$\Delta t \approx \frac{T_{\text{vib}}}{20}$$
 
 
-      For flexible C-H bonds, this mandates $\Delta t \approx 0.5\text{--}1.0\text{ fs}$. Constraining these fastest bonds with SHAKE/RATTLE allows $\Delta t$ to increase to $2.0\text{ fs}$ (governed by slower C-C stretching or bond angle bending).
+      For flexible C-H bonds, this mandates $\Delta t \approx 0.5\text{--}1.0\text{ fs}$. Constraining these fastest bonds
+      with SHAKE/RATTLE allows $\Delta t$ to increase to $2.0\text{ fs}$ (governed by slower C-C stretching or bond angle
+      bending).
 
 
-      2. **Verlet Resonance Stability Limit:** Consider the harmonic oscillator $\ddot{x} + \omega^2 x = 0$ integrated by Verlet. The recurrence relation is:
+      2. **Verlet Resonance Stability Limit:** Consider the harmonic oscillator $\ddot{x} + \omega^2 x = 0$ integrated by
+      Verlet. The recurrence relation is:
 
 
       $$x_{n+1} - (2 - \omega^2 \Delta t^2) x_n + x_{n-1} = 0$$
 
 
-      Setting $x_n = \lambda^n$ yields the characteristic equation $\lambda^2 - 2(1 - \frac{1}{2}\omega^2 \Delta t^2)\lambda + 1 = 0$. For stable bounded oscillations, the roots must be complex conjugates of unit magnitude ($|\lambda| = 1$), which requires:
+      Setting $x_n = \lambda^n$ yields the characteristic equation $\lambda^2 - 2(1 - \frac{1}{2}\omega^2 \Delta t^2)\lambda
+      + 1 = 0$. For stable bounded oscillations, the roots must be complex conjugates of unit magnitude ($|\lambda| = 1$),
+      which requires:
 
 
-      $$\left| 1 - \frac{1}{2}\omega^2 \Delta t^2 \right| < 1 \implies \omega \Delta t < 2 \iff \Delta t < \frac{2}{\omega} = \frac{T_{\text{vib}}}{\pi} \approx 0.318 T_{\text{vib}}$$
+      $$\left| 1 - \frac{1}{2}\omega^2 \Delta t^2 \right| < 1 \implies \omega \Delta t < 2 \iff \Delta t < \frac{2}{\omega}
+      = \frac{T_{\text{vib}}}{\pi} \approx 0.318 T_{\text{vib}}$$
 
 
-      If $\Delta t > T_{\text{vib}}/\pi$, the roots $\lambda$ become real and one root satisfies $|\lambda| > 1$, leading to **exponential numerical blowup**!'
+      If $\Delta t > T_{\text{vib}}/\pi$, the roots $\lambda$ become real and one root satisfies $|\lambda| > 1$, leading
+      to **exponential numerical blowup**!'
   - id: concept_timestep_stability_frontier
     type: concept_cell
     title: 'Interactive Concept: Timestep Stability Frontier & The Verlet Resonance Limit'
     description_markdown: 'Explore how relative energy drift rate depends on the chosen timestep $\Delta t / T_{\text{vib}}$.
 
-      Move the slider for `selected_dt` and observe the transition from safe quadratic scaling $\mathcal{O}(\Delta t^2)$, to elevated fluctuations, and finally to the catastrophic resonance divergence at $\Delta t_{\text{crit}} = T_{\text{vib}}/\pi \approx 0.318$.'
+      Move the slider for `selected_dt` and observe the transition from safe quadratic scaling $\mathcal{O}(\Delta t^2)$,
+      to elevated fluctuations, and finally to the catastrophic resonance divergence at $\Delta t_{\text{crit}} = T_{\text{vib}}/\pi
+      \approx 0.318$.'
     render_function: render_timestep_stability_frontier
     layout:
       kind: matplotlib
@@ -641,13 +772,17 @@ worksheet:
         max: 0.35
         step: 0.01
         default: 0.05
-    takeaway_markdown: '**Key Insight:** Choosing $\Delta t \approx T_{\text{vib}}/20 = 0.05 T_{\text{vib}}$ places the simulation safely in the convergent regime where shadow Hamiltonian error is $< 10^{-4}$ and energy is conserved to within 0.01%. As $\Delta t$ approaches $T_{\text{vib}}/\pi \approx 0.318 T_{\text{vib}}$, resonance between the integrator step and physical vibration causes numerical instability.'
+    takeaway_markdown: '**Key Insight:** Choosing $\Delta t \approx T_{\text{vib}}/20 = 0.05 T_{\text{vib}}$ places the simulation
+      safely in the convergent regime where shadow Hamiltonian error is $< 10^{-4}$ and energy is conserved to within 0.01%.
+      As $\Delta t$ approaches $T_{\text{vib}}/\pi \approx 0.318 T_{\text{vib}}$, resonance between the integrator step and
+      physical vibration causes numerical instability.'
   - id: q04_21
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: What is the theoretical upper stability limit $\Delta t_{\text{crit}}$ for integrating a harmonic mode with frequency $\omega$ using the Verlet algorithm?
+    prompt_markdown: What is the theoretical upper stability limit $\Delta t_{\text{crit}}$ for integrating a harmonic mode
+      with frequency $\omega$ using the Verlet algorithm?
     options:
     - id: a
       text_markdown: $\Delta t_{\text{crit}} = 1/\omega$
@@ -663,35 +798,43 @@ worksheet:
       text: $\Delta t_{\text{crit}} = 2\pi/\omega = T_{\text{vib}}$
     correct: b
     hint_markdown: Analyze the roots of $\lambda^2 - 2(1 - \frac{1}{2}\omega^2 \Delta t^2)\lambda + 1 = 0$.
-    rationale_markdown: The characteristic polynomial roots remain on the unit circle $|\lambda|=1$ as long as $|1 - \frac{1}{2}\omega^2\Delta t^2| < 1$, which simplifies to $\omega \Delta t < 2$, or $\Delta t < 2/\omega = 2/(2\pi/T_{\text{vib}}) = T_{\text{vib}}/\pi$.
+    rationale_markdown: The characteristic polynomial roots remain on the unit circle $|\lambda|=1$ as long as $|1 - \frac{1}{2}\omega^2\Delta
+      t^2| < 1$, which simplifies to $\omega \Delta t < 2$, or $\Delta t < 2/\omega = 2/(2\pi/T_{\text{vib}}) = T_{\text{vib}}/\pi$.
   - id: q04_22
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: A water molecule has an O-H symmetric stretch frequency of $\nu = 1.1 \times 10^{14}\text{ s}^{-1}$ ($T_{\text{vib}} \approx 9.09\text{ fs}$). Using the rule of thumb $\Delta t = T_{\text{vib}}/20$, calculate the recommended maximum timestep in femtoseconds (fs).
+    prompt_markdown: A water molecule has an O-H symmetric stretch frequency of $\nu = 1.1 \times 10^{14}\text{ s}^{-1}$ ($T_{\text{vib}}
+      \approx 9.09\text{ fs}$). Using the rule of thumb $\Delta t = T_{\text{vib}}/20$, calculate the recommended maximum
+      timestep in femtoseconds (fs).
     correct: 0.455
     tolerance: 0.02
     unit: fs
     hint_markdown: Divide the period $9.09\text{ fs}$ by 20.
-    rationale_markdown: $\Delta t = 9.09\text{ fs} / 20 = 0.4545\text{ fs} \approx 0.455\text{ fs}$. In practice, flexible water models use $\Delta t = 0.5\text{ fs}$.
+    rationale_markdown: $\Delta t = 9.09\text{ fs} / 20 = 0.4545\text{ fs} \approx 0.455\text{ fs}$. In practice, flexible
+      water models use $\Delta t = 0.5\text{ fs}$.
   - id: q04_23
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: For the same O-H vibration with $T_{\text{vib}} = 9.09\text{ fs}$, what is the critical resonance blowup timestep $\Delta t_{\text{crit}} = T_{\text{vib}}/\pi$ in femtoseconds?
+    prompt_markdown: For the same O-H vibration with $T_{\text{vib}} = 9.09\text{ fs}$, what is the critical resonance blowup
+      timestep $\Delta t_{\text{crit}} = T_{\text{vib}}/\pi$ in femtoseconds?
     correct: 2.89
     tolerance: 0.05
     unit: fs
     hint_markdown: Divide $9.09\text{ fs}$ by $\pi \approx 3.14159$.
-    rationale_markdown: $\Delta t_{\text{crit}} = 9.09 / \pi \approx 2.893\text{ fs}$. Any timestep $\ge 2.9\text{ fs}$ will cause immediate exponential divergence in an unconstrained flexible water simulation.
+    rationale_markdown: $\Delta t_{\text{crit}} = 9.09 / \pi \approx 2.893\text{ fs}$. Any timestep $\ge 2.9\text{ fs}$ will
+      cause immediate exponential divergence in an unconstrained flexible water simulation.
   - id: q04_24
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: In classical liquid argon ($m = 39.95\text{ g/mol}$, $\epsilon/k_B = 120\text{ K}$, $\sigma = 0.34\text{ nm}$), typical vibrational periods of atoms in local cages are $T_{\text{vib}} \sim 1\text{ ps}$. What is the typical timestep used in Lennard-Jones liquid simulations?
+    prompt_markdown: In classical liquid argon ($m = 39.95\text{ g/mol}$, $\epsilon/k_B = 120\text{ K}$, $\sigma = 0.34\text{
+      nm}$), typical vibrational periods of atoms in local cages are $T_{\text{vib}} \sim 1\text{ ps}$. What is the typical
+      timestep used in Lennard-Jones liquid simulations?
     options:
     - id: a
       text_markdown: $0.001\text{ fs}$
@@ -707,20 +850,25 @@ worksheet:
       text: $1\text{ ns}$
     correct: b
     hint_markdown: Convert Lennard-Jones unit of time $\tau = \sqrt{m\sigma^2/\epsilon} \approx 2.15\text{ ps}$.
-    rationale_markdown: For liquid argon, the LJ time unit is $\tau \approx 2.15\text{ ps}$. A reduced timestep $\Delta t^* = 0.001\text{--}0.005$ corresponds to $\Delta t \approx 2\text{--}10\text{ fs}$, well below the cage vibrational period of ~1 ps.
+    rationale_markdown: For liquid argon, the LJ time unit is $\tau \approx 2.15\text{ ps}$. A reduced timestep $\Delta t^*
+      = 0.001\text{--}0.005$ corresponds to $\Delta t \approx 2\text{--}10\text{ fs}$, well below the cage vibrational period
+      of ~1 ps.
   - id: q04_25
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: According to the common simulation rule of thumb cited in Berendsen and course notes, what is an acceptable energy conservation criterion for a microcanonical ($NVE$) simulation?
+    prompt_markdown: According to the common simulation rule of thumb cited in Berendsen and course notes, what is an acceptable
+      energy conservation criterion for a microcanonical ($NVE$) simulation?
     options:
     - id: a
       text_markdown: The total energy must remain strictly constant to within machine epsilon ($10^{-16}$).
       text: The total energy must remain strictly constant to within machine epsilon ($10^{-16}$).
     - id: b
-      text_markdown: Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\Delta E| / K < 0.01$).
-      text: Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\Delta E| / K < 0.01$).
+      text_markdown: Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy
+        ($|\Delta E| / K < 0.01$).
+      text: Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\Delta
+        E| / K < 0.01$).
     - id: c
       text_markdown: Potential energy should equal kinetic energy at every step.
       text: Potential energy should equal kinetic energy at every step.
@@ -728,21 +876,27 @@ worksheet:
       text_markdown: Energy drift of 50% is acceptable as long as temperature is maintained by scaling.
       text: Energy drift of 50% is acceptable as long as temperature is maintained by scaling.
     correct: b
-    hint_markdown: Check the criteria for an integrator in slide 7 of 04.MD.pdf.
-    rationale_markdown: 'Slide 7 specifies: ''Adjust to get energy conservation to 1% of kinetic energy.'' Fluctuations below ~1% of kinetic energy ensure that statistical ensemble averages are unaffected by discretization error.'
+    hint_markdown: Check the criteria for an integrator of 04.MD.pdf.
+    rationale_markdown: 'specifies: ''Adjust to get energy conservation to 1% of kinetic energy.'' Fluctuations below ~1%
+      of kinetic energy ensure that statistical ensemble averages are unaffected by discretization error.'
   - id: q04_26
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: Which of the following consequences occur if the timestep $\Delta t$ is chosen TOO LARGE in an MD simulation? (Select all that apply)
+    prompt_markdown: Which of the following consequences occur if the timestep $\Delta t$ is chosen TOO LARGE in an MD simulation?
+      (Select all that apply)
     options:
     - id: a
-      text_markdown: Atoms with high velocities may overlap severely in a single step, experiencing astronomical repulsive forces ($r^{-12}$ blowup).
-      text: Atoms with high velocities may overlap severely in a single step, experiencing astronomical repulsive forces ($r^{-12}$ blowup).
+      text_markdown: Atoms with high velocities may overlap severely in a single step, experiencing astronomical repulsive
+        forces ($r^{-12}$ blowup).
+      text: Atoms with high velocities may overlap severely in a single step, experiencing astronomical repulsive forces ($r^{-12}$
+        blowup).
     - id: b
-      text_markdown: High-frequency vibrational modes cross the $\omega \Delta t = 2$ stability threshold, causing exponential energy explosion.
-      text: High-frequency vibrational modes cross the $\omega \Delta t = 2$ stability threshold, causing exponential energy explosion.
+      text_markdown: High-frequency vibrational modes cross the $\omega \Delta t = 2$ stability threshold, causing exponential
+        energy explosion.
+      text: High-frequency vibrational modes cross the $\omega \Delta t = 2$ stability threshold, causing exponential energy
+        explosion.
     - id: c
       text_markdown: The simulation completes more wall-clock time per physical nanosecond.
       text: The simulation completes more wall-clock time per physical nanosecond.
@@ -754,20 +908,27 @@ worksheet:
     - b
     - d
     hint_markdown: Think about both physical particle overlaps and numerical integrator stability limits.
-    rationale_markdown: 'Excessive timesteps cause atom overlaps on repulsive cores, trigger numerical resonance instabilities $\omega \Delta t \ge 2$, and amplify Jacobian deviations in non-symplectic integrators. (Option c is false: the simulation would run faster per physical ns if it didn''t blow up, but it is not a pathological consequence).'
+    rationale_markdown: 'Excessive timesteps cause atom overlaps on repulsive cores, trigger numerical resonance instabilities
+      $\omega \Delta t \ge 2$, and amplify Jacobian deviations in non-symplectic integrators. (Option c is false: the simulation
+      would run faster per physical ns if it didn''t blow up, but it is not a pathological consequence).'
   - id: q04_27
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: In multi-timestep algorithms like RESPA (Reversible Reference System Propagator Algorithm), how are fast and slow forces treated?
+    prompt_markdown: In multi-timestep algorithms like RESPA (Reversible Reference System Propagator Algorithm), how are fast
+      and slow forces treated?
     options:
     - id: a
       text_markdown: All forces are evaluated at the same large timestep $\Delta t$.
       text: All forces are evaluated at the same large timestep $\Delta t$.
     - id: b
-      text_markdown: Fast forces (covalent bonds/angles) are evaluated with a small timestep $\delta t$, while expensive slow forces (non-bonded LJ/Coulomb) are evaluated with a larger timestep $\Delta t = n\,\delta t$, using a symplectic operator factorization.
-      text: Fast forces (covalent bonds/angles) are evaluated with a small timestep $\delta t$, while expensive slow forces (non-bonded LJ/Coulomb) are evaluated with a larger timestep $\Delta t = n\,\delta t$, using a symplectic operator factorization.
+      text_markdown: Fast forces (covalent bonds/angles) are evaluated with a small timestep $\delta t$, while expensive slow
+        forces (non-bonded LJ/Coulomb) are evaluated with a larger timestep $\Delta t = n\,\delta t$, using a symplectic operator
+        factorization.
+      text: Fast forces (covalent bonds/angles) are evaluated with a small timestep $\delta t$, while expensive slow forces
+        (non-bonded LJ/Coulomb) are evaluated with a larger timestep $\Delta t = n\,\delta t$, using a symplectic operator
+        factorization.
     - id: c
       text_markdown: Fast forces are discarded completely.
       text: Fast forces are discarded completely.
@@ -775,14 +936,18 @@ worksheet:
       text_markdown: Slow forces are evaluated using Monte Carlo while fast forces use MD.
       text: Slow forces are evaluated using Monte Carlo while fast forces use MD.
     correct: b
-    hint_markdown: Think about breaking the Liouville propagator into $e^{iL_{\text{fast}}\delta t}$ and $e^{iL_{\text{slow}}\Delta t}$.
-    rationale_markdown: RESPA decomposes the Liouville operator into fast internal motions (bonds, angles) and slow non-bonded motions (LJ, electrostatics). Propagating fast modes with small sub-steps $\delta t$ inside a larger step $\Delta t$ preserves symplecticity while avoiding expensive repeated evaluations of non-bonded forces.
+    hint_markdown: Think about breaking the Liouville propagator into $e^{iL_{\text{fast}}\delta t}$ and $e^{iL_{\text{slow}}\Delta
+      t}$.
+    rationale_markdown: RESPA decomposes the Liouville operator into fast internal motions (bonds, angles) and slow non-bonded
+      motions (LJ, electrostatics). Propagating fast modes with small sub-steps $\delta t$ inside a larger step $\Delta t$
+      preserves symplecticity while avoiding expensive repeated evaluations of non-bonded forces.
   - id: q04_28
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: If a simulation of 100,000 steps is run with $\Delta t = 2.0\text{ fs}$, what is the total simulated physical trajectory duration in picoseconds (ps)?
+    prompt_markdown: If a simulation of 100,000 steps is run with $\Delta t = 2.0\text{ fs}$, what is the total simulated
+      physical trajectory duration in picoseconds (ps)?
     correct: 200.0
     tolerance: 0.1
     unit: ps
@@ -793,7 +958,8 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: concept_timestep_stability_frontier
-    prompt_markdown: In the concept cell 'Timestep Stability Frontier', what is the functional dependence of the energy drift rate on $\Delta t$ when $\Delta t$ is well below the resonance threshold?
+    prompt_markdown: In the concept cell 'Timestep Stability Frontier', what is the functional dependence of the energy drift
+      rate on $\Delta t$ when $\Delta t$ is well below the resonance threshold?
     options:
     - id: a
       text_markdown: 'Linear: $|dE/dt| \propto \Delta t$'
@@ -809,17 +975,21 @@ worksheet:
       text: Independent of $\Delta t$
     correct: b
     hint_markdown: Recall the order of the leading term in the Velocity Verlet shadow Hamiltonian $\mathcal{H}_2 \Delta t^2$.
-    rationale_markdown: Below resonance, the error in the shadow Hamiltonian scales as $\mathcal{O}(\Delta t^2)$. Hence the RMS energy fluctuation amplitude and drift rate scale quadratically with $\Delta t$.
+    rationale_markdown: Below resonance, the error in the shadow Hamiltonian scales as $\mathcal{O}(\Delta t^2)$. Hence the
+      RMS energy fluctuation amplitude and drift rate scale quadratically with $\Delta t$.
   - id: q04_30
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_timestep_selection_and_resonance
-    prompt_markdown: Why does freezing the bond lengths of hydrogen atoms using constraint algorithms (like SHAKE) allow researchers to double the MD timestep from $1\text{ fs}$ to $2\text{ fs}$?
+    prompt_markdown: Why does freezing the bond lengths of hydrogen atoms using constraint algorithms (like SHAKE) allow researchers
+      to double the MD timestep from $1\text{ fs}$ to $2\text{ fs}$?
     options:
     - id: a
-      text_markdown: It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes (angle bends ~1500 cm^-1) have roughly double the period.
-      text: It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes (angle bends ~1500 cm^-1) have roughly double the period.
+      text_markdown: It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining
+        modes (angle bends ~1500 cm^-1) have roughly double the period.
+      text: It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes
+        (angle bends ~1500 cm^-1) have roughly double the period.
     - id: b
       text_markdown: It removes all kinetic energy from the simulation.
       text: It removes all kinetic energy from the simulation.
@@ -831,14 +1001,18 @@ worksheet:
       text: It makes hydrogen atoms infinitely heavy.
     correct: a
     hint_markdown: What vibration is fastest in organic molecules containing hydrogen?
-    rationale_markdown: Because hydrogen is the lightest atom, bonds to hydrogen vibrate at the highest frequency (period ~10 fs). Constraining these bonds removes those high-frequency degrees of freedom, leaving slower heavy-atom modes as the limit on $\Delta t$.
+    rationale_markdown: Because hydrogen is the lightest atom, bonds to hydrogen vibrate at the highest frequency (period
+      ~10 fs). Constraining these bonds removes those high-frequency degrees of freedom, leaving slower heavy-atom modes as
+      the limit on $\Delta t$.
   - id: sec_reversibility_and_complexity
     type: markdown_section
     title: 5. Time-Reversibility, Lyapunov Instability, and Neighbor Lists
     body_markdown: '### Exact Algebraic Time-Reversibility
 
 
-      Newton''s equations of motion are invariant under time reversal $t \to -t$ and $\mathbf{v} \to -\mathbf{v}$. An integrator is **time-reversible** if reversing the velocities $\mathbf{v} \to -\mathbf{v}$ causes the trajectory to trace back its steps in exact reverse order.
+      Newton''s equations of motion are invariant under time reversal $t \to -t$ and $\mathbf{v} \to -\mathbf{v}$. An integrator
+      is **time-reversible** if reversing the velocities $\mathbf{v} \to -\mathbf{v}$ causes the trajectory to trace back
+      its steps in exact reverse order.
 
 
       In the Velocity Verlet algorithm:
@@ -849,18 +1023,22 @@ worksheet:
       $$\mathbf{v}(t+\Delta t) = \mathbf{v}(t) + \frac{1}{2}[\mathbf{a}(t) + \mathbf{a}(t+\Delta t)]\Delta t$$
 
 
-      Replacing $\Delta t$ with $-\Delta t$ yields the exact algebraic inverse mapping. However, in practical floating-point simulations, two factors limit numerical reversibility:
+      Replacing $\Delta t$ with $-\Delta t$ yields the exact algebraic inverse mapping. However, in practical floating-point
+      simulations, two factors limit numerical reversibility:
 
 
       1. **Finite-Precision Roundoff:** Non-associativity of IEEE 754 floating-point addition ($(a + b) + c \ne a + (b + c)$).
 
-      2. **Lyapunov Instability:** Many-body systems are chaotic. Two trajectories separated initially by $\delta r(0)$ diverge exponentially:
+      2. **Lyapunov Instability:** Many-body systems are chaotic. Two trajectories separated initially by $\delta r(0)$ diverge
+      exponentially:
 
 
       $$\delta r(t) \approx \delta r(0) e^{\lambda_{\text{max}} t}$$
 
 
-      where $\lambda_{\text{max}} > 0$ is the maximal Lyapunov exponent. After a Lyapunov time $\tau_L \sim 1/\lambda_{\text{max}}$, microscopic roundoff error is amplified to macroscopic separation, preventing long-time trajectory reversal even though macroscopic thermodynamics remains exact!
+      where $\lambda_{\text{max}} > 0$ is the maximal Lyapunov exponent. After a Lyapunov time $\tau_L \sim 1/\lambda_{\text{max}}$,
+      microscopic roundoff error is amplified to macroscopic separation, preventing long-time trajectory reversal even though
+      macroscopic thermodynamics remains exact!
 
 
       ### Computational Complexity of Force Evaluation
@@ -875,15 +1053,20 @@ worksheet:
       For short-range potentials truncated at $r_c$, two techniques reduce this complexity to $\mathcal{O}(N)$:
 
 
-      - **Verlet Neighbor Lists:** Each atom maintains a list of neighbors within a larger sphere $r_m = r_c + r_{\text{skin}}$. The list is rebuilt only when the maximum particle displacement exceeds $r_{\text{skin}}/2$, amortizing the search cost over many steps.
+      - **Verlet Neighbor Lists:** Each atom maintains a list of neighbors within a larger sphere $r_m = r_c + r_{\text{skin}}$.
+      The list is rebuilt only when the maximum particle displacement exceeds $r_{\text{skin}}/2$, amortizing the search cost
+      over many steps.
 
-      - **Cell Subdivision (Linked-Cell Lists):** The simulation box is divided into cells of width $d \ge r_c$. Each atom only checks neighbors in its own cell and the 26 adjacent neighboring cells, achieving strict $\mathcal{O}(N)$ scaling.'
+      - **Cell Subdivision (Linked-Cell Lists):** The simulation box is divided into cells of width $d \ge r_c$. Each atom
+      only checks neighbors in its own cell and the 26 adjacent neighboring cells, achieving strict $\mathcal{O}(N)$ scaling.'
   - id: concept_time_reversibility_lab
     type: concept_cell
     title: 'Interactive Concept: Time-Reversibility Lab & Velocity Inversion'
     description_markdown: 'Test the algebraic time-reversibility of the Velocity Verlet algorithm.
 
-      The simulation integrates $N_{\text{forward}}$ steps forward, inverts all particle velocities $\mathbf{v} \to -\mathbf{v}$, and integrates $N_{\text{forward}}$ steps backward. Adjust $N_{\text{forward}}$, $\Delta t$, and add a tiny perturbation $\epsilon$ to observe the Lyapunov divergence.'
+      The simulation integrates $N_{\text{forward}}$ steps forward, inverts all particle velocities $\mathbf{v} \to -\mathbf{v}$,
+      and integrates $N_{\text{forward}}$ steps backward. Adjust $N_{\text{forward}}$, $\Delta t$, and add a tiny perturbation
+      $\epsilon$ to observe the Lyapunov divergence.'
     render_function: render_time_reversibility_lab
     layout:
       kind: matplotlib
@@ -912,13 +1095,16 @@ worksheet:
         max: 0.0001
         step: 1.0e-05
         default: 0.0
-    takeaway_markdown: '**Key Insight:** In the absence of perturbations, Velocity Verlet retraces its forward path back to the starting point to machine precision ($|x_f - x_0| \sim 10^{-14}$). However, introducing even a tiny perturbation $\epsilon \sim 10^{-5}$ causes chaotic trajectory divergence due to the positive Lyapunov exponent of the system.'
+    takeaway_markdown: '**Key Insight:** In the absence of perturbations, Velocity Verlet retraces its forward path back to
+      the starting point to machine precision ($|x_f - x_0| \sim 10^{-14}$). However, introducing even a tiny perturbation
+      $\epsilon \sim 10^{-5}$ causes chaotic trajectory divergence due to the positive Lyapunov exponent of the system.'
   - id: q04_31
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: In an $N$-body system with pair potentials, how many pair distances $r_{ij}$ must be computed in a naive direct double sum without neighbor lists?
+    prompt_markdown: In an $N$-body system with pair potentials, how many pair distances $r_{ij}$ must be computed in a naive
+      direct double sum without neighbor lists?
     options:
     - id: a
       text_markdown: $N$
@@ -934,20 +1120,24 @@ worksheet:
       text: $N^3$
     correct: c
     hint_markdown: How many distinct pairs can be chosen from $N$ items?
-    rationale_markdown: A naive double sum pairs each particle $i$ with all particles $j > i$, requiring $\binom{N}{2} = \frac{N(N-1)}{2} = \mathcal{O}(N^2)$ force evaluations.
+    rationale_markdown: A naive double sum pairs each particle $i$ with all particles $j > i$, requiring $\binom{N}{2} = \frac{N(N-1)}{2}
+      = \mathcal{O}(N^2)$ force evaluations.
   - id: q04_32
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: In a Verlet neighbor list with cutoff $r_c$ and skin buffer $r_{\text{skin}}$ (so list radius $r_m = r_c + r_{\text{skin}}$), what is the criterion that guarantees no pair can enter $r_c$ before the neighbor list is rebuilt?
+    prompt_markdown: In a Verlet neighbor list with cutoff $r_c$ and skin buffer $r_{\text{skin}}$ (so list radius $r_m =
+      r_c + r_{\text{skin}}$), what is the criterion that guarantees no pair can enter $r_c$ before the neighbor list is rebuilt?
     options:
     - id: a
       text_markdown: The simulation has completed 100 timesteps.
       text: The simulation has completed 100 timesteps.
     - id: b
-      text_markdown: The maximum displacement of any particle since the last update exceeds $r_{\text{skin}} / 2$ (or sum of maximum two displacements $> r_{\text{skin}}$).
-      text: The maximum displacement of any particle since the last update exceeds $r_{\text{skin}} / 2$ (or sum of maximum two displacements $> r_{\text{skin}}$).
+      text_markdown: The maximum displacement of any particle since the last update exceeds $r_{\text{skin}} / 2$ (or sum
+        of maximum two displacements $> r_{\text{skin}}$).
+      text: The maximum displacement of any particle since the last update exceeds $r_{\text{skin}} / 2$ (or sum of maximum
+        two displacements $> r_{\text{skin}}$).
     - id: c
       text_markdown: The total kinetic energy changes by more than 5%.
       text: The total kinetic energy changes by more than 5%.
@@ -955,24 +1145,31 @@ worksheet:
       text_markdown: At least one particle crosses a periodic boundary.
       text: At least one particle crosses a periodic boundary.
     correct: b
-    hint_markdown: If particle $i$ moves by $\Delta r_i$ and particle $j$ moves by $\Delta r_j$, what is the maximum change in their separation distance $|\Delta r_{ij}|$?
-    rationale_markdown: By the triangle inequality, the distance between particles $i$ and $j$ can decrease by at most $|\Delta\mathbf{r}_i| + |\Delta\mathbf{r}_j| \le 2 \Delta r_{\max}$. If $2 \Delta r_{\max} < r_{\text{skin}}$ (i.e. $\Delta r_{\max} < r_{\text{skin}}/2$), no pair outside $r_m$ could possibly have approached closer than $r_c$.
+    hint_markdown: If particle $i$ moves by $\Delta r_i$ and particle $j$ moves by $\Delta r_j$, what is the maximum change
+      in their separation distance $|\Delta r_{ij}|$?
+    rationale_markdown: By the triangle inequality, the distance between particles $i$ and $j$ can decrease by at most $|\Delta\mathbf{r}_i|
+      + |\Delta\mathbf{r}_j| \le 2 \Delta r_{\max}$. If $2 \Delta r_{\max} < r_{\text{skin}}$ (i.e. $\Delta r_{\max} < r_{\text{skin}}/2$),
+      no pair outside $r_m$ could possibly have approached closer than $r_c$.
   - id: q04_33
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: A simulation of $N = 10,000$ atoms uses a naive $\mathcal{O}(N^2)$ pair loop. If the system size is increased to $N = 50,000$ atoms, by what factor does the pair calculation time increase?
+    prompt_markdown: A simulation of $N = 10,000$ atoms uses a naive $\mathcal{O}(N^2)$ pair loop. If the system size is increased
+      to $N = 50,000$ atoms, by what factor does the pair calculation time increase?
     correct: 25.0
     tolerance: 0.5
     hint_markdown: Calculate $(50,000 / 10,000)^2$.
-    rationale_markdown: Because the calculation scales as $N^2$, $(50,000 / 10,000)^2 = 5^2 = 25.0$. The computational time increases by a factor of 25.
+    rationale_markdown: Because the calculation scales as $N^2$, $(50,000 / 10,000)^2 = 5^2 = 25.0$. The computational time
+      increases by a factor of 25.
   - id: q04_34
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: In the cell linked-list method, the simulation volume is divided into cubic cells of width $d$. What is the minimum cell width $d$ required so that neighbors within $r_c$ need only be searched in the atom's own cell and the 26 immediate neighbor cells?
+    prompt_markdown: In the cell linked-list method, the simulation volume is divided into cubic cells of width $d$. What
+      is the minimum cell width $d$ required so that neighbors within $r_c$ need only be searched in the atom's own cell and
+      the 26 immediate neighbor cells?
     options:
     - id: a
       text_markdown: $d \ge r_c / 2$
@@ -988,20 +1185,25 @@ worksheet:
       text: $d \ge \pi r_c$
     correct: b
     hint_markdown: If an atom is at the far boundary of a cell, how far can a particle be in the adjacent cell?
-    rationale_markdown: If $d \ge r_c$, any particle at distance $\le r_c$ from an atom located anywhere inside cell $(i, j, k)$ is guaranteed to lie either in cell $(i, j, k)$ or in one of the 26 neighboring cells sharing a face, edge, or corner. If $d < r_c$, particles in next-nearest cells could interact, requiring searches beyond the 26 nearest cells.
+    rationale_markdown: If $d \ge r_c$, any particle at distance $\le r_c$ from an atom located anywhere inside cell $(i,
+      j, k)$ is guaranteed to lie either in cell $(i, j, k)$ or in one of the 26 neighboring cells sharing a face, edge, or
+      corner. If $d < r_c$, particles in next-nearest cells could interact, requiring searches beyond the 26 nearest cells.
   - id: q04_35
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: Why are MD trajectories in a classical many-body liquid unable to retrace their forward path when velocities are reversed after a long time ($t > 100\text{ ps}$), despite Velocity Verlet being algebraically time-reversible?
+    prompt_markdown: Why are MD trajectories in a classical many-body liquid unable to retrace their forward path when velocities
+      are reversed after a long time ($t > 100\text{ ps}$), despite Velocity Verlet being algebraically time-reversible?
     options:
     - id: a
       text_markdown: Verlet algorithm breaks time-reversal symmetry by having odd orders of $\Delta t$.
       text: Verlet algorithm breaks time-reversal symmetry by having odd orders of $\Delta t$.
     - id: b
-      text_markdown: The positive Lyapunov exponent causes exponential growth $\sim e^{\lambda t}$ of tiny floating-point roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory.
-      text: The positive Lyapunov exponent causes exponential growth $\sim e^{\lambda t}$ of tiny floating-point roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory.
+      text_markdown: The positive Lyapunov exponent causes exponential growth $\sim e^{\lambda t}$ of tiny floating-point
+        roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory.
+      text: The positive Lyapunov exponent causes exponential growth $\sim e^{\lambda t}$ of tiny floating-point roundoff
+        errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory.
     - id: c
       text_markdown: Newton's laws of motion are fundamentally not invariant under time reversal in three dimensions.
       text: Newton's laws of motion are fundamentally not invariant under time reversal in three dimensions.
@@ -1010,17 +1212,22 @@ worksheet:
       text: Potential cutoffs permanently delete particle information from memory.
     correct: b
     hint_markdown: Recall the discussion of chaos, Lyapunov instability, and roundoff error.
-    rationale_markdown: Many-body classical systems are chaotic with positive Lyapunov exponents $\lambda > 0$. Microscopic roundoff errors of order $10^{-16}$ grow exponentially as $\delta(t) \approx \delta(0) e^{\lambda t}$. After several Lyapunov times, the error reaches macroscopic scale (~interatomic spacing), diverging from the exact time-reversed path.
+    rationale_markdown: Many-body classical systems are chaotic with positive Lyapunov exponents $\lambda > 0$. Microscopic
+      roundoff errors of order $10^{-16}$ grow exponentially as $\delta(t) \approx \delta(0) e^{\lambda t}$. After several
+      Lyapunov times, the error reaches macroscopic scale (~interatomic spacing), diverging from the exact time-reversed path.
   - id: q04_36
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: If chaotic divergence destroys exact microscopic time reversibility after a few picoseconds, why are equilibrium thermodynamic properties computed from MD simulations still valid?
+    prompt_markdown: If chaotic divergence destroys exact microscopic time reversibility after a few picoseconds, why are
+      equilibrium thermodynamic properties computed from MD simulations still valid?
     options:
     - id: a
-      text_markdown: The shadowing lemma guarantees that the computed numerical trajectory remains uniformly close to *some* true physical trajectory with slightly different initial conditions.
-      text: The shadowing lemma guarantees that the computed numerical trajectory remains uniformly close to *some* true physical trajectory with slightly different initial conditions.
+      text_markdown: The shadowing lemma guarantees that the computed numerical trajectory remains uniformly close to *some*
+        true physical trajectory with slightly different initial conditions.
+      text: The shadowing lemma guarantees that the computed numerical trajectory remains uniformly close to *some* true physical
+        trajectory with slightly different initial conditions.
     - id: b
       text_markdown: Thermodynamics only depends on the first timestep of a simulation.
       text: Thermodynamics only depends on the first timestep of a simulation.
@@ -1031,25 +1238,33 @@ worksheet:
       text_markdown: Floating point errors always average to zero identically.
       text: Floating point errors always average to zero identically.
     correct: a
-    hint_markdown: Review the quote from Berendsen on slide 9 and the concept of 'shadowing'.
-    rationale_markdown: As Berendsen noted, we do not need the *exact* trajectory from specific initial conditions; we only need a representative trajectory that samples the correct microcanonical phase-space distribution. By the shadowing lemma, the numerical trajectory stays close to a true trajectory of the physical system, preserving statistical ensemble averages.
+    hint_markdown: Review the quote from Berendsen and the concept of 'shadowing'.
+    rationale_markdown: As Berendsen noted, we do not need the *exact* trajectory from specific initial conditions; we only
+      need a representative trajectory that samples the correct microcanonical phase-space distribution. By the shadowing
+      lemma, the numerical trajectory stays close to a true trajectory of the physical system, preserving statistical ensemble
+      averages.
   - id: q04_37
     type: problem
     question_type: numeric
     difficulty: hard
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: In a liquid simulation with maximal Lyapunov exponent $\lambda_{\text{max}} = 0.5\text{ ps}^{-1}$, an initial floating-point roundoff error is $\delta_0 = 10^{-15}\text{ nm}$. Approximately how long in picoseconds (ps) will it take for the trajectory separation $\delta(t) = \delta_0 e^{\lambda_{\text{max}} t}$ to grow to the size of an atomic radius $\delta(t) = 0.1\text{ nm}$?
+    prompt_markdown: In a liquid simulation with maximal Lyapunov exponent $\lambda_{\text{max}} = 0.5\text{ ps}^{-1}$, an
+      initial floating-point roundoff error is $\delta_0 = 10^{-15}\text{ nm}$. Approximately how long in picoseconds (ps)
+      will it take for the trajectory separation $\delta(t) = \delta_0 e^{\lambda_{\text{max}} t}$ to grow to the size of
+      an atomic radius $\delta(t) = 0.1\text{ nm}$?
     correct: 64.5
     tolerance: 2.0
     unit: ps
     hint_markdown: 'Solve for $t$: $t = \frac{1}{\lambda} \ln(\delta / \delta_0)$.'
-    rationale_markdown: $t = \frac{1}{0.5} \ln(0.1 / 10^{-15}) = 2 \times \ln(10^{14}) = 2 \times (14 \times 2.302585) = 2 \times 32.236 = 64.47\text{ ps}$.
+    rationale_markdown: $t = \frac{1}{0.5} \ln(0.1 / 10^{-15}) = 2 \times \ln(10^{14}) = 2 \times (14 \times 2.302585) = 2
+      \times 32.236 = 64.47\text{ ps}$.
   - id: q04_38
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: concept_time_reversibility_lab
-    prompt_markdown: In the concept cell 'Time-Reversibility Lab', when $\epsilon = 0$, what order of magnitude is the final position return error $|x_{\text{end}} - x_0|$ after 80 forward and 80 reverse steps?
+    prompt_markdown: In the concept cell 'Time-Reversibility Lab', when $\epsilon = 0$, what order of magnitude is the final
+      position return error $|x_{\text{end}} - x_0|$ after 80 forward and 80 reverse steps?
     options:
     - id: a
       text_markdown: Machine precision ($10^{-15}$ to $10^{-14}$)
@@ -1064,14 +1279,17 @@ worksheet:
       text_markdown: Zero exactly (integer arithmetic)
       text: Zero exactly (integer arithmetic)
     correct: a
-    hint_markdown: Notice that for a small number of steps in double precision, roundoff error has not had enough Lyapunov time to grow to macroscopic scale.
-    rationale_markdown: Because Velocity Verlet is algebraically reversible, swapping velocities $\mathbf{v} \to -\mathbf{v}$ exactly undoes each algebraic step. Over 80 steps, roundoff error accumulates to only $\sim 10^{-15}\text{--}10^{-14}$.
+    hint_markdown: Notice that for a small number of steps in double precision, roundoff error has not had enough Lyapunov
+      time to grow to macroscopic scale.
+    rationale_markdown: Because Velocity Verlet is algebraically reversible, swapping velocities $\mathbf{v} \to -\mathbf{v}$
+      exactly undoes each algebraic step. Over 80 steps, roundoff error accumulates to only $\sim 10^{-15}\text{--}10^{-14}$.
   - id: q04_39
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by: sec_md_architecture_and_equations
-    prompt_markdown: Which of the following boundary conditions can be applied to classical molecular dynamics simulations? (Select all that apply)
+    prompt_markdown: Which of the following boundary conditions can be applied to classical molecular dynamics simulations?
+      (Select all that apply)
     options:
     - id: a
       text_markdown: Periodic boundary conditions (PBC) with minimum image convention to model bulk liquids and solids.
@@ -1089,18 +1307,23 @@ worksheet:
     - a
     - b
     - c
-    hint_markdown: Review slide 11 of 04.MD.pdf on spatial scales and boundary condition possibilities.
-    rationale_markdown: Standard MD simulations employ periodic boundary conditions (to eliminate surface artifacts), vacuum/free boundary conditions (for isolated molecules/clusters), or explicit walls/confinement. Klein bottle boundaries are not used in physical molecular simulations.
+    hint_markdown: Review of 04.MD.pdf on spatial scales and boundary condition possibilities.
+    rationale_markdown: Standard MD simulations employ periodic boundary conditions (to eliminate surface artifacts), vacuum/free
+      boundary conditions (for isolated molecules/clusters), or explicit walls/confinement. Klein bottle boundaries are not
+      used in physical molecular simulations.
   - id: q04_40
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_md_architecture_and_equations
-    prompt_markdown: Why do MD simulations of bulk fluids and solids almost universally employ Periodic Boundary Conditions (PBC)?
+    prompt_markdown: Why do MD simulations of bulk fluids and solids almost universally employ Periodic Boundary Conditions
+      (PBC)?
     options:
     - id: a
-      text_markdown: To eliminate surface and boundary effects so a small system of $10^3\text{--}10^6$ particles mimics an infinite bulk macroscopic system.
-      text: To eliminate surface and boundary effects so a small system of $10^3\text{--}10^6$ particles mimics an infinite bulk macroscopic system.
+      text_markdown: To eliminate surface and boundary effects so a small system of $10^3\text{--}10^6$ particles mimics an
+        infinite bulk macroscopic system.
+      text: To eliminate surface and boundary effects so a small system of $10^3\text{--}10^6$ particles mimics an infinite
+        bulk macroscopic system.
     - id: b
       text_markdown: To force all particles to remain completely stationary.
       text: To force all particles to remain completely stationary.
@@ -1112,20 +1335,25 @@ worksheet:
       text: Because computers cannot store negative coordinates.
     correct: a
     hint_markdown: What fraction of atoms sit on the surface of a cube of $1000$ atoms ($10 \times 10 \times 10$)?
-    rationale_markdown: In a cluster of $1000$ atoms ($10^3$), roughly $10^3 - 8^3 = 488$ atoms (nearly 50%) reside on the surface! PBC wrap the coordinates into a 3-torus, eliminating surfaces and enabling accurate bulk property calculations with modest particle counts.
+    rationale_markdown: In a cluster of $1000$ atoms ($10^3$), roughly $10^3 - 8^3 = 488$ atoms (nearly 50%) reside on the
+      surface! PBC wrap the coordinates into a 3-torus, eliminating surfaces and enabling accurate bulk property calculations
+      with modest particle counts.
   - id: q04_41
     type: problem
     question_type: single_select
     difficulty: hard
     taught_by: sec_integrators_and_symplectic_geometry
-    prompt_markdown: Gear predictor-corrector integrators were historically popular in MD because they offer $\mathcal{O}(\Delta t^5)$ local truncation errors. Why have they been almost entirely superseded by Velocity Verlet in modern simulations?
+    prompt_markdown: Gear predictor-corrector integrators were historically popular in MD because they offer $\mathcal{O}(\Delta
+      t^5)$ local truncation errors. Why have they been almost entirely superseded by Velocity Verlet in modern simulations?
     options:
     - id: a
       text_markdown: Gear integrators require too many square roots.
       text: Gear integrators require too many square roots.
     - id: b
-      text_markdown: Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space volume conservation over long trajectories.
-      text: Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space volume conservation over long trajectories.
+      text_markdown: Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor
+        phase-space volume conservation over long trajectories.
+      text: Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space
+        volume conservation over long trajectories.
     - id: c
       text_markdown: Gear integrators cannot handle more than 10 particles.
       text: Gear integrators cannot handle more than 10 particles.
@@ -1133,15 +1361,20 @@ worksheet:
       text_markdown: Gear integrators only work for 1D systems.
       text: Gear integrators only work for 1D systems.
     correct: b
-    hint_markdown: 'Review slide 8: ''Higher Order Methods?'' in 04.MD.pdf.'
-    rationale_markdown: Gear predictor-corrector integrators have smaller errors per step for short runs, but because they are non-symplectic, their energy drifts systematically over long times. Moreover, they require storing higher derivatives (jerk, snap), consuming more memory and CPU time.
+    hint_markdown: '''Higher Order Methods?'' in 04.MD.pdf.'
+    rationale_markdown: Gear predictor-corrector integrators have smaller errors per step for short runs, but because they
+      are non-symplectic, their energy drifts systematically over long times. Moreover, they require storing higher derivatives
+      (jerk, snap), consuming more memory and CPU time.
   - id: q04_42
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_reversibility_and_complexity
-    prompt_markdown: A cubic simulation box of edge length $L = 5.0\text{ nm}$ contains particles interacting via a potential with cutoff $r_c = 1.2\text{ nm}$. If the box is subdivided into linked cells of equal size $d \ge r_c$, what is the maximum integer number of cell divisions $M$ along each dimension (such that $L/M \ge r_c$)?
+    prompt_markdown: A cubic simulation box of edge length $L = 5.0\text{ nm}$ contains particles interacting via a potential
+      with cutoff $r_c = 1.2\text{ nm}$. If the box is subdivided into linked cells of equal size $d \ge r_c$, what is the
+      maximum integer number of cell divisions $M$ along each dimension (such that $L/M \ge r_c$)?
     correct: 4.0
     tolerance: 0.01
     hint_markdown: We need $d = L/M \ge r_c \implies M \le L / r_c$.
-    rationale_markdown: $M \le 5.0 / 1.2 = 4.167$. Since $M$ must be an integer, the maximum number of cell divisions along each axis is $M = 4$ (giving cell width $d = 5.0 / 4 = 1.25\text{ nm} \ge 1.2\text{ nm}$).
+    rationale_markdown: $M \le 5.0 / 1.2 = 4.167$. Since $M$ must be an integer, the maximum number of cell divisions along
+      each axis is $M = 4$ (giving cell width $d = 5.0 / 4 = 1.25\text{ nm} \ge 1.2\text{ nm}$).

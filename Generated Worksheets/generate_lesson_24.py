@@ -490,7 +490,7 @@ problems_11_20 = [
             {"id": "d", "text_markdown": "It eliminates the need for random numbers."}
         ],
         "correct": ["a"],
-        "hint_markdown": "See slide 7 of 21.KMC.pdf on Trotter's formula.",
+        "hint_markdown": "Recall Trotter's product formula for operator exponentials.",
         "rationale_markdown": "As shown in the lecture notes, Trotter's formula allows the global transition generator $\\mathcal{L} = \\sum_k \\mathcal{L}_k$ to be factored into independent sub-generators over small time slices $\\Delta t$, justifying treating competing Poisson processes as independent channels."
     },
     {

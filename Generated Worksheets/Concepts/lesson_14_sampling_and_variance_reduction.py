@@ -238,7 +238,7 @@ def render_importance_sampling_variance_trap(controls: dict[str, Any], ax: plt.A
         ax.set_ylim(0.0, min(1.5, float(np.max(v_curve_arr))))
         ax.set_xlabel("Trial Gaussian Variance Parameter $a$ in $p_a(x) = \\exp(-x^2/2a)/\\sqrt{2\\pi a}$", fontsize=9.5)
         ax.set_ylabel("Estimator Variance $\\sigma^2(a)$ ( Proportional to CPU Time )", fontsize=9.5)
-        ax.set_title("Lecture Slide 13–15: Relative CPU Time / Variance vs. Width $a$", fontsize=10.2, fontweight="bold")
+        ax.set_title("Relative CPU Time / Variance vs. Width $a$", fontsize=10.2, fontweight="bold")
         ax.legend(loc="upper right", fontsize=8, framealpha=0.92)
         ax.grid(True, alpha=0.3)
     elif view_mode == "integrand_tails":
@@ -254,7 +254,7 @@ def render_importance_sampling_variance_trap(controls: dict[str, Any], ax: plt.A
         ax.legend(loc="upper right", fontsize=8.5)
         ax.grid(True, alpha=0.3)
     else:
-        # Estimator trace reproducing Slide 16 ("What does infinite variance look like? Spikes!")
+        # Estimator trace ("What does infinite variance look like? Spikes!")
         steps = np.arange(1, n_samples + 1)
         trace_color = "#DC2626" if a_val <= 0.5 else ("#10B981" if 0.55 <= a_val <= 0.75 else "#2563EB")
         ax.plot(steps, weights, color=trace_color, lw=0.9, alpha=0.9, label="Sample Estimator $f(x_i)/p_a(x_i)$")
@@ -263,7 +263,7 @@ def render_importance_sampling_variance_trap(controls: dict[str, Any], ax: plt.A
         ax.set_ylabel("Estimator Value $f(x_i) / p_a(x_i)$", fontsize=10)
         status_tag = "INFINITE VARIANCE SPIKES!" if a_val <= 0.5 else ("Near-Optimal Fluctuations" if 0.55 <= a_val <= 0.75 else "Finite Variance (Over-Sampled Tails)")
         ax.set_title(
-            f"Lecture Slide 16 Trace ($a = {a_val:.2f}$) — {status_tag}\n"
+            f"Estimator Trace ($a = {a_val:.2f}$) — {status_tag}\n"
             f"Estimate $\\hat{{I}} = {sample_mean:.4f} \\pm {sample_err:.4f}$ (Max Spike $= {max_spike:.2f}$)",
             fontsize=9.8,
             fontweight="bold",

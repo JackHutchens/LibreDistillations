@@ -181,9 +181,9 @@ def render_bennett_acceptance_overlap(controls: Mapping[str, Any], ax: plt.Axes)
     rho_0 = (1.0 / ( np.sqrt(2.0 * np.pi) * sigma )) * np.exp(-0.5 * ((dv - mu_0) / sigma) ** 2)
     rho_1 = (1.0 / ( np.sqrt(2.0 * np.pi) * sigma )) * np.exp(-0.5 * ((dv - mu_1) / sigma) ** 2)
 
-    # Bennett optimal shift C = beta * Delta F + ln(t0 / t1) = delta_f_true - log_sample_ratio (Wait: C = ln(Z1 t0 / Z0 t1) = -beta*DeltaF + ln(t0/t1) on slide 14)
-    # Wait: let's match slide 14-15 exactly:
-    # Slide 14: Z1 / Z0 = exp(-beta Delta F), C = ln(Z1 t0 / Z0 t1) = -beta Delta F + ln(t0 / t1)
+    # Bennett optimal shift C = beta * Delta F + ln(t0 / t1) = delta_f_true - log_sample_ratio (C = ln(Z1 t0 / Z0 t1) = -beta*DeltaF + ln(t0/t1))
+    # Matching Bennett Acceptance Ratio:
+    # Z1 / Z0 = exp(-beta Delta F), C = ln(Z1 t0 / Z0 t1) = -beta Delta F + ln(t0 / t1)
     # And f(x) = 1 / (1 + exp(x)) is the Fermi function.
     c_opt = -delta_f_true - log_sample_ratio
     fermi_fwd = 1.0 / (1.0 + np.exp(dv + c_opt))
@@ -211,7 +211,7 @@ def render_bennett_acceptance_overlap(controls: Mapping[str, Any], ax: plt.Axes)
         ax.legend(loc="upper left", fontsize=7.6)
         ax.grid(True, alpha=0.25)
     else:
-        # Slide 15 linear offset plot: f_0(Delta V) = ln rho_0(Delta V) - beta*Delta V / 2
+        # Linear offset plot: f_0(Delta V) = ln rho_0(Delta V) - beta*Delta V / 2
         # and f_1(Delta V) = ln rho_1(Delta V) + beta*Delta V / 2, so f_1(Delta V) - f_0(Delta V) = beta * Delta F!
         f0 = np.log(np.maximum(rho_0, 1e-30)) - 0.5 * dv
         f1 = np.log(np.maximum(rho_1, 1e-30)) + 0.5 * dv

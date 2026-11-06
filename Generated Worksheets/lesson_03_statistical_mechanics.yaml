@@ -432,7 +432,7 @@ worksheet:
     hint_markdown: Think about wave-packet overlap between neighboring atoms.
     rationale_markdown: Classical mechanics treats atoms as localized point particles. When the thermal de Broglie wavelength
       $\Lambda = h/\sqrt{2\pi m k_B T}$ is comparable to or larger than the interatomic distance $a = \rho^{-1/3}$ ($\Lambda
-      \gtrsim a$), wavepackets overlap, producing quantum exchange and diffraction effects (e.g. liquid Helium, low-T Hydrogen,
+      \gtrsim a$), wavepackets overlap, producing quantum exchange and diffraction effects (e.g. Liquid Helium, low-T Hydrogen,
       or high-frequency zero-point vibrational modes).
   - id: q12_helium_vs_argon_quantum
     type: problem
@@ -519,8 +519,8 @@ worksheet:
       \n$$P = \\rho k_B T + \\frac{1}{3V} \\left\\langle \\sum_{i < j} \\mathbf{r}_{ij} \\cdot \\mathbf{F}_{ij} \\right\\\
       rangle$$\n\nwhere $\\rho = N/V$ is number density.\n- $\\rho k_B T$ is the **ideal gas kinetic pressure** (momentum\
       \ transfer).\n- $\\frac{1}{3V} \\langle \\sum \\mathbf{r}_{ij} \\cdot \\mathbf{F}_{ij} \\rangle$ is the **internal virial\
-      \ contribution**:\n  - Positive ($P > P_{\\text{id}}$) when dominated by repulsive core collisions (e.g. dense liquids).\n\
-      \  - Negative ($P < P_{\\text{id}}$) when dominated by long-range attractive dispersion forces (e.g. moderately dense\
+      \ contribution**:\n - Positive ($P > P_{\\text{id}}$) when dominated by repulsive core collisions (e.g. Dense liquids).\n\
+      \ - Negative ($P < P_{\\text{id}}$) when dominated by long-range attractive dispersion forces (e.g. Moderately dense\
       \ gases)."
   - id: concept_virial_pressure
     type: concept_cell
@@ -611,7 +611,7 @@ worksheet:
     - id: d
       text: 0, because force is always perpendicular to separation
     correct: a
-    hint_markdown: Take the dot product of r_ij with -(dV/dr_ij) * (r_ij / r_ij). Note that r_ij . r_ij = r_ij^2.
+    hint_markdown: Take the dot product of r_ij with -(dV/dr_ij) * (r_ij / r_ij). Note that r_ij. R_ij = r_ij^2.
     rationale_markdown: $\mathbf{r}_{ij} \cdot \mathbf{F}_{ij} = \mathbf{r}_{ij} \cdot \left( -\frac{dV}{dr_{ij}} \frac{\mathbf{r}_{ij}}{r_{ij}}
       \right) = -\frac{dV}{dr_{ij}} \frac{|\mathbf{r}_{ij}|^2}{r_{ij}} = -r_{ij} \frac{dV}{dr_{ij}}$. This simple scalar product
       is accumulated directly during the pairwise force loop.
@@ -679,7 +679,7 @@ worksheet:
     - id: d
       text: P = 3 / (2 k_B T).
     correct: a
-    hint_markdown: Evaluate P = rho k_B T + (1/3V) <sum r_ij . F_ij> with F_ij = 0.
+    hint_markdown: Evaluate P = rho k_B T + (1/3V) <sum r_ij. F_ij> with F_ij = 0.
     rationale_markdown: When interatomic forces $\mathbf{F}_{ij} = 0$, the internal virial vanishes, yielding $P = \rho k_B
       T = \frac{N k_B T}{V} \implies P V = N k_B T$, which is exactly the ideal gas law.
   - id: q20_momentum_maxwell_boltzmann
@@ -1090,7 +1090,7 @@ worksheet:
       text: Reversing velocities after ~50 ps of MD integration will not return the system to its initial state due to accumulated
         roundoff errors.
     - id: b
-      text: The exact same simulation run on two different CPU architectures (e.g. x86 vs. ARM) will produce diverging atomic
+      text: The exact same simulation run on two different CPU architectures (e.g. X86 vs. ARM) will produce diverging atomic
         coordinates after tens of picoseconds.
     - id: c
       text: Macroscopic properties like pressure, RDF, and diffusion coefficients are completely invalid and cannot be trusted.

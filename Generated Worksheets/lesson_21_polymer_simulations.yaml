@@ -1,1199 +1,1334 @@
 worksheet:
   id: lesson_21_polymer_simulations
-  title: "MSE 485 · Lesson 21: Polymer Physics, Coarse-Grained Models & Advanced Polymer Monte Carlo"
+  title: 'Atomic Scale Simulations · Lesson 21: Polymer Physics, Coarse-Grained Models & Advanced Polymer Monte Carlo'
   estimated_minutes: 115
   learning_objectives:
-    - Quantify the extreme spatial and temporal scale bridge in macromolecular dynamics—from femtosecond covalent bond vibrations to Rouse ($N^{2.2}$) and reptation ($N^{3.4}$) coil relaxation—and explain why brute-force atomistic MD is computationally intractable.
-    - Formulate coarse-grained polymer Hamiltonians on lattices (Self-Avoiding Walks) and in the continuum (Kremer–Grest bead-spring model with WCA excluded volume and FENE logarithmic bonds that prevent chain crossing).
-    - Derive and apply Flory scaling laws $\langle R^2 \rangle \propto N^{2\nu}$ across Good Solvent ($\nu \approx 0.588$, Flory $\nu = 3/(d+2)$), $\Theta$-Solvent ($\nu = 1/2$), and Poor Solvent ($\nu = 1/3$ collapsed globule) regimes.
-    - Analyze specialized polymer Monte Carlo move sets—Reptation ("slithering snake"), Pivot global symmetry rotations, and local kink-jump/crankshaft flips—including their correlation-time exponents and the "double cul-de-sac" non-ergodicity trap.
-    - Calculate Rosenbluth look-ahead weights $W_n = \prod_{i=1}^n (q_i/q)$ to overcome exponential attrition in chain growth and enforce exact detailed balance via Configurational Bias Monte Carlo (CBMC) acceptance $A = \min(1, W_{\mathrm{new}}/W_{\mathrm{old}})$.
-
+  - Quantify the extreme spatial and temporal scale bridge in macromolecular dynamics—from femtosecond covalent bond vibrations
+    to Rouse ($N^{2.2}$) and reptation ($N^{3.4}$) coil relaxation—and explain why brute-force atomistic MD is computationally
+    intractable.
+  - Formulate coarse-grained polymer Hamiltonians on lattices (Self-Avoiding Walks) and in the continuum (Kremer–Grest bead-spring
+    model with WCA excluded volume and FENE logarithmic bonds that prevent chain crossing).
+  - Derive and apply Flory scaling laws $\langle R^2 \rangle \propto N^{2\nu}$ across Good Solvent ($\nu \approx 0.588$, Flory
+    $\nu = 3/(d+2)$), $\Theta$-Solvent ($\nu = 1/2$), and Poor Solvent ($\nu = 1/3$ collapsed globule) regimes.
+  - Analyze specialized polymer Monte Carlo move sets—Reptation ("slithering snake"), Pivot global symmetry rotations, and
+    local kink-jump/crankshaft flips—including their correlation-time exponents and the "double cul-de-sac" non-ergodicity
+    trap.
+  - Calculate Rosenbluth look-ahead weights $W_n = \prod_{i=1}^n (q_i/q)$ to overcome exponential attrition in chain growth
+    and enforce exact detailed balance via Configurational Bias Monte Carlo (CBMC) acceptance $A = \min(1, W_{\mathrm{new}}/W_{\mathrm{old}})$.
   sections:
-    - id: sec_timescale_and_coarse_graining
-      type: markdown_section
-      title: "1. The Macromolecular Timescale Chasm & Coarse-Grained Polymer Hamiltonians"
-      body_markdown: |
-        Simulating long-chain polymers (`N` covalently bonded monomers) exposes one of the sharpest **multi-scale bottlenecks** in computational materials science:
+  - id: sec_timescale_and_coarse_graining
+    type: markdown_section
+    title: 1. The Macromolecular Timescale Chasm & Coarse-Grained Polymer Hamiltonians
+    body_markdown: "Simulating long-chain polymers (`N` covalently bonded monomers) exposes one of the sharpest **multi-scale\
+      \ bottlenecks** in computational materials science:\n\n1. **The Atomistic MD Timescale Chasm:**\n - Local covalent bond\
+      \ stretching and angle oscillations occur on a period of $\\tau_{\\text{vib}} \\sim 10^{-13}\\text{ s}$, forcing a Molecular\
+      \ Dynamics (MD) integration time step of $\\Delta t \\approx 10^{-14}\\text{ s}$ ($10\\text{ fs}$).\n - Yet macroscopic\
+      \ conformational equilibration, coil untangling, and viscosity relaxation in polymers take **seconds to hours** of real\
+      \ laboratory time—requiring $10^{14}$ to $10^{18}$ sequential MD force evaluations!\n - **Lecture Benchmark Estimate:**\
+      \ Even for a modest system of $100$ chains of $50$ monomers each ($\\sim 20{,}000$ atoms including solvent) running\
+      \ at $1\\text{ MD step/s}$, simulating just $10^{-4}\\text{ s}$ ($0.1\\text{ ms}$) of real time requires $10^{10}\\\
+      text{ steps} \\approx 10^{10}\\text{ s} \\approx \\mathbf{300\\text{ years}}$ of continuous CPU time!\n - Simultaneously,\
+      \ spatial scales span from monomeric bond lengths ($\\sim 1\\,\\text{Å}$) to whole-coil pervaded volumes of $(100\\\
+      ,\\text{Å})^3$ or larger, where solvent-mediated **hydrodynamic interactions** dominate dilute-solution transport.\n\
+      \n2. **Coarse-Graining Strategy:**\n To bridge 14+ orders of magnitude in time, we integrate out fast atomic degrees\
+      \ of freedom and replace chemical repeat units with coarse-grained **blobs** or **beads**:\n - **Lattice Self-Avoiding\
+      \ Walk (SAW):** A polymer is represented as a connected walk of $N$ steps on a regular lattice (coordination number\
+      \ $q = 2d$, e.g., $q=4$ on a 2D square lattice or $q=6$ on a 3D simple cubic lattice) subject to strict **single-site\
+      \ occupancy** (excluded volume: no two monomers may occupy the same lattice site). Attractive nearest-neighbor non-bonded\
+      \ contacts $-\\epsilon$ can be added to model poor solvents.\n - **Continuum Bead–Spring (Kremer–Grest) Model:** Each\
+      \ bead represents a Kuhn segment (\"blob\" of several chemical monomers). All bead pairs $(i < j)$ interact via a non-bonded\
+      \ excluded-volume potential (typically a truncated-and-shifted purely repulsive Weeks–Chandler–Andersen / Lennard-Jones\
+      \ core $\\phi_{\\text{LJ}}(r_{ij})$), while adjacent beads $(i, i+1)$ along the backbone are linked by a bonding potential:\n\
+      \ $$V(\\{\\mathbf{r}_i\\}) = \\sum_{i < j} \\phi_{\\text{LJ}}(r_{ij}) + \\sum_{i=1}^{N-1} U_{\\text{bond}}(|\\mathbf{r}_i\
+      \ - \\mathbf{r}_{i+1}|)$$\n\n3. **Why Harmonic Springs Fail & Why FENE Bonds Are Essential:**\n A naive harmonic spring\
+      \ $\\gamma(r) = \\frac{1}{2}\\kappa (r - r_0)^2$ allows large thermal bond extensions at finite $k_B T$. If two chains\
+      \ collide, a harmonic bond can stretch wide enough for one chain backbone to **pass directly through another chain**\
+      \ (\"phantom chain crossing\"), destroying topological entanglement and ring-polymer knotting!\n Instead, continuum\
+      \ polymer simulations use the **FENE (Finitely Extensible Nonlinear Elastic)** logarithmic bond potential (annotated\
+      \ on Lecture as a modified harmonic potential with $k = 20$ and $\\sigma = 1.94\\,\\sigma_{\\text{HS}}$, or more generally\
+      \ maximum extension $R_0 \\approx 1.5\\,\\sigma$):\n $$U_{\\text{FENE}}(r) = -\\frac{1}{2} k R_0^2 \\ln\\!\\left[1 -\
+      \ \\left(\\frac{r}{R_0}\\right)^2\\right] \\quad (r < R_0)$$\n - **Small-extension limit ($r \\ll R_0$):** Taylor expanding\
+      \ $-\\ln(1 - x) = x + \\frac{x^2}{2} + \\frac{x^3}{3} + \\cdots$ with $x = (r/R_0)^2$ yields:\n $$U_{\\text{FENE}}(r)\
+      \ = \\frac{1}{2}k r^2 + \\frac{1}{4}\\frac{k}{R_0^2} r^4 + \\mathcal{O}(r^6)$$\n which reproduces a harmonic spring\
+      \ of stiffness $k$ near $r \\to 0$.\n - **Finite extensibility wall ($r \\to R_0^-$):** As $r \\to R_0$, the argument\
+      \ $1 - (r/R_0)^2 \\to 0^+$ and $U_{\\text{FENE}}(r) \\to +\\infty$, erecting an **impenetrable logarithmic barrier**\
+      \ that strictly prevents any bond from stretching beyond $R_0$ and prevents chains from crossing through one another."
+  - id: concept_fene_bonds
+    type: concept_cell
+    title: 'Interactive Explorer: Kremer–Grest FENE Bond Potential vs. Harmonic Springs'
+    description_markdown: Adjust the spring constant $k$, maximum bond extensibility $R_0$, and toggle the Weeks–Chandler–Andersen
+      (WCA) hard-core repulsion to inspect how the logarithmic FENE barrier prevents phantom chain crossing while stabilizing
+      a well-defined equilibrium bond length $r_{\mathrm{eq}} \approx 0.96\,\sigma$.
+    render_function: render_fene_vs_harmonic_bonds
+    layout: figure_left
+    controls:
+      k_spring:
+        kind: slider
+        label: Bond stiffness k (ε/σ²)
+        min: 10.0
+        max: 45.0
+        step: 5.0
+        default: 30.0
+      r0_max:
+        kind: slider
+        label: Max extensibility R₀ (σ)
+        min: 1.25
+        max: 1.85
+        step: 0.05
+        default: 1.5
+      show_wca:
+        kind: dropdown
+        label: Non-bonded WCA Core
+        default: 1
+        options:
+        - label: Include WCA Repulsion (Total Kremer–Grest Bond)
+          value: 1
+        - label: Pure Attractive Bond Potential Only
+          value: 0
+    takeaway_markdown: '**Key Takeaway:** Even a stiff harmonic bond ($\frac{1}{2}k R_0^2$) has a finite energy at $r = R_0$,
+      whereas $U_{\mathrm{FENE}}(r) = -\frac{1}{2}k R_0^2 \ln[1 - (r/R_0)^2]$ diverges to $+\infty$ at $r = R_0$, rigorously
+      preserving chain connectivity and entanglement topology.'
+  - id: q01_md_timescale_bottleneck
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_timescale_and_coarse_graining
+    prompt_markdown: In an all-atom Molecular Dynamics (MD) simulation of a polymer melt or solution, what physical motion
+      dictates the maximum stable integration time step $\Delta t \approx 10^{-14}\text{ s}$, and how many total MD steps
+      are required to reach macroscopic coil relaxation times of $1\text{ s}$ to $1\text{ hour}$?
+    hint_markdown: 'Recall ''Time estimate for MD'': compare the period of local covalent vibrations ($10^{-13}\\text{ s}$)
+      against $1\\text{ s} - 3600\\text{ s}$ divided by $\\Delta t = 10^{-14}\\text{ s}$.'
+    options:
+    - id: a
+      text: Fast local covalent bond oscillations ($\\tau_{\\text{vib}} \\sim 10^{-13}\\text{ s}$) fix $\\Delta t \\approx
+        10^{-14}\\text{ s}$, requiring $10^{14}$ to $10^{18}$ sequential MD steps to reach seconds-to-hours polymer relaxation.
+    - id: b
+      text: Whole-chain center-of-mass diffusion fixes $\\Delta t \\approx 10^{-9}\\text{ s}$, requiring $10^6$ to $10^9$
+        steps.
+    - id: c
+      text: Electronic orbital transitions fix $\\Delta t \\approx 10^{-18}\\text{ s}$, requiring $10^{24}$ steps.
+    - id: d
+      text: Rotational isomerization of side groups fixes $\\Delta t \\approx 10^{-6}\\text{ s}$, requiring $10^6$ to $10^{10}$
+        steps.
+    correct: a
+    rationale_markdown: Local covalent bond vibrations occur on a timescale of $\sim 10^{-13}\text{ s}$, requiring an MD time
+      step $\Delta t \approx 10^{-14}\text{ s}$ ($10\text{ fs}$) to resolve the fastest harmonic modes stably. Reaching macroscopic
+      conformational changes that take seconds ($1\text{ s} / 10^{-14}\text{ s} = 10^{14}$ steps) to hours ($\sim 10^{18}$
+      steps) is therefore impossible by brute-force atomistic MD without coarse-graining.
+  - id: q02_md_cpu_years_estimate
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by: sec_timescale_and_coarse_graining
+    prompt_markdown: Consider the lecture benchmark system of $100$ polymer chains of $50$ monomers each ($\sim 20{,}000$
+      particles including solvent) integrated with time step $\Delta t = 10^{-14}\text{ s}$ at a computational throughput
+      of $1\text{ step/s}$. Approximately how many **years** of wall-clock CPU time are required to simulate just $10^{-4}\text{
+      s}$ ($0.1\text{ ms}$) of physical real time? (Use the lecture conversion $10^{10}\text{ s} \approx 300\text{ years}$
+      and enter the integer number of years.)
+    hint_markdown: Divide the target physical time $10^{-4}\\text{ s}$ by $\\Delta t = 10^{-14}\\text{ s/step}$ to find the
+      number of steps, multiply by $1\\text{ s/step}$, and convert $10^{10}\\text{ s}$ to years as stated.
+    correct:
+      value: 300.0
+      tolerance: 20.0
+    rationale_markdown: To reach $t_{\text{phys}} = 10^{-4}\text{ s}$ with $\Delta t = 10^{-14}\text{ s}$ requires $N_{\text{steps}}
+      = 10^{-4} / 10^{-14} = 10^{10}$ steps. At $1\text{ step/s}$, this takes $10^{10}\text{ s} \approx \frac{10^{10}}{3.156
+      \times 10^7\text{ s/yr}} \approx 317\text{ years}$ (quoted as **$300\text{ years}$** ).
+  - id: q03_coarse_grained_bead_meaning
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_timescale_and_coarse_graining
+    prompt_markdown: In a coarse-grained bead-spring polymer model (such as the Kremer–Grest model), what does a single simulated
+      "bead" physically represent?
+    hint_markdown: 'Recall ''Bead spring model'': does a bead correspond to a single carbon atom or a larger collective sub-unit?'
+    options:
+    - id: a
+      text: A coarse-grained 'blob' (Kuhn segment) encompassing a section of several chemical monomers along the polymer chain.
+    - id: b
+      text: A single valence electron shared along the conjugated polymer backbone.
+    - id: c
+      text: An entire entangled polymer chain collapsed into a single point particle.
+    - id: d
+      text: A solvent cage molecule that permanently binds to one specific carbon atom.
+    correct: a
+    rationale_markdown: '*"A bead does not represent an atom, but a blob—a section of the chain."* Grouping several chemical
+      repeat units into a single effective Kuhn bead averages over stiff local bond lengths and angles while preserving universal
+      long-wavelength coil statistics and entanglement topology.'
+  - id: q04_fene_taylor_expansion
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_timescale_and_coarse_graining
+    - concept_fene_bonds
+    prompt_markdown: Consider the FENE bond potential $U_{\text{FENE}}(r) = -\frac{1}{2}k R_0^2 \ln\!\left[1 - (r/R_0)^2\right]$
+      for $r < R_0$. Using the Maclaurin expansion $-\ln(1 - x) = x + \frac{1}{2}x^2 + \frac{1}{3}x^3 + \cdots$, what are
+      the leading two terms of $U_{\text{FENE}}(r)$ at small bond extensions ($r \ll R_0$)?
+    hint_markdown: Substitute $x = (r/R_0)^2$ into $-\\frac{1}{2}k R_0^2 [-\\ln(1-x)] = \\frac{1}{2}k R_0^2 (x + \\frac{1}{2}x^2
+      + \\cdots)$.
+    options:
+    - id: a
+      text: $U_{\\text{FENE}}(r) = \\frac{1}{2}k r^2 + \\frac{k}{4 R_0^2} r^4 + \\mathcal{O}(r^6)$
+    - id: b
+      text: $U_{\\text{FENE}}(r) = k R_0 r - \\frac{1}{2}k r^2 + \\mathcal{O}(r^3)$
+    - id: c
+      text: $U_{\\text{FENE}}(r) = \\frac{1}{2}k R_0^2 r^2 + \\frac{1}{2}k R_0^4 r^4 + \\mathcal{O}(r^6)$
+    - id: d
+      text: $U_{\\text{FENE}}(r) = -\\frac{1}{2}k r^2 + \\frac{k}{2 R_0^2} r^4 + \\mathcal{O}(r^6)$
+    correct: a
+    rationale_markdown: 'Setting $x = (r/R_0)^2$ in $-\ln(1-x) = x + \frac{1}{2}x^2 + \cdots$ and multiplying by $\frac{1}{2}k
+      R_0^2$ gives:
 
-        1. **The Atomistic MD Timescale Chasm:**
-           - Local covalent bond stretching and angle oscillations occur on a period of $\tau_{\text{vib}} \sim 10^{-13}\text{ s}$, forcing a Molecular Dynamics (MD) integration time step of $\Delta t \approx 10^{-14}\text{ s}$ ($10\text{ fs}$).
-           - Yet macroscopic conformational equilibration, coil untangling, and viscosity relaxation in polymers take **seconds to hours** of real laboratory time—requiring $10^{14}$ to $10^{18}$ sequential MD force evaluations!
-           - **Lecture Benchmark Estimate:** Even for a modest system of $100$ chains of $50$ monomers each ($\sim 20{,}000$ atoms including solvent) running at $1\text{ MD step/s}$, simulating just $10^{-4}\text{ s}$ ($0.1\text{ ms}$) of real time requires $10^{10}\text{ steps} \approx 10^{10}\text{ s} \approx \mathbf{300\text{ years}}$ of continuous CPU time!
-           - Simultaneously, spatial scales span from monomeric bond lengths ($\sim 1\,\text{Å}$) to whole-coil pervaded volumes of $(100\,\text{Å})^3$ or larger, where solvent-mediated **hydrodynamic interactions** dominate dilute-solution transport.
+      $$U_{\text{FENE}}(r) = \frac{1}{2}k R_0^2 \left[\frac{r^2}{R_0^2} + \frac{1}{2}\frac{r^4}{R_0^4} + \cdots\right] = \frac{1}{2}k
+      r^2 + \frac{k}{4 R_0^2} r^4 + \mathcal{O}(r^6)$$
 
-        2. **Coarse-Graining Strategy:**
-           To bridge 14+ orders of magnitude in time, we integrate out fast atomic degrees of freedom and replace chemical repeat units with coarse-grained **blobs** or **beads**:
-           - **Lattice Self-Avoiding Walk (SAW):** A polymer is represented as a connected walk of $N$ steps on a regular lattice (coordination number $q = 2d$, e.g., $q=4$ on a 2D square lattice or $q=6$ on a 3D simple cubic lattice) subject to strict **single-site occupancy** (excluded volume: no two monomers may occupy the same lattice site). Attractive nearest-neighbor non-bonded contacts $-\epsilon$ can be added to model poor solvents.
-           - **Continuum Bead–Spring (Kremer–Grest) Model:** Each bead represents a Kuhn segment ("blob" of several chemical monomers). All bead pairs $(i < j)$ interact via a non-bonded excluded-volume potential (typically a truncated-and-shifted purely repulsive Weeks–Chandler–Andersen / Lennard-Jones core $\phi_{\text{LJ}}(r_{ij})$), while adjacent beads $(i, i+1)$ along the backbone are linked by a bonding potential:
-             $$V(\{\mathbf{r}_i\}) = \sum_{i < j} \phi_{\text{LJ}}(r_{ij}) + \sum_{i=1}^{N-1} U_{\text{bond}}(|\mathbf{r}_i - \mathbf{r}_{i+1}|)$$
+      Thus $U_{\text{FENE}}(r)$ reduces smoothly to a harmonic spring of constant $k$ at small $r$, while stiffening anharmonically
+      as $r$ approaches $R_0$.'
+  - id: q05_fene_energy_numerical
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_timescale_and_coarse_graining
+    - concept_fene_bonds
+    prompt_markdown: Using the lecture FENE bond potential $U_{\text{FENE}}(r) = -\frac{1}{2}k R_0^2 \ln\!\left[1 - (r/R_0)^2\right]$
+      with spring constant $k = 20$ and maximum extensibility $R_0 = 2.0$ (in reduced units), calculate $U_{\text{FENE}}(r)$
+      when the bond is stretched to $r = 1.6$.
+    hint_markdown: First compute $(r/R_0)^2 = (1.6/2.0)^2 = 0.8^2 = 0.64$, then evaluate $-0.5 \\times 20 \\times 2.0^2 \\times
+      \\ln(1 - 0.64) = -40 \\ln(0.36)$.
+    correct:
+      value: 40.87
+      tolerance: 0.25
+    rationale_markdown: 'Substituting $k = 20$, $R_0 = 2.0$, and $r/R_0 = 1.6/2.0 = 0.8$ gives:
 
-        3. **Why Harmonic Springs Fail & Why FENE Bonds Are Essential:**
-           A naive harmonic spring $\gamma(r) = \frac{1}{2}\kappa (r - r_0)^2$ allows large thermal bond extensions at finite $k_B T$. If two chains collide, a harmonic bond can stretch wide enough for one chain backbone to **pass directly through another chain** ("phantom chain crossing"), destroying topological entanglement and ring-polymer knotting!
-           Instead, continuum polymer simulations use the **FENE (Finitely Extensible Nonlinear Elastic)** logarithmic bond potential (annotated on Lecture Slide 3 as a modified harmonic potential with $k = 20$ and $\sigma = 1.94\,\sigma_{\text{HS}}$, or more generally maximum extension $R_0 \approx 1.5\,\sigma$):
-           $$U_{\text{FENE}}(r) = -\frac{1}{2} k R_0^2 \ln\!\left[1 - \left(\frac{r}{R_0}\right)^2\right] \quad (r < R_0)$$
-           - **Small-extension limit ($r \ll R_0$):** Taylor expanding $-\ln(1 - x) = x + \frac{x^2}{2} + \frac{x^3}{3} + \cdots$ with $x = (r/R_0)^2$ yields:
-             $$U_{\text{FENE}}(r) = \frac{1}{2}k r^2 + \frac{1}{4}\frac{k}{R_0^2} r^4 + \mathcal{O}(r^6)$$
-             which reproduces a harmonic spring of stiffness $k$ near $r \to 0$.
-           - **Finite extensibility wall ($r \to R_0^-$):** As $r \to R_0$, the argument $1 - (r/R_0)^2 \to 0^+$ and $U_{\text{FENE}}(r) \to +\infty$, erecting an **impenetrable logarithmic barrier** that strictly prevents any bond from stretching beyond $R_0$ and prevents chains from crossing through one another.
+      $$U_{\text{FENE}}(1.6) = -\frac{1}{2}(20)(2.0)^2 \ln(1 - 0.8^2) = -40 \ln(0.36) \approx -40 \times (-1.02165) \approx
+      40.87$$
 
-    - id: concept_fene_bonds
-      type: concept_cell
-      title: "Interactive Explorer: Kremer–Grest FENE Bond Potential vs. Harmonic Springs"
-      description_markdown: |
-        Adjust the spring constant $k$, maximum bond extensibility $R_0$, and toggle the Weeks–Chandler–Andersen (WCA) hard-core repulsion to inspect how the logarithmic FENE barrier prevents phantom chain crossing while stabilizing a well-defined equilibrium bond length $r_{\mathrm{eq}} \approx 0.96\,\sigma$.
-      render_function: render_fene_vs_harmonic_bonds
-      layout: figure_left
-      controls:
-        k_spring:
-          kind: slider
-          label: "Bond stiffness k (ε/σ²)"
-          min: 10.0
-          max: 45.0
-          step: 5.0
-          default: 30.0
-        r0_max:
-          kind: slider
-          label: "Max extensibility R₀ (σ)"
-          min: 1.25
-          max: 1.85
-          step: 0.05
-          default: 1.50
-        show_wca:
-          kind: dropdown
-          label: "Non-bonded WCA Core"
-          default: 1
-          options:
-            - label: "Include WCA Repulsion (Total Kremer–Grest Bond)"
-              value: 1
-            - label: "Pure Attractive Bond Potential Only"
-              value: 0
-      takeaway_markdown: |
-        **Key Takeaway:** Even a stiff harmonic bond ($\frac{1}{2}k R_0^2$) has a finite energy at $r = R_0$, whereas $U_{\mathrm{FENE}}(r) = -\frac{1}{2}k R_0^2 \ln[1 - (r/R_0)^2]$ diverges to $+\infty$ at $r = R_0$, rigorously preserving chain connectivity and entanglement topology.
+      Notice that a harmonic spring $\frac{1}{2}k r^2$ at the same extension would have energy $\frac{1}{2}(20)(1.6)^2 = 25.6$,
+      already $15.3$ energy units lower than the stiffening FENE bond.'
+  - id: q06_fene_prevents_chain_crossing
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_timescale_and_coarse_graining
+    - concept_fene_bonds
+    prompt_markdown: Why is the logarithmic divergence of $U_{\text{FENE}}(r \to R_0) \to +\infty$ (combined with a hard-core
+      WCA excluded-volume repulsion of diameter $\sigma$ and $R_0 \approx 1.5\,\sigma$) critical for simulating entangled
+      polymer melts and ring polymers?
+    hint_markdown: 'Think about what happens to two colliding chains if a bond can stretch past $\\sqrt{2}\\sigma$ or $2\\sigma$:
+      can one chain pass through the bond of another?'
+    options:
+    - id: a
+      text: It strictly bounds the maximum bond length below $R_0$, making it energetically impossible for two chains to stretch
+        wide enough to pass through one another ('phantom chain crossing') and thereby preserving topological entanglement.
+    - id: b
+      text: It eliminates all attractive and repulsive forces between non-bonded monomers so the melt behaves as an ideal
+        gas.
+    - id: c
+      text: It forces all bond angles to remain fixed at exactly $180^\\circ$, converting every coil into a rigid rod.
+    - id: d
+      text: It allows the MD time step $\\Delta t$ to be increased to $1\\text{ s}$ without numerical instability.
+    correct: a
+    rationale_markdown: In an entangled melt or linked ring polymer system, topological constraints (chains cannot pass through
+      one another) govern reptation dynamics and viscoelasticity. Because $U_{\text{FENE}}(r) \to +\infty$ as $r \to R_0 \approx
+      1.5\,\sigma$ while non-bonded beads repel strongly inside $r < 2^{1/6}\sigma$, the gap between two bonded beads can
+      never open wide enough for another bead to slip through.
+  - id: q07_lattice_saw_definition
+    type: problem
+    question_type: multi_select
+    difficulty: easy
+    taught_by: sec_timescale_and_coarse_graining
+    prompt_markdown: Which of the following statements accurately describe the **Lattice Self-Avoiding Walk (SAW)** model
+      of a polymer? *(Select all that apply.)*
+    hint_markdown: 'Check and 7: how are connectivity, excluded volume, the partition function, and solvent attraction represented
+      on a lattice?'
+    options:
+    - id: a
+      text: Sequential monomers $i$ and $i+1$ occupy nearest-neighbor sites on a regular lattice, enforcing fixed bond connectivity.
+    - id: b
+      text: No lattice site may be visited more than once by the walk, capturing hard-core excluded-volume repulsion.
+    - id: c
+      text: For an athermal SAW (excluded volume only), the canonical partition function $Z_N$ is simply the total number
+        of distinct valid $N$-step self-avoiding walks.
+    - id: d
+      text: An attractive energy $-\\epsilon$ between non-bonded nearest-neighbor occupied sites can be added to model poor-solvent
+        coil-to-globule collapse.
+    correct:
+    - a
+    - b
+    - c
+    - d
+    rationale_markdown: 'All four statements are foundational properties of the lattice SAW model: nearest-neighbor steps
+      enforce connectivity (a), single occupancy enforces excluded volume (b), equal-weight valid walks make $Z_N$ a combinatorial
+      sum over all $N$-step SAWs (c), and non-bonded nearest-neighbor attractions drive $\Theta$-point collapse into a compact
+      globule (d).'
+  - id: sec_flory_scaling_and_phases
+    type: markdown_section
+    title: 2. Polymer Phase Diagrams, Universal Flory Scaling & Rouse Relaxation
+    body_markdown: "The macroscopic size of an $N$-monomer polymer coil is characterized by its **mean-square end-to-end distance**\
+      \ $\\langle R_{ee}^2 \\rangle = \\langle (\\mathbf{r}_N - \\mathbf{r}_0)^2 \\rangle$ or its **mean-square radius of\
+      \ gyration**:\n$$\\langle R_g^2 \\rangle = \\frac{1}{N}\\sum_{i=1}^N \\left\\langle (\\mathbf{r}_i - \\mathbf{r}_{\\\
+      text{cm}})^2 \\right\\rangle = \\frac{1}{2N^2}\\sum_{i=1}^N \\sum_{j=1}^N \\left\\langle (\\mathbf{r}_i - \\mathbf{r}_j)^2\
+      \ \\right\\rangle$$\nIn the asymptotic long-chain limit ($N \\gg 1$), both length scales obey the universal **Flory\
+      \ scaling law**:\n$$\\langle R_{ee}^2 \\rangle \\propto N^{2\\nu} \\quad \\Longleftrightarrow \\quad R_g \\equiv \\\
+      sqrt{\\langle R_g^2 \\rangle} \\propto a\\,N^\\nu$$\nwhere $\\nu$ is the universal **Flory size exponent**, which depends\
+      \ only on spatial dimensionality $d$ and the balance between monomer–monomer excluded volume and solvent-mediated attraction:\n\
+      \n| Polymer Phase / Solvent Regime | Physical Balance | Exact / Numerical $\\nu$ ($d=3$) | Flory Mean-Field $\\nu$ |\
+      \ $\\langle R^2 \\rangle$ Scaling ($d=3$) |\n|:--- |:--- |:---: |:---: |:---: |\n| **Good Solvent (Swollen SAW)** |\
+      \ Repulsive excluded volume dominates; coil swells | $\\nu \\approx \\mathbf{0.588}$ | $\\nu_{\\text{F}} = \\frac{3}{d+2}\
+      \ = \\frac{3}{5} = \\mathbf{0.60}$ | $\\langle R^2 \\rangle \\propto N^{1.176}$ |\n| **$\\Theta$-Solvent (Theta Point)**\
+      \ | Attraction exactly cancels two-body repulsion (ideal RW) | $\\nu = \\mathbf{0.500}$ ($1/2$) | $\\nu = 1/2$ | $\\\
+      langle R^2 \\rangle = N a^2$ |\n| **Poor Solvent (Collapsed Globule)** | Monomer attraction dominates; dense liquid-like\
+      \ drop | $\\nu = \\frac{1}{d} = \\mathbf{0.333}$ ($1/3$) | $\\nu = 1/3$ | $\\langle R^2 \\rangle \\propto N^{2/3}$ |\n\
+      | **Rigid Rod / 1D Walk** | Fully stretched chain or $d=1$ SAW | $\\nu = \\mathbf{1.000}$ | $\\nu = 1$ | $\\langle R^2\
+      \ \\rangle \\propto N^2$ |\n\n### Flory's Mean-Field Free Energy Derivation of $\\nu = \\frac{3}{d+2}$\nFlory estimated\
+      \ the equilibrium coil size $R$ in a good solvent by balancing two competing free-energy contributions in $d$ dimensions:\n\
+      1. **Entropic Elastic Stretching Penalty:** Stretching an ideal Gaussian chain ($\\langle R_0^2 \\rangle = N a^2$) to\
+      \ radius $R$ reduces conformational entropy:\n $$\\frac{F_{\\text{el}}(R)}{k_B T} \\sim \\frac{R^2}{N a^2}$$\n2. **Excluded-Volume\
+      \ Two-Body Repulsion:** Inside the coil volume $V \\sim R^d$, the mean monomer density is $\\rho \\sim N / R^d$, so\
+      \ the repulsive two-body interaction energy scales as $V v_{\\text{excl}} \\rho^2$:\n $$\\frac{F_{\\text{rep}}(R)}{k_B\
+      \ T} \\sim v_{\\text{excl}} R^d \\left(\\frac{N}{R^d}\\right)^2 = v_{\\text{excl}} \\frac{N^2}{R^d}$$\nMinimizing $F_{\\\
+      text{tot}}(R) = F_{\\text{el}}(R) + F_{\\text{rep}}(R)$ with respect to $R$ ($\\partial F_{\\text{tot}}/\\partial R\
+      \ = 0$) gives:\n$$\\frac{R}{N a^2} \\sim \\frac{N^2}{R^{d+1}} \\quad \\Longrightarrow \\quad R^{d+2} \\propto N^3 \\\
+      quad \\Longrightarrow \\quad \\boxed{R \\propto N^{\\frac{3}{d+2}} \\implies \\nu_{\\text{Flory}} = \\frac{3}{d+2} \\\
+      quad (1 \\le d \\le 4)}$$\n- For **$d = 1$**: $\\nu_{\\text{Flory}} = 3/3 = 1$ (exact; a 1D self-avoiding walk cannot\
+      \ turn back!).\n- For **$d = 2$**: $\\nu_{\\text{Flory}} = 3/4 = 0.75$ (exact in 2D!).\n- For **$d = 3$**: $\\nu_{\\\
+      text{Flory}} = 3/5 = 0.60$, remarkably close to the renormalization-group / Monte Carlo value $\\nu \\approx 0.588$.\n\
+      - For **$d \\ge 4$ (upper critical dimension $d_c = 4$)**: two random walks rarely intersect, so excluded volume becomes\
+      \ irrelevant and $\\nu = 1/2$.\n\n### Dynamical Scaling & Rouse / Reptation Relaxation Times\nWhy does coil swelling\
+      \ make Molecular Dynamics and local Monte Carlo so slow?\n- In an unentangled **Rouse chain**, a monomer diffuses with\
+      \ local mobility $\\sim 1/N$ over a distance $R \\sim N^\\nu$, requiring a global conformational **relaxation time**:\n\
+      \ $$\\tau_{\\text{Rouse}} \\sim \\frac{R^2}{D_{\\text{cm}}} \\sim \\frac{N^{2\\nu}}{N^{-1}} = N^{2\\nu + 1}$$\n For\
+      \ a 3D SAW ($\\nu \\approx 0.588 \\approx 0.6$), this gives the lecture scaling **$\\tau_{\\text{relax}} \\sim N^{2.2}$**\
+      \ (or $N^2$ for an ideal $\\Theta$-chain).\n- In an **entangled polymer melt** ($N > N_e$, de Gennes tube model), chains\
+      \ are confined to topological tubes of contour length $L_{\\text{tube}} \\propto N$ with curvilinear tube diffusivity\
+      \ $D_{\\text{tube}} \\propto N^{-1}$, giving $\\tau_{\\text{rep}} \\sim L_{\\text{tube}}^2 / D_{\\text{tube}} \\propto\
+      \ N^3$ (and experimentally $\\tau_{\\text{relax}} \\propto N^{3.4}$ due to contour-length fluctuations).\n- Beyond linear\
+      \ chains, polymer physics explores diverse **macromolecular topologies**, including **ring polymers** (no free ends!)\
+      \ and **star/branched polymers** ($f$ arms radiating from a central core)."
+  - id: concept_flory_scaling
+    type: concept_cell
+    title: 'Interactive Explorer: Flory Size Scaling & Coil Conformations Across Solvent Regimes'
+    description_markdown: Switch between **Poor Solvent** ($\nu = 1/d$), **$\Theta$-Solvent** ($\nu = 0.5$), **Good Solvent**
+      ($\nu \approx 0.588$ in 3D, $0.75$ in 2D), and **Rigid Rod** ($\nu = 1.0$) while varying the chain length $N$ and dimension
+      $d$ to compare the log-log scaling of $R_g(N)$, coil conformations, and Rouse relaxation times $\tau_{\mathrm{relax}}
+      \sim N^{2\nu+1}$.
+    render_function: render_flory_scaling_regimes
+    layout: figure_left
+    controls:
+      solvent_regime:
+        kind: dropdown
+        label: Solvent / Phase Regime
+        default: good
+        options:
+        - label: Good Solvent (Swollen SAW)
+          value: good
+        - label: Theta Solvent (Ideal Random Walk)
+          value: theta
+        - label: Poor Solvent (Collapsed Globule)
+          value: poor
+        - label: Rigid Rod (Fully Stretched)
+          value: rod
+      chain_length:
+        kind: slider
+        label: Chain Length N (monomers)
+        min: 20
+        max: 800
+        step: 20
+        default: 120
+      dimension:
+        kind: slider
+        label: Spatial Dimension d
+        min: 2
+        max: 3
+        step: 1
+        default: 3
+    takeaway_markdown: '**Key Takeaway:** Cooling a polymer solution from a good solvent through the $\Theta$-point into a
+      poor solvent triggers a continuous **coil-to-globule phase transition** in which $R_g \sim N^{3/5} \to N^{1/2} \to N^{1/3}$
+      in $d=3$.'
+  - id: q08_flory_exponent_good_solvent_3d
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: For a linear polymer chain in a **3D good solvent** (where repulsive excluded-volume interactions dominate),
+      how does the mean-square end-to-end distance $\langle (\mathbf{r}_N - \mathbf{r}_0)^2 \rangle \propto N^{2\nu}$ scale
+      with chain length $N$, and what is the numerical value of the Flory exponent $\nu$?
+    hint_markdown: 'Recall ''Polymer Phases'': compare the SAW exponent $\\nu$ against the ideal random walk exponent $0.5$.'
+    options:
+    - id: a
+      text: $\\nu \\approx 0.588$ (Flory mean-field approximation $\\nu = 3/5 = 0.6$), so the coil swells larger than an ideal
+        random walk ($\\langle R^2 \\rangle \\propto N^{1.176}$).
+    - id: b
+      text: $\\nu = 0.500$ exatamente, because excluded volume cancels out in three dimensions.
+    - id: c
+      text: $\\nu = 1/3 \\approx 0.333$, because repulsive interactions compress the polymer into a dense sphere.
+    - id: d
+      text: $\\nu = 2.2$, matching the Rouse relaxation time exponent.
+    correct: a
+    rationale_markdown: In a 3D good solvent, self-avoidance forces the polymer coil to swell beyond an ideal Gaussian walk,
+      yielding $\nu \approx 0.588$ (with Flory's mean-field estimate $\nu_{\text{Flory}} = \frac{3}{d+2} = \frac{3}{5} = 0.6$)
+      and $\langle R^2 \rangle \propto N^{2\nu} \approx N^{1.176}$.
+  - id: q09_flory_mean_field_derivation_2d
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: Flory's mean-field balance between entropic elastic stretching $F_{\text{el}}/k_B T \sim R^2 / N$ and
+      two-body excluded-volume repulsion $F_{\text{rep}}/k_B T \sim N^2 / R^d$ predicts $\nu_{\text{Flory}} = \frac{3}{d+2}$
+      for $d \le 4$. What is the value of $\nu_{\text{Flory}}$ for a polymer adsorbed flat onto a **2D surface ($d = 2$)**?
+    hint_markdown: Substitute $d = 2$ into $\\nu_{\\text{Flory}} = 3 / (d + 2)$.
+    correct:
+      value: 0.75
+      tolerance: 0.01
+    rationale_markdown: In $d = 2$ dimensions, $\nu_{\text{Flory}} = \frac{3}{2 + 2} = \frac{3}{4} = 0.75$ (which also happens
+      to be the exact 2D self-avoiding walk exponent derived via Coulomb-gas / conformal invariance methods). Because 2D space
+      is much more crowded than 3D space, excluded volume swells the chain more strongly ($\nu = 0.75$ in 2D vs. $\nu \approx
+      0.588$ in 3D).
+  - id: q10_theta_solvent_compensation
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: What happens to the polymer conformation and size scaling right at the **$\Theta$-point (Theta temperature)**
+      as attractive monomer–monomer interactions are tuned against hard-core excluded volume?
+    hint_markdown: '''Right at collapse point—walks are uncorrelated random walks.'''
+    options:
+    - id: a
+      text: Effective two-body monomer attraction cancels excluded-volume repulsion (second virial coefficient $B_2 = 0$),
+        so the chain obeys quasi-ideal random-walk scaling $R_g \\propto N^{1/2}$ ($\\nu = 0.5$).
+    - id: b
+      text: The polymer crystallizes into a 1D rigid rod with $R_g \\propto N^1$ ($\\nu = 1$).
+    - id: c
+      text: All covalent bonds break simultaneously, dissociating the chain into free monomers.
+    - id: d
+      text: The radius of gyration becomes completely independent of $N$ ($\\nu = 0$).
+    correct: a
+    rationale_markdown: At the $\Theta$-temperature, the weak monomer–monomer attraction exactly compensates the two-body
+      excluded-volume repulsion ($B_2(T_\Theta) = 0$). Consequently, long-range swelling vanishes and the coil behaves asymptotically
+      as an uncorrelated **ideal random walk** with $\langle R^2 \rangle \propto N$ and $\nu = 1/2$.
+  - id: q11_poor_solvent_globule_exponent
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: When a polymer in 3D is cooled well below the $\Theta$-temperature into a **poor solvent**, monomer–monomer
+      attraction dominates and the chain collapses into a compact globule. Why does its radius of gyration scale as $R_g \propto
+      N^{1/3}$ ($\nu = 1/3$)?
+    hint_markdown: In a compact liquid-like drop of uniform internal monomer density $\\rho_0$, how does the volume $V \\sim
+      R_g^3$ relate to the total number of monomers $N$?
+    options:
+    - id: a
+      text: A collapsed globule packs monomers at a uniform liquid-like interior density $\\rho \\sim N / R_g^3 = \\text{const}$,
+        which immediately requires $R_g^3 \\propto N \\implies R_g \\propto N^{1/3}$.
+    - id: b
+      text: Only one-third of the monomers remain bonded while the other two-thirds evaporate.
+    - id: c
+      text: The chain projects onto a single spatial axis out of the three Cartesian coordinates.
+    - id: d
+      text: Three-body repulsive forces scale as $R_g^3$ with zero entropic elasticity.
+    correct: a
+    rationale_markdown: In a poor solvent, the polymer minimizes solvent contacts by collapsing into a dense spherical globule
+      whose interior monomer concentration approaches a constant melt/liquid packing density $\rho_0 \sim N / V \sim N / R_g^d$.
+      In $d=3$ dimensions, $N / R_g^3 \sim \text{const} \implies R_g \propto N^{1/3}$ ($\nu = 1/3$).
+  - id: q12_scaling_ratio_calculation
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: Suppose a polymer chain in a 3D good solvent ($\nu = 0.588$) has its degree of polymerization increased
+      by a factor of $8$ (from $N$ to $8N$). By what factor does its root-mean-square end-to-end distance $\sqrt{\langle R_{ee}^2
+      \rangle} \propto N^\nu$ increase?
+    hint_markdown: Calculate $(8N)^\\nu / N^\\nu = 8^{0.588}$.
+    correct:
+      value: 3.4
+      tolerance: 0.06
+    rationale_markdown: 'Since $\sqrt{\langle R_{ee}^2 \rangle} \propto N^\nu$, multiplying $N$ by $8$ scales the root-mean-square
+      size by:
 
-    - id: q01_md_timescale_bottleneck
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by: sec_timescale_and_coarse_graining
-      prompt_markdown: |
-        In an all-atom Molecular Dynamics (MD) simulation of a polymer melt or solution, what physical motion dictates the maximum stable integration time step $\Delta t \approx 10^{-14}\text{ s}$, and how many total MD steps are required to reach macroscopic coil relaxation times of $1\text{ s}$ to $1\text{ hour}$?
-      hint_markdown: >-
-        Check Slide 2 ('Time estimate for MD'): compare the period of local covalent vibrations ($10^{-13}\\text{ s}$) against $1\\text{ s} - 3600\\text{ s}$ divided by $\\Delta t = 10^{-14}\\text{ s}$.
-      options:
-        - id: a
-          text: >-
-            Fast local covalent bond oscillations ($\\tau_{\\text{vib}} \\sim 10^{-13}\\text{ s}$) fix $\\Delta t \\approx 10^{-14}\\text{ s}$, requiring $10^{14}$ to $10^{18}$ sequential MD steps to reach seconds-to-hours polymer relaxation.
-        - id: b
-          text: >-
-            Whole-chain center-of-mass diffusion fixes $\\Delta t \\approx 10^{-9}\\text{ s}$, requiring $10^6$ to $10^9$ steps.
-        - id: c
-          text: >-
-            Electronic orbital transitions fix $\\Delta t \\approx 10^{-18}\\text{ s}$, requiring $10^{24}$ steps.
-        - id: d
-          text: >-
-            Rotational isomerization of side groups fixes $\\Delta t \\approx 10^{-6}\\text{ s}$, requiring $10^6$ to $10^{10}$ steps.
-      correct: a
-      rationale_markdown: |
-        Local covalent bond vibrations occur on a timescale of $\sim 10^{-13}\text{ s}$, requiring an MD time step $\Delta t \approx 10^{-14}\text{ s}$ ($10\text{ fs}$) to resolve the fastest harmonic modes stably. Reaching macroscopic conformational changes that take seconds ($1\text{ s} / 10^{-14}\text{ s} = 10^{14}$ steps) to hours ($\sim 10^{18}$ steps) is therefore impossible by brute-force atomistic MD without coarse-graining.
+      $$\frac{R(8N)}{R(N)} = 8^{\nu} = 8^{0.588} \approx 3.396 \approx 3.40$$
 
-    - id: q02_md_cpu_years_estimate
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by: sec_timescale_and_coarse_graining
-      prompt_markdown: |
-        Consider the lecture benchmark system of $100$ polymer chains of $50$ monomers each ($\sim 20{,}000$ particles including solvent) integrated with time step $\Delta t = 10^{-14}\text{ s}$ at a computational throughput of $1\text{ step/s}$. Approximately how many **years** of wall-clock CPU time are required to simulate just $10^{-4}\text{ s}$ ($0.1\text{ ms}$) of physical real time? (Use the lecture conversion $10^{10}\text{ s} \approx 300\text{ years}$ and enter the integer number of years.)
-      hint_markdown: >-
-        Divide the target physical time $10^{-4}\\text{ s}$ by $\\Delta t = 10^{-14}\\text{ s/step}$ to find the number of steps, multiply by $1\\text{ s/step}$, and convert $10^{10}\\text{ s}$ to years as stated on Slide 2.
-      correct:
-        value: 300.0
-        tolerance: 20.0
-      rationale_markdown: |
-        To reach $t_{\text{phys}} = 10^{-4}\text{ s}$ with $\Delta t = 10^{-14}\text{ s}$ requires $N_{\text{steps}} = 10^{-4} / 10^{-14} = 10^{10}$ steps. At $1\text{ step/s}$, this takes $10^{10}\text{ s} \approx \frac{10^{10}}{3.156 \times 10^7\text{ s/yr}} \approx 317\text{ years}$ (quoted as **$300\text{ years}$** on Slide 2).
+      (Compare this against $8^{0.5} \approx 2.83$ in a $\Theta$-solvent and $8^{1/3} = 2.00$ in a poor-solvent globule.)'
+  - id: q13_md_rouse_relaxation_scaling
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: unentangled MD / local-move polymer relaxation time scales as $\tau_{\text{relax}} \propto N^{2.2}$ in
+      a 3D good solvent ($\tau \sim N^{2\nu + 1}$ with $\nu \approx 0.6$). If you increase the chain length by a factor of
+      $10$ (from $N = 50$ to $N = 500$), by what factor does the conformational relaxation time $\tau_{\text{relax}}$ increase?
+    hint_markdown: Evaluate the ratio $(10 N)^{2.2} / N^{2.2} = 10^{2.2}$.
+    correct:
+      value: 158.49
+      tolerance: 2.5
+    rationale_markdown: 'With $\tau_{\text{relax}} \propto N^{2.2}$, increasing $N$ by a factor of $10$ increases the relaxation
+      time by:
 
-    - id: q03_coarse_grained_bead_meaning
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by: sec_timescale_and_coarse_graining
-      prompt_markdown: |
-        In a coarse-grained bead-spring polymer model (such as the Kremer–Grest model), what does a single simulated "bead" physically represent?
-      hint_markdown: "Review Slide 3 ('Bead spring model'): does a bead correspond to a single carbon atom or a larger collective sub-unit?"
-      options:
-        - id: a
-          text: "A coarse-grained 'blob' (Kuhn segment) encompassing a section of several chemical monomers along the polymer chain."
-        - id: b
-          text: "A single valence electron shared along the conjugated polymer backbone."
-        - id: c
-          text: "An entire entangled polymer chain collapsed into a single point particle."
-        - id: d
-          text: "A solvent cage molecule that permanently binds to one specific carbon atom."
-      correct: a
-      rationale_markdown: |
-        As emphasized on Slide 3, *"A bead does not represent an atom, but a blob—a section of the chain."* Grouping several chemical repeat units into a single effective Kuhn bead averages over stiff local bond lengths and angles while preserving universal long-wavelength coil statistics and entanglement topology.
+      $$\frac{\tau(10N)}{\tau(N)} = 10^{2.2} \approx 158.49$$
 
-    - id: q04_fene_taylor_expansion
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_timescale_and_coarse_graining
-        - concept_fene_bonds
-      prompt_markdown: |
-        Consider the FENE bond potential $U_{\text{FENE}}(r) = -\frac{1}{2}k R_0^2 \ln\!\left[1 - (r/R_0)^2\right]$ for $r < R_0$. Using the Maclaurin expansion $-\ln(1 - x) = x + \frac{1}{2}x^2 + \frac{1}{3}x^3 + \cdots$, what are the leading two terms of $U_{\text{FENE}}(r)$ at small bond extensions ($r \ll R_0$)?
-      hint_markdown: >-
-        Substitute $x = (r/R_0)^2$ into $-\\frac{1}{2}k R_0^2 [-\\ln(1-x)] = \\frac{1}{2}k R_0^2 (x + \\frac{1}{2}x^2 + \\cdots)$.
-      options:
-        - id: a
-          text: >-
-            $U_{\\text{FENE}}(r) = \\frac{1}{2}k r^2 + \\frac{k}{4 R_0^2} r^4 + \\mathcal{O}(r^6)$
-        - id: b
-          text: >-
-            $U_{\\text{FENE}}(r) = k R_0 r - \\frac{1}{2}k r^2 + \\mathcal{O}(r^3)$
-        - id: c
-          text: >-
-            $U_{\\text{FENE}}(r) = \\frac{1}{2}k R_0^2 r^2 + \\frac{1}{2}k R_0^4 r^4 + \\mathcal{O}(r^6)$
-        - id: d
-          text: >-
-            $U_{\\text{FENE}}(r) = -\\frac{1}{2}k r^2 + \\frac{k}{2 R_0^2} r^4 + \\mathcal{O}(r^6)$
-      correct: a
-      rationale_markdown: |
-        Setting $x = (r/R_0)^2$ in $-\ln(1-x) = x + \frac{1}{2}x^2 + \cdots$ and multiplying by $\frac{1}{2}k R_0^2$ gives:
-        $$U_{\text{FENE}}(r) = \frac{1}{2}k R_0^2 \left[\frac{r^2}{R_0^2} + \frac{1}{2}\frac{r^4}{R_0^4} + \cdots\right] = \frac{1}{2}k r^2 + \frac{k}{4 R_0^2} r^4 + \mathcal{O}(r^6)$$
-        Thus $U_{\text{FENE}}(r)$ reduces smoothly to a harmonic spring of constant $k$ at small $r$, while stiffening anharmonically as $r$ approaches $R_0$.
+      Moreover, because each sweep of $N$ monomers costs $\mathcal{O}(N)$ force evaluations, the total CPU effort per independent
+      configuration scales as $N \cdot N^{2.2} = N^{3.2}$ ($\approx 1585\times$ more expensive for a $10\times$ longer chain!).'
+  - id: q14_polymer_topologies
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_flory_scaling_and_phases
+    prompt_markdown: Which of the following polymer architectures—highlighted alongside linear chains and star polymers—possesses
+      **zero free chain ends**, making standard end-slithering reptation moves impossible without modifying the move set?
+    hint_markdown: 'Inspect the three sketches at the bottom of: linear, rings, stars.'
+    options:
+    - id: a
+      text: Ring (cyclic) polymers, where monomer $N$ is covalently bonded back to monomer $1$ to form a closed loop.
+    - id: b
+      text: 3-arm star polymers, which have three free chain ends radiating from one central core.
+    - id: c
+      text: Linear homopolymers in a $\\Theta$-solvent.
+    - id: d
+      text: Short linear oligomers of length $N = 10$.
+    correct: a
+    rationale_markdown: A **ring (cyclic) polymer** forms a closed topological loop with no free chain ends. Because standard
+      reptation ("slithering snake") requires cutting a monomer from one free end and attaching it to the other free end,
+      pure end-reptation cannot be applied to ring polymers.
+  - id: sec_reptation_pivot_and_ergodicity
+    type: markdown_section
+    title: '3. Polymer Monte Carlo Move Menus: Reptation, Pivot & Ergodicity Traps'
+    body_markdown: "If we only care about **equilibrium statistical mechanics** (coil dimensions, structure factors, phase\
+      \ coexistence, osmotic equation of state) rather than exact Newtonian trajectories, we can abandon Molecular Dynamics\
+      \ and design **unphysical Monte Carlo (MC) trial moves** that leap across conformational space orders of magnitude faster\
+      \ while rigorously obeying detailed balance!\n\n### 1. Local Moves (End-Bond Rotation, Kink-Jump / Corner Flip, Crankshaft)\n\
+      - **End-bond move:** Rotate the first or last bond to a new neighbor site.\n- **Kink-jump (corner flip):** If monomer\
+      \ $i$ forms a $90^\\circ$ corner between $i-1$ and $i+1$, flip monomer $i$ across the diagonal to the opposite corner\
+      \ of the elementary square.\n- **Crankshaft move:** Rotate a 2-monomer U-shaped segment by $90^\\circ$ or $180^\\circ$\
+      \ around the axis connecting its flanking monomers.\n- **Limitation:** Because local moves only displace $1$–$2$ monomers\
+      \ at a time, they mimic physical Rouse dynamics and suffer the same slow global decorrelation time $\\tau_{\\text{local}}\
+      \ \\sim \\mathcal{O}(N^{2\\nu+1}) \\approx \\mathcal{O}(N^{2.2})$ (or $\\mathcal{O}(N^3)$ in melts).\n\n### 2. Reptation\
+      \ (\"Slithering Snake\" Algorithm — Wall & Mandel, 1975)\nInspired by de Gennes' reptation theory of entangled melts:\n\
+      - **Trial Move:** Pick one of the two chain ends at random (head or tail), **delete** the terminal monomer at that end,\
+      \ and **append** a new monomer onto the *other* end in a randomly chosen bond direction $\\theta$ (or lattice neighbor).\n\
+      - **Detailed Balance Subtlety:** To preserve time-reversal symmetry (detailed balance), you must either choose which\
+      \ end acts as the growing head with equal $50/50$ probability at every step, or implement a symmetric \"bounce\" rule\
+      \ (staying in the old state and recording it again in the Markov chain whenever the proposed site is occupied).\n- **Computational\
+      \ Efficiency:** Every accepted step shifts all monomer indices along the existing chain contour in $\\mathcal{O}(1)$\
+      \ operations, sampling the bonding interaction directly while the Metropolis acceptance probability depends *only* on\
+      \ the change in non-bonded potential at the deleted/added ends!\n- **Scaling Advantage:** Because the chain slithers\
+      \ along its own contour of length $N$ in random forward/backward steps of $\\pm 1$ monomer, it vacates its initial tube\
+      \ after $\\sim N^2$ elementary steps, reducing the conformational decorrelation time to **$\\tau_{\\text{reptation}}\
+      \ \\sim \\mathcal{O}(N^2)$**—and crucially, **it still works in dense multi-chain melts!**\n- **The Non-Ergodicity Trap\
+      \ (\"Double Cul-de-Sac\"):** Is pure lattice reptation ergodic? **No!** As noted \"*), a single chain (or multi-chain\
+      \ system) can slither into a **\"double cul-de-sac\" (double dead-end)** configuration where *both* chain ends are completely\
+      \ surrounded by already-occupied interior monomers of the chain ($q_{\\text{open}} = 0$ at both ends). Once in a double\
+      \ cul-de-sac, no valid reptation move exists—nor can pure reptation ever enter such a valid SAW configuration from outside—violating\
+      \ ergodicity!\n\n### 3. The Pivot Algorithm (Lal 1969; Madras & Sokal 1988)\nFor a **single isolated polymer chain in\
+      \ dilute solution**:\n- **Trial Move:** Pick a monomer $k \\in \\{1, \\dots, N-1\\}$ uniformly at random as a **pivot\
+      \ point**, and apply a random global symmetry transformation (rotation by $\\pm 90^\\circ, 180^\\circ$, reflection,\
+      \ or continuous 3D angle $\\theta$) to the entire subchain $(k+1, \\dots, N)$ relative to monomer $k$.\n- **Accept or\
+      \ Reject:** Check whether the rotated subchain overlaps with the unrotated subchain $(1, \\dots, k)$ (or changes non-bonded\
+      \ energy $\\Delta U$); accept with the standard Metropolis probability $\\min(1, e^{-\\beta \\Delta U})$.\n- **Spectacular\
+      \ Efficiency for Global Observables:** Because a single accepted pivot move reorients $\\mathcal{O}(N)$ monomers simultaneously,\
+      \ the end-to-end vector decorrelates in **$\\tau_{\\text{pivot}} \\sim \\mathcal{O}(N^{0.2})$** accepted moves (measured\
+      \ in macroscopic sweeps)—making the pivot algorithm the **most efficient method known for single-chain global equilibrium\
+      \ properties**!\n- **Limitations of Pure Pivot:**\n 1. In **dense polymer melts** or compact poor-solvent globules,\
+      \ rotating half a chain almost always collides with surrounding chains, driving the acceptance probability to zero ($A\
+      \ \\to 0$).\n 2. Because pivot moves apply rigid-body rotations on a lattice, they never alter bond lengths or local\
+      \ 1-step bond vectors if not combined with local moves.\n\n### 4. The Hybrid Move Menu Rule\nTo guarantee **ergodicity**\
+      \ (reaching every valid conformation in chain space) while relaxing *both* short-wavelength local bond modes and long-wavelength\
+      \ global coil vectors, practical polymer MC simulations always employ a **mixture of moves** (e.g., combining Pivot\
+      \ + Reptation + Crankshaft/Kink-jump)."
+  - id: concept_reptation_pivot
+    type: concept_cell
+    title: 'Interactive Explorer: Reptation, Pivot Rotations & The Double Cul-de-Sac Trap'
+    description_markdown: Select a polymer Monte Carlo move mode (**Reptation**, **Pivot Rotation**, **Crankshaft/Kink-Jump**,
+      or **Double Cul-de-Sac Trap**) and vary the pivot monomer index $k$ and rotation angle $\theta$ to observe how each
+      move transforms the 2D square-lattice chain and when self-avoidance collisions or non-ergodic traps occur.
+    render_function: render_reptation_and_pivot_moves
+    layout: figure_left
+    controls:
+      move_type:
+        kind: dropdown
+        label: MC Trial Move / Configuration
+        default: pivot
+        options:
+        - label: Pivot Move (Global Subchain Rotation)
+          value: pivot
+        - label: Reptation ('Slithering Snake' End Move)
+          value: reptation
+        - label: Local Crankshaft / Kink-Jump Move
+          value: crankshaft
+        - label: Double Cul-de-Sac Trap (Non-Ergodic State)
+          value: cul_de_sac
+      pivot_index:
+        kind: slider
+        label: Pivot Monomer Index k
+        min: 2
+        max: 10
+        step: 1
+        default: 6
+      rotation_angle:
+        kind: dropdown
+        label: Pivot Rotation Angle θ
+        default: 90
+        options:
+        - label: +90° Counterclockwise
+          value: 90
+        - label: -90° Clockwise
+          value: -90
+        - label: 180° Inversion
+          value: 180
+    takeaway_markdown: '**Key Takeaway:** Reptation achieves $\mathcal{O}(N^2)$ tube renewal in melts via $\mathcal{O}(1)$
+      end updates, whereas the Pivot algorithm achieves $\mathcal{O}(N^{0.2})$ global decorrelation for dilute single chains.
+      Mixing these with local crankshaft moves eliminates the double cul-de-sac ergodicity trap.'
+  - id: q15_reptation_move_mechanism
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: How does an elementary trial step of the **Reptation ("slithering snake") Monte Carlo** algorithm update
+      an $N$-monomer polymer chain?
+    hint_markdown: '''Cut off one end and stick onto the other end.'''
+    options:
+    - id: a
+      text: It deletes one terminal monomer from a randomly chosen chain end and appends a new monomer in a random bond direction
+        onto the opposite chain end.
+    - id: b
+      text: It translates all $N$ monomers rigidly by the same random Cartesian vector $\\Delta \\mathbf{r}$.
+    - id: c
+      text: It cuts the polymer in half at monomer $N/2$ and swaps the two halves.
+    - id: d
+      text: It simultaneously perturbs the $(x,y,z)$ coordinates of all $N$ monomers using Gaussian white noise.
+    correct: a
+    rationale_markdown: In Wall–Mandel reptation MC, a terminal monomer is removed from one end of the chain and attached
+      in a random direction at the other end. All interior monomers simply shift their index by $\pm 1$ along the existing
+      backbone contour, advancing the polymer by one monomer step along its own tube in $\mathcal{O}(1)$ operations.
+  - id: q16_reptation_decorrelation_scaling
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: Why does the conformational decorrelation time (in elementary MC steps) of the **reptation algorithm**
+      scale as $\mathcal{O}(N^2)$?
+    hint_markdown: Each elementary slithering step shifts the chain contour by $\\pm 1$ monomer along a tube of length $N$
+      monomers. How many random $\\pm 1$ steps are required to diffuse a distance of $N$ monomers along the 1D contour?
+    options:
+    - id: a
+      text: Because choosing either end at random causes the chain to perform a 1D random walk of step size $\\pm 1$ monomer
+        along its contour of length $N$, requiring $\\sim N^2$ steps to diffuse completely out of its initial tube.
+    - id: b
+      text: Because evaluating the distance between the two chain ends requires an $N \\times N$ matrix multiplication at
+        every step.
+    - id: c
+      text: Because only $1/N^2$ of proposed end moves avoid overlapping with the immediately adjacent monomer.
+    - id: d
+      text: Because the radius of gyration scales as $R_g \\propto N^2$ in a good solvent.
+    correct: a
+    rationale_markdown: In reptation MC, each step randomly advances or retreats the chain by $\pm 1$ monomer along its contour
+      of $N$ segments. By standard 1D diffusion ($\langle \Delta s^2 \rangle \sim t_{\text{steps}}$), vacating the entire
+      $N$-monomer initial tube ($\Delta s \sim N$) takes $\tau \sim \mathcal{O}(N^2)$ elementary steps—a major speedup over
+      physical entanglement dynamics ($\tau_{\text{phys}} \sim N^3$ to $N^{3.4}$ in sweeps, or $N^4$ to $N^{4.4}$ in elementary
+      operations).
+  - id: q17_reptation_double_cul_de_sac
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: Why is the pure **lattice reptation algorithm** strictly **non-ergodic** for self-avoiding walks?
+    hint_markdown: Recall 'But Ergodic? Not always (what if both ends get trapped?)' and inspect the 'Double Cul-de-Sac Trap'
+      in the interactive explorer above.
+    options:
+    - id: a
+      text: Because there exist valid self-avoiding configurations ('double cul-de-sac' traps) in which all nearest-neighbor
+        sites of both chain ends are occupied by interior monomers, preventing the chain from ever entering or leaving those
+        states via end-slithering alone.
+    - id: b
+      text: Because reptation violates conservation of total monomer number $N$.
+    - id: c
+      text: Because reptation can only move the chain forward and never backward, violating microscopic reversibility.
+    - id: d
+      text: Because reptation always collapses a good-solvent chain into a $\\nu = 1/3$ globule.
+    correct: a
+    rationale_markdown: Ergodicity requires that every valid configuration in the ensemble can be reached from every other
+      valid configuration in a finite number of Markov steps. On a lattice, a chain can form a valid self-avoiding "double
+      cul-de-sac" where all $q$ neighbor sites around *both* ends are occupied by interior beads ($q_{\text{open}} = 0$).
+      Pure reptation can neither escape nor enter such states, partitioning configuration space into disconnected components.
+  - id: q18_reptation_bounce_detailed_balance
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_reptation_pivot_and_ergodicity
+    prompt_markdown: 'the lecture notes state: *"Choose end at random or ''bounce'' with rejection."* Why does a naive reptation
+      scheme that **always** grows at end $N$ (moving strictly forward along the chain) violate detailed balanceunless ends
+      are chosen at random (or reversed upon rejection)?'
+    hint_markdown: 'Recall the detailed balance condition $\\pi(o) T(o \\to n) = \\pi(n) T(n \\to o)$: if state $n$ is obtained
+      from state $o$ by deleting monomer $1$ and adding monomer $N+1$, how can the Markov chain return directly from $n$ to
+      $o$ in one step?'
+    options:
+    - id: a
+      text: Because moving from state $o$ to state $n$ by deleting the tail and growing at the head can only be reversed in
+        a single step ($n \\to o$) if the algorithm is also allowed to delete the newly grown head monomer and regrow at the
+        old tail!
+    - id: b
+      text: Because always growing at the head causes the chain length $N$ to grow to infinity.
+    - id: c
+      text: Because the Boltzmann factor $e^{-\\beta E}$ is different for the head monomer than for the tail monomer.
+    - id: d
+      text: Because forward-only growth changes the lattice coordination number $q$.
+    correct: a
+    rationale_markdown: Detailed balance requires $\pi(o) P(o \to n) = \pi(n) P(n \to o)$ between pairs of states. If state
+      $n$ is generated from state $o$ by removing the tail monomer and adding a head monomer, the reverse transition $n \to
+      o$ requires removing the head monomer and restoring the tail monomer. If the algorithm only ever moves forward, $P(n
+      \to o) = 0$ while $P(o \to n) > 0$, violating detailed balance (and getting permanently stuck at the very first dead-end
+      encountered!).
+  - id: q19_pivot_algorithm_relaxation_exponent
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: how does the end-to-end distance relaxation time of the **Pivot algorithm** scale with chain length $N$
+      for an isolated self-avoiding polymer chain?
+    hint_markdown: 'Look directly at the fourth bullet point: ''Most efficient method for a single chain. Exponent of relaxation
+      of end-end distance is...'''
+    options:
+    - id: a
+      text: $\\tau_{\\text{relax}} \\propto N^{0.2}$, making it the most efficient Monte Carlo method for sampling global
+        conformations of a single dilute chain.
+    - id: b
+      text: $\\tau_{\\text{relax}} \\propto N^{2.2}$, identical to Molecular Dynamics.
+    - id: c
+      text: $\\tau_{\\text{relax}} \\propto N^{3.4}$, matching entangled tube reptation.
+    - id: d
+      text: $\\tau_{\\text{relax}} \\propto e^{0.2 N}$, growing exponentially with chain length.
+    correct: a
+    rationale_markdown: the Pivot algorithm rotates an entire subchain around a randomly chosen monomer $k$ by a random symmetry
+      angle $\theta$. Because each accepted move globally reorients $\mathcal{O}(N)$ monomers at once, the relaxation time
+      of the end-to-end distance scales with a remarkably small exponent $\propto N^{0.2}$.
+  - id: q20_pivot_melt_failure
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: Although the Pivot algorithm is extraordinarily fast for an isolated polymer coil in a good solvent,
+      why does it perform poorly in a **dense polymer melt** or a tightly **collapsed poor-solvent globule**?
+    hint_markdown: What happens when you rigidly swing a subchain of hundreds of monomers through a densely packed box filled
+      with other monomers?
+    options:
+    - id: a
+      text: Rigidly rotating a macroscopic subchain of $\\sim N/2$ monomers through a dense melt or compact globule almost
+        always causes hard-core steric overlaps with neighboring monomers, driving the acceptance probability exponentially
+        to zero.
+    - id: b
+      text: Pivot moves do not conserve the total number of monomers $N$ in a multi-chain box.
+    - id: c
+      text: In a dense melt, the Flory exponent becomes $\\nu = 0$, so rotation angles are undefined.
+    - id: d
+      text: Pivot moves require calculating hydrodynamic Oseen tensors at every step.
+    correct: a
+    rationale_markdown: In a dense melt (volume fraction $\phi \sim 1$) or collapsed globule, virtually every lattice site
+      or continuum volume element surrounding the chain is occupied. Swinging a large subchain $(k+1 \dots N)$ rigidly around
+      monomer $k$ produces steric collisions with high probability, so almost all global pivot proposals are rejected.
+  - id: q21_hybrid_move_menu_rationale
+    type: problem
+    question_type: multi_select
+    difficulty: medium
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: Why do state-of-the-art polymer Monte Carlo simulations typically employ a **hybrid mixture of moves**
+      (combining local crankshaft/kink-jump flips, reptation, and pivot moves) rather than relying on a single move type?
+      *(Select all that apply.)*
+    hint_markdown: 'Recall ''Ergodic questions arise: Can you go everywhere in chain space? Make a mixture of moves.'''
+    options:
+    - id: a
+      text: Combining local interior flips (crankshaft/kink-jump) with reptation or pivot moves eliminates non-ergodic traps
+        such as double cul-de-sacs, ensuring the Markov chain can reach all valid conformations.
+    - id: b
+      text: Global pivot moves rapidly decorrelate long-wavelength observables (like $R_{ee}$ and $R_g$), while local crankshaft/kink-jump
+        moves efficiently equilibrate short-wavelength local bond orientations.
+    - id: c
+      text: Any convex combination (probabilistic mixture) of transition kernels that individually satisfy detailed balance
+        with respect to the Boltzmann distribution also satisfies detailed balance.
+    - id: d
+      text: Mixing two non-Boltzmann moves that violate detailed balance always cancels out their bias without needing Metropolis
+        acceptance tests.
+    correct:
+    - a
+    - b
+    - c
+    rationale_markdown: 'Mixing move types solves both **ergodicity** (a: local moves break up cul-de-sac traps that freeze
+      reptation) and **multi-scale relaxation** (b: pivot relaxes global modes in $\mathcal{O}(N^{0.2})$ while crankshaft/kink-jump
+      relaxes local bond correlations), while preserving exact canonical sampling because a probabilistic mixture $\sum_\alpha
+      p_\alpha T_\alpha$ of detailed-balanced kernels remains in detailed balance (c). Option (d) is false: each move kernel
+      must properly account for detailed balance.'
+  - id: sec_rosenbluth_and_cbmc
+    type: markdown_section
+    title: 4. Exponential Attrition, Rosenbluth Look-Ahead Growth & Configurational Bias MC (CBMC)
+    body_markdown: "### 1. The Attrition Problem in Simple (\"Blind\") Polymer Growth\nSuppose we try to generate an $N$-step\
+      \ Self-Avoiding Walk (SAW) from scratch on a lattice of coordination number $q$ by starting at the origin and blindly\
+      \ picking one of the $q$ neighbor directions (or $q-1$ non-reversing directions) at each step, throwing away the entire\
+      \ walk whenever an overlap occurs:\n- Because each step has a finite probability of colliding with an already visited\
+      \ site, the fraction of walks that survive to length $N$ decays **exponentially**:\n $$P_{\\text{survive}}(N) \\propto\
+      \ e^{-\\lambda N}$$\n- This is the **exponential attrition problem**: for $N \\sim 100$–$1000$, virtually $100\\%$ of\
+      \ blind walks terminate in self-intersections before reaching length $N$.\n\n### 2. The Rosenbluth–Rosenbluth (1955)\
+      \ Biased Growth Method\nTo avoid stepping onto occupied sites, Rosenbluth and Rosenbluth introduced **look-ahead importance\
+      \ sampling**:\n1. At growth step $i$ (adding monomer $i$ onto monomer $i-1$), scan all $q$ nearest-neighbor lattice\
+      \ sites around monomer $i-1$ and count the number of **unoccupied (\"open\") moves** $q_i \\in \\{0, 1, \\dots, q\\\
+      }$.\n2. If $q_i = 0$, the walk has hit a dead-end trap; set weight $W_n = 0$ and terminate.\n3. If $q_i > 0$, choose\
+      \ one of the $q_i$ unoccupied neighbor sites uniformly at random with selection probability $p_{\\text{select}}(i) =\
+      \ \\frac{1}{q_i}$ (instead of the unbiased blind probability $\\frac{1}{q}$).\n4. **Correcting the Bias with the Rosenbluth\
+      \ Weight $W_n$:**\n Because we forced the walk into open sites with probability $\\prod_{i=1}^n (1/q_i)$ instead of\
+      \ the uniform prior $(1/q)^n$, conformations running through crowded regions (small $q_i$) are **over-sampled** relative\
+      \ to open conformations (large $q_i$). To obtain unbiased ensemble averages $\\langle A \\rangle$ over all SAWs, each\
+      \ generated $n$-step chain $j$ must be weighted by its **Rosenbluth weight**:\n $$W_n = W_{n-1} \\left[\\frac{q_i}{q}\\\
+      right] = \\prod_{i=1}^n \\left(\\frac{q_i}{q}\\right), \\qquad \\langle R^2 \\rangle = \\frac{\\sum_j W^{(j)}_n R_j^2}{\\\
+      sum_j W^{(j)}_n}$$\n *(Note: Some conventions define $w_i = q_i$ without the constant $q^{-n}$ denominator since $q^n$\
+      \ cancels in any ratio $\\sum_j W_j A_j / \\sum_j W_j$ or $W_{\\text{new}}/W_{\\text{old}}$.)*\n5. **High-Variance Limitation\
+      \ for Very Long Chains & Branching (PERM):**\n For very long chains ($N \\gg 100$), the product $W_n = \\prod_{i=1}^n\
+      \ (q_i/q)$ is a product of many random factors, so its distribution becomes extremely broad (log-normal): a tiny handful\
+      \ of high-weight chains dominate the average $\\sum W_j R_j^2 / \\sum W_j$. As noted, algorithms like **PERM (Pruned-Enriched\
+      \ Rosenbluth Method)** clone/branch high-weight walks (halving each clone's weight) and prune low-weight walks to keep\
+      \ weight fluctuations bounded!\n\n### 3. Configurational Bias Monte Carlo (CBMC — Siepmann & Frenkel, 1992)\nInstead\
+      \ of growing full chains independently from scratch, **Configurational Bias Monte Carlo (CBMC)** embeds Rosenbluth look-ahead\
+      \ growth *inside* a Markov Chain Monte Carlo update (; Frenkel & Smit Chapters 11 & 13):\n1. **Select a Chain Segment\
+      \ to Regrow:** Pick a polymer chain and cut off a terminal segment of $m$ monomers (or an interior segment).\n2. **Grow\
+      \ the New Segment ($\\text{new}$):** Regrow the $m$ monomers step-by-step using Rosenbluth look-ahead sampling, recording\
+      \ its new Rosenbluth weight:\n $$W_{\\text{new}} = \\prod_{i=1}^m \\left(\\frac{q_i^{(\\text{new})}}{q}\\right) \\quad\
+      \ \\left(\\text{or in continuum/thermal systems: } W_{\\text{new}} = \\prod_{i=1}^m \\left[\\frac{1}{k}\\sum_{j=1}^k\
+      \ e^{-\\beta u_i(\\mathbf{b}_j)}\\right]\\right)$$\n where at each step $i$, $k$ trial bond directions $\\{\\mathbf{b}_1,\
+      \ \\dots, \\mathbf{b}_k\\}$ are proposed and direction $\\mathbf{b}_j$ is selected with probability $P_i(\\mathbf{b}_j)\
+      \ = \\frac{e^{-\\beta u_i(\\mathbf{b}_j)}}{\\sum_{\\ell=1}^k e^{-\\beta u_i(\\mathbf{b}_\\ell)}}$.\n3. **Retrace the\
+      \ Old Segment ($\\text{old}$):** Compute the Rosenbluth weight $W_{\\text{old}} = \\prod_{i=1}^m \\left(q_i^{(\\text{old})}\
+      \ / q\\right)$ that the *existing* old segment would have had (generating $k-1$ phantom trial directions plus the 1\
+      \ actual old bond at each step $i$ in the thermal/continuum case).\n4. **Super-Detailed Balance Acceptance Rule:**\n\
+      \ Because the probability of proposing the new path is $\\mathcal{P}_{\\text{gen}}(\\text{new}) = \\prod_{i=1}^m \\\
+      frac{1}{q_i^{(\\text{new})}} = \\frac{1}{q^m W_{\\text{new}}}$ while its equilibrium weight is constant (or $\\propto\
+      \ \\prod e^{-\\beta u_i}$), detailed balance $\\pi(\\text{old})\\mathcal{P}_{\\text{gen}}(\\text{new}) A(\\text{old}\\\
+      to\\text{new}) = \\pi(\\text{new})\\mathcal{P}_{\\text{gen}}(\\text{old}) A(\\text{new}\\to\\text{old})$ simplifies\
+      \ miraculously to:\n $$\\boxed{\\text{acc. Prob} = A(\\text{old} \\to \\text{new}) = \\min\\!\\left[1,\\, \\frac{W_{\\\
+      text{new}}}{W_{\\text{old}}}\\right]}$$\n Every factor of the look-ahead selection probability cancels against the Boltzmann\
+      \ factor, yielding an **exact, ergodic Markov chain** that threads long polymer segments into dense melts and porous\
+      \ media with high acceptance!"
+  - id: concept_cbmc_rosenbluth
+    type: concept_cell
+    title: 'Interactive Explorer: Rosenbluth Weights & Configurational Bias MC (CBMC) Acceptance'
+    description_markdown: Explore how Rosenbluth look-ahead growth accumulates step weights $W_n = \prod_{i=1}^n (q_i/q)$
+      compared to blind growth attrition, and adjust the weight ratio $W_{\mathrm{new}}/W_{\mathrm{old}}$ to see how CBMC
+      computes its exact Metropolis-like acceptance probability $A = \min(1, W_{\mathrm{new}}/W_{\mathrm{old}})$.
+    render_function: render_cbmc_rosenbluth_growth
+    layout: figure_left
+    controls:
+      regrow_steps:
+        kind: slider
+        label: Regrown Segment Length n (steps)
+        min: 3
+        max: 12
+        step: 1
+        default: 8
+      lattice_coord:
+        kind: dropdown
+        label: Lattice Coordination Number q
+        default: 4
+        options:
+        - label: 2D Square Lattice (q = 4)
+          value: 4
+        - label: 3D Simple Cubic Lattice (q = 6)
+          value: 6
+      weight_ratio:
+        kind: slider
+        label: Ratio W_new / W_old
+        min: 0.15
+        max: 2.0
+        step: 0.05
+        default: 0.75
+    takeaway_markdown: '**Key Takeaway:** Rosenbluth growth steers polymer segments away from steric overlaps by choosing
+      among the $q_i$ open neighbor sites, and CBMC removes that look-ahead bias inside a Markov chain by accepting the regrown
+      segment with $A(\mathrm{old}\to\mathrm{new}) = \min(1, W_{\mathrm{new}}/W_{\mathrm{old}})$.'
+  - id: q22_blind_growth_attrition
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: Why does the naive ("blind") polymer growth algorithm—which grows a chain step-by-step at random and
+      discards the entire walk whenever a self-intersection occurs—fail for long chains ($N \gg 100$)?
+    hint_markdown: Consider how the survival probability $P_{\\text{survive}}(N)$ scales as $N$ increases when each step has
+      a nonzero probability of overlap.
+    options:
+    - id: a
+      text: Because the probability that a blind walk avoids all self-intersections decays exponentially with chain length
+        ($P_{\\text{survive}} \\propto e^{-\\lambda N}$), a phenomenon known as exponential attrition.
+    - id: b
+      text: Because blind growth biases the surviving walks toward collapsed globules with $\\nu = 1/3$.
+    - id: c
+      text: Because a lattice of coordination number $q$ can only hold at most $q^2$ monomers.
+    - id: d
+      text: Because blind growth requires computing the full $N \\times N$ Hessian matrix at every step.
+    correct: a
+    rationale_markdown: Although the rare walks that survive blind growth without overlap are distributed uniformly among
+      all valid $N$-step SAWs, the survival probability decays exponentially as $P_{\text{survive}}(N) \propto (\mu_{\text{eff}}/q)^N
+      = e^{-\lambda N}$. For $N = 1000$, virtually zero blind trials survive to completion.
+  - id: q23_rosenbluth_weight_definition
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: In the lattice **Rosenbluth growth algorithm**, suppose the lattice coordination number is $q$, and at
+      growth step $i$ there are $q_i$ unoccupied ("open") nearest-neighbor sites available. How is the next site chosen, and
+      how is the cumulative **Rosenbluth weight** $W_n$ updated?
+    hint_markdown: 'Check the formula: $W_n = W_{n-1} [q_i / q]$ where $q_i = \\text{# of open moves}$.'
+    options:
+    - id: a
+      text: One of the $q_i$ open sites is chosen with probability $1/q_i$, and the weight is updated via $W_n = W_{n-1} \\left(\\frac{q_i}{q}\\right)
+        = \\prod_{i=1}^n \\left(\\frac{q_i}{q}\\right)$.
+    - id: b
+      text: One of all $q$ neighbor sites is chosen with probability $1/q$, and $W_n = W_{n-1} + q_i$.
+    - id: c
+      text: The open site closest to the origin is chosen deterministically, and $W_n = (q / q_i)^n$.
+    - id: d
+      text: One of the $q_i$ open sites is chosen with probability $q_i / q$, and $W_n = 1$ for all chains.
+    correct: a
+    rationale_markdown: At step $i$, Rosenbluth growth restricts selection to the $q_i$ unoccupied neighbor sites, choosing
+      one with uniform probability $1/q_i$. Because the probability of generating a specific path is $\prod_{i=1}^n (1/q_i)$
+      instead of the unbiased $(1/q)^n$, multiplying the cumulative weight by $q_i/q$ at each step ($W_n = \prod_{i=1}^n (q_i/q)$)
+      exactly compensates for the look-ahead selection bias.
+  - id: q24_rosenbluth_weight_numerical
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: A 3-step self-avoiding polymer segment is grown on a **2D square lattice ($q = 4$)** using the Rosenbluth
+      algorithm with $W_0 = 1$. Suppose the number of open neighbor sites at steps $i = 1, 2, 3$ is $q_1 = 4$, $q_2 = 3$,
+      and $q_3 = 2$. What is the resulting Rosenbluth weight $W_3 = \prod_{i=1}^3 (q_i / q)$?
+    hint_markdown: Multiply $(4/4) \\times (3/4) \\times (2/4) = 24 / 64$.
+    correct:
+      value: 0.375
+      tolerance: 0.005
+    rationale_markdown: 'Using $W_n = \prod_{i=1}^n (q_i / q)$ with $q = 4$ and $(q_1, q_2, q_3) = (4, 3, 2)$:
 
-    - id: q05_fene_energy_numerical
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_timescale_and_coarse_graining
-        - concept_fene_bonds
-      prompt_markdown: |
-        Using the lecture FENE bond potential $U_{\text{FENE}}(r) = -\frac{1}{2}k R_0^2 \ln\!\left[1 - (r/R_0)^2\right]$ with spring constant $k = 20$ and maximum extensibility $R_0 = 2.0$ (in reduced units), calculate $U_{\text{FENE}}(r)$ when the bond is stretched to $r = 1.6$.
-      hint_markdown: >-
-        First compute $(r/R_0)^2 = (1.6/2.0)^2 = 0.8^2 = 0.64$, then evaluate $-0.5 \\times 20 \\times 2.0^2 \\times \\ln(1 - 0.64) = -40 \\ln(0.36)$.
-      correct:
-        value: 40.87
-        tolerance: 0.25
-      rationale_markdown: |
-        Substituting $k = 20$, $R_0 = 2.0$, and $r/R_0 = 1.6/2.0 = 0.8$ gives:
-        $$U_{\text{FENE}}(1.6) = -\frac{1}{2}(20)(2.0)^2 \ln(1 - 0.8^2) = -40 \ln(0.36) \approx -40 \times (-1.02165) \approx 40.87$$
-        Notice that a harmonic spring $\frac{1}{2}k r^2$ at the same extension would have energy $\frac{1}{2}(20)(1.6)^2 = 25.6$, already $15.3$ energy units lower than the stiffening FENE bond.
+      $$W_3 = \left(\frac{4}{4}\right)\left(\frac{3}{4}\right)\left(\frac{2}{4}\right) = 1 \times 0.75 \times 0.50 = \frac{3}{8}
+      = 0.375$$'
+  - id: q25_rosenbluth_why_reweight
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: Suppose two valid $N$-step self-avoiding walks, Walk A and Walk B, are generated by the Rosenbluth growth
+      algorithm. Walk A passes through a very crowded, tightly coiled region where most steps only had $q_i = 1$ open site,
+      whereas Walk B passes through an open region where most steps had $q_i = 3$ open sites. Before reweighting by $W_N$,
+      which walk is **more likely to be generated** by the Rosenbluth sampling procedure, and how does $W_N$ correct this?
+    hint_markdown: Compare the path generation probability $P_{\\text{gen}} = \\prod_{i=1}^N (1/q_i)$ for small $q_i$ vs.
+      Large $q_i$.
+    options:
+    - id: a
+      text: Walk A is generated with higher probability ($P_{\\text{gen}} = \\prod (1/q_i)$ is larger when $q_i$ is small),
+        so Rosenbluth reweighting assigns Walk A a correspondingly smaller weight $W_N = \\prod (q_i/q) = (q^N P_{\\text{gen}})^{-1}$
+        so that $P_{\\text{gen}} W_N = q^{-N}$ is equal for all valid SAWs.
+    - id: b
+      text: Walk B is generated with higher probability, so Walk B receives a smaller Rosenbluth weight $W_N$.
+    - id: c
+      text: Both walks are generated with identical probability $q^{-N}$, so $W_N$ is only needed when non-bonded attractions
+        are nonzero.
+    - id: d
+      text: Walk A has zero probability of being generated because $q_i = 1$ terminates the walk.
+    correct: a
+    rationale_markdown: Because the algorithm is forced to pick the single available open site whenever $q_i = 1$ (with conditional
+      probability $1/1 = 1$), crowded conformations like Walk A have a much *higher* path generation probability $P_{\text{gen}}
+      = \prod_{i=1}^N (1/q_i)$ than open conformations like Walk B ($P_{\text{gen}} \sim 3^{-N}$). Multiplying by $W_N = \prod_{i=1}^N
+      (q_i/q)$ guarantees that $P_{\text{gen}}(\text{walk}) \times W_N(\text{walk}) = q^{-N}$ is strictly uniform across every
+      valid $N$-step SAW!
+  - id: q26_rosenbluth_weighted_estimator
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: 'In a Rosenbluth growth simulation of $M = 3$ polymer chains, you record the following Rosenbluth weights
+      $W_j$ and squared end-to-end distances $R_j^2$:
 
-    - id: q06_fene_prevents_chain_crossing
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_timescale_and_coarse_graining
-        - concept_fene_bonds
-      prompt_markdown: |
-        Why is the logarithmic divergence of $U_{\text{FENE}}(r \to R_0) \to +\infty$ (combined with a hard-core WCA excluded-volume repulsion of diameter $\sigma$ and $R_0 \approx 1.5\,\sigma$) critical for simulating entangled polymer melts and ring polymers?
-      hint_markdown: >-
-        Think about what happens to two colliding chains if a bond can stretch past $\\sqrt{2}\\sigma$ or $2\\sigma$: can one chain pass through the bond of another?
-      options:
-        - id: a
-          text: "It strictly bounds the maximum bond length below $R_0$, making it energetically impossible for two chains to stretch wide enough to pass through one another ('phantom chain crossing') and thereby preserving topological entanglement."
-        - id: b
-          text: "It eliminates all attractive and repulsive forces between non-bonded monomers so the melt behaves as an ideal gas."
-        - id: c
-          text: >-
-            It forces all bond angles to remain fixed at exactly $180^\\circ$, converting every coil into a rigid rod.
-        - id: d
-          text: >-
-            It allows the MD time step $\\Delta t$ to be increased to $1\\text{ s}$ without numerical instability.
-      correct: a
-      rationale_markdown: |
-        In an entangled melt or linked ring polymer system, topological constraints (chains cannot pass through one another) govern reptation dynamics and viscoelasticity. Because $U_{\text{FENE}}(r) \to +\infty$ as $r \to R_0 \approx 1.5\,\sigma$ while non-bonded beads repel strongly inside $r < 2^{1/6}\sigma$, the gap between two bonded beads can never open wide enough for another bead to slip through.
+      - Chain 1: $W_1 = 0.20$, $R_1^2 = 10.0$
 
-    - id: q07_lattice_saw_definition
-      type: problem
-      question_type: multi_select
-      difficulty: easy
-      taught_by: sec_timescale_and_coarse_graining
-      prompt_markdown: |
-        Which of the following statements accurately describe the **Lattice Self-Avoiding Walk (SAW)** model of a polymer? *(Select all that apply.)*
-      hint_markdown: "Check Slides 3 and 7: how are connectivity, excluded volume, the partition function, and solvent attraction represented on a lattice?"
-      options:
-        - id: a
-          text: "Sequential monomers $i$ and $i+1$ occupy nearest-neighbor sites on a regular lattice, enforcing fixed bond connectivity."
-        - id: b
-          text: "No lattice site may be visited more than once by the walk, capturing hard-core excluded-volume repulsion."
-        - id: c
-          text: "For an athermal SAW (excluded volume only), the canonical partition function $Z_N$ is simply the total number of distinct valid $N$-step self-avoiding walks."
-        - id: d
-          text: >-
-            An attractive energy $-\\epsilon$ between non-bonded nearest-neighbor occupied sites can be added to model poor-solvent coil-to-globule collapse.
-      correct:
-        - a
-        - b
-        - c
-        - d
-      rationale_markdown: |
-        All four statements are foundational properties of the lattice SAW model (Slides 3 & 7): nearest-neighbor steps enforce connectivity (a), single occupancy enforces excluded volume (b), equal-weight valid walks make $Z_N$ a combinatorial sum over all $N$-step SAWs (c), and non-bonded nearest-neighbor attractions drive $\Theta$-point collapse into a compact globule (d).
+      - Chain 2: $W_2 = 0.50$, $R_2^2 = 20.0$
 
-    - id: sec_flory_scaling_and_phases
-      type: markdown_section
-      title: "2. Polymer Phase Diagrams, Universal Flory Scaling & Rouse Relaxation"
-      body_markdown: |
-        The macroscopic size of an $N$-monomer polymer coil is characterized by its **mean-square end-to-end distance** $\langle R_{ee}^2 \rangle = \langle (\mathbf{r}_N - \mathbf{r}_0)^2 \rangle$ or its **mean-square radius of gyration**:
-        $$\langle R_g^2 \rangle = \frac{1}{N}\sum_{i=1}^N \left\langle (\mathbf{r}_i - \mathbf{r}_{\text{cm}})^2 \right\rangle = \frac{1}{2N^2}\sum_{i=1}^N \sum_{j=1}^N \left\langle (\mathbf{r}_i - \mathbf{r}_j)^2 \right\rangle$$
-        In the asymptotic long-chain limit ($N \gg 1$), both length scales obey the universal **Flory scaling law**:
-        $$\langle R_{ee}^2 \rangle \propto N^{2\nu} \quad \Longleftrightarrow \quad R_g \equiv \sqrt{\langle R_g^2 \rangle} \propto a\,N^\nu$$
-        where $\nu$ is the universal **Flory size exponent**, which depends only on spatial dimensionality $d$ and the balance between monomer–monomer excluded volume and solvent-mediated attraction:
+      - Chain 3: $W_3 = 0.30$, $R_3^2 = 30.0$
 
-        | Polymer Phase / Solvent Regime | Physical Balance | Exact / Numerical $\nu$ ($d=3$) | Flory Mean-Field $\nu$ | $\langle R^2 \rangle$ Scaling ($d=3$) |
-        | :--- | :--- | :---: | :---: | :---: |
-        | **Good Solvent (Swollen SAW)** | Repulsive excluded volume dominates; coil swells | $\nu \approx \mathbf{0.588}$ | $\nu_{\text{F}} = \frac{3}{d+2} = \frac{3}{5} = \mathbf{0.60}$ | $\langle R^2 \rangle \propto N^{1.176}$ |
-        | **$\Theta$-Solvent (Theta Point)** | Attraction exactly cancels two-body repulsion (ideal RW) | $\nu = \mathbf{0.500}$ ($1/2$) | $\nu = 1/2$ | $\langle R^2 \rangle = N a^2$ |
-        | **Poor Solvent (Collapsed Globule)** | Monomer attraction dominates; dense liquid-like drop | $\nu = \frac{1}{d} = \mathbf{0.333}$ ($1/3$) | $\nu = 1/3$ | $\langle R^2 \rangle \propto N^{2/3}$ |
-        | **Rigid Rod / 1D Walk** | Fully stretched chain or $d=1$ SAW | $\nu = \mathbf{1.000}$ | $\nu = 1$ | $\langle R^2 \rangle \propto N^2$ |
 
-        ### Flory's Mean-Field Free Energy Derivation of $\nu = \frac{3}{d+2}$
-        Flory estimated the equilibrium coil size $R$ in a good solvent by balancing two competing free-energy contributions in $d$ dimensions:
-        1. **Entropic Elastic Stretching Penalty:** Stretching an ideal Gaussian chain ($\langle R_0^2 \rangle = N a^2$) to radius $R$ reduces conformational entropy:
-           $$\frac{F_{\text{el}}(R)}{k_B T} \sim \frac{R^2}{N a^2}$$
-        2. **Excluded-Volume Two-Body Repulsion:** Inside the coil volume $V \sim R^d$, the mean monomer density is $\rho \sim N / R^d$, so the repulsive two-body interaction energy scales as $V v_{\text{excl}} \rho^2$:
-           $$\frac{F_{\text{rep}}(R)}{k_B T} \sim v_{\text{excl}} R^d \left(\frac{N}{R^d}\right)^2 = v_{\text{excl}} \frac{N^2}{R^d}$$
-        Minimizing $F_{\text{tot}}(R) = F_{\text{el}}(R) + F_{\text{rep}}(R)$ with respect to $R$ ($\partial F_{\text{tot}}/\partial R = 0$) gives:
-        $$\frac{R}{N a^2} \sim \frac{N^2}{R^{d+1}} \quad \Longrightarrow \quad R^{d+2} \propto N^3 \quad \Longrightarrow \quad \boxed{R \propto N^{\frac{3}{d+2}} \implies \nu_{\text{Flory}} = \frac{3}{d+2} \quad (1 \le d \le 4)}$$
-        - For **$d = 1$**: $\nu_{\text{Flory}} = 3/3 = 1$ (exact; a 1D self-avoiding walk cannot turn back!).
-        - For **$d = 2$**: $\nu_{\text{Flory}} = 3/4 = 0.75$ (exact in 2D!).
-        - For **$d = 3$**: $\nu_{\text{Flory}} = 3/5 = 0.60$, remarkably close to the renormalization-group / Monte Carlo value $\nu \approx 0.588$.
-        - For **$d \ge 4$ (upper critical dimension $d_c = 4$)**: two random walks rarely intersect, so excluded volume becomes irrelevant and $\nu = 1/2$.
+      Using the lecture estimator $\langle R^2 \rangle = \frac{\sum_j W_j R_j^2}{\sum_j W_j}$, what is the unbiased estimate
+      of $\langle R^2 \rangle$?'
+    hint_markdown: Compute $(0.20 \\times 10 + 0.50 \\times 20 + 0.30 \\times 30) / (0.20 + 0.50 + 0.30)$.
+    correct:
+      value: 21.0
+      tolerance: 0.1
+    rationale_markdown: 'Evaluating the weighted average:
 
-        ### Dynamical Scaling & Rouse / Reptation Relaxation Times
-        Why does coil swelling make Molecular Dynamics and local Monte Carlo so slow?
-        - In an unentangled **Rouse chain**, a monomer diffuses with local mobility $\sim 1/N$ over a distance $R \sim N^\nu$, requiring a global conformational **relaxation time**:
-          $$\tau_{\text{Rouse}} \sim \frac{R^2}{D_{\text{cm}}} \sim \frac{N^{2\nu}}{N^{-1}} = N^{2\nu + 1}$$
-          For a 3D SAW ($\nu \approx 0.588 \approx 0.6$), this gives the lecture scaling **$\tau_{\text{relax}} \sim N^{2.2}$** (or $N^2$ for an ideal $\Theta$-chain).
-        - In an **entangled polymer melt** ($N > N_e$, de Gennes tube model), chains are confined to topological tubes of contour length $L_{\text{tube}} \propto N$ with curvilinear tube diffusivity $D_{\text{tube}} \propto N^{-1}$, giving $\tau_{\text{rep}} \sim L_{\text{tube}}^2 / D_{\text{tube}} \propto N^3$ (and experimentally $\tau_{\text{relax}} \propto N^{3.4}$ due to contour-length fluctuations).
-        - Beyond linear chains, polymer physics explores diverse **macromolecular topologies** (Slide 4), including **ring polymers** (no free ends!) and **star/branched polymers** ($f$ arms radiating from a central core).
+      $$\langle R^2 \rangle = \frac{0.20(10.0) + 0.50(20.0) + 0.30(30.0)}{0.20 + 0.50 + 0.30} = \frac{2.0 + 10.0 + 9.0}{1.00}
+      = 21.0$$'
+  - id: q27_rosenbluth_branching_perm
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_rosenbluth_and_cbmc
+    prompt_markdown: When growing very long polymers with the standalone Rosenbluth method, the weights $W_n = \prod_{i=1}^n
+      (q_i/q)$ fluctuate over many orders of magnitude so that a few rare trajectories dominate the sample average. What algorithmic
+      technique is introduced to overcome this weight-fluctuation bottleneck?
+    hint_markdown: 'Read the fourth bullet: ''Use... When weights fluctuate too much.'''
+    options:
+    - id: a
+      text: Branching (cloning/enriching trajectories whose weights grow too large and pruning trajectories whose weights
+        fall too low, as in PERM).
+    - id: b
+      text: Replacing the Rosenbluth weight $W_n$ with $\\ln W_n$ inside the numerator of $\\langle R^2 \\rangle$.
+    - id: c
+      text: Freezing the first $90\\%$ of the chain into a straight rod.
+    - id: d
+      text: Increasing the MD integration time step $\\Delta t$.
+    correct: a
+    rationale_markdown: As stated, population control / **branching** (such as Grassberger's Pruned-Enriched Rosenbluth Method,
+      PERM) splits a high-weight partial chain into $m$ independent copies (each assigned weight $W_n/m$) and probabilistically
+      prunes low-weight partial chains, concentrating computational effort on statistically important conformations.
+  - id: q28_cbmc_acceptance_formula
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: In **Configurational Bias Monte Carlo (CBMC)**, a section of a polymer chain is regrown using Rosenbluth
+      look-ahead sampling with weight $W_{\text{new}}$, while the old section has retraced Rosenbluth weight $W_{\text{old}}$.
+      What is the exact CBMC acceptance probability $A(\text{old} \to \text{new})$ shown?
+    hint_markdown: Check the boxed formula at the bottom of.
+    options:
+    - id: a
+      text: $A(\\text{old} \\to \\text{new}) = \\min\\!\\left[1,\\, \\frac{W_{\\text{new}}}{W_{\\text{old}}}\\right]$
+    - id: b
+      text: $A(\\text{old} \\to \\text{new}) = \\min\\!\\left[1,\\, \\frac{W_{\\text{old}}}{W_{\\text{new}}}\\right]$
+    - id: c
+      text: $A(\\text{old} \\to \\text{new}) = \\frac{W_{\\text{new}}}{W_{\\text{new}} + W_{\\text{old}}} e^{-\\beta (W_{\\text{new}}
+        - W_{\\text{old}})}$
+    - id: d
+      text: $A(\\text{old} \\to \\text{new}) = 1$ always, because Rosenbluth growth never overlaps.
+    correct: a
+    rationale_markdown: Because the probability of generating the new path is inversely proportional to its Rosenbluth weight,
+      $\mathcal{P}_{\text{gen}}(\text{new}) \propto 1/W_{\text{new}}$ (or $\propto e^{-\beta U(\text{new})}/W_{\text{new}}$
+      in thermal systems), the Metropolis-Hastings acceptance ratio $\frac{\pi(\text{new})\mathcal{P}_{\text{gen}}(\text{old})}{\pi(\text{old})\mathcal{P}_{\text{gen}}(\text{new})}$
+      simplifies directly to $\frac{W_{\text{new}}}{W_{\text{old}}}$, giving $A(\text{old}\to\text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$.
+  - id: q29_cbmc_acceptance_numerical
+    type: problem
+    question_type: numeric
+    difficulty: easy
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: During a Configurational Bias Monte Carlo (CBMC) update on a 3D cubic lattice ($q = 6$), you regrow a
+      3-bond end segment. The newly grown segment has open-site counts $(q_1, q_2, q_3)_{\text{new}} = (3, 4, 3)$, while retracing
+      the old segment yields $(q_1, q_2, q_3)_{\text{old}} = (5, 4, 3)$. What is the CBMC acceptance probability $A(\text{old}
+      \to \text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$?
+    hint_markdown: Notice that the $q^{-3}$ denominators and the common factors $4 \\times 3$ cancel in $W_{\\text{new}}/W_{\\text{old}}
+      = (3 \\times 4 \\times 3) / (5 \\times 4 \\times 3)$.
+    correct:
+      value: 0.6
+      tolerance: 0.01
+    rationale_markdown: 'Computing the ratio of Rosenbluth weights:
 
-    - id: concept_flory_scaling
-      type: concept_cell
-      title: "Interactive Explorer: Flory Size Scaling & Coil Conformations Across Solvent Regimes"
-      description_markdown: |
-        Switch between **Poor Solvent** ($\nu = 1/d$), **$\Theta$-Solvent** ($\nu = 0.5$), **Good Solvent** ($\nu \approx 0.588$ in 3D, $0.75$ in 2D), and **Rigid Rod** ($\nu = 1.0$) while varying the chain length $N$ and dimension $d$ to compare the log-log scaling of $R_g(N)$, coil conformations, and Rouse relaxation times $\tau_{\mathrm{relax}} \sim N^{2\nu+1}$.
-      render_function: render_flory_scaling_regimes
-      layout: figure_left
-      controls:
-        solvent_regime:
-          kind: dropdown
-          label: "Solvent / Phase Regime"
-          default: good
-          options:
-            - label: "Good Solvent (Swollen SAW)"
-              value: good
-            - label: "Theta Solvent (Ideal Random Walk)"
-              value: theta
-            - label: "Poor Solvent (Collapsed Globule)"
-              value: poor
-            - label: "Rigid Rod (Fully Stretched)"
-              value: rod
-        chain_length:
-          kind: slider
-          label: "Chain Length N (monomers)"
-          min: 20
-          max: 800
-          step: 20
-          default: 120
-        dimension:
-          kind: slider
-          label: "Spatial Dimension d"
-          min: 2
-          max: 3
-          step: 1
-          default: 3
-      takeaway_markdown: |
-        **Key Takeaway:** Cooling a polymer solution from a good solvent through the $\Theta$-point into a poor solvent triggers a continuous **coil-to-globule phase transition** in which $R_g \sim N^{3/5} \to N^{1/2} \to N^{1/3}$ in $d=3$.
+      $$\frac{W_{\text{new}}}{W_{\text{old}}} = \frac{(3/6)(4/6)(3/6)}{(5/6)(4/6)(3/6)} = \frac{36}{60} = \frac{3}{5} = 0.60$$
 
-    - id: q08_flory_exponent_good_solvent_3d
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        For a linear polymer chain in a **3D good solvent** (where repulsive excluded-volume interactions dominate), how does the mean-square end-to-end distance $\langle (\mathbf{r}_N - \mathbf{r}_0)^2 \rangle \propto N^{2\nu}$ scale with chain length $N$, and what is the numerical value of the Flory exponent $\nu$?
-      hint_markdown: >-
-        Check Slide 4 ('Polymer Phases'): compare the SAW exponent $\\nu$ against the ideal random walk exponent $0.5$.
-      options:
-        - id: a
-          text: >-
-            $\\nu \\approx 0.588$ (Flory mean-field approximation $\\nu = 3/5 = 0.6$), so the coil swells larger than an ideal random walk ($\\langle R^2 \\rangle \\propto N^{1.176}$).
-        - id: b
-          text: >-
-            $\\nu = 0.500$ exatamente, because excluded volume cancels out in three dimensions.
-        - id: c
-          text: >-
-            $\\nu = 1/3 \\approx 0.333$, because repulsive interactions compress the polymer into a dense sphere.
-        - id: d
-          text: >-
-            $\\nu = 2.2$, matching the Rouse relaxation time exponent.
-      correct: a
-      rationale_markdown: |
-        In a 3D good solvent, self-avoidance forces the polymer coil to swell beyond an ideal Gaussian walk, yielding $\nu \approx 0.588$ (with Flory's mean-field estimate $\nu_{\text{Flory}} = \frac{3}{d+2} = \frac{3}{5} = 0.6$) and $\langle R^2 \rangle \propto N^{2\nu} \approx N^{1.176}$.
+      Hence $A(\text{old} \to \text{new}) = \min(1, 0.60) = 0.60$.'
+  - id: q30_cbmc_continuum_generalization
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by: sec_rosenbluth_and_cbmc
+    prompt_markdown: notes that CBMC is *"Easily generalized to continuum models."* In a continuum bead-spring polymer at
+      inverse temperature $\beta = 1/(k_B T)$, there are infinitely many possible bond directions rather than $q$ discrete
+      lattice sites. How does continuum CBMC perform step $i$ of the Rosenbluth regrowth?
+    hint_markdown: 'Recall Frenkel & Smit Chapters 11 & 13: how do we replace summing over all $q$ lattice neighbors when
+      directions are continuous?'
+    options:
+    - id: a
+      text: It generates a finite set of $k$ random trial bond directions $\\{\\mathbf{b}_1, \\dots, \\mathbf{b}_k\\}$ (sampled
+        from the bonded distribution), selects one direction $\\mathbf{b}_j$ with Boltzmann probability $e^{-\\beta u_i(\\mathbf{b}_j)}
+        / \\sum_{\\ell=1}^k e^{-\\beta u_i(\\mathbf{b}_\\ell)}$, and accumulates the step Rosenbluth factor $w_i = \\frac{1}{k}\\sum_{\\ell=1}^k
+        e^{-\\beta u_i(\\mathbf{b}_\\ell)}$.
+    - id: b
+      text: It discretizes all of 3D space into a cubic grid of spacing $0.001\\,\\text{Å}$ and sums over all grid points
+        in the box.
+    - id: c
+      text: It integrates the Newtonian equations of motion for $k$ femtoseconds and sets $W_{\\text{new}} = 1$.
+    - id: d
+      text: It chooses the single direction of steepest descent $-\\nabla U$ deterministically with zero random trials.
+    correct: a
+    rationale_markdown: In continuum CBMC (Frenkel & Smit Ch. 13), at each growth step $i$ we draw $k$ trial bond vectors
+      $\{\mathbf{b}_1, \dots, \mathbf{b}_k\}$ from the internal bond/angle prior, evaluate the external non-bonded Boltzmann
+      weight $e^{-\beta u_i(\mathbf{b}_\ell)}$ for each trial, pick direction $j$ with probability $P_j = e^{-\beta u_i(\mathbf{b}_j)}
+      / \sum_{\ell=1}^k e^{-\beta u_i(\mathbf{b}_\ell)}$, and multiply the Rosenbluth weight by $w_i = \frac{1}{k}\sum_{\ell=1}^k
+      e^{-\beta u_i(\mathbf{b}_\ell)}$ (while retracing the old segment using its actual bond $\mathbf{b}_{\text{old}}$ plus
+      $k-1$ random trial directions).
+  - id: sec_synthesis_and_comparison
+    type: markdown_section
+    title: '5. Synthesis: Choosing the Right Polymer Simulation Method Across Regimes'
+    body_markdown: 'Let us synthesize the scaling laws and algorithmic trade-offs covered across Lesson 21:
 
-    - id: q09_flory_mean_field_derivation_2d
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        Flory's mean-field balance between entropic elastic stretching $F_{\text{el}}/k_B T \sim R^2 / N$ and two-body excluded-volume repulsion $F_{\text{rep}}/k_B T \sim N^2 / R^d$ predicts $\nu_{\text{Flory}} = \frac{3}{d+2}$ for $d \le 4$. What is the value of $\nu_{\text{Flory}}$ for a polymer adsorbed flat onto a **2D surface ($d = 2$)**?
-      hint_markdown: >-
-        Substitute $d = 2$ into $\\nu_{\\text{Flory}} = 3 / (d + 2)$.
-      correct:
-        value: 0.75
-        tolerance: 0.01
-      rationale_markdown: |
-        In $d = 2$ dimensions, $\nu_{\text{Flory}} = \frac{3}{2 + 2} = \frac{3}{4} = 0.75$ (which also happens to be the exact 2D self-avoiding walk exponent derived via Coulomb-gas / conformal invariance methods). Because 2D space is much more crowded than 3D space, excluded volume swells the chain more strongly ($\nu = 0.75$ in 2D vs. $\nu \approx 0.588$ in 3D).
 
-    - id: q10_theta_solvent_compensation
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        What happens to the polymer conformation and size scaling right at the **$\Theta$-point (Theta temperature)** as attractive monomer–monomer interactions are tuned against hard-core excluded volume?
-      hint_markdown: "Review Slide 4: 'Right at collapse point—walks are uncorrelated random walks.'"
-      options:
-        - id: a
-          text: >-
-            Effective two-body monomer attraction cancels excluded-volume repulsion (second virial coefficient $B_2 = 0$), so the chain obeys quasi-ideal random-walk scaling $R_g \\propto N^{1/2}$ ($\\nu = 0.5$).
-        - id: b
-          text: >-
-            The polymer crystallizes into a 1D rigid rod with $R_g \\propto N^1$ ($\\nu = 1$).
-        - id: c
-          text: "All covalent bonds break simultaneously, dissociating the chain into free monomers."
-        - id: d
-          text: >-
-            The radius of gyration becomes completely independent of $N$ ($\\nu = 0$).
-      correct: a
-      rationale_markdown: |
-        At the $\Theta$-temperature (Slide 4), the weak monomer–monomer attraction exactly compensates the two-body excluded-volume repulsion ($B_2(T_\Theta) = 0$). Consequently, long-range swelling vanishes and the coil behaves asymptotically as an uncorrelated **ideal random walk** with $\langle R^2 \rangle \propto N$ and $\nu = 1/2$.
+      | Simulation Method | Primary Use Case | Conformational Relaxation Scaling $\tau_{\text{relax}}$ | Key Advantage | Primary
+      Limitation |
 
-    - id: q11_poor_solvent_globule_exponent
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        When a polymer in 3D is cooled well below the $\Theta$-temperature into a **poor solvent**, monomer–monomer attraction dominates and the chain collapses into a compact globule. Why does its radius of gyration scale as $R_g \propto N^{1/3}$ ($\nu = 1/3$)?
-      hint_markdown: >-
-        In a compact liquid-like drop of uniform internal monomer density $\\rho_0$, how does the volume $V \\sim R_g^3$ relate to the total number of monomers $N$?
-      options:
-        - id: a
-          text: >-
-            A collapsed globule packs monomers at a uniform liquid-like interior density $\\rho \\sim N / R_g^3 = \\text{const}$, which immediately requires $R_g^3 \\propto N \\implies R_g \\propto N^{1/3}$.
-        - id: b
-          text: "Only one-third of the monomers remain bonded while the other two-thirds evaporate."
-        - id: c
-          text: "The chain projects onto a single spatial axis out of the three Cartesian coordinates."
-        - id: d
-          text: "Three-body repulsive forces scale as $R_g^3$ with zero entropic elasticity."
-      correct: a
-      rationale_markdown: |
-        In a poor solvent, the polymer minimizes solvent contacts by collapsing into a dense spherical globule whose interior monomer concentration approaches a constant melt/liquid packing density $\rho_0 \sim N / V \sim N / R_g^d$. In $d=3$ dimensions, $N / R_g^3 \sim \text{const} \implies R_g \propto N^{1/3}$ ($\nu = 1/3$).
+      |:--- |:--- |:---: |:--- |:--- |
 
-    - id: q12_scaling_ratio_calculation
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        Suppose a polymer chain in a 3D good solvent ($\nu = 0.588$) has its degree of polymerization increased by a factor of $8$ (from $N$ to $8N$). By what factor does its root-mean-square end-to-end distance $\sqrt{\langle R_{ee}^2 \rangle} \propto N^\nu$ increase?
-      hint_markdown: >-
-        Calculate $(8N)^\\nu / N^\\nu = 8^{0.588}$.
-      correct:
-        value: 3.40
-        tolerance: 0.06
-      rationale_markdown: |
-        Since $\sqrt{\langle R_{ee}^2 \rangle} \propto N^\nu$, multiplying $N$ by $8$ scales the root-mean-square size by:
-        $$\frac{R(8N)}{R(N)} = 8^{\nu} = 8^{0.588} \approx 3.396 \approx 3.40$$
-        (Compare this against $8^{0.5} \approx 2.83$ in a $\Theta$-solvent and $8^{1/3} = 2.00$ in a poor-solvent globule.)
+      | **All-Atom MD** | Local chemistry, solvation shells, $<100\text{ ns}$ kinetics | $\tau \sim N^{2.2}$ to $N^{3.4}$
+      ($\Delta t = 10^{-14}\text{ s}$) | Exact physical dynamics & explicit solvent | $\sim 300\text{ CPU years}$ for $10^{-4}\text{
+      s}$ of $20{,}000$ atoms |
 
-    - id: q13_md_rouse_relaxation_scaling
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        As noted on Slide 4, unentangled MD / local-move polymer relaxation time scales as $\tau_{\text{relax}} \propto N^{2.2}$ in a 3D good solvent ($\tau \sim N^{2\nu + 1}$ with $\nu \approx 0.6$). If you increase the chain length by a factor of $10$ (from $N = 50$ to $N = 500$), by what factor does the conformational relaxation time $\tau_{\text{relax}}$ increase?
-      hint_markdown: "Evaluate the ratio $(10 N)^{2.2} / N^{2.2} = 10^{2.2}$."
-      correct:
-        value: 158.49
-        tolerance: 2.5
-      rationale_markdown: |
-        With $\tau_{\text{relax}} \propto N^{2.2}$, increasing $N$ by a factor of $10$ increases the relaxation time by:
-        $$\frac{\tau(10N)}{\tau(N)} = 10^{2.2} \approx 158.49$$
-        Moreover, because each sweep of $N$ monomers costs $\mathcal{O}(N)$ force evaluations, the total CPU effort per independent configuration scales as $N \cdot N^{2.2} = N^{3.2}$ ($\approx 1585\times$ more expensive for a $10\times$ longer chain!).
+      | **Coarse-Grained MD (Kremer–Grest FENE + WCA)** | Entangled melt rheology, tube reptation dynamics | $\tau_{\text{Rouse}}
+      \sim N^{2.2}$, $\tau_{\text{rep}} \sim N^{3}$–$N^{3.4}$ | Preserves real topological entanglement dynamics | Still slow
+      for very large $N$ equilibration |
 
-    - id: q14_polymer_topologies
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by: sec_flory_scaling_and_phases
-      prompt_markdown: |
-        Which of the following polymer architectures—highlighted on Slide 4 alongside linear chains and star polymers—possesses **zero free chain ends**, making standard end-slithering reptation moves impossible without modifying the move set?
-      hint_markdown: "Inspect the three sketches at the bottom of Slide 4: linear, rings, stars."
-      options:
-        - id: a
-          text: "Ring (cyclic) polymers, where monomer $N$ is covalently bonded back to monomer $1$ to form a closed loop."
-        - id: b
-          text: "3-arm star polymers, which have three free chain ends radiating from one central core."
-        - id: c
-          text: >-
-            Linear homopolymers in a $\\Theta$-solvent.
-        - id: d
-          text: "Short linear oligomers of length $N = 10$."
-      correct: a
-      rationale_markdown: |
-        A **ring (cyclic) polymer** forms a closed topological loop with no free chain ends. Because standard reptation ("slithering snake") requires cutting a monomer from one free end and attaching it to the other free end, pure end-reptation cannot be applied to ring polymers.
+      | **Local Lattice MC (Kink-jump / Crankshaft)** | Short-scale bond relaxation & Rouse dynamics | $\tau \sim \mathcal{O}(N^{2\nu+1})
+      \approx \mathcal{O}(N^{2.2})$ | Simple, physical Rouse-like local dynamics | Slow global coil decorrelation |
 
-    - id: sec_reptation_pivot_and_ergodicity
-      type: markdown_section
-      title: "3. Polymer Monte Carlo Move Menus: Reptation, Pivot & Ergodicity Traps"
-      body_markdown: |
-        If we only care about **equilibrium statistical mechanics** (coil dimensions, structure factors, phase coexistence, osmotic equation of state) rather than exact Newtonian trajectories, we can abandon Molecular Dynamics and design **unphysical Monte Carlo (MC) trial moves** that leap across conformational space orders of magnitude faster while rigorously obeying detailed balance!
+      | **Reptation MC ("Slithering Snake")** | Dense polymer melts & concentrated solutions | $\tau \sim \mathcal{O}(N^2)$
+      elementary steps | $\mathcal{O}(1)$ update cost; works in dense melts | Unphysical dynamics; **non-ergodic** alone (double
+      cul-de-sac) |
 
-        ### 1. Local Moves (End-Bond Rotation, Kink-Jump / Corner Flip, Crankshaft)
-        - **End-bond move:** Rotate the first or last bond to a new neighbor site.
-        - **Kink-jump (corner flip):** If monomer $i$ forms a $90^\circ$ corner between $i-1$ and $i+1$, flip monomer $i$ across the diagonal to the opposite corner of the elementary square.
-        - **Crankshaft move (Slide 8):** Rotate a 2-monomer U-shaped segment by $90^\circ$ or $180^\circ$ around the axis connecting its flanking monomers.
-        - **Limitation:** Because local moves only displace $1$–$2$ monomers at a time, they mimic physical Rouse dynamics and suffer the same slow global decorrelation time $\tau_{\text{local}} \sim \mathcal{O}(N^{2\nu+1}) \approx \mathcal{O}(N^{2.2})$ (or $\mathcal{O}(N^3)$ in melts).
+      | **Pivot Algorithm** | Single isolated chain in dilute good/$\Theta$ solvent | $\tau \sim \mathcal{O}(N^{0.2})$ sweeps
+      | Fastest global decorrelation known | Acceptance $\to 0$ in dense melts / globules; doesn''t relax bond lengths |
 
-        ### 2. Reptation ("Slithering Snake" Algorithm — Wall & Mandel, 1975)
-        Inspired by de Gennes' reptation theory of entangled melts (Slide 5):
-        - **Trial Move:** Pick one of the two chain ends at random (head or tail), **delete** the terminal monomer at that end, and **append** a new monomer onto the *other* end in a randomly chosen bond direction $\theta$ (or lattice neighbor).
-        - **Detailed Balance Subtlety:** To preserve time-reversal symmetry (detailed balance), you must either choose which end acts as the growing head with equal $50/50$ probability at every step, or implement a symmetric "bounce" rule (staying in the old state and recording it again in the Markov chain whenever the proposed site is occupied).
-        - **Computational Efficiency:** Every accepted step shifts all monomer indices along the existing chain contour in $\mathcal{O}(1)$ operations, sampling the bonding interaction directly while the Metropolis acceptance probability depends *only* on the change in non-bonded potential at the deleted/added ends!
-        - **Scaling Advantage:** Because the chain slithers along its own contour of length $N$ in random forward/backward steps of $\pm 1$ monomer, it vacates its initial tube after $\sim N^2$ elementary steps, reducing the conformational decorrelation time to **$\tau_{\text{reptation}} \sim \mathcal{O}(N^2)$**—and crucially, **it still works in dense multi-chain melts!**
-        - **The Non-Ergodicity Trap ("Double Cul-de-Sac"):** Is pure lattice reptation ergodic? **No!** As noted on Slide 5 (*"But Ergodic? Not always (what if both ends get trapped?)"*), a single chain (or multi-chain system) can slither into a **"double cul-de-sac" (double dead-end)** configuration where *both* chain ends are completely surrounded by already-occupied interior monomers of the chain ($q_{\text{open}} = 0$ at both ends). Once in a double cul-de-sac, no valid reptation move exists—nor can pure reptation ever enter such a valid SAW configuration from outside—violating ergodicity!
+      | **Rosenbluth + CBMC** | Regrowing segments in dense melts, branched chains, phase equilibria | High acceptance for
+      $m$-segment regrowth | Overcomes exponential attrition; exact detailed balance $A = \min(1, W_{\text{new}}/W_{\text{old}})$
+      | Weight variance grows for very large $m$ without branching |'
+  - id: q31_method_selection_dilute_saw
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by: sec_synthesis_and_comparison
+    prompt_markdown: You want to compute the equilibrium Flory exponent $\nu$ and mean-square end-to-end distance $\langle
+      R_{ee}^2 \rangle$ of a **single isolated $N = 2000$ self-avoiding polymer chain** in a good solvent to high statistical
+      precision. Which algorithm provides the fastest decorrelation of global conformations?
+    hint_markdown: 'Compare the relaxation time exponents in the synthesis table: $N^{2.2}$ vs. $N^2$ vs. $N^{0.2}$.'
+    options:
+    - id: a
+      text: The Pivot algorithm (mixed with occasional local moves), because its global end-to-end autocorrelation time scales
+        as $\\mathcal{O}(N^{0.2})$ in dilute solution.
+    - id: b
+      text: All-atom Molecular Dynamics with explicit water molecules and $\\Delta t = 10^{-14}\\text{ s}$.
+    - id: c
+      text: Pure blind random growth without Rosenbluth weights.
+    - id: d
+      text: Pure local kink-jump Monte Carlo without global moves.
+    correct: a
+    rationale_markdown: For a single chain in dilute solution, the **Pivot algorithm** achieves an autocorrelation exponent
+      of $\tau \sim \mathcal{O}(N^{0.2})$, orders of magnitude faster than local moves ($\mathcal{O}(N^{2.2})$) or reptation
+      ($\mathcal{O}(N^2)$).
+  - id: q32_method_selection_dense_melt_dynamics
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_synthesis_and_comparison
+    prompt_markdown: Suppose your research goal is to measure the **physical time-dependent mean-square displacement $g_1(t)
+      = \langle [\mathbf{r}_i(t) - \mathbf{r}_i(0)]^2 \rangle$ and viscosity** of an entangled polymer melt to test de Gennes'
+      tube reptation theory. Why must you use **coarse-grained Molecular Dynamics (with FENE + WCA potentials)** or purely
+      **local MC moves** rather than the Pivot or CBMC algorithms?
+    hint_markdown: Do Pivot and CBMC moves follow physical continuous trajectories, or do they teleport chains across topological
+      obstacles?
+    options:
+    - id: a
+      text: Because Pivot and CBMC perform non-local, unphysical conformational jumps that bypass topological entanglement
+        barriers; measuring real physical transport and entanglement kinetics requires continuous FENE+WCA MD trajectories
+        (or strictly local non-crossing moves).
+    - id: b
+      text: Because Pivot and CBMC do not sample the canonical Boltzmann distribution at equilibrium.
+    - id: c
+      text: Because FENE+WCA Molecular Dynamics has a relaxation time of $\\mathcal{O}(N^{0.2})$.
+    - id: d
+      text: Because CBMC can only be applied to 1D chains.
+    correct: a
+    rationale_markdown: Non-local Monte Carlo moves (Pivot, CBMC, and multi-chain reptation jumps) are designed to accelerate
+      **equilibrium ensemble averages** by bypassing physical kinetic barriers, which means their Markov-chain "time" does
+      not represent physical Newtonian/Brownian dynamics and allows chains to bypass entanglement tubes. To study physical
+      entanglement dynamics, one must use coarse-grained MD with non-crossing FENE+WCA potentials (or strictly local dynamic
+      MC moves).
+  - id: q33_hydrodynamic_solvent_effects
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by: sec_timescale_and_coarse_graining
+    prompt_markdown: 'Note that: *"Solvent is important. Hydrodynamic effects dominate."* In a dilute polymer solution, why
+      does omitting explicit solvent molecules (or hydrodynamic coupling) alter the physical relaxation time scaling of a
+      polymer coil?'
+    hint_markdown: In a real fluid, moving one monomer creates a velocity field that drags nearby monomers along (Zimm hydrodynamics),
+      whereas without solvent momentum transport each bead feels independent friction (Rouse model).
+    options:
+    - id: a
+      text: Moving a monomer in a real solvent induces long-range velocity fields (hydrodynamic interactions) that couple
+        the motion of distant segments of the coil, whereas naive vacuum/implicit-solvent dynamics treats friction as purely
+        local and independent.
+    - id: b
+      text: Solvent molecules change the spatial dimensionality of the simulation box from $d=3$ to $d=2$.
+    - id: c
+      text: Without explicit solvent molecules, the FENE potential $U_{\\text{FENE}}(r)$ no longer diverges at $r = R_0$.
+    - id: d
+      text: Hydrodynamic momentum conservation alters the static equilibrium Flory exponent $\\nu$ of an athermal SAW.
+    correct: a
+    rationale_markdown: In a dilute polymer solution, momentum transport through the solvent creates long-range **hydrodynamic
+      interactions** (Zimm dynamics, $\tau_{\text{Zimm}} \sim R^3 \sim N^{3\nu}$), so a moving monomer drags surrounding solvent
+      and nearby chain segments along with it. Standard implicit-solvent Langevin/Rouse dynamics neglects this hydrodynamic
+      backflow, while keeping explicit solvent atoms drastically increases the particle count $N_{\text{atoms}}$. (Note that
+      static equilibrium exponents like $\nu$ depend only on the configurational Hamiltonian, not on momenta!)
+  - id: q34_saw_partition_function_temperature
+    type: problem
+    question_type: single_select
+    difficulty: medium
+    taught_by:
+    - sec_timescale_and_coarse_graining
+    - sec_flory_scaling_and_phases
+    prompt_markdown: In a pure **athermal Lattice Self-Avoiding Walk (SAW)** where the potential energy is $U = 0$ for every
+      non-overlapping walk and $U = +\infty$ for any overlapping walk, how does the equilibrium Flory exponent $\nu$ depend
+      on temperature $T$?
+    hint_markdown: Write down the Boltzmann factor $e^{-U / (k_B T)}$ when $U$ can only take the values $0$ or $+\\infty$.
+    options:
+    - id: a
+      text: It is completely independent of temperature $T$ ($\\nu \\approx 0.588$ at all $T > 0$), because $e^{-0/k_B T}
+        = 1$ and $e^{-\\infty/k_B T} = 0$, so every valid SAW has identical weight regardless of $T$; temperature dependence
+        only enters when finite non-bonded attractions $-\\epsilon$ are added.
+    - id: b
+      text: It decreases linearly with temperature as $\\nu(T) = 1 - k_B T$.
+    - id: c
+      text: It jumps from $\\nu = 0.588$ to $\\nu = 1/3$ at $k_B T = 1$ even when $\\epsilon = 0$.
+    - id: d
+      text: It diverges to infinity as $T \\to 0$.
+    correct: a
+    rationale_markdown: In a pure hard-core excluded-volume SAW ($U \in \{0, +\infty\}$), the Boltzmann weight $e^{-\beta
+      U}$ is simply an indicator function ($1$ if self-avoiding, $0$ if overlapping) for any finite temperature $0 < T < \infty$.
+      The coil swelling is driven purely by **conformational entropy** (entropic excluded volume). Temperature-driven $\Theta$-collapse
+      only occurs when a finite energetic interaction $-\epsilon$ between non-bonded nearest neighbors is included.
+  - id: q35_radius_of_gyration_ratio_good_vs_poor
+    type: problem
+    question_type: numeric
+    difficulty: medium
+    taught_by:
+    - sec_flory_scaling_and_phases
+    - concept_flory_scaling
+    prompt_markdown: Consider a long polymer chain of $N = 1000$ monomers in $d = 3$ dimensions. Using the Flory scaling relation
+      $R_g \approx a N^\nu$ (with unit prefactor $a = 1$), calculate the ratio $\frac{R_g(\text{Good Solvent, }\nu = 0.6)}{R_g(\text{Poor
+      Solvent, }\nu = 1/3)}$ to see how dramatically a swollen coil shrinks upon collapsing into a globule.
+    hint_markdown: Evaluate $1000^{0.6} / 1000^{1/3} = (10^3)^{0.6} / (10^3)^{1/3} = 10^{1.8} / 10^{1.0} = 10^{0.8}$.
+    correct:
+      value: 6.31
+      tolerance: 0.1
+    rationale_markdown: 'For $N = 1000 = 10^3$:
 
-        ### 3. The Pivot Algorithm (Lal 1969; Madras & Sokal 1988)
-        For a **single isolated polymer chain in dilute solution** (Slide 6):
-        - **Trial Move:** Pick a monomer $k \in \{1, \dots, N-1\}$ uniformly at random as a **pivot point**, and apply a random global symmetry transformation (rotation by $\pm 90^\circ, 180^\circ$, reflection, or continuous 3D angle $\theta$) to the entire subchain $(k+1, \dots, N)$ relative to monomer $k$.
-        - **Accept or Reject:** Check whether the rotated subchain overlaps with the unrotated subchain $(1, \dots, k)$ (or changes non-bonded energy $\Delta U$); accept with the standard Metropolis probability $\min(1, e^{-\beta \Delta U})$.
-        - **Spectacular Efficiency for Global Observables:** Because a single accepted pivot move reorients $\mathcal{O}(N)$ monomers simultaneously, the end-to-end vector decorrelates in **$\tau_{\text{pivot}} \sim \mathcal{O}(N^{0.2})$** accepted moves (measured in macroscopic sweeps)—making the pivot algorithm the **most efficient method known for single-chain global equilibrium properties**!
-        - **Limitations of Pure Pivot:**
-          1. In **dense polymer melts** or compact poor-solvent globules, rotating half a chain almost always collides with surrounding chains, driving the acceptance probability to zero ($A \to 0$).
-          2. Because pivot moves apply rigid-body rotations on a lattice, they never alter bond lengths or local 1-step bond vectors if not combined with local moves.
+      - In a good solvent ($\nu = 0.6$): $R_g^{\text{good}} \sim (10^3)^{0.6} = 10^{1.8} \approx 63.10\,a$.
 
-        ### 4. The Hybrid Move Menu Rule (Slide 8)
-        To guarantee **ergodicity** (reaching every valid conformation in chain space) while relaxing *both* short-wavelength local bond modes and long-wavelength global coil vectors, practical polymer MC simulations always employ a **mixture of moves** (e.g., combining Pivot + Reptation + Crankshaft/Kink-jump).
+      - In a poor solvent ($\nu = 1/3$): $R_g^{\text{poor}} \sim (10^3)^{1/3} = 10^{1.0} = 10.00\,a$.
 
-    - id: concept_reptation_pivot
-      type: concept_cell
-      title: "Interactive Explorer: Reptation, Pivot Rotations & The Double Cul-de-Sac Trap"
-      description_markdown: |
-        Select a polymer Monte Carlo move mode (**Reptation**, **Pivot Rotation**, **Crankshaft/Kink-Jump**, or **Double Cul-de-Sac Trap**) and vary the pivot monomer index $k$ and rotation angle $\theta$ to observe how each move transforms the 2D square-lattice chain and when self-avoidance collisions or non-ergodic traps occur.
-      render_function: render_reptation_and_pivot_moves
-      layout: figure_left
-      controls:
-        move_type:
-          kind: dropdown
-          label: "MC Trial Move / Configuration"
-          default: pivot
-          options:
-            - label: "Pivot Move (Global Subchain Rotation)"
-              value: pivot
-            - label: "Reptation ('Slithering Snake' End Move)"
-              value: reptation
-            - label: "Local Crankshaft / Kink-Jump Move"
-              value: crankshaft
-            - label: "Double Cul-de-Sac Trap (Non-Ergodic State)"
-              value: cul_de_sac
-        pivot_index:
-          kind: slider
-          label: "Pivot Monomer Index k"
-          min: 2
-          max: 10
-          step: 1
-          default: 6
-        rotation_angle:
-          kind: dropdown
-          label: "Pivot Rotation Angle θ"
-          default: 90
-          options:
-            - label: "+90° Counterclockwise"
-              value: 90
-            - label: "-90° Clockwise"
-              value: -90
-            - label: "180° Inversion"
-              value: 180
-      takeaway_markdown: |
-        **Key Takeaway:** Reptation achieves $\mathcal{O}(N^2)$ tube renewal in melts via $\mathcal{O}(1)$ end updates, whereas the Pivot algorithm achieves $\mathcal{O}(N^{0.2})$ global decorrelation for dilute single chains. Mixing these with local crankshaft moves eliminates the double cul-de-sac ergodicity trap.
+      The linear size ratio is $\frac{63.10}{10.00} = 10^{0.8} \approx 6.31$, corresponding to a pervaded volume reduction
+      $(R_g^{\text{good}}/R_g^{\text{poor}})^3 = 10^{2.4} \approx 251\times$!'
+  - id: q36_cbmc_detailed_balance_derivation
+    type: problem
+    question_type: single_select
+    difficulty: hard
+    taught_by:
+    - sec_rosenbluth_and_cbmc
+    - concept_cbmc_rosenbluth
+    prompt_markdown: Let us verify why $A(\text{old} \to \text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$ satisfies **detailed
+      balance** for an athermal lattice SAW where every valid configuration has equal equilibrium probability $\pi(\text{old})
+      = \pi(\text{new})$. If an $m$-bond segment is regrown by choosing among $q_i$ open neighbors at each step $i$, what
+      is the exact transition proposal probability $\mathcal{P}_{\text{gen}}(\text{old} \to \text{new})$ of generating a specific
+      new path, expressed in terms of $q$ and $W_{\text{new}} = \prod_{i=1}^m (q_i^{(\text{new})} / q)$?
+    hint_markdown: At each step $i = 1, \\dots, m$, the specific bond along the new path is chosen with probability $1 / q_i^{(\\text{new})}$.
+      Multiply these $m$ probabilities together and substitute $W_{\\text{new}} = \\prod_{i=1}^m q_i^{(\\text{new})} / q^m$.
+    options:
+    - id: a
+      text: $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = \\prod_{i=1}^m \\frac{1}{q_i^{(\\text{new})}} = \\frac{1}{q^m
+        W_{\\text{new}}}$, so $\\frac{\\mathcal{P}_{\\text{gen}}(\\text{new} \\to \\text{old})}{\\mathcal{P}_{\\text{gen}}(\\text{old}
+        \\to \\text{new})} = \\frac{W_{\\text{new}}}{W_{\\text{old}}}$.
+    - id: b
+      text: $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = q^m W_{\\text{new}}$, so the ratio of proposal probabilities
+        is $W_{\\text{old}} / W_{\\text{new}}$.
+    - id: c
+      text: $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = q^{-m}$ regardless of $W_{\\text{new}}$.
+    - id: d
+      text: $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = 1 - W_{\\text{new}}$.
+    correct: a
+    rationale_markdown: 'At each step $i \in \{1, \dots, m\}$, the specific direction leading to the new configuration is
+      chosen with probability $\frac{1}{q_i^{(\text{new})}}$. Across $m$ steps, the probability of proposing that exact new
+      path is:
 
-    - id: q15_reptation_move_mechanism
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        How does an elementary trial step of the **Reptation ("slithering snake") Monte Carlo** algorithm update an $N$-monomer polymer chain?
-      hint_markdown: "Check Slide 5: 'Cut off one end and stick onto the other end.'"
-      options:
-        - id: a
-          text: "It deletes one terminal monomer from a randomly chosen chain end and appends a new monomer in a random bond direction onto the opposite chain end."
-        - id: b
-          text: >-
-            It translates all $N$ monomers rigidly by the same random Cartesian vector $\\Delta \\mathbf{r}$.
-        - id: c
-          text: "It cuts the polymer in half at monomer $N/2$ and swaps the two halves."
-        - id: d
-          text: "It simultaneously perturbs the $(x,y,z)$ coordinates of all $N$ monomers using Gaussian white noise."
-      correct: a
-      rationale_markdown: |
-        In Wall–Mandel reptation MC (Slide 5), a terminal monomer is removed from one end of the chain and attached in a random direction at the other end. All interior monomers simply shift their index by $\pm 1$ along the existing backbone contour, advancing the polymer by one monomer step along its own tube in $\mathcal{O}(1)$ operations.
+      $$\mathcal{P}_{\text{gen}}(\text{old} \to \text{new}) = \prod_{i=1}^m \frac{1}{q_i^{(\text{new})}} = \frac{1}{q^m \prod_{i=1}^m
+      (q_i^{(\text{new})}/q)} = \frac{1}{q^m W_{\text{new}}}$$
 
-    - id: q16_reptation_decorrelation_scaling
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        Why does the conformational decorrelation time (in elementary MC steps) of the **reptation algorithm** scale as $\mathcal{O}(N^2)$?
-      hint_markdown: >-
-        Each elementary slithering step shifts the chain contour by $\\pm 1$ monomer along a tube of length $N$ monomers. How many random $\\pm 1$ steps are required to diffuse a distance of $N$ monomers along the 1D contour?
-      options:
-        - id: a
-          text: >-
-            Because choosing either end at random causes the chain to perform a 1D random walk of step size $\\pm 1$ monomer along its contour of length $N$, requiring $\\sim N^2$ steps to diffuse completely out of its initial tube.
-        - id: b
-          text: >-
-            Because evaluating the distance between the two chain ends requires an $N \\times N$ matrix multiplication at every step.
-        - id: c
-          text: "Because only $1/N^2$ of proposed end moves avoid overlapping with the immediately adjacent monomer."
-        - id: d
-          text: >-
-            Because the radius of gyration scales as $R_g \\propto N^2$ in a good solvent.
-      correct: a
-      rationale_markdown: |
-        In reptation MC, each step randomly advances or retreats the chain by $\pm 1$ monomer along its contour of $N$ segments. By standard 1D diffusion ($\langle \Delta s^2 \rangle \sim t_{\text{steps}}$), vacating the entire $N$-monomer initial tube ($\Delta s \sim N$) takes $\tau \sim \mathcal{O}(N^2)$ elementary steps—a major speedup over physical entanglement dynamics ($\tau_{\text{phys}} \sim N^3$ to $N^{3.4}$ in sweeps, or $N^4$ to $N^{4.4}$ in elementary operations).
+      Substituting into the Metropolis-Hastings ratio with $\pi(\text{new}) = \pi(\text{old})$ gives:
 
-    - id: q17_reptation_double_cul_de_sac
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        Why is the pure **lattice reptation algorithm** strictly **non-ergodic** for self-avoiding walks?
-      hint_markdown: "Check Slide 5 ('But Ergodic? Not always (what if both ends get trapped?)') and inspect the 'Double Cul-de-Sac Trap' in the interactive explorer above."
-      options:
-        - id: a
-          text: "Because there exist valid self-avoiding configurations ('double cul-de-sac' traps) in which all nearest-neighbor sites of both chain ends are occupied by interior monomers, preventing the chain from ever entering or leaving those states via end-slithering alone."
-        - id: b
-          text: "Because reptation violates conservation of total monomer number $N$."
-        - id: c
-          text: "Because reptation can only move the chain forward and never backward, violating microscopic reversibility."
-        - id: d
-          text: >-
-            Because reptation always collapses a good-solvent chain into a $\\nu = 1/3$ globule.
-      correct: a
-      rationale_markdown: |
-        Ergodicity requires that every valid configuration in the ensemble can be reached from every other valid configuration in a finite number of Markov steps. On a lattice, a chain can form a valid self-avoiding "double cul-de-sac" where all $q$ neighbor sites around *both* ends are occupied by interior beads ($q_{\text{open}} = 0$). Pure reptation can neither escape nor enter such states, partitioning configuration space into disconnected components.
+      $$\frac{\pi(\text{new})\mathcal{P}_{\text{gen}}(\text{new} \to \text{old})}{\pi(\text{old})\mathcal{P}_{\text{gen}}(\text{old}
+      \to \text{new})} = \frac{1 / (q^m W_{\text{old}})}{1 / (q^m W_{\text{new}})} = \frac{W_{\text{new}}}{W_{\text{old}}}$$
 
-    - id: q18_reptation_bounce_detailed_balance
-      type: problem
-      question_type: single_select
-      difficulty: hard
-      taught_by: sec_reptation_pivot_and_ergodicity
-      prompt_markdown: |
-        On Slide 5, the lecture notes state: *"Choose end at random or 'bounce' with rejection."* Why does a naive reptation scheme that **always** grows at end $N$ (moving strictly forward along the chain) violate detailed balanceunless ends are chosen at random (or reversed upon rejection)?
-      hint_markdown: >-
-        Recall the detailed balance condition $\\pi(o) T(o \\to n) = \\pi(n) T(n \\to o)$: if state $n$ is obtained from state $o$ by deleting monomer $1$ and adding monomer $N+1$, how can the Markov chain return directly from $n$ to $o$ in one step?
-      options:
-        - id: a
-          text: >-
-            Because moving from state $o$ to state $n$ by deleting the tail and growing at the head can only be reversed in a single step ($n \\to o$) if the algorithm is also allowed to delete the newly grown head monomer and regrow at the old tail!
-        - id: b
-          text: "Because always growing at the head causes the chain length $N$ to grow to infinity."
-        - id: c
-          text: >-
-            Because the Boltzmann factor $e^{-\\beta E}$ is different for the head monomer than for the tail monomer.
-        - id: d
-          text: "Because forward-only growth changes the lattice coordination number $q$."
-      correct: a
-      rationale_markdown: |
-        Detailed balance requires $\pi(o) P(o \to n) = \pi(n) P(n \to o)$ between pairs of states. If state $n$ is generated from state $o$ by removing the tail monomer and adding a head monomer, the reverse transition $n \to o$ requires removing the head monomer and restoring the tail monomer. If the algorithm only ever moves forward, $P(n \to o) = 0$ while $P(o \to n) > 0$, violating detailed balance (and getting permanently stuck at the very first dead-end encountered!).
-
-    - id: q19_pivot_algorithm_relaxation_exponent
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        According to Slide 6 ("Pivot algorithm"), how does the end-to-end distance relaxation time of the **Pivot algorithm** scale with chain length $N$ for an isolated self-avoiding polymer chain?
-      hint_markdown: "Look directly at the fourth bullet point on Slide 6: 'Most efficient method for a single chain. Exponent of relaxation of end-end distance is ...'"
-      options:
-        - id: a
-          text: >-
-            $\\tau_{\\text{relax}} \\propto N^{0.2}$, making it the most efficient Monte Carlo method for sampling global conformations of a single dilute chain.
-        - id: b
-          text: >-
-            $\\tau_{\\text{relax}} \\propto N^{2.2}$, identical to Molecular Dynamics.
-        - id: c
-          text: >-
-            $\\tau_{\\text{relax}} \\propto N^{3.4}$, matching entangled tube reptation.
-        - id: d
-          text: >-
-            $\\tau_{\\text{relax}} \\propto e^{0.2 N}$, growing exponentially with chain length.
-      correct: a
-      rationale_markdown: |
-        As stated on Slide 6, the Pivot algorithm rotates an entire subchain around a randomly chosen monomer $k$ by a random symmetry angle $\theta$. Because each accepted move globally reorients $\mathcal{O}(N)$ monomers at once, the relaxation time of the end-to-end distance scales with a remarkably small exponent $\propto N^{0.2}$.
-
-    - id: q20_pivot_melt_failure
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        Although the Pivot algorithm is extraordinarily fast for an isolated polymer coil in a good solvent, why does it perform poorly in a **dense polymer melt** or a tightly **collapsed poor-solvent globule**?
-      hint_markdown: "What happens when you rigidly swing a subchain of hundreds of monomers through a densely packed box filled with other monomers?"
-      options:
-        - id: a
-          text: >-
-            Rigidly rotating a macroscopic subchain of $\\sim N/2$ monomers through a dense melt or compact globule almost always causes hard-core steric overlaps with neighboring monomers, driving the acceptance probability exponentially to zero.
-        - id: b
-          text: "Pivot moves do not conserve the total number of monomers $N$ in a multi-chain box."
-        - id: c
-          text: >-
-            In a dense melt, the Flory exponent becomes $\\nu = 0$, so rotation angles are undefined.
-        - id: d
-          text: "Pivot moves require calculating hydrodynamic Oseen tensors at every step."
-      correct: a
-      rationale_markdown: |
-        In a dense melt (volume fraction $\phi \sim 1$) or collapsed globule, virtually every lattice site or continuum volume element surrounding the chain is occupied. Swinging a large subchain $(k+1 \dots N)$ rigidly around monomer $k$ produces steric collisions with high probability, so almost all global pivot proposals are rejected.
-
-    - id: q21_hybrid_move_menu_rationale
-      type: problem
-      question_type: multi_select
-      difficulty: medium
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        Why do state-of-the-art polymer Monte Carlo simulations typically employ a **hybrid mixture of moves** (combining local crankshaft/kink-jump flips, reptation, and pivot moves) rather than relying on a single move type? *(Select all that apply.)*
-      hint_markdown: "Review Slide 8 ('Ergodic questions arise: Can you go everywhere in chain space? Make a mixture of moves.')"
-      options:
-        - id: a
-          text: "Combining local interior flips (crankshaft/kink-jump) with reptation or pivot moves eliminates non-ergodic traps such as double cul-de-sacs, ensuring the Markov chain can reach all valid conformations."
-        - id: b
-          text: "Global pivot moves rapidly decorrelate long-wavelength observables (like $R_{ee}$ and $R_g$), while local crankshaft/kink-jump moves efficiently equilibrate short-wavelength local bond orientations."
-        - id: c
-          text: "Any convex combination (probabilistic mixture) of transition kernels that individually satisfy detailed balance with respect to the Boltzmann distribution also satisfies detailed balance."
-        - id: d
-          text: "Mixing two non-Boltzmann moves that violate detailed balance always cancels out their bias without needing Metropolis acceptance tests."
-      correct:
-        - a
-        - b
-        - c
-      rationale_markdown: |
-        Mixing move types solves both **ergodicity** (a: local moves break up cul-de-sac traps that freeze reptation) and **multi-scale relaxation** (b: pivot relaxes global modes in $\mathcal{O}(N^{0.2})$ while crankshaft/kink-jump relaxes local bond correlations), while preserving exact canonical sampling because a probabilistic mixture $\sum_\alpha p_\alpha T_\alpha$ of detailed-balanced kernels remains in detailed balance (c). Option (d) is false: each move kernel must properly account for detailed balance.
-
-    - id: sec_rosenbluth_and_cbmc
-      type: markdown_section
-      title: "4. Exponential Attrition, Rosenbluth Look-Ahead Growth & Configurational Bias MC (CBMC)"
-      body_markdown: |
-        ### 1. The Attrition Problem in Simple ("Blind") Polymer Growth
-        Suppose we try to generate an $N$-step Self-Avoiding Walk (SAW) from scratch on a lattice of coordination number $q$ by starting at the origin and blindly picking one of the $q$ neighbor directions (or $q-1$ non-reversing directions) at each step, throwing away the entire walk whenever an overlap occurs:
-        - Because each step has a finite probability of colliding with an already visited site, the fraction of walks that survive to length $N$ decays **exponentially**:
-          $$P_{\text{survive}}(N) \propto e^{-\lambda N}$$
-        - This is the **exponential attrition problem**: for $N \sim 100$–$1000$, virtually $100\%$ of blind walks terminate in self-intersections before reaching length $N$.
-
-        ### 2. The Rosenbluth–Rosenbluth (1955) Biased Growth Method
-        To avoid stepping onto occupied sites, Rosenbluth and Rosenbluth introduced **look-ahead importance sampling** (Slide 9):
-        1. At growth step $i$ (adding monomer $i$ onto monomer $i-1$), scan all $q$ nearest-neighbor lattice sites around monomer $i-1$ and count the number of **unoccupied ("open") moves** $q_i \in \{0, 1, \dots, q\}$.
-        2. If $q_i = 0$, the walk has hit a dead-end trap; set weight $W_n = 0$ and terminate.
-        3. If $q_i > 0$, choose one of the $q_i$ unoccupied neighbor sites uniformly at random with selection probability $p_{\text{select}}(i) = \frac{1}{q_i}$ (instead of the unbiased blind probability $\frac{1}{q}$).
-        4. **Correcting the Bias with the Rosenbluth Weight $W_n$:**
-           Because we forced the walk into open sites with probability $\prod_{i=1}^n (1/q_i)$ instead of the uniform prior $(1/q)^n$, conformations running through crowded regions (small $q_i$) are **over-sampled** relative to open conformations (large $q_i$). To obtain unbiased ensemble averages $\langle A \rangle$ over all SAWs, each generated $n$-step chain $j$ must be weighted by its **Rosenbluth weight** (Slide 9):
-           $$W_n = W_{n-1} \left[\frac{q_i}{q}\right] = \prod_{i=1}^n \left(\frac{q_i}{q}\right), \qquad \langle R^2 \rangle = \frac{\sum_j W^{(j)}_n R_j^2}{\sum_j W^{(j)}_n}$$
-           *(Note: Some conventions define $w_i = q_i$ without the constant $q^{-n}$ denominator since $q^n$ cancels in any ratio $\sum_j W_j A_j / \sum_j W_j$ or $W_{\text{new}}/W_{\text{old}}$.)*
-        5. **High-Variance Limitation for Very Long Chains & Branching (PERM):**
-           For very long chains ($N \gg 100$), the product $W_n = \prod_{i=1}^n (q_i/q)$ is a product of many random factors, so its distribution becomes extremely broad (log-normal): a tiny handful of high-weight chains dominate the average $\sum W_j R_j^2 / \sum W_j$. As noted on Slide 9 (*"Use branching when weights fluctuate too much"*), algorithms like **PERM (Pruned-Enriched Rosenbluth Method)** clone/branch high-weight walks (halving each clone's weight) and prune low-weight walks to keep weight fluctuations bounded!
-
-        ### 3. Configurational Bias Monte Carlo (CBMC — Siepmann & Frenkel, 1992)
-        Instead of growing full chains independently from scratch, **Configurational Bias Monte Carlo (CBMC)** embeds Rosenbluth look-ahead growth *inside* a Markov Chain Monte Carlo update (Slide 9; Frenkel & Smit Chapters 11 & 13):
-        1. **Select a Chain Segment to Regrow:** Pick a polymer chain and cut off a terminal segment of $m$ monomers (or an interior segment).
-        2. **Grow the New Segment ($\text{new}$):** Regrow the $m$ monomers step-by-step using Rosenbluth look-ahead sampling, recording its new Rosenbluth weight:
-           $$W_{\text{new}} = \prod_{i=1}^m \left(\frac{q_i^{(\text{new})}}{q}\right) \quad \left(\text{or in continuum/thermal systems: } W_{\text{new}} = \prod_{i=1}^m \left[\frac{1}{k}\sum_{j=1}^k e^{-\beta u_i(\mathbf{b}_j)}\right]\right)$$
-           where at each step $i$, $k$ trial bond directions $\{\mathbf{b}_1, \dots, \mathbf{b}_k\}$ are proposed and direction $\mathbf{b}_j$ is selected with probability $P_i(\mathbf{b}_j) = \frac{e^{-\beta u_i(\mathbf{b}_j)}}{\sum_{\ell=1}^k e^{-\beta u_i(\mathbf{b}_\ell)}}$.
-        3. **Retrace the Old Segment ($\text{old}$):** Compute the Rosenbluth weight $W_{\text{old}} = \prod_{i=1}^m \left(q_i^{(\text{old})} / q\right)$ that the *existing* old segment would have had (generating $k-1$ phantom trial directions plus the 1 actual old bond at each step $i$ in the thermal/continuum case).
-        4. **Super-Detailed Balance Acceptance Rule (Slide 9):**
-           Because the probability of proposing the new path is $\mathcal{P}_{\text{gen}}(\text{new}) = \prod_{i=1}^m \frac{1}{q_i^{(\text{new})}} = \frac{1}{q^m W_{\text{new}}}$ while its equilibrium weight is constant (or $\propto \prod e^{-\beta u_i}$), detailed balance $\pi(\text{old})\mathcal{P}_{\text{gen}}(\text{new}) A(\text{old}\to\text{new}) = \pi(\text{new})\mathcal{P}_{\text{gen}}(\text{old}) A(\text{new}\to\text{old})$ simplifies miraculously to:
-           $$\boxed{\text{acc. prob} = A(\text{old} \to \text{new}) = \min\!\left[1,\, \frac{W_{\text{new}}}{W_{\text{old}}}\right]}$$
-           Every factor of the look-ahead selection probability cancels against the Boltzmann factor, yielding an **exact, ergodic Markov chain** that threads long polymer segments into dense melts and porous media with high acceptance!
-
-    - id: concept_cbmc_rosenbluth
-      type: concept_cell
-      title: "Interactive Explorer: Rosenbluth Weights & Configurational Bias MC (CBMC) Acceptance"
-      description_markdown: |
-        Explore how Rosenbluth look-ahead growth accumulates step weights $W_n = \prod_{i=1}^n (q_i/q)$ compared to blind growth attrition, and adjust the weight ratio $W_{\mathrm{new}}/W_{\mathrm{old}}$ to see how CBMC computes its exact Metropolis-like acceptance probability $A = \min(1, W_{\mathrm{new}}/W_{\mathrm{old}})$.
-      render_function: render_cbmc_rosenbluth_growth
-      layout: figure_left
-      controls:
-        regrow_steps:
-          kind: slider
-          label: "Regrown Segment Length n (steps)"
-          min: 3
-          max: 12
-          step: 1
-          default: 8
-        lattice_coord:
-          kind: dropdown
-          label: "Lattice Coordination Number q"
-          default: 4
-          options:
-            - label: "2D Square Lattice (q = 4)"
-              value: 4
-            - label: "3D Simple Cubic Lattice (q = 6)"
-              value: 6
-        weight_ratio:
-          kind: slider
-          label: "Ratio W_new / W_old"
-          min: 0.15
-          max: 2.00
-          step: 0.05
-          default: 0.75
-      takeaway_markdown: |
-        **Key Takeaway:** Rosenbluth growth steers polymer segments away from steric overlaps by choosing among the $q_i$ open neighbor sites, and CBMC removes that look-ahead bias inside a Markov chain by accepting the regrown segment with $A(\mathrm{old}\to\mathrm{new}) = \min(1, W_{\mathrm{new}}/W_{\mathrm{old}})$.
-
-    - id: q22_blind_growth_attrition
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        Why does the naive ("blind") polymer growth algorithm—which grows a chain step-by-step at random and discards the entire walk whenever a self-intersection occurs—fail for long chains ($N \gg 100$)?
-      hint_markdown: >-
-        Consider how the survival probability $P_{\\text{survive}}(N)$ scales as $N$ increases when each step has a nonzero probability of overlap.
-      options:
-        - id: a
-          text: >-
-            Because the probability that a blind walk avoids all self-intersections decays exponentially with chain length ($P_{\\text{survive}} \\propto e^{-\\lambda N}$), a phenomenon known as exponential attrition.
-        - id: b
-          text: >-
-            Because blind growth biases the surviving walks toward collapsed globules with $\\nu = 1/3$.
-        - id: c
-          text: "Because a lattice of coordination number $q$ can only hold at most $q^2$ monomers."
-        - id: d
-          text: >-
-            Because blind growth requires computing the full $N \\times N$ Hessian matrix at every step.
-      correct: a
-      rationale_markdown: |
-        Although the rare walks that survive blind growth without overlap are distributed uniformly among all valid $N$-step SAWs, the survival probability decays exponentially as $P_{\text{survive}}(N) \propto (\mu_{\text{eff}}/q)^N = e^{-\lambda N}$. For $N = 1000$, virtually zero blind trials survive to completion.
-
-    - id: q23_rosenbluth_weight_definition
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        In the lattice **Rosenbluth growth algorithm** (Slide 9), suppose the lattice coordination number is $q$, and at growth step $i$ there are $q_i$ unoccupied ("open") nearest-neighbor sites available. How is the next site chosen, and how is the cumulative **Rosenbluth weight** $W_n$ updated?
-      hint_markdown: >-
-        Check the formula on Slide 9: $W_n = W_{n-1} [q_i / q]$ where $q_i = \\text{# of open moves}$.
-      options:
-        - id: a
-          text: >-
-            One of the $q_i$ open sites is chosen with probability $1/q_i$, and the weight is updated via $W_n = W_{n-1} \\left(\\frac{q_i}{q}\\right) = \\prod_{i=1}^n \\left(\\frac{q_i}{q}\\right)$.
-        - id: b
-          text: "One of all $q$ neighbor sites is chosen with probability $1/q$, and $W_n = W_{n-1} + q_i$."
-        - id: c
-          text: "The open site closest to the origin is chosen deterministically, and $W_n = (q / q_i)^n$."
-        - id: d
-          text: "One of the $q_i$ open sites is chosen with probability $q_i / q$, and $W_n = 1$ for all chains."
-      correct: a
-      rationale_markdown: |
-        At step $i$, Rosenbluth growth restricts selection to the $q_i$ unoccupied neighbor sites, choosing one with uniform probability $1/q_i$. Because the probability of generating a specific path is $\prod_{i=1}^n (1/q_i)$ instead of the unbiased $(1/q)^n$, multiplying the cumulative weight by $q_i/q$ at each step ($W_n = \prod_{i=1}^n (q_i/q)$) exactly compensates for the look-ahead selection bias.
-
-    - id: q24_rosenbluth_weight_numerical
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        A 3-step self-avoiding polymer segment is grown on a **2D square lattice ($q = 4$)** using the Rosenbluth algorithm with $W_0 = 1$. Suppose the number of open neighbor sites at steps $i = 1, 2, 3$ is $q_1 = 4$, $q_2 = 3$, and $q_3 = 2$. What is the resulting Rosenbluth weight $W_3 = \prod_{i=1}^3 (q_i / q)$?
-      hint_markdown: >-
-        Multiply $(4/4) \\times (3/4) \\times (2/4) = 24 / 64$.
-      correct:
-        value: 0.375
-        tolerance: 0.005
-      rationale_markdown: |
-        Using $W_n = \prod_{i=1}^n (q_i / q)$ with $q = 4$ and $(q_1, q_2, q_3) = (4, 3, 2)$:
-        $$W_3 = \left(\frac{4}{4}\right)\left(\frac{3}{4}\right)\left(\frac{2}{4}\right) = 1 \times 0.75 \times 0.50 = \frac{3}{8} = 0.375$$
-
-    - id: q25_rosenbluth_why_reweight
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        Suppose two valid $N$-step self-avoiding walks, Walk A and Walk B, are generated by the Rosenbluth growth algorithm. Walk A passes through a very crowded, tightly coiled region where most steps only had $q_i = 1$ open site, whereas Walk B passes through an open region where most steps had $q_i = 3$ open sites. Before reweighting by $W_N$, which walk is **more likely to be generated** by the Rosenbluth sampling procedure, and how does $W_N$ correct this?
-      hint_markdown: >-
-        Compare the path generation probability $P_{\\text{gen}} = \\prod_{i=1}^N (1/q_i)$ for small $q_i$ vs. large $q_i$.
-      options:
-        - id: a
-          text: >-
-            Walk A is generated with higher probability ($P_{\\text{gen}} = \\prod (1/q_i)$ is larger when $q_i$ is small), so Rosenbluth reweighting assigns Walk A a correspondingly smaller weight $W_N = \\prod (q_i/q) = (q^N P_{\\text{gen}})^{-1}$ so that $P_{\\text{gen}} W_N = q^{-N}$ is equal for all valid SAWs.
-        - id: b
-          text: "Walk B is generated with higher probability, so Walk B receives a smaller Rosenbluth weight $W_N$."
-        - id: c
-          text: "Both walks are generated with identical probability $q^{-N}$, so $W_N$ is only needed when non-bonded attractions are nonzero."
-        - id: d
-          text: "Walk A has zero probability of being generated because $q_i = 1$ terminates the walk."
-      correct: a
-      rationale_markdown: |
-        Because the algorithm is forced to pick the single available open site whenever $q_i = 1$ (with conditional probability $1/1 = 1$), crowded conformations like Walk A have a much *higher* path generation probability $P_{\text{gen}} = \prod_{i=1}^N (1/q_i)$ than open conformations like Walk B ($P_{\text{gen}} \sim 3^{-N}$). Multiplying by $W_N = \prod_{i=1}^N (q_i/q)$ guarantees that $P_{\text{gen}}(\text{walk}) \times W_N(\text{walk}) = q^{-N}$ is strictly uniform across every valid $N$-step SAW!
-
-    - id: q26_rosenbluth_weighted_estimator
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        In a Rosenbluth growth simulation of $M = 3$ polymer chains, you record the following Rosenbluth weights $W_j$ and squared end-to-end distances $R_j^2$:
-        - Chain 1: $W_1 = 0.20$, $R_1^2 = 10.0$
-        - Chain 2: $W_2 = 0.50$, $R_2^2 = 20.0$
-        - Chain 3: $W_3 = 0.30$, $R_3^2 = 30.0$
-
-        Using the lecture estimator $\langle R^2 \rangle = \frac{\sum_j W_j R_j^2}{\sum_j W_j}$ (Slide 9), what is the unbiased estimate of $\langle R^2 \rangle$?
-      hint_markdown: >-
-        Compute $(0.20 \\times 10 + 0.50 \\times 20 + 0.30 \\times 30) / (0.20 + 0.50 + 0.30)$.
-      correct:
-        value: 21.0
-        tolerance: 0.1
-      rationale_markdown: |
-        Evaluating the weighted average (Slide 9):
-        $$\langle R^2 \rangle = \frac{0.20(10.0) + 0.50(20.0) + 0.30(30.0)}{0.20 + 0.50 + 0.30} = \frac{2.0 + 10.0 + 9.0}{1.00} = 21.0$$
-
-    - id: q27_rosenbluth_branching_perm
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by: sec_rosenbluth_and_cbmc
-      prompt_markdown: |
-        When growing very long polymers with the standalone Rosenbluth method, the weights $W_n = \prod_{i=1}^n (q_i/q)$ fluctuate over many orders of magnitude so that a few rare trajectories dominate the sample average. According to Slide 9, what algorithmic technique is introduced to overcome this weight-fluctuation bottleneck?
-      hint_markdown: "Read the fourth bullet on Slide 9: 'Use ... when weights fluctuate too much.'"
-      options:
-        - id: a
-          text: "Branching (cloning/enriching trajectories whose weights grow too large and pruning trajectories whose weights fall too low, as in PERM)."
-        - id: b
-          text: >-
-            Replacing the Rosenbluth weight $W_n$ with $\\ln W_n$ inside the numerator of $\\langle R^2 \\rangle$.
-        - id: c
-          text: >-
-            Freezing the first $90\\%$ of the chain into a straight rod.
-        - id: d
-          text: >-
-            Increasing the MD integration time step $\\Delta t$.
-      correct: a
-      rationale_markdown: |
-        As stated on Slide 9 (*"Use branching when weights fluctuate too much"*), population control / **branching** (such as Grassberger's Pruned-Enriched Rosenbluth Method, PERM) splits a high-weight partial chain into $m$ independent copies (each assigned weight $W_n/m$) and probabilistically prunes low-weight partial chains, concentrating computational effort on statistically important conformations.
-
-    - id: q28_cbmc_acceptance_formula
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        In **Configurational Bias Monte Carlo (CBMC)**, a section of a polymer chain is regrown using Rosenbluth look-ahead sampling with weight $W_{\text{new}}$, while the old section has retraced Rosenbluth weight $W_{\text{old}}$. What is the exact CBMC acceptance probability $A(\text{old} \to \text{new})$ shown on Slide 9?
-      hint_markdown: "Check the boxed formula at the bottom of Slide 9."
-      options:
-        - id: a
-          text: >-
-            $A(\\text{old} \\to \\text{new}) = \\min\\!\\left[1,\\, \\frac{W_{\\text{new}}}{W_{\\text{old}}}\\right]$
-        - id: b
-          text: >-
-            $A(\\text{old} \\to \\text{new}) = \\min\\!\\left[1,\\, \\frac{W_{\\text{old}}}{W_{\\text{new}}}\\right]$
-        - id: c
-          text: >-
-            $A(\\text{old} \\to \\text{new}) = \\frac{W_{\\text{new}}}{W_{\\text{new}} + W_{\\text{old}}} e^{-\\beta (W_{\\text{new}} - W_{\\text{old}})}$
-        - id: d
-          text: >-
-            $A(\\text{old} \\to \\text{new}) = 1$ always, because Rosenbluth growth never overlaps.
-      correct: a
-      rationale_markdown: |
-        Because the probability of generating the new path is inversely proportional to its Rosenbluth weight, $\mathcal{P}_{\text{gen}}(\text{new}) \propto 1/W_{\text{new}}$ (or $\propto e^{-\beta U(\text{new})}/W_{\text{new}}$ in thermal systems), the Metropolis-Hastings acceptance ratio $\frac{\pi(\text{new})\mathcal{P}_{\text{gen}}(\text{old})}{\pi(\text{old})\mathcal{P}_{\text{gen}}(\text{new})}$ simplifies directly to $\frac{W_{\text{new}}}{W_{\text{old}}}$, giving $A(\text{old}\to\text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$.
-
-    - id: q29_cbmc_acceptance_numerical
-      type: problem
-      question_type: numeric
-      difficulty: easy
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        During a Configurational Bias Monte Carlo (CBMC) update on a 3D cubic lattice ($q = 6$), you regrow a 3-bond end segment. The newly grown segment has open-site counts $(q_1, q_2, q_3)_{\text{new}} = (3, 4, 3)$, while retracing the old segment yields $(q_1, q_2, q_3)_{\text{old}} = (5, 4, 3)$. What is the CBMC acceptance probability $A(\text{old} \to \text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$?
-      hint_markdown: >-
-        Notice that the $q^{-3}$ denominators and the common factors $4 \\times 3$ cancel in $W_{\\text{new}}/W_{\\text{old}} = (3 \\times 4 \\times 3) / (5 \\times 4 \\times 3)$.
-      correct:
-        value: 0.60
-        tolerance: 0.01
-      rationale_markdown: |
-        Computing the ratio of Rosenbluth weights:
-        $$\frac{W_{\text{new}}}{W_{\text{old}}} = \frac{(3/6)(4/6)(3/6)}{(5/6)(4/6)(3/6)} = \frac{36}{60} = \frac{3}{5} = 0.60$$
-        Hence $A(\text{old} \to \text{new}) = \min(1, 0.60) = 0.60$.
-
-    - id: q30_cbmc_continuum_generalization
-      type: problem
-      question_type: single_select
-      difficulty: hard
-      taught_by: sec_rosenbluth_and_cbmc
-      prompt_markdown: |
-        Slide 9 notes that CBMC is *"Easily generalized to continuum models."* In a continuum bead-spring polymer at inverse temperature $\beta = 1/(k_B T)$, there are infinitely many possible bond directions rather than $q$ discrete lattice sites. How does continuum CBMC perform step $i$ of the Rosenbluth regrowth?
-      hint_markdown: "Recall Frenkel & Smit Chapters 11 & 13: how do we replace summing over all $q$ lattice neighbors when directions are continuous?"
-      options:
-        - id: a
-          text: >-
-            It generates a finite set of $k$ random trial bond directions $\\{\\mathbf{b}_1, \\dots, \\mathbf{b}_k\\}$ (sampled from the bonded distribution), selects one direction $\\mathbf{b}_j$ with Boltzmann probability $e^{-\\beta u_i(\\mathbf{b}_j)} / \\sum_{\\ell=1}^k e^{-\\beta u_i(\\mathbf{b}_\\ell)}$, and accumulates the step Rosenbluth factor $w_i = \\frac{1}{k}\\sum_{\\ell=1}^k e^{-\\beta u_i(\\mathbf{b}_\\ell)}$.
-        - id: b
-          text: >-
-            It discretizes all of 3D space into a cubic grid of spacing $0.001\\,\\text{Å}$ and sums over all grid points in the box.
-        - id: c
-          text: >-
-            It integrates the Newtonian equations of motion for $k$ femtoseconds and sets $W_{\\text{new}} = 1$.
-        - id: d
-          text: >-
-            It chooses the single direction of steepest descent $-\\nabla U$ deterministically with zero random trials.
-      correct: a
-      rationale_markdown: |
-        In continuum CBMC (Frenkel & Smit Ch. 13), at each growth step $i$ we draw $k$ trial bond vectors $\{\mathbf{b}_1, \dots, \mathbf{b}_k\}$ from the internal bond/angle prior, evaluate the external non-bonded Boltzmann weight $e^{-\beta u_i(\mathbf{b}_\ell)}$ for each trial, pick direction $j$ with probability $P_j = e^{-\beta u_i(\mathbf{b}_j)} / \sum_{\ell=1}^k e^{-\beta u_i(\mathbf{b}_\ell)}$, and multiply the Rosenbluth weight by $w_i = \frac{1}{k}\sum_{\ell=1}^k e^{-\beta u_i(\mathbf{b}_\ell)}$ (while retracing the old segment using its actual bond $\mathbf{b}_{\text{old}}$ plus $k-1$ random trial directions).
-
-    - id: sec_synthesis_and_comparison
-      type: markdown_section
-      title: "5. Synthesis: Choosing the Right Polymer Simulation Method Across Regimes"
-      body_markdown: |
-        Let us synthesize the scaling laws and algorithmic trade-offs covered across Lesson 21:
-
-        | Simulation Method | Primary Use Case | Conformational Relaxation Scaling $\tau_{\text{relax}}$ | Key Advantage | Primary Limitation |
-        | :--- | :--- | :---: | :--- | :--- |
-        | **All-Atom MD** | Local chemistry, solvation shells, $<100\text{ ns}$ kinetics | $\tau \sim N^{2.2}$ to $N^{3.4}$ ($\Delta t = 10^{-14}\text{ s}$) | Exact physical dynamics & explicit solvent | $\sim 300\text{ CPU years}$ for $10^{-4}\text{ s}$ of $20{,}000$ atoms |
-        | **Coarse-Grained MD (Kremer–Grest FENE + WCA)** | Entangled melt rheology, tube reptation dynamics | $\tau_{\text{Rouse}} \sim N^{2.2}$, $\tau_{\text{rep}} \sim N^{3}$–$N^{3.4}$ | Preserves real topological entanglement dynamics | Still slow for very large $N$ equilibration |
-        | **Local Lattice MC (Kink-jump / Crankshaft)** | Short-scale bond relaxation & Rouse dynamics | $\tau \sim \mathcal{O}(N^{2\nu+1}) \approx \mathcal{O}(N^{2.2})$ | Simple, physical Rouse-like local dynamics | Slow global coil decorrelation |
-        | **Reptation MC ("Slithering Snake")** | Dense polymer melts & concentrated solutions | $\tau \sim \mathcal{O}(N^2)$ elementary steps | $\mathcal{O}(1)$ update cost; works in dense melts | Unphysical dynamics; **non-ergodic** alone (double cul-de-sac) |
-        | **Pivot Algorithm** | Single isolated chain in dilute good/$\Theta$ solvent | $\tau \sim \mathcal{O}(N^{0.2})$ sweeps | Fastest global decorrelation known | Acceptance $\to 0$ in dense melts / globules; doesn't relax bond lengths |
-        | **Rosenbluth + CBMC** | Regrowing segments in dense melts, branched chains, phase equilibria | High acceptance for $m$-segment regrowth | Overcomes exponential attrition; exact detailed balance $A = \min(1, W_{\text{new}}/W_{\text{old}})$ | Weight variance grows for very large $m$ without branching |
-
-    - id: q31_method_selection_dilute_saw
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by: sec_synthesis_and_comparison
-      prompt_markdown: |
-        You want to compute the equilibrium Flory exponent $\nu$ and mean-square end-to-end distance $\langle R_{ee}^2 \rangle$ of a **single isolated $N = 2000$ self-avoiding polymer chain** in a good solvent to high statistical precision. Which algorithm provides the fastest decorrelation of global conformations?
-      hint_markdown: "Compare the relaxation time exponents in the synthesis table: $N^{2.2}$ vs. $N^2$ vs. $N^{0.2}$."
-      options:
-        - id: a
-          text: >-
-            The Pivot algorithm (mixed with occasional local moves), because its global end-to-end autocorrelation time scales as $\\mathcal{O}(N^{0.2})$ in dilute solution.
-        - id: b
-          text: >-
-            All-atom Molecular Dynamics with explicit water molecules and $\\Delta t = 10^{-14}\\text{ s}$.
-        - id: c
-          text: "Pure blind random growth without Rosenbluth weights."
-        - id: d
-          text: "Pure local kink-jump Monte Carlo without global moves."
-      correct: a
-      rationale_markdown: |
-        For a single chain in dilute solution, the **Pivot algorithm** achieves an autocorrelation exponent of $\tau \sim \mathcal{O}(N^{0.2})$ (Slide 6), orders of magnitude faster than local moves ($\mathcal{O}(N^{2.2})$) or reptation ($\mathcal{O}(N^2)$).
-
-    - id: q32_method_selection_dense_melt_dynamics
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by: sec_synthesis_and_comparison
-      prompt_markdown: |
-        Suppose your research goal is to measure the **physical time-dependent mean-square displacement $g_1(t) = \langle [\mathbf{r}_i(t) - \mathbf{r}_i(0)]^2 \rangle$ and viscosity** of an entangled polymer melt to test de Gennes' tube reptation theory. Why must you use **coarse-grained Molecular Dynamics (with FENE + WCA potentials)** or purely **local MC moves** rather than the Pivot or CBMC algorithms?
-      hint_markdown: "Do Pivot and CBMC moves follow physical continuous trajectories, or do they teleport chains across topological obstacles?"
-      options:
-        - id: a
-          text: "Because Pivot and CBMC perform non-local, unphysical conformational jumps that bypass topological entanglement barriers; measuring real physical transport and entanglement kinetics requires continuous FENE+WCA MD trajectories (or strictly local non-crossing moves)."
-        - id: b
-          text: "Because Pivot and CBMC do not sample the canonical Boltzmann distribution at equilibrium."
-        - id: c
-          text: >-
-            Because FENE+WCA Molecular Dynamics has a relaxation time of $\\mathcal{O}(N^{0.2})$.
-        - id: d
-          text: "Because CBMC can only be applied to 1D chains."
-      correct: a
-      rationale_markdown: |
-        Non-local Monte Carlo moves (Pivot, CBMC, and multi-chain reptation jumps) are designed to accelerate **equilibrium ensemble averages** by bypassing physical kinetic barriers, which means their Markov-chain "time" does not represent physical Newtonian/Brownian dynamics and allows chains to bypass entanglement tubes. To study physical entanglement dynamics, one must use coarse-grained MD with non-crossing FENE+WCA potentials (or strictly local dynamic MC moves).
-
-    - id: q33_hydrodynamic_solvent_effects
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by: sec_timescale_and_coarse_graining
-      prompt_markdown: |
-        Slide 2 notes: *"Solvent is important. Hydrodynamic effects dominate."* In a dilute polymer solution, why does omitting explicit solvent molecules (or hydrodynamic coupling) alter the physical relaxation time scaling of a polymer coil?
-      hint_markdown: "In a real fluid, moving one monomer creates a velocity field that drags nearby monomers along (Zimm hydrodynamics), whereas without solvent momentum transport each bead feels independent friction (Rouse model)."
-      options:
-        - id: a
-          text: "Moving a monomer in a real solvent induces long-range velocity fields (hydrodynamic interactions) that couple the motion of distant segments of the coil, whereas naive vacuum/implicit-solvent dynamics treats friction as purely local and independent."
-        - id: b
-          text: "Solvent molecules change the spatial dimensionality of the simulation box from $d=3$ to $d=2$."
-        - id: c
-          text: >-
-            Without explicit solvent molecules, the FENE potential $U_{\\text{FENE}}(r)$ no longer diverges at $r = R_0$.
-        - id: d
-          text: >-
-            Hydrodynamic momentum conservation alters the static equilibrium Flory exponent $\\nu$ of an athermal SAW.
-      correct: a
-      rationale_markdown: |
-        In a dilute polymer solution, momentum transport through the solvent creates long-range **hydrodynamic interactions** (Zimm dynamics, $\tau_{\text{Zimm}} \sim R^3 \sim N^{3\nu}$), so a moving monomer drags surrounding solvent and nearby chain segments along with it. Standard implicit-solvent Langevin/Rouse dynamics neglects this hydrodynamic backflow, while keeping explicit solvent atoms drastically increases the particle count $N_{\text{atoms}}$. (Note that static equilibrium exponents like $\nu$ depend only on the configurational Hamiltonian, not on momenta!)
-
-    - id: q34_saw_partition_function_temperature
-      type: problem
-      question_type: single_select
-      difficulty: medium
-      taught_by:
-        - sec_timescale_and_coarse_graining
-        - sec_flory_scaling_and_phases
-      prompt_markdown: |
-        In a pure **athermal Lattice Self-Avoiding Walk (SAW)** where the potential energy is $U = 0$ for every non-overlapping walk and $U = +\infty$ for any overlapping walk, how does the equilibrium Flory exponent $\nu$ depend on temperature $T$?
-      hint_markdown: >-
-        Write down the Boltzmann factor $e^{-U / (k_B T)}$ when $U$ can only take the values $0$ or $+\\infty$.
-      options:
-        - id: a
-          text: >-
-            It is completely independent of temperature $T$ ($\\nu \\approx 0.588$ at all $T > 0$), because $e^{-0/k_B T} = 1$ and $e^{-\\infty/k_B T} = 0$, so every valid SAW has identical weight regardless of $T$; temperature dependence only enters when finite non-bonded attractions $-\\epsilon$ are added.
-        - id: b
-          text: >-
-            It decreases linearly with temperature as $\\nu(T) = 1 - k_B T$.
-        - id: c
-          text: >-
-            It jumps from $\\nu = 0.588$ to $\\nu = 1/3$ at $k_B T = 1$ even when $\\epsilon = 0$.
-        - id: d
-          text: >-
-            It diverges to infinity as $T \\to 0$.
-      correct: a
-      rationale_markdown: |
-        In a pure hard-core excluded-volume SAW ($U \in \{0, +\infty\}$), the Boltzmann weight $e^{-\beta U}$ is simply an indicator function ($1$ if self-avoiding, $0$ if overlapping) for any finite temperature $0 < T < \infty$. The coil swelling is driven purely by **conformational entropy** (entropic excluded volume). Temperature-driven $\Theta$-collapse only occurs when a finite energetic interaction $-\epsilon$ between non-bonded nearest neighbors is included (Slide 7).
-
-    - id: q35_radius_of_gyration_ratio_good_vs_poor
-      type: problem
-      question_type: numeric
-      difficulty: medium
-      taught_by:
-        - sec_flory_scaling_and_phases
-        - concept_flory_scaling
-      prompt_markdown: |
-        Consider a long polymer chain of $N = 1000$ monomers in $d = 3$ dimensions. Using the Flory scaling relation $R_g \approx a N^\nu$ (with unit prefactor $a = 1$), calculate the ratio $\frac{R_g(\text{Good Solvent, }\nu = 0.6)}{R_g(\text{Poor Solvent, }\nu = 1/3)}$ to see how dramatically a swollen coil shrinks upon collapsing into a globule.
-      hint_markdown: "Evaluate $1000^{0.6} / 1000^{1/3} = (10^3)^{0.6} / (10^3)^{1/3} = 10^{1.8} / 10^{1.0} = 10^{0.8}$."
-      correct:
-        value: 6.31
-        tolerance: 0.1
-      rationale_markdown: |
-        For $N = 1000 = 10^3$:
-        - In a good solvent ($\nu = 0.6$): $R_g^{\text{good}} \sim (10^3)^{0.6} = 10^{1.8} \approx 63.10\,a$.
-        - In a poor solvent ($\nu = 1/3$): $R_g^{\text{poor}} \sim (10^3)^{1/3} = 10^{1.0} = 10.00\,a$.
-        The linear size ratio is $\frac{63.10}{10.00} = 10^{0.8} \approx 6.31$, corresponding to a pervaded volume reduction $(R_g^{\text{good}}/R_g^{\text{poor}})^3 = 10^{2.4} \approx 251\times$!
-
-    - id: q36_cbmc_detailed_balance_derivation
-      type: problem
-      question_type: single_select
-      difficulty: hard
-      taught_by:
-        - sec_rosenbluth_and_cbmc
-        - concept_cbmc_rosenbluth
-      prompt_markdown: |
-        Let us verify why $A(\text{old} \to \text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$ satisfies **detailed balance** for an athermal lattice SAW where every valid configuration has equal equilibrium probability $\pi(\text{old}) = \pi(\text{new})$. If an $m$-bond segment is regrown by choosing among $q_i$ open neighbors at each step $i$, what is the exact transition proposal probability $\mathcal{P}_{\text{gen}}(\text{old} \to \text{new})$ of generating a specific new path, expressed in terms of $q$ and $W_{\text{new}} = \prod_{i=1}^m (q_i^{(\text{new})} / q)$?
-      hint_markdown: >-
-        At each step $i = 1, \\dots, m$, the specific bond along the new path is chosen with probability $1 / q_i^{(\\text{new})}$. Multiply these $m$ probabilities together and substitute $W_{\\text{new}} = \\prod_{i=1}^m q_i^{(\\text{new})} / q^m$.
-      options:
-        - id: a
-          text: >-
-            $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = \\prod_{i=1}^m \\frac{1}{q_i^{(\\text{new})}} = \\frac{1}{q^m W_{\\text{new}}}$, so $\\frac{\\mathcal{P}_{\\text{gen}}(\\text{new} \\to \\text{old})}{\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new})} = \\frac{W_{\\text{new}}}{W_{\\text{old}}}$.
-        - id: b
-          text: >-
-            $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = q^m W_{\\text{new}}$, so the ratio of proposal probabilities is $W_{\\text{old}} / W_{\\text{new}}$.
-        - id: c
-          text: >-
-            $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = q^{-m}$ regardless of $W_{\\text{new}}$.
-        - id: d
-          text: >-
-            $\\mathcal{P}_{\\text{gen}}(\\text{old} \\to \\text{new}) = 1 - W_{\\text{new}}$.
-      correct: a
-      rationale_markdown: |
-        At each step $i \in \{1, \dots, m\}$, the specific direction leading to the new configuration is chosen with probability $\frac{1}{q_i^{(\text{new})}}$. Across $m$ steps, the probability of proposing that exact new path is:
-        $$\mathcal{P}_{\text{gen}}(\text{old} \to \text{new}) = \prod_{i=1}^m \frac{1}{q_i^{(\text{new})}} = \frac{1}{q^m \prod_{i=1}^m (q_i^{(\text{new})}/q)} = \frac{1}{q^m W_{\text{new}}}$$
-        Substituting into the Metropolis-Hastings ratio with $\pi(\text{new}) = \pi(\text{old})$ gives:
-        $$\frac{\pi(\text{new})\mathcal{P}_{\text{gen}}(\text{new} \to \text{old})}{\pi(\text{old})\mathcal{P}_{\text{gen}}(\text{old} \to \text{new})} = \frac{1 / (q^m W_{\text{old}})}{1 / (q^m W_{\text{new}})} = \frac{W_{\text{new}}}{W_{\text{old}}}$$
-        proving that $A(\text{old}\to\text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$ satisfies exact detailed balance!
-
-    - id: q37_crankshaft_move_geometry
-      type: problem
-      question_type: single_select
-      difficulty: easy
-      taught_by:
-        - sec_reptation_pivot_and_ergodicity
-        - concept_reptation_pivot
-      prompt_markdown: |
-        Inspect the local polymer move illustrated in the center of Slide 8 ("How to move polymers"). When a single interior right-angle corner (kink) of a 2D square-lattice polymer flips across the unit square while keeping the rest of the chain fixed, how many monomer coordinates actually change?
-      hint_markdown: "Compare the black chain on the left of Slide 8 with the chain on the right (highlighted in orange/red): how many vertices moved to a new lattice site?"
-      options:
-        - id: a
-          text: "Only $1$ interior corner monomer moves to the diagonally opposite site of the unit square (or $2$ adjacent monomers in a 3D U-shaped crankshaft rotation), leaving all other $N-1$ (or $N-2$) monomers untouched."
-        - id: b
-          text: "All $N$ monomers shift by one lattice spacing along the chain contour."
-        - id: c
-          text: >-
-            Every monomer from the flipped corner to the chain end rotates by $90^\\circ$.
-        - id: d
-          text: "Two new monomers are inserted into the chain backbone."
-      correct: a
-      rationale_markdown: |
-        In a local corner-flip (kink-jump) move as drawn on Slide 8, two perpendicular adjacent bonds $(+\hat{x}, +\hat{y})$ swap order to $(+\hat{y}, +\hat{x})$, displacing only the single interior vertex connecting them (or 2 vertices for a 3-bond crankshaft U-bend) while leaving all other monomers strictly fixed in space.
-
-    - id: q38_upper_critical_dimension_flory
-      type: problem
-      question_type: numeric
-      difficulty: hard
-      taught_by: sec_flory_scaling_and_phases
-      prompt_markdown: |
-        According to Flory's formula $\nu_{\text{Flory}} = \frac{3}{d+2}$, at what **upper critical spatial dimension $d_c$** does the swollen self-avoiding walk exponent $\nu_{\text{Flory}}$ drop down to match the ideal random walk exponent $\nu_{\text{RW}} = \frac{1}{2}$ (above which excluded-volume interactions become asymptotically irrelevant for long chains)?
-      hint_markdown: >-
-        Solve $\\frac{3}{d_c + 2} = \\frac{1}{2}$ for $d_c$.
-      correct:
-        value: 4.0
-        tolerance: 0.01
-      rationale_markdown: |
-        Setting $\nu_{\text{Flory}} = \frac{3}{d_c + 2} = \frac{1}{2}$ yields $d_c + 2 = 6 \implies \mathbf{d_c = 4}$. Geometrically, an ideal random walk has fractal Hausdorff dimension $d_f = 1/\nu = 2$. In space of dimension $d \ge 4 = 2 d_f$, two 2-dimensional random-walk manifolds generically do not intersect at long distances, so excluded volume no longer swells the asymptotic scaling exponent ($\nu = 1/2$ for all $d \ge 4$).
+      proving that $A(\text{old}\to\text{new}) = \min(1, W_{\text{new}}/W_{\text{old}})$ satisfies exact detailed balance!'
+  - id: q37_crankshaft_move_geometry
+    type: problem
+    question_type: single_select
+    difficulty: easy
+    taught_by:
+    - sec_reptation_pivot_and_ergodicity
+    - concept_reptation_pivot
+    prompt_markdown: Inspect the local polymer move illustrated in the center of ("How to move polymers"). When a single interior
+      right-angle corner (kink) of a 2D square-lattice polymer flips across the unit square while keeping the rest of the
+      chain fixed, how many monomer coordinates actually change?
+    hint_markdown: 'Compare the black chain on the left of with the chain on the right (highlighted in orange/red): how many
+      vertices moved to a new lattice site?'
+    options:
+    - id: a
+      text: Only $1$ interior corner monomer moves to the diagonally opposite site of the unit square (or $2$ adjacent monomers
+        in a 3D U-shaped crankshaft rotation), leaving all other $N-1$ (or $N-2$) monomers untouched.
+    - id: b
+      text: All $N$ monomers shift by one lattice spacing along the chain contour.
+    - id: c
+      text: Every monomer from the flipped corner to the chain end rotates by $90^\\circ$.
+    - id: d
+      text: Two new monomers are inserted into the chain backbone.
+    correct: a
+    rationale_markdown: In a local corner-flip (kink-jump) move as drawn, two perpendicular adjacent bonds $(+\hat{x}, +\hat{y})$
+      swap order to $(+\hat{y}, +\hat{x})$, displacing only the single interior vertex connecting them (or 2 vertices for
+      a 3-bond crankshaft U-bend) while leaving all other monomers strictly fixed in space.
+  - id: q38_upper_critical_dimension_flory
+    type: problem
+    question_type: numeric
+    difficulty: hard
+    taught_by: sec_flory_scaling_and_phases
+    prompt_markdown: According to Flory's formula $\nu_{\text{Flory}} = \frac{3}{d+2}$, at what **upper critical spatial dimension
+      $d_c$** does the swollen self-avoiding walk exponent $\nu_{\text{Flory}}$ drop down to match the ideal random walk exponent
+      $\nu_{\text{RW}} = \frac{1}{2}$ (above which excluded-volume interactions become asymptotically irrelevant for long
+      chains)?
+    hint_markdown: Solve $\\frac{3}{d_c + 2} = \\frac{1}{2}$ for $d_c$.
+    correct:
+      value: 4.0
+      tolerance: 0.01
+    rationale_markdown: Setting $\nu_{\text{Flory}} = \frac{3}{d_c + 2} = \frac{1}{2}$ yields $d_c + 2 = 6 \implies \mathbf{d_c
+      = 4}$. Geometrically, an ideal random walk has fractal Hausdorff dimension $d_f = 1/\nu = 2$. In space of dimension
+      $d \ge 4 = 2 d_f$, two 2-dimensional random-walk manifolds generically do not intersect at long distances, so excluded
+      volume no longer swells the asymptotic scaling exponent ($\nu = 1/2$ for all $d \ge 4$).
