@@ -162,7 +162,19 @@ def normalize_angstrom(text: str) -> str:
     text = text.replace(r'\text{ \text{Å}}', r'\text{Å}')
     text = text.replace(r'\\text{ \\text{Å}}', r'\\text{Å}')
 
+    # 8. Normalize double-escaped LaTeX commands (\\cmd -> \cmd)
+    text = normalize_latex(text)
+
     return text
+
+
+def normalize_latex(text: str) -> str:
+    """Normalize double-escaped LaTeX command backslashes (\\\\cmd -> \\cmd)."""
+    if not text:
+        return ""
+    if not isinstance(text, str):
+        text = str(text)
+    return re.sub(r"\\{2,}([a-zA-Z]+)", r"\\\1", text)
 
 
 def _format_latex_and_math(text: str) -> str:
@@ -170,6 +182,7 @@ def _format_latex_and_math(text: str) -> str:
     if not text:
         return ""
     text = normalize_angstrom(str(text))
+    text = normalize_latex(text)
 
     math_blocks: list[str] = []
     def save_math(m: re.Match) -> str:

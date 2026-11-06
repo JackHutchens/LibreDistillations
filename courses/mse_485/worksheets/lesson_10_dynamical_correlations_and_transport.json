@@ -27,19 +27,23 @@
         "options": [
           {
             "id": "a",
-            "text": "MD integrates the physical equations of motion in real time $t$, allowing direct evaluation of time correlation functions $C_{AB}(t)$, collective excitations $S(k, \\omega)$, and transport coefficients."
+            "text": "MD integrates the physical equations of motion in real time $t$, allowing direct evaluation of time correlation functions $C_{AB}(t)$, collective excitations $S(k, \\omega)$, and transport coefficients.",
+            "text_markdown": "MD integrates the physical equations of motion in real time $t$, allowing direct evaluation of time correlation functions $C_{AB}(t)$, collective excitations $S(k, \\omega)$, and transport coefficients."
           },
           {
             "id": "b",
-            "text": "MC cannot compute static equilibrium properties such as pressure $P$ or radial distribution function $g(r)$."
+            "text": "MC cannot compute static equilibrium properties such as pressure $P$ or radial distribution function $g(r)$.",
+            "text_markdown": "MC cannot compute static equilibrium properties such as pressure $P$ or radial distribution function $g(r)$."
           },
           {
             "id": "c",
-            "text": "MD does not require an interatomic potential energy function $V(\\mathbf{R})$."
+            "text": "MD does not require an interatomic potential energy function $V(\\mathbf{R})$.",
+            "text_markdown": "MD does not require an interatomic potential energy function $V(\\mathbf{R})$."
           },
           {
             "id": "d",
-            "text": "MC simulations are restricted to 1D systems."
+            "text": "MC simulations are restricted to 1D systems.",
+            "text_markdown": "MC simulations are restricted to 1D systems."
           }
         ],
         "correct": "a",
@@ -56,19 +60,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation."
+            "text": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation.",
+            "text_markdown": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation."
           },
           {
             "id": "b",
-            "text": "It is always strictly positive ($\\Delta F^{(2)} > 0$)."
+            "text": "It is always strictly positive ($\\Delta F^{(2)} > 0$).",
+            "text_markdown": "It is always strictly positive ($\\Delta F^{(2)} > 0$)."
           },
           {
             "id": "c",
-            "text": "Its sign alternates randomly with particle number $N$."
+            "text": "Its sign alternates randomly with particle number $N$.",
+            "text_markdown": "Its sign alternates randomly with particle number $N$."
           },
           {
             "id": "d",
-            "text": "It is identically zero at all temperatures."
+            "text": "It is identically zero at all temperatures.",
+            "text_markdown": "It is identically zero at all temperatures."
           }
         ],
         "correct": "a",
@@ -99,19 +107,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$."
+            "text": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$.",
+            "text_markdown": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$."
           },
           {
             "id": "b",
-            "text": "Because $C_{AB}(t)$ is independent of the lag time $t$."
+            "text": "Because $C_{AB}(t)$ is independent of the lag time $t$.",
+            "text_markdown": "Because $C_{AB}(t)$ is independent of the lag time $t$."
           },
           {
             "id": "c",
-            "text": "Because energy is not conserved in Molecular Dynamics."
+            "text": "Because energy is not conserved in Molecular Dynamics.",
+            "text_markdown": "Because energy is not conserved in Molecular Dynamics."
           },
           {
             "id": "d",
-            "text": "Because $t_0$ must always be set to $+\\infty$."
+            "text": "Because $t_0$ must always be set to $+\\infty$.",
+            "text_markdown": "Because $t_0$ must always be set to $+\\infty$."
           }
         ],
         "correct": "a",
@@ -128,19 +140,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Cauchy-Schwarz upper bound: $|C_{AA}(t)| \\le C_{AA}(0)$ for all $t$."
+            "text": "Cauchy-Schwarz upper bound: $|C_{AA}(t)| \\le C_{AA}(0)$ for all $t$.",
+            "text_markdown": "Cauchy-Schwarz upper bound: $|C_{AA}(t)| \\le C_{AA}(0)$ for all $t$."
           },
           {
             "id": "b",
-            "text": "Long-time decorrelation: $\\lim_{t \\to \\infty} C_{AA}(t) = 0$."
+            "text": "Long-time decorrelation: $\\lim_{t \\to \\infty} C_{AA}(t) = 0$.",
+            "text_markdown": "Long-time decorrelation: $\\lim_{t \\to \\infty} C_{AA}(t) = 0$."
           },
           {
             "id": "c",
-            "text": "Non-negative power spectrum: $C_{AA}(\\omega) = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi} e^{i\\omega t} C_{AA}(t) \\ge 0$ for all $\\omega$."
+            "text": "Non-negative power spectrum: $C_{AA}(\\omega) = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi} e^{i\\omega t} C_{AA}(t) \\ge 0$ for all $\\omega$.",
+            "text_markdown": "Non-negative power spectrum: $C_{AA}(\\omega) = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi} e^{i\\omega t} C_{AA}(t) \\ge 0$ for all $\\omega$."
           },
           {
             "id": "d",
-            "text": "Strict monotonicity: $C_{AA}(t)$ can never become negative at intermediate times $t > 0$."
+            "text": "Strict monotonicity: $C_{AA}(t)$ can never become negative at intermediate times $t > 0$.",
+            "text_markdown": "Strict monotonicity: $C_{AA}(t)$ can never become negative at intermediate times $t > 0$."
           }
         ],
         "correct": [
@@ -167,19 +183,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium."
+            "text": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium.",
+            "text_markdown": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium."
           },
           {
             "id": "b",
-            "text": "A system in thermal equilibrium never experiences any microscopic fluctuations."
+            "text": "A system in thermal equilibrium never experiences any microscopic fluctuations.",
+            "text_markdown": "A system in thermal equilibrium never experiences any microscopic fluctuations."
           },
           {
             "id": "c",
-            "text": "Non-equilibrium systems always relax instantaneously in zero time."
+            "text": "Non-equilibrium systems always relax instantaneously in zero time.",
+            "text_markdown": "Non-equilibrium systems always relax instantaneously in zero time."
           },
           {
             "id": "d",
-            "text": "Transport coefficients can only be measured at infinite temperature."
+            "text": "Transport coefficients can only be measured at infinite temperature.",
+            "text_markdown": "Transport coefficients can only be measured at infinite temperature."
           }
         ],
         "correct": "a",
@@ -196,19 +216,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Causality: the response of the system cannot precede the applied perturbation in time ($\\chi(t) = 0$ for $t < 0$)."
+            "text": "Causality: the response of the system cannot precede the applied perturbation in time ($\\chi(t) = 0$ for $t < 0$).",
+            "text_markdown": "Causality: the response of the system cannot precede the applied perturbation in time ($\\chi(t) = 0$ for $t < 0$)."
           },
           {
             "id": "b",
-            "text": "Periodic boundary conditions in a cubic box."
+            "text": "Periodic boundary conditions in a cubic box.",
+            "text_markdown": "Periodic boundary conditions in a cubic box."
           },
           {
             "id": "c",
-            "text": "The ideal-gas law $P\\Omega = N k_B T$."
+            "text": "The ideal-gas law $P\\Omega = N k_B T$.",
+            "text_markdown": "The ideal-gas law $P\\Omega = N k_B T$."
           },
           {
             "id": "d",
-            "text": "Absence of interatomic forces."
+            "text": "Absence of interatomic forces.",
+            "text_markdown": "Absence of interatomic forces."
           }
         ],
         "correct": "a",
@@ -225,19 +249,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The imaginary (out-of-phase) part $\\chi''(\\omega)$."
+            "text": "The imaginary (out-of-phase) part $\\chi''(\\omega)$.",
+            "text_markdown": "The imaginary (out-of-phase) part $\\chi''(\\omega)$."
           },
           {
             "id": "b",
-            "text": "The real (in-phase) part $\\chi'(\\omega)$."
+            "text": "The real (in-phase) part $\\chi'(\\omega)$.",
+            "text_markdown": "The real (in-phase) part $\\chi'(\\omega)$."
           },
           {
             "id": "c",
-            "text": "The zero-frequency static susceptibility $\\chi'(0)$ only."
+            "text": "The zero-frequency static susceptibility $\\chi'(0)$ only.",
+            "text_markdown": "The zero-frequency static susceptibility $\\chi'(0)$ only."
           },
           {
             "id": "d",
-            "text": "Neither; linear response never dissipates energy."
+            "text": "Neither; linear response never dissipates energy.",
+            "text_markdown": "Neither; linear response never dissipates energy."
           }
         ],
         "correct": "a",
@@ -282,19 +310,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$"
+            "text": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$",
+            "text_markdown": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$"
           },
           {
             "id": "b",
-            "text": "$S(\\mathbf{k}) = \\lim_{t \\to \\infty} F(\\mathbf{k}, t) = S(\\mathbf{k}, \\omega=0)$"
+            "text": "$S(\\mathbf{k}) = \\lim_{t \\to \\infty} F(\\mathbf{k}, t) = S(\\mathbf{k}, \\omega=0)$",
+            "text_markdown": "$S(\\mathbf{k}) = \\lim_{t \\to \\infty} F(\\mathbf{k}, t) = S(\\mathbf{k}, \\omega=0)$"
           },
           {
             "id": "c",
-            "text": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$"
+            "text": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$",
+            "text_markdown": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$"
           },
           {
             "id": "d",
-            "text": "$S(\\mathbf{k})$ and $S(\\mathbf{k}, \\omega)$ are completely unrelated."
+            "text": "$S(\\mathbf{k})$ and $S(\\mathbf{k}, \\omega)$ are completely unrelated.",
+            "text_markdown": "$S(\\mathbf{k})$ and $S(\\mathbf{k}, \\omega)$ are completely unrelated."
           }
         ],
         "correct": "a",
@@ -311,19 +343,23 @@
         "options": [
           {
             "id": "a",
-            "text": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$."
+            "text": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$.",
+            "text_markdown": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$."
           },
           {
             "id": "b",
-            "text": "As a single infinitely sharp delta function at $\\omega = 0$ independent of $q$."
+            "text": "As a single infinitely sharp delta function at $\\omega = 0$ independent of $q$.",
+            "text_markdown": "As a single infinitely sharp delta function at $\\omega = 0$ independent of $q$."
           },
           {
             "id": "c",
-            "text": "As a flat horizontal line $S(q, \\omega) = 1$ for all $\\omega$."
+            "text": "As a flat horizontal line $S(q, \\omega) = 1$ for all $\\omega$.",
+            "text_markdown": "As a flat horizontal line $S(q, \\omega) = 1$ for all $\\omega$."
           },
           {
             "id": "d",
-            "text": "As negative spikes where $S(q, \\omega) < 0$."
+            "text": "As negative spikes where $S(q, \\omega) < 0$.",
+            "text_markdown": "As negative spikes where $S(q, \\omega) < 0$."
           }
         ],
         "correct": "a",
@@ -340,19 +376,23 @@
         "options": [
           {
             "id": "a",
-            "text": "At small $kd = 0.38$ ($\\lambda \\gg d$), collective hydrodynamic sound waves propagate coherently over many particle diameters; at $kd = 2.28$ ($\\lambda \\sim d$), scattering probes single-particle diffusive/collisional motion where sound modes are overdamped."
+            "text": "At small $kd = 0.38$ ($\\lambda \\gg d$), collective hydrodynamic sound waves propagate coherently over many particle diameters; at $kd = 2.28$ ($\\lambda \\sim d$), scattering probes single-particle diffusive/collisional motion where sound modes are overdamped.",
+            "text_markdown": "At small $kd = 0.38$ ($\\lambda \\gg d$), collective hydrodynamic sound waves propagate coherently over many particle diameters; at $kd = 2.28$ ($\\lambda \\sim d$), scattering probes single-particle diffusive/collisional motion where sound modes are overdamped."
           },
           {
             "id": "b",
-            "text": "Because hard spheres do not collide at $kd = 2.28$."
+            "text": "Because hard spheres do not collide at $kd = 2.28$.",
+            "text_markdown": "Because hard spheres do not collide at $kd = 2.28$."
           },
           {
             "id": "c",
-            "text": "Because the temperature is zero in panel (b)."
+            "text": "Because the temperature is zero in panel (b).",
+            "text_markdown": "Because the temperature is zero in panel (b)."
           },
           {
             "id": "d",
-            "text": "Because $S(k, \\omega)$ is only defined for $kd > 10$."
+            "text": "Because $S(k, \\omega)$ is only defined for $kd > 10$.",
+            "text_markdown": "Because $S(k, \\omega)$ is only defined for $kd > 10$."
           }
         ],
         "correct": "a",
@@ -474,19 +514,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$)."
+            "text": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$).",
+            "text_markdown": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$)."
           },
           {
             "id": "b",
-            "text": "Newton's third law and the ideal gas equation of state."
+            "text": "Newton's third law and the ideal gas equation of state.",
+            "text_markdown": "Newton's third law and the ideal gas equation of state."
           },
           {
             "id": "c",
-            "text": "The Debye-Waller factor and Lindemann's melting criterion."
+            "text": "The Debye-Waller factor and Lindemann's melting criterion.",
+            "text_markdown": "The Debye-Waller factor and Lindemann's melting criterion."
           },
           {
             "id": "d",
-            "text": "Quantum detailed balance and the virial pressure theorem."
+            "text": "Quantum detailed balance and the virial pressure theorem.",
+            "text_markdown": "Quantum detailed balance and the virial pressure theorem."
           }
         ],
         "correct": "a",
@@ -503,19 +547,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$."
+            "text": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$.",
+            "text_markdown": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$."
           },
           {
             "id": "b",
-            "text": "In both 2D and 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$."
+            "text": "In both 2D and 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$.",
+            "text_markdown": "In both 2D and 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$."
           },
           {
             "id": "c",
-            "text": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$."
+            "text": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$.",
+            "text_markdown": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$."
           },
           {
             "id": "d",
-            "text": "In 2D: $\\text{MSD} = 4 D t^2$; in 3D: $\\text{MSD} = 6 D t^2$."
+            "text": "In 2D: $\\text{MSD} = 4 D t^2$; in 3D: $\\text{MSD} = 6 D t^2$.",
+            "text_markdown": "In 2D: $\\text{MSD} = 4 D t^2$; in 3D: $\\text{MSD} = 6 D t^2$."
           }
         ],
         "correct": "a",
@@ -535,19 +583,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$."
+            "text": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$.",
+            "text_markdown": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$."
           },
           {
             "id": "b",
-            "text": "Linearly in time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle = 6 D t$ even at $t \\to 0$."
+            "text": "Linearly in time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle = 6 D t$ even at $t \\to 0$.",
+            "text_markdown": "Linearly in time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle = 6 D t$ even at $t \\to 0$."
           },
           {
             "id": "c",
-            "text": "Exponentially in time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto e^{t/\\tau_c}$."
+            "text": "Exponentially in time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto e^{t/\\tau_c}$.",
+            "text_markdown": "Exponentially in time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto e^{t/\\tau_c}$."
           },
           {
             "id": "d",
-            "text": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$."
+            "text": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$.",
+            "text_markdown": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$."
           }
         ],
         "correct": "a",
@@ -584,19 +636,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because PBC-wrapped coordinates are confined to $[0, L)^3$, causing the wrapped MSD to artificially saturate at $\\sim L^2/2$ (giving an apparent long-time slope $D = 0$), whereas $\\int_0^t \\mathbf{v}_i(t')dt'$ equals the continuous unwound displacement."
+            "text": "Because PBC-wrapped coordinates are confined to $[0, L)^3$, causing the wrapped MSD to artificially saturate at $\\sim L^2/2$ (giving an apparent long-time slope $D = 0$), whereas $\\int_0^t \\mathbf{v}_i(t')dt'$ equals the continuous unwound displacement.",
+            "text_markdown": "Because PBC-wrapped coordinates are confined to $[0, L)^3$, causing the wrapped MSD to artificially saturate at $\\sim L^2/2$ (giving an apparent long-time slope $D = 0$), whereas $\\int_0^t \\mathbf{v}_i(t')dt'$ equals the continuous unwound displacement."
           },
           {
             "id": "b",
-            "text": "Because periodic boundary conditions violate conservation of momentum during collisions."
+            "text": "Because periodic boundary conditions violate conservation of momentum during collisions.",
+            "text_markdown": "Because periodic boundary conditions violate conservation of momentum during collisions."
           },
           {
             "id": "c",
-            "text": "Because the Green-Kubo velocity integral only works if all velocities are set to zero at the box boundaries."
+            "text": "Because the Green-Kubo velocity integral only works if all velocities are set to zero at the box boundaries.",
+            "text_markdown": "Because the Green-Kubo velocity integral only works if all velocities are set to zero at the box boundaries."
           },
           {
             "id": "d",
-            "text": "Because PBC-wrapped coordinates cause the MSD to grow as $t^4$."
+            "text": "Because PBC-wrapped coordinates cause the MSD to grow as $t^4$.",
+            "text_markdown": "Because PBC-wrapped coordinates cause the MSD to grow as $t^4$."
           }
         ],
         "correct": "a",
@@ -667,19 +723,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector."
+            "text": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector.",
+            "text_markdown": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector."
           },
           {
             "id": "b",
-            "text": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$."
+            "text": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$.",
+            "text_markdown": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$."
           },
           {
             "id": "c",
-            "text": "Because the mass of the Lennard-Jones atoms changes sign."
+            "text": "Because the mass of the Lennard-Jones atoms changes sign.",
+            "text_markdown": "Because the mass of the Lennard-Jones atoms changes sign."
           },
           {
             "id": "d",
-            "text": "Because periodic boundary conditions invert the velocity vector when an atom crosses $L/2$."
+            "text": "Because periodic boundary conditions invert the velocity vector when an atom crosses $L/2$.",
+            "text_markdown": "Because periodic boundary conditions invert the velocity vector when an atom crosses $L/2$."
           }
         ],
         "correct": "a",
@@ -699,19 +759,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages."
+            "text": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages.",
+            "text_markdown": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages."
           },
           {
             "id": "b",
-            "text": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is the shear viscosity $\\eta$, and the peak is the ideal-gas pressure."
+            "text": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is the shear viscosity $\\eta$, and the peak is the ideal-gas pressure.",
+            "text_markdown": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is the shear viscosity $\\eta$, and the peak is the ideal-gas pressure."
           },
           {
             "id": "c",
-            "text": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid."
+            "text": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid.",
+            "text_markdown": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid."
           },
           {
             "id": "d",
-            "text": "$\\hat{c}_{vv}(0)$ measures the crystal lattice constant."
+            "text": "$\\hat{c}_{vv}(0)$ measures the crystal lattice constant.",
+            "text_markdown": "$\\hat{c}_{vv}(0)$ measures the crystal lattice constant."
           }
         ],
         "correct": "a",
@@ -745,19 +809,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance."
+            "text": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance.",
+            "text_markdown": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance."
           },
           {
             "id": "b",
-            "text": "Because a linear molecule has zero mass along its parallel axis."
+            "text": "Because a linear molecule has zero mass along its parallel axis.",
+            "text_markdown": "Because a linear molecule has zero mass along its parallel axis."
           },
           {
             "id": "c",
-            "text": "Because equipartition is violated at $t = 0$ between parallel and perpendicular translational velocities."
+            "text": "Because equipartition is violated at $t = 0$ between parallel and perpendicular translational velocities.",
+            "text_markdown": "Because equipartition is violated at $t = 0$ between parallel and perpendicular translational velocities."
           },
           {
             "id": "d",
-            "text": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$."
+            "text": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$.",
+            "text_markdown": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$."
           }
         ],
         "correct": "a",
@@ -774,19 +842,23 @@
         "options": [
           {
             "id": "a",
-            "text": "W and Re are heavy 5d refractory transition metals ($m \\approx 184\\text{\u2013}186\\,\\text{u}$, thermal velocity $v_{\\text{th}} \\propto m^{-1/2}$) with strong directional d-band bonding that slows both their own hopping and the surrounding Ni solvent cage."
+            "text": "W and Re are heavy 5d refractory transition metals ($m \\approx 184\\text{\u2013}186\\,\\text{u}$, thermal velocity $v_{\\text{th}} \\propto m^{-1/2}$) with strong directional d-band bonding that slows both their own hopping and the surrounding Ni solvent cage.",
+            "text_markdown": "W and Re are heavy 5d refractory transition metals ($m \\approx 184\\text{\u2013}186\\,\\text{u}$, thermal velocity $v_{\\text{th}} \\propto m^{-1/2}$) with strong directional d-band bonding that slows both their own hopping and the surrounding Ni solvent cage."
           },
           {
             "id": "b",
-            "text": "Al atoms have a larger atomic mass than W and Re."
+            "text": "Al atoms have a larger atomic mass than W and Re.",
+            "text_markdown": "Al atoms have a larger atomic mass than W and Re."
           },
           {
             "id": "c",
-            "text": "A steeper MSD slope on Slide 11 corresponds to a smaller diffusion constant $D$."
+            "text": "A steeper MSD slope on Slide 11 corresponds to a smaller diffusion constant $D$.",
+            "text_markdown": "A steeper MSD slope on Slide 11 corresponds to a smaller diffusion constant $D$."
           },
           {
             "id": "d",
-            "text": "Solute diffusion cannot be measured using the Einstein MSD relation."
+            "text": "Solute diffusion cannot be measured using the Einstein MSD relation.",
+            "text_markdown": "Solute diffusion cannot be measured using the Einstein MSD relation."
           }
         ],
         "correct": "a",
@@ -858,19 +930,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$."
+            "text": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$.",
+            "text_markdown": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$."
           },
           {
             "id": "b",
-            "text": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$."
+            "text": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$.",
+            "text_markdown": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$."
           },
           {
             "id": "c",
-            "text": "The microscopic heat/energy current $\\mathbf{J}^Q(t)$."
+            "text": "The microscopic heat/energy current $\\mathbf{J}^Q(t)$.",
+            "text_markdown": "The microscopic heat/energy current $\\mathbf{J}^Q(t)$."
           },
           {
             "id": "d",
-            "text": "The static radial distribution function $g(r)$."
+            "text": "The static radial distribution function $g(r)$.",
+            "text_markdown": "The static radial distribution function $g(r)$."
           }
         ],
         "correct": "a",
@@ -887,19 +963,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$."
+            "text": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$.",
+            "text_markdown": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$."
           },
           {
             "id": "b",
-            "text": "Stress tensor $\\sigma_{xy}(t)$ for $\\lambda_T$, and particle density $\\rho_{\\mathbf{k}}(t)$ for $\\sigma_{\\text{el}}$."
+            "text": "Stress tensor $\\sigma_{xy}(t)$ for $\\lambda_T$, and particle density $\\rho_{\\mathbf{k}}(t)$ for $\\sigma_{\\text{el}}$.",
+            "text_markdown": "Stress tensor $\\sigma_{xy}(t)$ for $\\lambda_T$, and particle density $\\rho_{\\mathbf{k}}(t)$ for $\\sigma_{\\text{el}}$."
           },
           {
             "id": "c",
-            "text": "Total potential energy $V(t)$ for both."
+            "text": "Total potential energy $V(t)$ for both.",
+            "text_markdown": "Total potential energy $V(t)$ for both."
           },
           {
             "id": "d",
-            "text": "Single-particle position $\\mathbf{r}_1(t)$ for both."
+            "text": "Single-particle position $\\mathbf{r}_1(t)$ for both.",
+            "text_markdown": "Single-particle position $\\mathbf{r}_1(t)$ for both."
           }
         ],
         "correct": "a",
@@ -916,19 +996,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin)."
+            "text": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin).",
+            "text_markdown": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin)."
           },
           {
             "id": "b",
-            "text": "Because $\\sigma_{xy}(t)$ is only defined for $N = 1$ particle."
+            "text": "Because $\\sigma_{xy}(t)$ is only defined for $N = 1$ particle.",
+            "text_markdown": "Because $\\sigma_{xy}(t)$ is only defined for $N = 1$ particle."
           },
           {
             "id": "c",
-            "text": "Because the velocity autocorrelation function never decays to zero."
+            "text": "Because the velocity autocorrelation function never decays to zero.",
+            "text_markdown": "Because the velocity autocorrelation function never decays to zero."
           },
           {
             "id": "d",
-            "text": "Because viscosity cannot be computed in 3D."
+            "text": "Because viscosity cannot be computed in 3D.",
+            "text_markdown": "Because viscosity cannot be computed in 3D."
           }
         ],
         "correct": "a",
@@ -945,19 +1029,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because the external driving field continuously performs irreversible work (viscous or Joule heating) on the system; without a thermostat to extract this heat, the energy and temperature would drift upward indefinitely instead of reaching a steady state."
+            "text": "Because the external driving field continuously performs irreversible work (viscous or Joule heating) on the system; without a thermostat to extract this heat, the energy and temperature would drift upward indefinitely instead of reaching a steady state.",
+            "text_markdown": "Because the external driving field continuously performs irreversible work (viscous or Joule heating) on the system; without a thermostat to extract this heat, the energy and temperature would drift upward indefinitely instead of reaching a steady state."
           },
           {
             "id": "b",
-            "text": "Because without a thermostat, all particles stop moving immediately when an electric field is applied."
+            "text": "Because without a thermostat, all particles stop moving immediately when an electric field is applied.",
+            "text_markdown": "Because without a thermostat, all particles stop moving immediately when an electric field is applied."
           },
           {
             "id": "c",
-            "text": "Because a thermostat is required to break conservation of mass."
+            "text": "Because a thermostat is required to break conservation of mass.",
+            "text_markdown": "Because a thermostat is required to break conservation of mass."
           },
           {
             "id": "d",
-            "text": "Because Green-Kubo integrals can only be evaluated at $T = 0\\,\\text{K}$."
+            "text": "Because Green-Kubo integrals can only be evaluated at $T = 0\\,\\text{K}$.",
+            "text_markdown": "Because Green-Kubo integrals can only be evaluated at $T = 0\\,\\text{K}$."
           }
         ],
         "correct": "a",
@@ -977,19 +1065,23 @@
         "options": [
           {
             "id": "a",
-            "text": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation."
+            "text": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation.",
+            "text_markdown": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation."
           },
           {
             "id": "b",
-            "text": "They discovered that hard spheres never collide in 2D or 3D."
+            "text": "They discovered that hard spheres never collide in 2D or 3D.",
+            "text_markdown": "They discovered that hard spheres never collide in 2D or 3D."
           },
           {
             "id": "c",
-            "text": "They proved that the velocity autocorrelation function is identically zero for all $t > 0$."
+            "text": "They proved that the velocity autocorrelation function is identically zero for all $t > 0$.",
+            "text_markdown": "They proved that the velocity autocorrelation function is identically zero for all $t > 0$."
           },
           {
             "id": "d",
-            "text": "They showed that attractive Lennard-Jones tails are required to produce hydrodynamic vortices."
+            "text": "They showed that attractive Lennard-Jones tails are required to produce hydrodynamic vortices.",
+            "text_markdown": "They showed that attractive Lennard-Jones tails are required to produce hydrodynamic vortices."
           }
         ],
         "correct": "a",
@@ -1009,19 +1101,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$."
+            "text": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$.",
+            "text_markdown": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$."
           },
           {
             "id": "b",
-            "text": "In 2D, particles cannot move at all, so $D = 0$ identically at all temperatures."
+            "text": "In 2D, particles cannot move at all, so $D = 0$ identically at all temperatures.",
+            "text_markdown": "In 2D, particles cannot move at all, so $D = 0$ identically at all temperatures."
           },
           {
             "id": "c",
-            "text": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$."
+            "text": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$.",
+            "text_markdown": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$."
           },
           {
             "id": "d",
-            "text": "In 2D, velocities have no $x$ or $y$ components."
+            "text": "In 2D, velocities have no $x$ or $y$ components.",
+            "text_markdown": "In 2D, velocities have no $x$ or $y$ components."
           }
         ],
         "correct": "a",
@@ -1055,19 +1151,23 @@
         "options": [
           {
             "id": "a",
-            "text": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction."
+            "text": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction.",
+            "text_markdown": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction."
           },
           {
             "id": "b",
-            "text": "They make $C_{vv}(t)$ oscillate between $+1$ and $-1$ forever with undamped amplitude."
+            "text": "They make $C_{vv}(t)$ oscillate between $+1$ and $-1$ forever with undamped amplitude.",
+            "text_markdown": "They make $C_{vv}(t)$ oscillate between $+1$ and $-1$ forever with undamped amplitude."
           },
           {
             "id": "c",
-            "text": "They cause the particle to freeze into a crystal."
+            "text": "They cause the particle to freeze into a crystal.",
+            "text_markdown": "They cause the particle to freeze into a crystal."
           },
           {
             "id": "d",
-            "text": "They only occur if particles interact via long-range gravitational attraction."
+            "text": "They only occur if particles interact via long-range gravitational attraction.",
+            "text_markdown": "They only occur if particles interact via long-range gravitational attraction."
           }
         ],
         "correct": "a",
@@ -1090,19 +1190,23 @@
         "options": [
           {
             "id": "a",
-            "text": "A Lorentzian peak centered at $\\omega = 0$ whose half-width at half-maximum scales quadratically with wavevector, $\\Gamma(k) = D k^2$."
+            "text": "A Lorentzian peak centered at $\\omega = 0$ whose half-width at half-maximum scales quadratically with wavevector, $\\Gamma(k) = D k^2$.",
+            "text_markdown": "A Lorentzian peak centered at $\\omega = 0$ whose half-width at half-maximum scales quadratically with wavevector, $\\Gamma(k) = D k^2$."
           },
           {
             "id": "b",
-            "text": "Two sharp delta functions at $\\omega = \\pm D k$."
+            "text": "Two sharp delta functions at $\\omega = \\pm D k$.",
+            "text_markdown": "Two sharp delta functions at $\\omega = \\pm D k$."
           },
           {
             "id": "c",
-            "text": "A Gaussian whose width is independent of $k$."
+            "text": "A Gaussian whose width is independent of $k$.",
+            "text_markdown": "A Gaussian whose width is independent of $k$."
           },
           {
             "id": "d",
-            "text": "A step function that vanishes for all $|\\omega| < D k^2$."
+            "text": "A step function that vanishes for all $|\\omega| < D k^2$.",
+            "text_markdown": "A step function that vanishes for all $|\\omega| < D k^2$."
           }
         ],
         "correct": "a",
@@ -1167,19 +1271,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$)."
+            "text": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$).",
+            "text_markdown": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$)."
           },
           {
             "id": "b",
-            "text": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$."
+            "text": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$.",
+            "text_markdown": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$."
           },
           {
             "id": "c",
-            "text": "$\\sigma_{\\text{el}} = \\frac{k_B T}{\\rho q^2 D}$."
+            "text": "$\\sigma_{\\text{el}} = \\frac{k_B T}{\\rho q^2 D}$.",
+            "text_markdown": "$\\sigma_{\\text{el}} = \\frac{k_B T}{\\rho q^2 D}$."
           },
           {
             "id": "d",
-            "text": "$\\sigma_{\\text{el}} = N^2 q^2 D$."
+            "text": "$\\sigma_{\\text{el}} = N^2 q^2 D$.",
+            "text_markdown": "$\\sigma_{\\text{el}} = N^2 q^2 D$."
           }
         ],
         "correct": "a",
@@ -1199,19 +1307,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle."
+            "text": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle.",
+            "text_markdown": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle."
           },
           {
             "id": "b",
-            "text": "Only for $t < \\Delta t$ (a single MD integration step)."
+            "text": "Only for $t < \\Delta t$ (a single MD integration step).",
+            "text_markdown": "Only for $t < \\Delta t$ (a single MD integration step)."
           },
           {
             "id": "c",
-            "text": "Out to $t = \\infty$ regardless of how small $L$ is."
+            "text": "Out to $t = \\infty$ regardless of how small $L$ is.",
+            "text_markdown": "Out to $t = \\infty$ regardless of how small $L$ is."
           },
           {
             "id": "d",
-            "text": "Only when $L = 0$."
+            "text": "Only when $L = 0$.",
+            "text_markdown": "Only when $L = 0$."
           }
         ],
         "correct": "a",
@@ -1228,19 +1340,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$."
+            "text": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$.",
+            "text_markdown": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$."
           },
           {
             "id": "b",
-            "text": "$C_{AA}(\\omega)$ is purely imaginary and odd in $\\omega$."
+            "text": "$C_{AA}(\\omega)$ is purely imaginary and odd in $\\omega$.",
+            "text_markdown": "$C_{AA}(\\omega)$ is purely imaginary and odd in $\\omega$."
           },
           {
             "id": "c",
-            "text": "The initial value $C_{AA}(0)$ must be zero."
+            "text": "The initial value $C_{AA}(0)$ must be zero.",
+            "text_markdown": "The initial value $C_{AA}(0)$ must be zero."
           },
           {
             "id": "d",
-            "text": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$."
+            "text": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$.",
+            "text_markdown": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$."
           }
         ],
         "correct": "a",
@@ -1261,19 +1377,23 @@
         "options": [
           {
             "id": "a",
-            "text": "By the Fluctuation-Dissipation Theorem and Onsager's regression hypothesis, linear transport coefficients can be computed purely from equilibrium time correlation functions without applying an external perturbation."
+            "text": "By the Fluctuation-Dissipation Theorem and Onsager's regression hypothesis, linear transport coefficients can be computed purely from equilibrium time correlation functions without applying an external perturbation.",
+            "text_markdown": "By the Fluctuation-Dissipation Theorem and Onsager's regression hypothesis, linear transport coefficients can be computed purely from equilibrium time correlation functions without applying an external perturbation."
           },
           {
             "id": "b",
-            "text": "The Einstein MSD formula $D = \\lim_{t\\to\\infty} \\frac{1}{6t}\\langle |\\mathbf{r}_i(t) - \\mathbf{r}_i(0)|^2\\rangle$ and the 3D Green-Kubo VACF integral $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$ are mathematically identical provided continuous unwound coordinates are used."
+            "text": "The Einstein MSD formula $D = \\lim_{t\\to\\infty} \\frac{1}{6t}\\langle |\\mathbf{r}_i(t) - \\mathbf{r}_i(0)|^2\\rangle$ and the 3D Green-Kubo VACF integral $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$ are mathematically identical provided continuous unwound coordinates are used.",
+            "text_markdown": "The Einstein MSD formula $D = \\lim_{t\\to\\infty} \\frac{1}{6t}\\langle |\\mathbf{r}_i(t) - \\mathbf{r}_i(0)|^2\\rangle$ and the 3D Green-Kubo VACF integral $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$ are mathematically identical provided continuous unwound coordinates are used."
           },
           {
             "id": "c",
-            "text": "Inelastic neutron scattering measures the dynamical structure factor $S(\\mathbf{k}, \\omega)$, whose Brillouin peaks probe collective sound-wave dispersions and damping."
+            "text": "Inelastic neutron scattering measures the dynamical structure factor $S(\\mathbf{k}, \\omega)$, whose Brillouin peaks probe collective sound-wave dispersions and damping.",
+            "text_markdown": "Inelastic neutron scattering measures the dynamical structure factor $S(\\mathbf{k}, \\omega)$, whose Brillouin peaks probe collective sound-wave dispersions and damping."
           },
           {
             "id": "d",
-            "text": "Because of Alder-Wainwright hydrodynamic vortex tails ($C_{vv}(t) \\propto t^{-d/2}$), the 2D Green-Kubo integral diverges logarithmically whereas the 3D integral converges."
+            "text": "Because of Alder-Wainwright hydrodynamic vortex tails ($C_{vv}(t) \\propto t^{-d/2}$), the 2D Green-Kubo integral diverges logarithmically whereas the 3D integral converges.",
+            "text_markdown": "Because of Alder-Wainwright hydrodynamic vortex tails ($C_{vv}(t) \\propto t^{-d/2}$), the 2D Green-Kubo integral diverges logarithmically whereas the 3D integral converges."
           }
         ],
         "correct": [

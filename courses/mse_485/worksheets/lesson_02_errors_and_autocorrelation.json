@@ -28,19 +28,23 @@
       "options": [
         {
           "id": "a",
-          "text": "For times $t \\gg \\kappa$ (much longer than the correlation time), the system loses memory of its initial state $S_0$ (aside from conserved quantities) and samples a unique equilibrium probability distribution $\\lim_{t\\to\\infty} F_t(S\\mid S_0) = F^*(S)$."
+          "text": "For times $t \\gg \\kappa$ (much longer than the correlation time), the system loses memory of its initial state $S_0$ (aside from conserved quantities) and samples a unique equilibrium probability distribution $\\lim_{t\\to\\infty} F_t(S\\mid S_0) = F^*(S)$.",
+          "text_markdown": "For times $t \\gg \\kappa$ (much longer than the correlation time), the system loses memory of its initial state $S_0$ (aside from conserved quantities) and samples a unique equilibrium probability distribution $\\lim_{t\\to\\infty} F_t(S\\mid S_0) = F^*(S)$."
         },
         {
           "id": "b",
-          "text": "The instantaneous potential energy $V(S_t)$ becomes strictly constant and stops fluctuating once $t > \\kappa$."
+          "text": "The instantaneous potential energy $V(S_t)$ becomes strictly constant and stops fluctuating once $t > \\kappa$.",
+          "text_markdown": "The instantaneous potential energy $V(S_t)$ becomes strictly constant and stops fluctuating once $t > \\kappa$."
         },
         {
           "id": "c",
-          "text": "Every microstate in phase space has the exact same energy $\\mathcal{H}(S)$ regardless of temperature."
+          "text": "Every microstate in phase space has the exact same energy $\\mathcal{H}(S)$ regardless of temperature.",
+          "text_markdown": "Every microstate in phase space has the exact same energy $\\mathcal{H}(S)$ regardless of temperature."
         },
         {
           "id": "d",
-          "text": "Consecutive states $S_n$ and $S_{n+1}$ are completely uncorrelated at a single step separation ($\\Delta n = 1$)."
+          "text": "Consecutive states $S_n$ and $S_{n+1}$ are completely uncorrelated at a single step separation ($\\Delta n = 1$).",
+          "text_markdown": "Consecutive states $S_n$ and $S_{n+1}$ are completely uncorrelated at a single step separation ($\\Delta n = 1$)."
         }
       ],
       "correct": "a",
@@ -57,19 +61,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Ergodicity is often straightforward to prove mathematically for random/stochastic transitions, but is notoriously difficult (or fails in quasi-integrable regimes) for deterministic simulations."
+          "text": "Ergodicity is often straightforward to prove mathematically for random/stochastic transitions, but is notoriously difficult (or fails in quasi-integrable regimes) for deterministic simulations.",
+          "text_markdown": "Ergodicity is often straightforward to prove mathematically for random/stochastic transitions, but is notoriously difficult (or fails in quasi-integrable regimes) for deterministic simulations."
         },
         {
           "id": "b",
-          "text": "Ergodicity is trivial to prove for every deterministic Newtonian system, including harmonic crystals, but impossible to prove for Monte Carlo."
+          "text": "Ergodicity is trivial to prove for every deterministic Newtonian system, including harmonic crystals, but impossible to prove for Monte Carlo.",
+          "text_markdown": "Ergodicity is trivial to prove for every deterministic Newtonian system, including harmonic crystals, but impossible to prove for Monte Carlo."
         },
         {
           "id": "c",
-          "text": "Deterministic simulations can never be ergodic under any circumstances."
+          "text": "Deterministic simulations can never be ergodic under any circumstances.",
+          "text_markdown": "Deterministic simulations can never be ergodic under any circumstances."
         },
         {
           "id": "d",
-          "text": "Ergodicity only applies to quantum systems, not classical phase space."
+          "text": "Ergodicity only applies to quantum systems, not classical phase space.",
+          "text_markdown": "Ergodicity only applies to quantum systems, not classical phase space."
         }
       ],
       "correct": "a",
@@ -98,19 +106,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Using an empirical pair potential that omits three-body covalent bonding interactions present in the real material."
+          "text": "Using an empirical pair potential that omits three-body covalent bonding interactions present in the real material.",
+          "text_markdown": "Using an empirical pair potential that omits three-body covalent bonding interactions present in the real material."
         },
         {
           "id": "b",
-          "text": "Choosing a Verlet integration time step $\\Delta t = 10\\text{ fs}$ that is too large, introducing $\\mathcal{O}(\\Delta t^2)$ Hamiltonian truncation drift."
+          "text": "Choosing a Verlet integration time step $\\Delta t = 10\\text{ fs}$ that is too large, introducing $\\mathcal{O}(\\Delta t^2)$ Hamiltonian truncation drift.",
+          "text_markdown": "Choosing a Verlet integration time step $\\Delta t = 10\\text{ fs}$ that is too large, introducing $\\mathcal{O}(\\Delta t^2)$ Hamiltonian truncation drift."
         },
         {
           "id": "c",
-          "text": "Including the initial non-equilibrium warm-up transient ($t < t_{\\text{eq}}$) inside your production average."
+          "text": "Including the initial non-equilibrium warm-up transient ($t < t_{\\text{eq}}$) inside your production average.",
+          "text_markdown": "Including the initial non-equilibrium warm-up transient ($t < t_{\\text{eq}}$) inside your production average."
         },
         {
           "id": "d",
-          "text": "The random $\\pm \\sigma_A / \\sqrt{N_{\\text{eff}}}$ uncertainty in the sample mean due to averaging over a finite number of equilibrium fluctuations."
+          "text": "The random $\\pm \\sigma_A / \\sqrt{N_{\\text{eff}}}$ uncertainty in the sample mean due to averaging over a finite number of equilibrium fluctuations.",
+          "text_markdown": "The random $\\pm \\sigma_A / \\sqrt{N_{\\text{eff}}}$ uncertainty in the sample mean due to averaging over a finite number of equilibrium fluctuations."
         }
       ],
       "correct": [
@@ -143,19 +155,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$\\zeta$ remains unchanged, because $\\sigma_{\\text{err}}$ decreases by a factor of $2$ ($\\sigma_{\\text{err}}^2 \\to \\sigma_{\\text{err}}^2 / 4$), canceling the $4\\times$ increase in $T$."
+          "text": "$\\zeta$ remains unchanged, because $\\sigma_{\\text{err}}$ decreases by a factor of $2$ ($\\sigma_{\\text{err}}^2 \\to \\sigma_{\\text{err}}^2 / 4$), canceling the $4\\times$ increase in $T$.",
+          "text_markdown": "$\\zeta$ remains unchanged, because $\\sigma_{\\text{err}}$ decreases by a factor of $2$ ($\\sigma_{\\text{err}}^2 \\to \\sigma_{\\text{err}}^2 / 4$), canceling the $4\\times$ increase in $T$."
         },
         {
           "id": "b",
-          "text": "$\\zeta$ increases by a factor of $4$."
+          "text": "$\\zeta$ increases by a factor of $4$.",
+          "text_markdown": "$\\zeta$ increases by a factor of $4$."
         },
         {
           "id": "c",
-          "text": "$\\zeta$ decreases by a factor of $4$."
+          "text": "$\\zeta$ decreases by a factor of $4$.",
+          "text_markdown": "$\\zeta$ decreases by a factor of $4$."
         },
         {
           "id": "d",
-          "text": "$\\zeta$ increases by a factor of $2$."
+          "text": "$\\zeta$ increases by a factor of $2$.",
+          "text_markdown": "$\\zeta$ increases by a factor of $2$."
         }
       ],
       "correct": "a",
@@ -220,19 +236,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$C(0) = 1$ and $\\lim_{t\\to\\infty} C(t) = 0$"
+          "text": "$C(0) = 1$ and $\\lim_{t\\to\\infty} C(t) = 0$",
+          "text_markdown": "$C(0) = 1$ and $\\lim_{t\\to\\infty} C(t) = 0$"
         },
         {
           "id": "b",
-          "text": "$C(0) = \\sigma_A^2$ and $\\lim_{t\\to\\infty} C(t) = 1$"
+          "text": "$C(0) = \\sigma_A^2$ and $\\lim_{t\\to\\infty} C(t) = 1$",
+          "text_markdown": "$C(0) = \\sigma_A^2$ and $\\lim_{t\\to\\infty} C(t) = 1$"
         },
         {
           "id": "c",
-          "text": "$C(0) = 0$ and $\\lim_{t\\to\\infty} C(t) = \\kappa$"
+          "text": "$C(0) = 0$ and $\\lim_{t\\to\\infty} C(t) = \\kappa$",
+          "text_markdown": "$C(0) = 0$ and $\\lim_{t\\to\\infty} C(t) = \\kappa$"
         },
         {
           "id": "d",
-          "text": "$C(0) = \\langle A \\rangle^2$ and $\\lim_{t\\to\\infty} C(t) = 0$"
+          "text": "$C(0) = \\langle A \\rangle^2$ and $\\lim_{t\\to\\infty} C(t) = 0$",
+          "text_markdown": "$C(0) = \\langle A \\rangle^2$ and $\\lim_{t\\to\\infty} C(t) = 0$"
         }
       ],
       "correct": "a",
@@ -309,19 +329,23 @@
       "options": [
         {
           "id": "a",
-          "text": "At lags $i \\gg \\tau$, $c_A(i)$ consists of random finite-sample noise whose variance accumulates over hundreds of lags, corrupting the integral and biasing $\\kappa$ toward zero if summed to $N_{\\text{eq}}-1$."
+          "text": "At lags $i \\gg \\tau$, $c_A(i)$ consists of random finite-sample noise whose variance accumulates over hundreds of lags, corrupting the integral and biasing $\\kappa$ toward zero if summed to $N_{\\text{eq}}-1$.",
+          "text_markdown": "At lags $i \\gg \\tau$, $c_A(i)$ consists of random finite-sample noise whose variance accumulates over hundreds of lags, corrupting the integral and biasing $\\kappa$ toward zero if summed to $N_{\\text{eq}}-1$."
         },
         {
           "id": "b",
-          "text": "Because $c_A(i)$ always diverges to $+\\infty$ as $i \\to N_{\\text{eq}} - 1$."
+          "text": "Because $c_A(i)$ always diverges to $+\\infty$ as $i \\to N_{\\text{eq}} - 1$.",
+          "text_markdown": "Because $c_A(i)$ always diverges to $+\\infty$ as $i \\to N_{\\text{eq}} - 1$."
         },
         {
           "id": "c",
-          "text": "Because $c_A(i)$ is only defined for $i = 1$ and $i = 2$."
+          "text": "Because $c_A(i)$ is only defined for $i = 1$ and $i = 2$.",
+          "text_markdown": "Because $c_A(i)$ is only defined for $i = 1$ and $i = 2$."
         },
         {
           "id": "d",
-          "text": "Truncating at $C(t) = 0$ is done solely to save CPU time, as the large-lag terms are identically zero to machine precision."
+          "text": "Truncating at $C(t) = 0$ is done solely to save CPU time, as the large-lag terms are identically zero to machine precision.",
+          "text_markdown": "Truncating at $C(t) = 0$ is done solely to save CPU time, as the large-lag terms are identically zero to machine precision."
         }
       ],
       "correct": "a",
@@ -338,19 +362,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The correlated dataset (`data.2`) has a much smaller intrinsic standard deviation (`sigma` $\\approx 0.103$) than `data.1` (`sigma` $\\approx 0.401$), yet because its autocorrelation time is $\\kappa \\approx 11.8$ (vs. $\\kappa \\approx 1.01$ for `data.1`), both datasets end up with nearly the same error of the mean ($\\approx \\pm 0.011$ vs. $\\pm 0.013$)!"
+          "text": "The correlated dataset (`data.2`) has a much smaller intrinsic standard deviation (`sigma` $\\approx 0.103$) than `data.1` (`sigma` $\\approx 0.401$), yet because its autocorrelation time is $\\kappa \\approx 11.8$ (vs. $\\kappa \\approx 1.01$ for `data.1`), both datasets end up with nearly the same error of the mean ($\\approx \\pm 0.011$ vs. $\\pm 0.013$)!",
+          "text_markdown": "The correlated dataset (`data.2`) has a much smaller intrinsic standard deviation (`sigma` $\\approx 0.103$) than `data.1` (`sigma` $\\approx 0.401$), yet because its autocorrelation time is $\\kappa \\approx 11.8$ (vs. $\\kappa \\approx 1.01$ for `data.1`), both datasets end up with nearly the same error of the mean ($\\approx \\pm 0.011$ vs. $\\pm 0.013$)!"
         },
         {
           "id": "b",
-          "text": "Both datasets have autocorrelation time $\\kappa = 1.0$, so their error bars depend only on their means."
+          "text": "Both datasets have autocorrelation time $\\kappa = 1.0$, so their error bars depend only on their means.",
+          "text_markdown": "Both datasets have autocorrelation time $\\kappa = 1.0$, so their error bars depend only on their means."
         },
         {
           "id": "c",
-          "text": "The uncorrelated dataset (`data.1`) has an autocorrelation function that decays slowly over 40 steps."
+          "text": "The uncorrelated dataset (`data.1`) has an autocorrelation function that decays slowly over 40 steps.",
+          "text_markdown": "The uncorrelated dataset (`data.1`) has an autocorrelation function that decays slowly over 40 steps."
         },
         {
           "id": "d",
-          "text": "Because `data.2` has a smaller `sigma`, its true error of the mean is $10\\times$ smaller than `data.1`."
+          "text": "Because `data.2` has a smaller `sigma`, its true error of the mean is $10\\times$ smaller than `data.1`.",
+          "text_markdown": "Because `data.2` has a smaller `sigma`, its true error of the mean is $10\\times$ smaller than `data.1`."
         }
       ],
       "correct": "a",
@@ -486,19 +514,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The mean of the block averages $\\bar{B}$ is algebraically identical to the unblocked sample mean $\\bar{a}$ for every block size $b$."
+          "text": "The mean of the block averages $\\bar{B}$ is algebraically identical to the unblocked sample mean $\\bar{a}$ for every block size $b$.",
+          "text_markdown": "The mean of the block averages $\\bar{B}$ is algebraically identical to the unblocked sample mean $\\bar{a}$ for every block size $b$."
         },
         {
           "id": "b",
-          "text": "The mean of the block averages $\\bar{B}$ increases as $\\sqrt{b}$ until it reaches a plateau."
+          "text": "The mean of the block averages $\\bar{B}$ increases as $\\sqrt{b}$ until it reaches a plateau.",
+          "text_markdown": "The mean of the block averages $\\bar{B}$ increases as $\\sqrt{b}$ until it reaches a plateau."
         },
         {
           "id": "c",
-          "text": "The mean of the block averages $\\bar{B}$ shrinks as $1/b$."
+          "text": "The mean of the block averages $\\bar{B}$ shrinks as $1/b$.",
+          "text_markdown": "The mean of the block averages $\\bar{B}$ shrinks as $1/b$."
         },
         {
           "id": "d",
-          "text": "Data blocking changes the sample mean by subtracting the correlation time $\\kappa$."
+          "text": "Data blocking changes the sample mean by subtracting the correlation time $\\kappa$.",
+          "text_markdown": "Data blocking changes the sample mean by subtracting the correlation time $\\kappa$."
         }
       ],
       "correct": "a",
@@ -515,19 +547,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because $N_{\\text{eff}} = N / \\kappa = 500 / 200 = 2.5 \\ll 20$: before the block size $b$ can exceed the correlation time ($b > 200$), fewer than 3 blocks remain, so the curve enters the high-variance finite-block noise regime before a plateau can form."
+          "text": "Because $N_{\\text{eff}} = N / \\kappa = 500 / 200 = 2.5 \\ll 20$: before the block size $b$ can exceed the correlation time ($b > 200$), fewer than 3 blocks remain, so the curve enters the high-variance finite-block noise regime before a plateau can form.",
+          "text_markdown": "Because $N_{\\text{eff}} = N / \\kappa = 500 / 200 = 2.5 \\ll 20$: before the block size $b$ can exceed the correlation time ($b > 200$), fewer than 3 blocks remain, so the curve enters the high-variance finite-block noise regime before a plateau can form."
         },
         {
           "id": "b",
-          "text": "Because data blocking only works for Monte Carlo simulations, not Molecular Dynamics."
+          "text": "Because data blocking only works for Monte Carlo simulations, not Molecular Dynamics.",
+          "text_markdown": "Because data blocking only works for Monte Carlo simulations, not Molecular Dynamics."
         },
         {
           "id": "c",
-          "text": "Because $\\hat{\\sigma}_{\\bar{A}}(b)$ always decreases monotonically with $b$ when $\\kappa > 100$."
+          "text": "Because $\\hat{\\sigma}_{\\bar{A}}(b)$ always decreases monotonically with $b$ when $\\kappa > 100$.",
+          "text_markdown": "Because $\\hat{\\sigma}_{\\bar{A}}(b)$ always decreases monotonically with $b$ when $\\kappa > 100$."
         },
         {
           "id": "d",
-          "text": "Because $N = 500$ is not an exact power of 2."
+          "text": "Because $N = 500$ is not an exact power of 2.",
+          "text_markdown": "Because $N = 500$ is not an exact power of 2."
         }
       ],
       "correct": "a",
@@ -633,19 +669,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Both the apparent variance $v_A$ and the apparent autocorrelation time $\\kappa$ are artificially inflated by the slow, one-way transient drift."
+          "text": "Both the apparent variance $v_A$ and the apparent autocorrelation time $\\kappa$ are artificially inflated by the slow, one-way transient drift.",
+          "text_markdown": "Both the apparent variance $v_A$ and the apparent autocorrelation time $\\kappa$ are artificially inflated by the slow, one-way transient drift."
         },
         {
           "id": "b",
-          "text": "The apparent variance $v_A$ becomes zero and $\\kappa$ drops to $1$."
+          "text": "The apparent variance $v_A$ becomes zero and $\\kappa$ drops to $1$.",
+          "text_markdown": "The apparent variance $v_A$ becomes zero and $\\kappa$ drops to $1$."
         },
         {
           "id": "c",
-          "text": "The sample mean $a$ is biased, but $v_A$ and $c_A(i)$ are mathematically unaffected by the transient."
+          "text": "The sample mean $a$ is biased, but $v_A$ and $c_A(i)$ are mathematically unaffected by the transient.",
+          "text_markdown": "The sample mean $a$ is biased, but $v_A$ and $c_A(i)$ are mathematically unaffected by the transient."
         },
         {
           "id": "d",
-          "text": "The autocorrelation function $c_A(0)$ becomes negative."
+          "text": "The autocorrelation function $c_A(0)$ becomes negative.",
+          "text_markdown": "The autocorrelation function $c_A(0)$ becomes negative."
         }
       ],
       "correct": "a",
@@ -662,19 +702,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because at large step count $n$, each new measurement $E_n$ is weighted by $1/n$, so the cumulative average $\\bar{E}_n$ always looks visually smooth and sluggish even if the instantaneous trace $E_n$ just jumped to a new metastable state or is still drifting."
+          "text": "Because at large step count $n$, each new measurement $E_n$ is weighted by $1/n$, so the cumulative average $\\bar{E}_n$ always looks visually smooth and sluggish even if the instantaneous trace $E_n$ just jumped to a new metastable state or is still drifting.",
+          "text_markdown": "Because at large step count $n$, each new measurement $E_n$ is weighted by $1/n$, so the cumulative average $\\bar{E}_n$ always looks visually smooth and sluggish even if the instantaneous trace $E_n$ just jumped to a new metastable state or is still drifting."
         },
         {
           "id": "b",
-          "text": "Because the cumulative energy is an integral that diverges to infinity for any negative potential energy."
+          "text": "Because the cumulative energy is an integral that diverges to infinity for any negative potential energy.",
+          "text_markdown": "Because the cumulative energy is an integral that diverges to infinity for any negative potential energy."
         },
         {
           "id": "c",
-          "text": "Because cumulative averages can only be computed for uncorrelated random numbers."
+          "text": "Because cumulative averages can only be computed for uncorrelated random numbers.",
+          "text_markdown": "Because cumulative averages can only be computed for uncorrelated random numbers."
         },
         {
           "id": "d",
-          "text": "Because floating-point addition always rounds the last digit to zero."
+          "text": "Because floating-point addition always rounds the last digit to zero.",
+          "text_markdown": "Because floating-point addition always rounds the last digit to zero."
         }
       ],
       "correct": "a",
@@ -691,19 +735,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Run the entire simulation/analysis pipeline $M = 10$ independent times (or on $M$ independent data blocks) and compute the mean and standard error directly from the variance of the $M$ results."
+          "text": "Run the entire simulation/analysis pipeline $M = 10$ independent times (or on $M$ independent data blocks) and compute the mean and standard error directly from the variance of the $M$ results.",
+          "text_markdown": "Run the entire simulation/analysis pipeline $M = 10$ independent times (or on $M$ independent data blocks) and compute the mean and standard error directly from the variance of the $M$ results."
         },
         {
           "id": "b",
-          "text": "Omit the error bars and state in the caption that the algorithm is deterministic."
+          "text": "Omit the error bars and state in the caption that the algorithm is deterministic.",
+          "text_markdown": "Omit the error bars and state in the caption that the algorithm is deterministic."
         },
         {
           "id": "c",
-          "text": "Report the machine epsilon ($10^{-16}$) as the error bar."
+          "text": "Report the machine epsilon ($10^{-16}$) as the error bar.",
+          "text_markdown": "Report the machine epsilon ($10^{-16}$) as the error bar."
         },
         {
           "id": "d",
-          "text": "Replace the nonlinear observable with a linear one."
+          "text": "Replace the nonlinear observable with a linear one.",
+          "text_markdown": "Replace the nonlinear observable with a linear one."
         }
       ],
       "correct": "a",
@@ -765,19 +813,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1/2})$."
+          "text": "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1/2})$.",
+          "text_markdown": "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1/2})$."
         },
         {
           "id": "b",
-          "text": "Both $\\text{bias}(F)$ and $\\text{error}(F)$ scale as $\\mathcal{O}(N^{-1/2})$."
+          "text": "Both $\\text{bias}(F)$ and $\\text{error}(F)$ scale as $\\mathcal{O}(N^{-1/2})$.",
+          "text_markdown": "Both $\\text{bias}(F)$ and $\\text{error}(F)$ scale as $\\mathcal{O}(N^{-1/2})$."
         },
         {
           "id": "c",
-          "text": "$\\text{bias}(F)$ is independent of $N$ ($\\mathcal{O}(1)$), while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$."
+          "text": "$\\text{bias}(F)$ is independent of $N$ ($\\mathcal{O}(1)$), while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$.",
+          "text_markdown": "$\\text{bias}(F)$ is independent of $N$ ($\\mathcal{O}(1)$), while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$."
         },
         {
           "id": "d",
-          "text": "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1/2})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$."
+          "text": "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1/2})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$.",
+          "text_markdown": "$\\text{bias}(F)$ scales as $\\mathcal{O}(N^{-1/2})$, while $\\text{error}(F)$ scales as $\\mathcal{O}(N^{-1})$."
         }
       ],
       "correct": "a",
@@ -854,19 +906,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because each delete-1 Jackknife subsample $\\hat{\\theta}_{(m)}$ averages $M-1$ of the $M$ blocks, so two Jackknife estimates overlap on $M-2$ blocks and vary among themselves by a factor of $1/(M-1)$ less than individual block averages."
+          "text": "Because each delete-1 Jackknife subsample $\\hat{\\theta}_{(m)}$ averages $M-1$ of the $M$ blocks, so two Jackknife estimates overlap on $M-2$ blocks and vary among themselves by a factor of $1/(M-1)$ less than individual block averages.",
+          "text_markdown": "Because each delete-1 Jackknife subsample $\\hat{\\theta}_{(m)}$ averages $M-1$ of the $M$ blocks, so two Jackknife estimates overlap on $M-2$ blocks and vary among themselves by a factor of $1/(M-1)$ less than individual block averages."
         },
         {
           "id": "b",
-          "text": "Because Jackknife estimates have infinite variance unless multiplied by $M-1$."
+          "text": "Because Jackknife estimates have infinite variance unless multiplied by $M-1$.",
+          "text_markdown": "Because Jackknife estimates have infinite variance unless multiplied by $M-1$."
         },
         {
           "id": "c",
-          "text": "Because the Jackknife method assumes the data follow a Cauchy distribution."
+          "text": "Because the Jackknife method assumes the data follow a Cauchy distribution.",
+          "text_markdown": "Because the Jackknife method assumes the data follow a Cauchy distribution."
         },
         {
           "id": "d",
-          "text": "Because only $1$ block is kept in each Jackknife subsample and $M-1$ blocks are discarded."
+          "text": "Because only $1$ block is kept in each Jackknife subsample and $M-1$ blocks are discarded.",
+          "text_markdown": "Because only $1$ block is kept in each Jackknife subsample and $M-1$ blocks are discarded."
         }
       ],
       "correct": "a",
@@ -889,19 +945,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$c_A(i) = \\dfrac{1}{v}\\dfrac{1}{N_{\\text{eq}} - i}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$"
+          "text": "$c_A(i) = \\dfrac{1}{v}\\dfrac{1}{N_{\\text{eq}} - i}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$",
+          "text_markdown": "$c_A(i) = \\dfrac{1}{v}\\dfrac{1}{N_{\\text{eq}} - i}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k - a)(A_{k+i} - a)$"
         },
         {
           "id": "b",
-          "text": "$c_A(i) = \\dfrac{1}{N_{\\text{eq}}}\\displaystyle\\sum_{k=1}^{N} A_k A_{k+i}$"
+          "text": "$c_A(i) = \\dfrac{1}{N_{\\text{eq}}}\\displaystyle\\sum_{k=1}^{N} A_k A_{k+i}$",
+          "text_markdown": "$c_A(i) = \\dfrac{1}{N_{\\text{eq}}}\\displaystyle\\sum_{k=1}^{N} A_k A_{k+i}$"
         },
         {
           "id": "c",
-          "text": "$c_A(i) = \\dfrac{v}{N_{\\text{eq}}}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k + a)(A_{k+i} + a)$"
+          "text": "$c_A(i) = \\dfrac{v}{N_{\\text{eq}}}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k + a)(A_{k+i} + a)$",
+          "text_markdown": "$c_A(i) = \\dfrac{v}{N_{\\text{eq}}}\\displaystyle\\sum_{k=k_1}^{k_2 - i} (A_k + a)(A_{k+i} + a)$"
         },
         {
           "id": "d",
-          "text": "$c_A(i) = 1 + 2\\displaystyle\\sum_{k=1}^{i} A_k$"
+          "text": "$c_A(i) = 1 + 2\\displaystyle\\sum_{k=1}^{i} A_k$",
+          "text_markdown": "$c_A(i) = 1 + 2\\displaystyle\\sum_{k=1}^{i} A_k$"
         }
       ],
       "correct": "a",
@@ -954,19 +1014,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Resampling individual steps destroys the sequential time correlation structure and treats all $N_{\\text{eq}}$ steps as independent ($\\kappa = 1$), underestimating the true standard error by a factor of $\\sqrt{\\kappa} = \\sqrt{50} \\approx 7.1\\times$."
+          "text": "Resampling individual steps destroys the sequential time correlation structure and treats all $N_{\\text{eq}}$ steps as independent ($\\kappa = 1$), underestimating the true standard error by a factor of $\\sqrt{\\kappa} = \\sqrt{50} \\approx 7.1\\times$.",
+          "text_markdown": "Resampling individual steps destroys the sequential time correlation structure and treats all $N_{\\text{eq}}$ steps as independent ($\\kappa = 1$), underestimating the true standard error by a factor of $\\sqrt{\\kappa} = \\sqrt{50} \\approx 7.1\\times$."
         },
         {
           "id": "b",
-          "text": "Resampling individual steps changes the sample mean to zero."
+          "text": "Resampling individual steps changes the sample mean to zero.",
+          "text_markdown": "Resampling individual steps changes the sample mean to zero."
         },
         {
           "id": "c",
-          "text": "Bootstrap resampling can only be applied to datasets with fewer than 10 points."
+          "text": "Bootstrap resampling can only be applied to datasets with fewer than 10 points.",
+          "text_markdown": "Bootstrap resampling can only be applied to datasets with fewer than 10 points."
         },
         {
           "id": "d",
-          "text": "Resampling individual steps overestimates the error bar by a factor of $\\kappa^2$."
+          "text": "Resampling individual steps overestimates the error bar by a factor of $\\kappa^2$.",
+          "text_markdown": "Resampling individual steps overestimates the error bar by a factor of $\\kappa^2$."
         }
       ],
       "correct": "a",
@@ -995,19 +1059,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Every reported simulation quantity must include an error bar; results without error estimates are only suggestive."
+          "text": "Every reported simulation quantity must include an error bar; results without error estimates are only suggestive.",
+          "text_markdown": "Every reported simulation quantity must include an error bar; results without error estimates are only suggestive."
         },
         {
           "id": "b",
-          "text": "Both the sample mean and its statistical error bar can be simultaneously determined from the same equilibrated trajectory once time correlations $\\kappa$ are accounted for."
+          "text": "Both the sample mean and its statistical error bar can be simultaneously determined from the same equilibrated trajectory once time correlations $\\kappa$ are accounted for.",
+          "text_markdown": "Both the sample mean and its statistical error bar can be simultaneously determined from the same equilibrated trajectory once time correlations $\\kappa$ are accounted for."
         },
         {
           "id": "c",
-          "text": "To ensure the error of the error estimate is at most $\\sim 20\\%$, the equilibrated trajectory must span at least $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa \\ge 20$ effective independent samples."
+          "text": "To ensure the error of the error estimate is at most $\\sim 20\\%$, the equilibrated trajectory must span at least $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa \\ge 20$ effective independent samples.",
+          "text_markdown": "To ensure the error of the error estimate is at most $\\sim 20\\%$, the equilibrated trajectory must span at least $N_{\\text{eff}} = N_{\\text{eq}} / \\kappa \\ge 20$ effective independent samples."
         },
         {
           "id": "d",
-          "text": "Running a simulation longer ($N_{\\text{eq}} \\to \\infty$) automatically eliminates systematic errors such as interatomic potential inaccuracies and finite-timestep drift."
+          "text": "Running a simulation longer ($N_{\\text{eq}} \\to \\infty$) automatically eliminates systematic errors such as interatomic potential inaccuracies and finite-timestep drift.",
+          "text_markdown": "Running a simulation longer ($N_{\\text{eq}} \\to \\infty$) automatically eliminates systematic errors such as interatomic potential inaccuracies and finite-timestep drift."
         }
       ],
       "correct": [
@@ -1028,19 +1096,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Both runs span the exact same physical duration ($100\\text{ ps}$) and contain essentially the same number of effective independent samples ($N_{\\text{eff}} \\approx 500$), yielding the same true standard error of the mean."
+          "text": "Both runs span the exact same physical duration ($100\\text{ ps}$) and contain essentially the same number of effective independent samples ($N_{\\text{eff}} \\approx 500$), yielding the same true standard error of the mean.",
+          "text_markdown": "Both runs span the exact same physical duration ($100\\text{ ps}$) and contain essentially the same number of effective independent samples ($N_{\\text{eff}} \\approx 500$), yielding the same true standard error of the mean."
         },
         {
           "id": "b",
-          "text": "If someone mistakenly applies the naive uncorrelated formula $s_A / \\sqrt{N}$, Run 1 will falsely appear to have a $10\\times$ smaller error bar than Run 2 simply because it wrote to disk $100\\times$ more frequently."
+          "text": "If someone mistakenly applies the naive uncorrelated formula $s_A / \\sqrt{N}$, Run 1 will falsely appear to have a $10\\times$ smaller error bar than Run 2 simply because it wrote to disk $100\\times$ more frequently.",
+          "text_markdown": "If someone mistakenly applies the naive uncorrelated formula $s_A / \\sqrt{N}$, Run 1 will falsely appear to have a $10\\times$ smaller error bar than Run 2 simply because it wrote to disk $100\\times$ more frequently."
         },
         {
           "id": "c",
-          "text": "In a Flyvbjerg\u2013Petersen data blocking plot against physical block duration $t_b = b \\Delta t$, both runs converge to the same plateau error bar once $t_b \\gg 200\\text{ fs}$."
+          "text": "In a Flyvbjerg\u2013Petersen data blocking plot against physical block duration $t_b = b \\Delta t$, both runs converge to the same plateau error bar once $t_b \\gg 200\\text{ fs}$.",
+          "text_markdown": "In a Flyvbjerg\u2013Petersen data blocking plot against physical block duration $t_b = b \\Delta t$, both runs converge to the same plateau error bar once $t_b \\gg 200\\text{ fs}$."
         },
         {
           "id": "d",
-          "text": "Saving configurations $100\\times$ more frequently during a fixed $100\\text{ ps}$ MD trajectory reduces the true statistical error bar by a factor of $10$."
+          "text": "Saving configurations $100\\times$ more frequently during a fixed $100\\text{ ps}$ MD trajectory reduces the true statistical error bar by a factor of $10$.",
+          "text_markdown": "Saving configurations $100\\times$ more frequently during a fixed $100\\text{ ps}$ MD trajectory reduces the true statistical error bar by a factor of $10$."
         }
       ],
       "correct": [

@@ -3,47 +3,22 @@ worksheet:
   title: Lesson 12 — Monte Carlo Foundations, Curse of Dimensionality & Non-Uniform Sampling
   estimated_minutes: 115
   learning_objectives:
-  - Explain the historical origin and core philosophy of Monte Carlo methods (Ulam, von Neumann, and Metropolis at Los Alamos
-    in the 1940s; Buffon's needle; stochastic vs. deterministic evaluation of integrals).
-  - Derive and apply hit-or-miss Monte Carlo estimation of π in the unit square, including its binomial hit probability p
-    = π/4 and statistical standard error scaling σ ∝ M^(-1/2).
-  - Prove the Curse of Dimensionality scaling law for order-α deterministic quadrature in D dimensions (CPU time ∝ ε^(-D/α))
-    versus Monte Carlo integration (CPU time ∝ ε^(-2)), and identify the exact crossover dimension D* = 2α.
-  - Compute moments, expectations, cumulative distribution functions (CDFs), and apply the fundamental Jacobian transformation
-    law p_y(y)|dy| = p_x(x)|dx| for 1D and multivariate random variable mappings.
-  - Derive and execute Inverse Transform Sampling x = C^(-1)(u) for exponential/Poisson, power-law, and Lorentzian/Cauchy
-    distributions, as well as the 2D Box–Muller and Marsaglia polar transforms for Normal Gaussian deviates.
+  - Explain the historical origin and core philosophy of Monte Carlo methods (Ulam, von Neumann, and Metropolis at Los Alamos in the 1940s; Buffon's needle; stochastic vs. deterministic evaluation of integrals).
+  - Derive and apply hit-or-miss Monte Carlo estimation of π in the unit square, including its binomial hit probability p = π/4 and statistical standard error scaling σ ∝ M^(-1/2).
+  - Prove the Curse of Dimensionality scaling law for order-α deterministic quadrature in D dimensions (CPU time ∝ ε^(-D/α)) versus Monte Carlo integration (CPU time ∝ ε^(-2)), and identify the exact crossover dimension D* = 2α.
+  - Compute moments, expectations, cumulative distribution functions (CDFs), and apply the fundamental Jacobian transformation law p_y(y)|dy| = p_x(x)|dx| for 1D and multivariate random variable mappings.
+  - Derive and execute Inverse Transform Sampling x = C^(-1)(u) for exponential/Poisson, power-law, and Lorentzian/Cauchy distributions, as well as the 2D Box–Muller and Marsaglia polar transforms for Normal Gaussian deviates.
   sections:
   - id: sec_mc_intro_and_pi
     type: markdown_section
     title: 1. What Is Monte Carlo? History & Hit-or-Miss Estimation of π
-    body_markdown: "### Origins and Philosophy of Monte Carlo\nIn the 1940s at Los Alamos National Laboratory, **Stanislaw\
-      \ Ulam**, **John von Neumann**, and **Nicholas Metropolis** coined the name **Monte Carlo**—after the famous casino\
-      \ in Monaco where Ulam's uncle borrowed money to gamble—to describe **any numerical algorithm that uses (pseudo)random\
-      \ numbers as an essential part of the calculation**.\n\nUnlike deterministic Molecular Dynamics (which integrates Newton's\
-      \ equations of motion along a time-ordered trajectory), Monte Carlo (MC) is fundamentally **stochastic**:\n- It evaluates\
-      \ **high-dimensional integrals** (such as the canonical configurational partition function $Z = \\int d\\mathbf{r}_1\
-      \ \\cdots d\\mathbf{r}_N\\, e^{-\\beta V(\\mathbf{r}^N)}$ in $D = 3N$ dimensions) by randomly sampling points in the\
-      \ integration domain.\n- In statistical physics, it is most often implemented as a **Markov chain** known as **Metropolis\
-      \ Monte Carlo**.\n- Its earliest forerunner is **Buffon's Needle** (1777), which estimated $\\pi$ from the probability\
-      \ that a dropped needle crosses parallel floorboard lines.\n\n### Simple Monte Carlo: Throwing Darts to Estimate $\\\
-      pi$\nAs shown on Slide 2, consider a circle of radius $r = 1$ inscribed inside a square, and focus on **one quadrant**\
-      \ in the unit square $[0, 1] \\times [0, 1]$:\n$$\\frac{\\text{Area of } 1/4\\text{ circle}}{\\text{Area of unit square}}\
-      \ = \\frac{\\pi r^2 / 4}{r^2} = \\frac{\\pi}{4} \\approx 0.785398$$\n\nIf we throw $M$ independent random darts $(x_n,\
-      \ y_n)$ with $x_n \\sim \\text{Uniform}(0, 1)$ and $y_n \\sim \\text{Uniform}(0, 1)$:\n```python\nhits = 0\nfor n in\
-      \ range(1, M + 1):\n    x = rng.random()\n    y = rng.random()\n    if (x**2 + y**2 <= 1.0):\n        hits += 1\npi_est\
-      \ = 4.0 * hits / M\n```\nEach dart is an independent Bernoulli trial with success probability $p = \\frac{\\pi}{4}$\
-      \ and variance per trial $\\sigma_1^2 = p(1 - p) = \\frac{\\pi}{4}\\left(1 - \\frac{\\pi}{4}\\right)$. After $M$ throws:\n\
-      - Expected fraction of hits: $\\langle \\text{hits}/M \\rangle = p = \\frac{\\pi}{4} \\implies \\langle \\hat{\\pi}\
-      \ \\rangle = 4p = \\pi$.\n- Variance of the hit fraction: $\\text{Var}(\\hat{p}) = \\frac{p(1-p)}{M}$.\n- **Standard\
-      \ error of $\\hat{\\pi} = 4\\hat{p}$:**\n  $$\\sigma_{\\hat{\\pi}} = 4\\sqrt{\\frac{p(1-p)}{M}} = \\sqrt{\\frac{\\pi(4\
-      \ - \\pi)}{M}} \\approx \\frac{1.642}{\\sqrt{M}}$$\n"
+    body_markdown: "### Origins and Philosophy of Monte Carlo\nIn the 1940s at Los Alamos National Laboratory, **Stanislaw Ulam**, **John von Neumann**, and **Nicholas Metropolis** coined the name **Monte Carlo**—after the famous casino in Monaco where Ulam's uncle borrowed money to gamble—to describe **any numerical algorithm that uses (pseudo)random numbers as an essential part of the calculation**.\n\nUnlike deterministic Molecular Dynamics (which integrates Newton's equations of motion along a time-ordered trajectory), Monte Carlo (MC) is fundamentally **stochastic**:\n- It evaluates **high-dimensional integrals** (such as the canonical configurational partition function $Z = \\int d\\mathbf{r}_1 \\cdots d\\mathbf{r}_N\\, e^{-\\beta V(\\mathbf{r}^N)}$ in $D = 3N$ dimensions) by randomly sampling points in the integration domain.\n- In statistical physics, it is most often implemented as a **Markov chain** known as **Metropolis Monte Carlo**.\n- Its earliest forerunner is **Buffon's Needle**\
+      \ (1777), which estimated $\\pi$ from the probability that a dropped needle crosses parallel floorboard lines.\n\n### Simple Monte Carlo: Throwing Darts to Estimate $\\pi$\nAs shown on Slide 2, consider a circle of radius $r = 1$ inscribed inside a square, and focus on **one quadrant** in the unit square $[0, 1] \\times [0, 1]$:\n$$\\frac{\\text{Area of } 1/4\\text{ circle}}{\\text{Area of unit square}} = \\frac{\\pi r^2 / 4}{r^2} = \\frac{\\pi}{4} \\approx 0.785398$$\n\nIf we throw $M$ independent random darts $(x_n, y_n)$ with $x_n \\sim \\text{Uniform}(0, 1)$ and $y_n \\sim \\text{Uniform}(0, 1)$:\n```python\nhits = 0\nfor n in range(1, M + 1):\n    x = rng.random()\n    y = rng.random()\n    if (x**2 + y**2 <= 1.0):\n        hits += 1\npi_est = 4.0 * hits / M\n```\nEach dart is an independent Bernoulli trial with success probability $p = \\frac{\\pi}{4}$ and variance per trial $\\sigma_1^2 = p(1 - p) = \\frac{\\pi}{4}\\left(1 - \\frac{\\pi}{4}\\right)$. After $M$ throws:\n- Expected\
+      \ fraction of hits: $\\langle \\text{hits}/M \\rangle = p = \\frac{\\pi}{4} \\implies \\langle \\hat{\\pi} \\rangle = 4p = \\pi$.\n- Variance of the hit fraction: $\\text{Var}(\\hat{p}) = \\frac{p(1-p)}{M}$.\n- **Standard error of $\\hat{\\pi} = 4\\hat{p}$:**\n  $$\\sigma_{\\hat{\\pi}} = 4\\sqrt{\\frac{p(1-p)}{M}} = \\sqrt{\\frac{\\pi(4 - \\pi)}{M}} \\approx \\frac{1.642}{\\sqrt{M}}$$\n"
   - id: concept_hit_or_miss_pi
     type: concept_cell
     title: 'Interactive Explorer: Hit-or-Miss Dartboard & M^(-1/2) Convergence of π'
-    description_markdown: 'Throw $M$ random darts into the unit square $[0, 1]^2$ (Slide 2). Switch between the **2D Dartboard
-      View** and the **Running Convergence View** to see how $\hat{\pi}(M) = 4 N_{\text{hit}}/M$ converges inside the theoretical
-      $\pm 1.96\sqrt{\pi(4-\pi)/M}$ confidence band.
+    description_markdown: 'Throw $M$ random darts into the unit square $[0, 1]^2$ (Slide 2). Switch between the **2D Dartboard View** and the **Running Convergence View** to see how $\hat{\pi}(M) = 4 N_{\text{hit}}/M$ converges inside the theoretical $\pm 1.96\sqrt{\pi(4-\pi)/M}$ confidence band.
 
       '
     render_function: render_hit_or_miss_pi
@@ -72,9 +47,7 @@ worksheet:
         max: 100
         step: 1
         default: 42
-    takeaway_markdown: '**Key Takeaway:** Because the Monte Carlo statistical error decays as $\varepsilon \propto M^{-1/2}$,
-      reducing the error by a factor of $10$ (gaining **one extra decimal place** of precision) requires **$10^2 = 100$ times
-      more samples**!
+    takeaway_markdown: '**Key Takeaway:** Because the Monte Carlo statistical error decays as $\varepsilon \propto M^{-1/2}$, reducing the error by a factor of $10$ (gaining **one extra decimal place** of precision) requires **$10^2 = 100$ times more samples**!
 
       '
   - id: q01_mc_definition_history
@@ -82,25 +55,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_mc_intro_and_pi
-    prompt_markdown: 'What is the defining characteristic of a **Monte Carlo method** (named at Los Alamos in the 1940s),
-      as contrasted with deterministic grid or trajectory methods?
+    prompt_markdown: 'What is the defining characteristic of a **Monte Carlo method** (named at Los Alamos in the 1940s), as contrasted with deterministic grid or trajectory methods?
 
       '
     hint_markdown: 'Check Slide 1: what is an essential ingredient of every Monte Carlo algorithm?'
     options:
     - id: a
-      text: It is a stochastic algorithm that uses (pseudo)random numbers as an essential part of evaluating integrals or
-        sampling probability distributions.
+      text: It is a stochastic algorithm that uses (pseudo)random numbers as an essential part of evaluating integrals or sampling probability distributions.
+      text_markdown: It is a stochastic algorithm that uses (pseudo)random numbers as an essential part of evaluating integrals or sampling probability distributions.
     - id: b
       text: It is a deterministic finite-difference solver for Newton's second law $F = ma$.
+      text_markdown: It is a deterministic finite-difference solver for Newton's second law $F = ma$.
     - id: c
       text: It requires laying out a uniform $L^D$ mesh across all dimensions.
+      text_markdown: It requires laying out a uniform $L^D$ mesh across all dimensions.
     - id: d
       text: It can only be applied to 1D or 2D geometric problems.
+      text_markdown: It can only be applied to 1D or 2D geometric problems.
     correct: a
-    rationale_markdown: 'As stated on Slide 1, a **Monte Carlo method** is any stochastic (non-deterministic) method that
-      uses (pseudo)random numbers as an essential part of the algorithm, especially for evaluating high-dimensional integrals
-      by sampling the integrand.
+    rationale_markdown: 'As stated on Slide 1, a **Monte Carlo method** is any stochastic (non-deterministic) method that uses (pseudo)random numbers as an essential part of the algorithm, especially for evaluating high-dimensional integrals by sampling the integrand.
 
       '
   - id: q02_pi_hit_probability
@@ -108,9 +81,7 @@ worksheet:
     question_type: numeric
     difficulty: easy
     taught_by: sec_mc_intro_and_pi
-    prompt_markdown: 'In the hit-or-miss Monte Carlo estimation of $\pi$ on the unit quadrant $(x, y) \in [0, 1]^2$ (Slide
-      2), what is the exact theoretical probability $p$ that a single uniformly chosen dart lands inside the quarter-circle
-      $x^2 + y^2 \le 1$ (to four decimal places)?
+    prompt_markdown: 'In the hit-or-miss Monte Carlo estimation of $\pi$ on the unit quadrant $(x, y) \in [0, 1]^2$ (Slide 2), what is the exact theoretical probability $p$ that a single uniformly chosen dart lands inside the quarter-circle $x^2 + y^2 \le 1$ (to four decimal places)?
 
       '
     hint_markdown: Determine the ratio of the area of the unit quarter-circle to the area of the bounding unit square.
@@ -129,11 +100,8 @@ worksheet:
     taught_by:
     - sec_mc_intro_and_pi
     - concept_hit_or_miss_pi
-    prompt_markdown: You run the quarter-circle dartboard Monte Carlo simulation with $N = 2000$ independent random points
-      uniformly chosen in the unit square $[0, 1]^2$ and record `hits = 1573` points landing inside the quarter-circle $x^2
-      + y^2 \le 1$. What is the resulting Monte Carlo estimate $\hat{\pi}$ of $\pi$?
-    hint_markdown: Relate the empirical acceptance ratio to the quarter-circle area, and scale appropriately to estimate the
-      full circle's area.
+    prompt_markdown: You run the quarter-circle dartboard Monte Carlo simulation with $N = 2000$ independent random points uniformly chosen in the unit square $[0, 1]^2$ and record `hits = 1573` points landing inside the quarter-circle $x^2 + y^2 \le 1$. What is the resulting Monte Carlo estimate $\hat{\pi}$ of $\pi$?
+    hint_markdown: Relate the empirical acceptance ratio to the quarter-circle area, and scale appropriately to estimate the full circle's area.
     correct:
       value: 3.146
       tolerance: 0.001
@@ -149,18 +117,14 @@ worksheet:
     taught_by:
     - sec_mc_intro_and_pi
     - concept_hit_or_miss_pi
-    prompt_markdown: For the hit-or-miss quarter-circle dartboard estimator of $\pi$ based on a Bernoulli indicator with probability
-      $p = \pi / 4$, what is the theoretical standard error $\sigma_{\hat{\pi}}$ when $M = 10{,}000$ independent trials are
-      evaluated? (Enter to four decimal places, e.g., `0.0164`.)
-    hint_markdown: Propagate the standard error of a binomial proportion with success probability $p = \pi/4$ when multiplied
-      by the geometric scale factor 4.
+    prompt_markdown: For the hit-or-miss quarter-circle dartboard estimator of $\pi$ based on a Bernoulli indicator with probability $p = \pi / 4$, what is the theoretical standard error $\sigma_{\hat{\pi}}$ when $M = 10{,}000$ independent trials are evaluated? (Enter to four decimal places, e.g., `0.0164`.)
+    hint_markdown: Propagate the standard error of a binomial proportion with success probability $p = \pi/4$ when multiplied by the geometric scale factor 4.
     correct:
       value: 0.0164
       tolerance: 0.0005
     rationale_markdown: 'For $M = 10{,}000$ binomial trials with $p = \pi/4$ and $\hat{\pi} = 4\hat{p}$:
 
-      $$\sigma_{\hat{\pi}} = 4\sqrt{\frac{(\pi/4)(1 - \pi/4)}{10{,}000}} = \frac{\sqrt{\pi(4 - \pi)}}{100} \approx \frac{1.6422}{100}
-      \approx 0.0164$$
+      $$\sigma_{\hat{\pi}} = 4\sqrt{\frac{(\pi/4)(1 - \pi/4)}{10{,}000}} = \frac{\sqrt{\pi(4 - \pi)}}{100} \approx \frac{1.6422}{100} \approx 0.0164$$
 
       '
   - id: q05_extra_decimal_place_cost
@@ -170,57 +134,26 @@ worksheet:
     taught_by:
     - sec_mc_intro_and_pi
     - concept_hit_or_miss_pi
-    prompt_markdown: 'As highlighted on Slide 3 ("To get another decimal place takes 100 times longer!"), if a Monte Carlo
-      simulation currently achieves a statistical error of $\varepsilon = 0.01$ in $T_{\text{CPU}} = 1\text{ minute}$, how
-      many **minutes** of CPU time are required to reduce the statistical error by a factor of $10$ to $\varepsilon = 0.001$
-      (one additional decimal place)?
+    prompt_markdown: 'As highlighted on Slide 3 ("To get another decimal place takes 100 times longer!"), if a Monte Carlo simulation currently achieves a statistical error of $\varepsilon = 0.01$ in $T_{\text{CPU}} = 1\text{ minute}$, how many **minutes** of CPU time are required to reduce the statistical error by a factor of $10$ to $\varepsilon = 0.001$ (one additional decimal place)?
 
       '
-    hint_markdown: Recall the inverse square-root convergence rate of independent Monte Carlo sampling with respect to the
-      number of samples.
+    hint_markdown: Recall the inverse square-root convergence rate of independent Monte Carlo sampling with respect to the number of samples.
     correct:
       value: 100.0
       tolerance: 0.1
-    rationale_markdown: 'Because Monte Carlo error scales as $\varepsilon \propto M^{-1/2}$ and CPU time scales linearly with
-      sample count ($T_{\text{CPU}} \propto M \propto \varepsilon^{-2}$), reducing $\varepsilon$ by a factor of $10$ requires
-      $10^2 = 100$ times as many samples, or $100\text{ minutes}$.
+    rationale_markdown: 'Because Monte Carlo error scales as $\varepsilon \propto M^{-1/2}$ and CPU time scales linearly with sample count ($T_{\text{CPU}} \propto M \propto \varepsilon^{-2}$), reducing $\varepsilon$ by a factor of $10$ requires $10^2 = 100$ times as many samples, or $100\text{ minutes}$.
 
       '
   - id: sec_curse_of_dimensionality
     type: markdown_section
     title: '2. The Curse of Dimensionality: Deterministic Quadrature vs. Monte Carlo Scaling'
-    body_markdown: "Why use a slow $M^{-1/2}$ method when deterministic 1D quadrature rules (like the Trapezoidal rule or\
-      \ Simpson's rule) converge much faster in 1D? The answer lies in the **Curse of Dimensionality** when integrating over\
-      \ a $D$-dimensional hypercube (Slides 3–5):\n$$I = \\int_0^1 dx_1 \\cdots \\int_0^1 dx_D\\, f(x_1, \\dots, x_D)$$\n\n\
-      ### Scaling of Conventional Deterministic Grid Quadrature\nSuppose we lay out a uniform grid with $L$ points along each\
-      \ of the $D$ coordinate axes, so the grid spacing is $h = 1/L$:\n- **Total number of grid points (and CPU time):**\n\
-      \  $$N = L^D = h^{-D} \\sim T_{\\text{CPU}} \\quad \\Longleftrightarrow \\quad h = N^{-1/D}$$\n- **Truncation error\
-      \ of an order-$\\alpha$ quadrature rule:**\n  - **Trapezoidal Rule ($\\alpha = 2$):** From the Taylor expansion $f(x)\
-      \ = f(x_0) + f'(x_0)h + \\frac{1}{2}f''(x_0)h^2 + \\dots$, the leading integration error scales as $\\varepsilon \\\
-      sim f^{(2)}(x)\\,h^2$.\n  - **Simpson's Rule ($\\alpha = 4$):** Error scales as $\\varepsilon \\sim f^{(4)}(x)\\,h^4$.\n\
-      \  - **General Order-$\\alpha$ Rule:**\n    $$\\varepsilon_{\\text{quad}} \\sim f^{(\\alpha)}(x)\\,h^\\alpha = N^{-\\\
-      alpha / D}$$\n- **CPU Time as a function of target accuracy $\\varepsilon$:** Inverting $\\varepsilon \\sim h^\\alpha\
-      \ \\implies h \\sim \\varepsilon^{1/\\alpha}$ and substituting into $T_{\\text{CPU}} \\sim N = h^{-D}$ gives:\n  $$T_{\\\
-      text{quad}} \\sim \\varepsilon^{-D / \\alpha}$$\n\n### Scaling of Stochastic Integration (Monte Carlo)\nBy the Central\
-      \ Limit Theorem, averaging $M$ random evaluations of $f(\\mathbf{x})$ yields a statistical uncertainty governed solely\
-      \ by the integrand variance $\\sigma_f^2$:\n$$\\varepsilon_{\\text{MC}} = \\frac{\\sigma_f}{\\sqrt{M}} \\sim M^{-1/2}\
-      \ \\quad \\Longrightarrow \\quad T_{\\text{MC}} \\sim M \\sim \\varepsilon^{-2}$$\nCrucially, the exponent $-2$ in $T_{\\\
-      text{MC}} \\sim \\varepsilon^{-2}$ is **completely independent of the spatial dimension $D$!**\n\n### The Exact Crossover\
-      \ Dimension $D^* = 2\\alpha$\nComparing the CPU time exponents for small $\\varepsilon \\to 0$ (Slide 4):\n$$\\text{Monte\
-      \ Carlo beats an order-}\\alpha\\text{ grid rule whenever } \\frac{D}{\\alpha} > 2 \\quad \\Longleftrightarrow \\quad\
-      \ \\mathbf{D > 2\\alpha}$$\n- Against the **Trapezoidal Rule ($\\alpha = 2$)**: MC wins for **$D > 4$** (and ties at\
-      \ $D = 4$).\n- Against **Simpson's Rule ($\\alpha = 4$)**: MC wins for **$D > 8$** (and ties at $D = 8$).\n- In an atomistic\
-      \ simulation of just $100$ atoms in 3D, $D = 3N = 300 \\gg 2\\alpha$. Even a crude $L = 10$ grid per axis would require\
-      \ $N = 10^{300}$ function evaluations (vastly exceeding the $\\sim 10^{80}$ atoms in the observable universe!), making\
-      \ Monte Carlo the **only** viable general integration method!\n\nAs Slide 5 summarizes, two further practical advantages\
-      \ of Monte Carlo are that it is **conceptually and practically simple** to code in any geometry, and it **comes with\
-      \ built-in statistical error bars**.\n"
+    body_markdown: "Why use a slow $M^{-1/2}$ method when deterministic 1D quadrature rules (like the Trapezoidal rule or Simpson's rule) converge much faster in 1D? The answer lies in the **Curse of Dimensionality** when integrating over a $D$-dimensional hypercube (Slides 3–5):\n$$I = \\int_0^1 dx_1 \\cdots \\int_0^1 dx_D\\, f(x_1, \\dots, x_D)$$\n\n### Scaling of Conventional Deterministic Grid Quadrature\nSuppose we lay out a uniform grid with $L$ points along each of the $D$ coordinate axes, so the grid spacing is $h = 1/L$:\n- **Total number of grid points (and CPU time):**\n  $$N = L^D = h^{-D} \\sim T_{\\text{CPU}} \\quad \\Longleftrightarrow \\quad h = N^{-1/D}$$\n- **Truncation error of an order-$\\alpha$ quadrature rule:**\n  - **Trapezoidal Rule ($\\alpha = 2$):** From the Taylor expansion $f(x) = f(x_0) + f'(x_0)h + \\frac{1}{2}f''(x_0)h^2 + \\dots$, the leading integration error scales as $\\varepsilon \\sim f^{(2)}(x)\\,h^2$.\n  - **Simpson's Rule ($\\alpha = 4$):** Error\
+      \ scales as $\\varepsilon \\sim f^{(4)}(x)\\,h^4$.\n  - **General Order-$\\alpha$ Rule:**\n    $$\\varepsilon_{\\text{quad}} \\sim f^{(\\alpha)}(x)\\,h^\\alpha = N^{-\\alpha / D}$$\n- **CPU Time as a function of target accuracy $\\varepsilon$:** Inverting $\\varepsilon \\sim h^\\alpha \\implies h \\sim \\varepsilon^{1/\\alpha}$ and substituting into $T_{\\text{CPU}} \\sim N = h^{-D}$ gives:\n  $$T_{\\text{quad}} \\sim \\varepsilon^{-D / \\alpha}$$\n\n### Scaling of Stochastic Integration (Monte Carlo)\nBy the Central Limit Theorem, averaging $M$ random evaluations of $f(\\mathbf{x})$ yields a statistical uncertainty governed solely by the integrand variance $\\sigma_f^2$:\n$$\\varepsilon_{\\text{MC}} = \\frac{\\sigma_f}{\\sqrt{M}} \\sim M^{-1/2} \\quad \\Longrightarrow \\quad T_{\\text{MC}} \\sim M \\sim \\varepsilon^{-2}$$\nCrucially, the exponent $-2$ in $T_{\\text{MC}} \\sim \\varepsilon^{-2}$ is **completely independent of the spatial dimension $D$!**\n\n### The Exact Crossover\
+      \ Dimension $D^* = 2\\alpha$\nComparing the CPU time exponents for small $\\varepsilon \\to 0$ (Slide 4):\n$$\\text{Monte Carlo beats an order-}\\alpha\\text{ grid rule whenever } \\frac{D}{\\alpha} > 2 \\quad \\Longleftrightarrow \\quad \\mathbf{D > 2\\alpha}$$\n- Against the **Trapezoidal Rule ($\\alpha = 2$)**: MC wins for **$D > 4$** (and ties at $D = 4$).\n- Against **Simpson's Rule ($\\alpha = 4$)**: MC wins for **$D > 8$** (and ties at $D = 8$).\n- In an atomistic simulation of just $100$ atoms in 3D, $D = 3N = 300 \\gg 2\\alpha$. Even a crude $L = 10$ grid per axis would require $N = 10^{300}$ function evaluations (vastly exceeding the $\\sim 10^{80}$ atoms in the observable universe!), making Monte Carlo the **only** viable general integration method!\n\nAs Slide 5 summarizes, two further practical advantages of Monte Carlo are that it is **conceptually and practically simple** to code in any geometry, and it **comes with built-in statistical error bars**.\n"
   - id: concept_dimensionality_crossover
     type: concept_cell
     title: 'Interactive Explorer: Quadrature vs. Monte Carlo Scaling & Crossover Dimension D* = 2α'
-    description_markdown: 'Select a deterministic quadrature rule (**Trapezoidal $\alpha=2$**, **Simpson''s $\alpha=4$**,
-      or **Gauss–Legendre $\alpha=6$**) and vary the **integration dimension $D$** (Slides 3–5). Toggle between **Error vs.
-      Evaluations $\varepsilon(N)$** and **Log(CPU Time) vs. Dimension $D$** to see the exact crossover at $D^* = 2\alpha$.
+    description_markdown: 'Select a deterministic quadrature rule (**Trapezoidal $\alpha=2$**, **Simpson''s $\alpha=4$**, or **Gauss–Legendre $\alpha=6$**) and vary the **integration dimension $D$** (Slides 3–5). Toggle between **Error vs. Evaluations $\varepsilon(N)$** and **Log(CPU Time) vs. Dimension $D$** to see the exact crossover at $D^* = 2\alpha$.
 
       '
     render_function: render_dimensionality_crossover
@@ -253,9 +186,7 @@ worksheet:
         - label: CPU Cost Exponent vs. Dimension D
           value: cpu_vs_D
         default: error_vs_N
-    takeaway_markdown: '**Key Takeaway:** On a log-log plot of CPU time vs. error (Slide 5), the Monte Carlo curve has a fixed
-      slope of $-2$ regardless of $D$, whereas the grid quadrature slope $-D/\alpha$ steepens relentlessly with dimension,
-      crossing MC at $D^* = 2\alpha$.
+    takeaway_markdown: '**Key Takeaway:** On a log-log plot of CPU time vs. error (Slide 5), the Monte Carlo curve has a fixed slope of $-2$ regardless of $D$, whereas the grid quadrature slope $-D/\alpha$ steepens relentlessly with dimension, crossing MC at $D^* = 2\alpha$.
 
       '
   - id: q06_grid_points_hypercube
@@ -263,8 +194,7 @@ worksheet:
     question_type: numeric
     difficulty: easy
     taught_by: sec_curse_of_dimensionality
-    prompt_markdown: You lay out a uniform deterministic grid with $L = 10$ points along each coordinate direction to integrate
-      a function in a $D = 6$-dimensional hypercube. What is the total number of grid points $N$ in the tensor product grid?
+    prompt_markdown: You lay out a uniform deterministic grid with $L = 10$ points along each coordinate direction to integrate a function in a $D = 6$-dimensional hypercube. What is the total number of grid points $N$ in the tensor product grid?
     hint_markdown: Determine the total number of points in a multidimensional Cartesian product grid.
     correct:
       value: 1000000.0
@@ -281,18 +211,14 @@ worksheet:
     taught_by:
     - sec_curse_of_dimensionality
     - concept_dimensionality_crossover
-    prompt_markdown: 'For the **Trapezoidal Rule** ($\varepsilon \sim h^2$, order $\alpha = 2$), above what exact spatial
-      dimension $D^*$ does Monte Carlo integration ($\varepsilon \sim M^{-1/2}$) asymptotically beat deterministic grid quadrature
-      in the limit of small error $\varepsilon \to 0$ (i.e., $D > D^*$)?
+    prompt_markdown: 'For the **Trapezoidal Rule** ($\varepsilon \sim h^2$, order $\alpha = 2$), above what exact spatial dimension $D^*$ does Monte Carlo integration ($\varepsilon \sim M^{-1/2}$) asymptotically beat deterministic grid quadrature in the limit of small error $\varepsilon \to 0$ (i.e., $D > D^*$)?
 
       '
-    hint_markdown: Equate the error scaling exponents with respect to total computational evaluations $N$ for deterministic
-      grid quadrature and Monte Carlo sampling.
+    hint_markdown: Equate the error scaling exponents with respect to total computational evaluations $N$ for deterministic grid quadrature and Monte Carlo sampling.
     correct:
       value: 4.0
       tolerance: 0.01
-    rationale_markdown: 'For the Trapezoidal rule ($\alpha = 2$), $T_{\text{quad}} \sim \varepsilon^{-D/2}$ while $T_{\text{MC}}
-      \sim \varepsilon^{-2}$. Comparing exponents $D/2 > 2$ gives the crossover dimension:
+    rationale_markdown: 'For the Trapezoidal rule ($\alpha = 2$), $T_{\text{quad}} \sim \varepsilon^{-D/2}$ while $T_{\text{MC}} \sim \varepsilon^{-2}$. Comparing exponents $D/2 > 2$ gives the crossover dimension:
 
       $$D^* = 2\alpha = 2(2) = 4$$
 
@@ -306,16 +232,12 @@ worksheet:
     taught_by:
     - sec_curse_of_dimensionality
     - concept_dimensionality_crossover
-    prompt_markdown: For **Simpson's Rule** ($\varepsilon \sim f^{(4)}(x) h^4$, order $\alpha = 4$), above what crossover
-      dimension $D^*$ does Monte Carlo integration asymptotically require less computational work than Simpson's rule as $\varepsilon
-      \to 0$?
-    hint_markdown: Find the dimensionality where the error scaling exponent of grid quadrature matches the universal $-1/2$
-      exponent of Monte Carlo.
+    prompt_markdown: For **Simpson's Rule** ($\varepsilon \sim f^{(4)}(x) h^4$, order $\alpha = 4$), above what crossover dimension $D^*$ does Monte Carlo integration asymptotically require less computational work than Simpson's rule as $\varepsilon \to 0$?
+    hint_markdown: Find the dimensionality where the error scaling exponent of grid quadrature matches the universal $-1/2$ exponent of Monte Carlo.
     correct:
       value: 8.0
       tolerance: 0.01
-    rationale_markdown: 'For Simpson''s rule ($\alpha = 4$), $T_{\text{quad}} \sim \varepsilon^{-D/4}$ while $T_{\text{MC}}
-      \sim \varepsilon^{-2}$. Setting $D/4 = 2$ gives:
+    rationale_markdown: 'For Simpson''s rule ($\alpha = 4$), $T_{\text{quad}} \sim \varepsilon^{-D/4}$ while $T_{\text{MC}} \sim \varepsilon^{-2}$. Setting $D/4 = 2$ gives:
 
       $$D^* = 2\alpha = 2(4) = 8$$
 
@@ -327,25 +249,25 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: sec_curse_of_dimensionality
-    prompt_markdown: 'Consider an order-$\alpha$ deterministic integration rule ($\varepsilon \sim h^\alpha$) applied to a
-      $D$-dimensional integral using $N = L^D = h^{-D}$ grid points. How does the required CPU time $T_{\text{int}} \sim N$
-      scale with the target error $\varepsilon$?
+    prompt_markdown: 'Consider an order-$\alpha$ deterministic integration rule ($\varepsilon \sim h^\alpha$) applied to a $D$-dimensional integral using $N = L^D = h^{-D}$ grid points. How does the required CPU time $T_{\text{int}} \sim N$ scale with the target error $\varepsilon$?
 
       '
-    hint_markdown: Since $\varepsilon \sim h^\alpha$, we have $h \sim \varepsilon^{1/\alpha}$. Substitute this into $T_{\text{int}}
-      \sim h^{-D}$ (Slide 4).
+    hint_markdown: Since $\varepsilon \sim h^\alpha$, we have $h \sim \varepsilon^{1/\alpha}$. Substitute this into $T_{\text{int}} \sim h^{-D}$ (Slide 4).
     options:
     - id: a
       text: $T_{\text{int}} \sim \varepsilon^{-D/\alpha}$
+      text_markdown: $T_{\text{int}} \sim \varepsilon^{-D/\alpha}$
     - id: b
       text: $T_{\text{int}} \sim \varepsilon^{-\alpha/D}$
+      text_markdown: $T_{\text{int}} \sim \varepsilon^{-\alpha/D}$
     - id: c
       text: $T_{\text{int}} \sim \varepsilon^{-2}$
+      text_markdown: $T_{\text{int}} \sim \varepsilon^{-2}$
     - id: d
       text: $T_{\text{int}} \sim \varepsilon^{-D \alpha}$
+      text_markdown: $T_{\text{int}} \sim \varepsilon^{-D \alpha}$
     correct: a
-    rationale_markdown: 'From $\varepsilon \sim h^\alpha$, we have $h \sim \varepsilon^{1/\alpha}$. Because the number of
-      grid points in $D$ dimensions is $N = h^{-D}$, the CPU time scales as:
+    rationale_markdown: 'From $\varepsilon \sim h^\alpha$, we have $h \sim \varepsilon^{1/\alpha}$. Because the number of grid points in $D$ dimensions is $N = h^{-D}$, the CPU time scales as:
 
       $$T_{\text{int}} \sim N = h^{-D} \sim \left(\varepsilon^{1/\alpha}\right)^{-D} = \varepsilon^{-D/\alpha}$$
 
@@ -357,21 +279,16 @@ worksheet:
     taught_by:
     - sec_curse_of_dimensionality
     - concept_dimensionality_crossover
-    prompt_markdown: Suppose you use the **Trapezoidal Rule** ($\alpha = 2$) in $D = 6$ dimensions with $N$ total grid evaluations.
-      The integration error scales with $N$ as $\varepsilon \propto N^{-\gamma}$. What is the numerical value of the positive
-      convergence exponent $\gamma$ (to three decimal places)?
-    hint_markdown: Express the grid spacing $h$ in terms of total grid points $N$ in $D$ dimensions, and substitute into the
-      error order $\varepsilon \propto h^\alpha$.
+    prompt_markdown: Suppose you use the **Trapezoidal Rule** ($\alpha = 2$) in $D = 6$ dimensions with $N$ total grid evaluations. The integration error scales with $N$ as $\varepsilon \propto N^{-\gamma}$. What is the numerical value of the positive convergence exponent $\gamma$ (to three decimal places)?
+    hint_markdown: Express the grid spacing $h$ in terms of total grid points $N$ in $D$ dimensions, and substitute into the error order $\varepsilon \propto h^\alpha$.
     correct:
       value: 0.333
       tolerance: 0.005
-    rationale_markdown: 'In $D = 6$ dimensions, $N$ total grid points yield $L = N^{1/6}$ points per axis and grid spacing
-      $h = N^{-1/6}$. For the Trapezoidal rule ($\alpha = 2$):
+    rationale_markdown: 'In $D = 6$ dimensions, $N$ total grid points yield $L = N^{1/6}$ points per axis and grid spacing $h = N^{-1/6}$. For the Trapezoidal rule ($\alpha = 2$):
 
       $$\varepsilon \propto h^2 = \left(N^{-1/6}\right)^2 = N^{-2/6} = N^{-1/3} \implies \gamma = \frac{1}{3} \approx 0.333$$
 
-      Notice that $0.333 < 0.500$, confirming that in $D = 6$ the Trapezoidal rule converges more slowly with $N$ than Monte
-      Carlo ($\varepsilon \propto N^{-0.5}$)!
+      Notice that $0.333 < 0.500$, confirming that in $D = 6$ the Trapezoidal rule converges more slowly with $N$ than Monte Carlo ($\varepsilon \propto N^{-0.5}$)!
 
       '
   - id: q11_log_cpu_vs_log_error_plot
@@ -381,29 +298,25 @@ worksheet:
     taught_by:
     - sec_curse_of_dimensionality
     - concept_dimensionality_crossover
-    prompt_markdown: 'On Slide 5, $\log(\text{CPU Time})$ is plotted against $\log(\text{error})$ (with smaller error to the
-      left, labeled "Good", and larger error to the right, labeled "Bad") for Trapezoidal-rule quadrature in $2\text{D}, 4\text{D},
-      6\text{D}, 8\text{D}$ alongside a band of orange lines labeled **MC**. Why is the $4\text{D}$ quadrature line parallel
-      to the **MC** lines, while $6\text{D}$ and $8\text{D}$ are much steeper?
+    prompt_markdown: 'On Slide 5, $\log(\text{CPU Time})$ is plotted against $\log(\text{error})$ (with smaller error to the left, labeled "Good", and larger error to the right, labeled "Bad") for Trapezoidal-rule quadrature in $2\text{D}, 4\text{D}, 6\text{D}, 8\text{D}$ alongside a band of orange lines labeled **MC**. Why is the $4\text{D}$ quadrature line parallel to the **MC** lines, while $6\text{D}$ and $8\text{D}$ are much steeper?
 
       '
-    hint_markdown: 'Take the logarithm of $T_{\text{quad}} \sim \varepsilon^{-D/2}$ and $T_{\text{MC}} \sim \varepsilon^{-2}$:
-      what are the slopes $d(\log T)/d(\log \varepsilon)$?'
+    hint_markdown: 'Take the logarithm of $T_{\text{quad}} \sim \varepsilon^{-D/2}$ and $T_{\text{MC}} \sim \varepsilon^{-2}$: what are the slopes $d(\log T)/d(\log \varepsilon)$?'
     options:
     - id: a
-      text: Because $\log T_{\text{quad}} = -(D/2)\log\varepsilon + \text{const}$ has slope $-D/2$, which equals the Monte
-        Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$.
+      text: Because $\log T_{\text{quad}} = -(D/2)\log\varepsilon + \text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$.
+      text_markdown: Because $\log T_{\text{quad}} = -(D/2)\log\varepsilon + \text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$.
     - id: b
       text: Because Monte Carlo only works in 4 dimensions.
+      text_markdown: Because Monte Carlo only works in 4 dimensions.
     - id: c
       text: Because the Trapezoidal rule is exact for all functions in $2\text{D}$.
+      text_markdown: Because the Trapezoidal rule is exact for all functions in $2\text{D}$.
     - id: d
       text: Because random number generators run faster in $4\text{D}$ than in $2\text{D}$.
+      text_markdown: Because random number generators run faster in $4\text{D}$ than in $2\text{D}$.
     correct: a
-    rationale_markdown: 'Taking logarithms of $T_{\text{quad}} \propto \varepsilon^{-D/2}$ gives $\log T_{\text{quad}} = -\frac{D}{2}\log\varepsilon
-      + C$, while $\log T_{\text{MC}} = -2\log\varepsilon + C''$. At $D = 4$, the quadrature slope is $-4/2 = -2$, exactly
-      parallel to the MC slope! For $D = 6$ and $8$, the slopes are $-3$ and $-4$, so CPU cost explodes much faster than MC
-      as error decreases toward the "Good" (left) side of the plot.
+    rationale_markdown: 'Taking logarithms of $T_{\text{quad}} \propto \varepsilon^{-D/2}$ gives $\log T_{\text{quad}} = -\frac{D}{2}\log\varepsilon + C$, while $\log T_{\text{MC}} = -2\log\varepsilon + C''$. At $D = 4$, the quadrature slope is $-4/2 = -2$, exactly parallel to the MC slope! For $D = 6$ and $8$, the slopes are $-3$ and $-4$, so CPU cost explodes much faster than MC as error decreases toward the "Good" (left) side of the plot.
 
       '
   - id: q12_other_reasons_for_mc
@@ -411,62 +324,41 @@ worksheet:
     question_type: multi_select
     difficulty: easy
     taught_by: sec_curse_of_dimensionality
-    prompt_markdown: 'Besides its superior asymptotic scaling in high dimensions ($D > 2\alpha$), what additional practical
-      advantages of Monte Carlo integration are highlighted on Slide 5? *(Select all that apply.)*
+    prompt_markdown: 'Besides its superior asymptotic scaling in high dimensions ($D > 2\alpha$), what additional practical advantages of Monte Carlo integration are highlighted on Slide 5? *(Select all that apply.)*
 
       '
     hint_markdown: Look at the orange bullet points under 'Other reasons to do Monte Carlo:' on Slide 5.
     options:
     - id: a
-      text: It is conceptually and practically simple to implement, even for complex, high-dimensional, or irregularly shaped
-        integration domains.
+      text: It is conceptually and practically simple to implement, even for complex, high-dimensional, or irregularly shaped integration domains.
+      text_markdown: It is conceptually and practically simple to implement, even for complex, high-dimensional, or irregularly shaped integration domains.
     - id: b
       text: It comes with built-in statistical error bars (via the sample variance $\sigma / \sqrt{M}$).
+      text_markdown: It comes with built-in statistical error bars (via the sample variance $\sigma / \sqrt{M}$).
     - id: c
       text: It gives zero error with just $M = 1$ sample.
+      text_markdown: It gives zero error with just $M = 1$ sample.
     - id: d
       text: It requires knowing the analytical 4th derivative $f^{(4)}(x)$ of the integrand beforehand.
+      text_markdown: It requires knowing the analytical 4th derivative $f^{(4)}(x)$ of the integrand beforehand.
     correct:
     - a
     - b
-    rationale_markdown: 'As Slide 5 emphasizes, Monte Carlo is **conceptually and practically simple** and **comes with built-in
-      error bars** estimated directly from the variance of the sampled values.
+    rationale_markdown: 'As Slide 5 emphasizes, Monte Carlo is **conceptually and practically simple** and **comes with built-in error bars** estimated directly from the variance of the sampled values.
 
       '
   - id: sec_pdfs_moments_and_mappings
     type: markdown_section
     title: 3. Probability Distributions, Moments, and Mappings of Random Variables
-    body_markdown: "### Probability Distribution Functions (PDFs), CDFs, and Moments (Slide 6)\nA continuous random variable\
-      \ $x$ is governed by its **probability distribution function (p.d.f.)** $P(x)$, where $P(x)\\,dx$ is the probability\
-      \ of observing a value in the infinitesimal interval $(x, x + dx)$:\n$$P(x) \\ge 0, \\qquad \\int_{-\\infty}^{\\infty}\
-      \ dx\\, P(x) = 1 \\quad \\text{(Normalization)}$$\n\n- **Cumulative Distribution Function (CDF):** The probability of\
-      \ observing a value less than or equal to $y$:\n  $$C(y) = \\int_{-\\infty}^y dx\\, P(x), \\qquad 0 \\le C(y) \\le 1,\
-      \ \\qquad \\frac{dC(y)}{dy} = P(y)$$\n- **Expectation Value (Average) of an Observable $g(x)$:**\n  $$\\langle g(x)\
-      \ \\rangle = \\bar{g} = \\int_{-\\infty}^{\\infty} dx\\, P(x)\\, g(x)$$\n- **Moments $I_n = \\langle x^n \\rangle =\
-      \ \\int_{-\\infty}^{\\infty} dx\\, P(x)\\, x^n$:**\n  - **Zeroth moment:** $I_0 = \\langle x^0 \\rangle = 1$ (normalization)\n\
-      \  - **First moment (Mean):** $\\langle x \\rangle = I_1$\n  - **Variance:** $\\sigma_x^2 = \\left\\langle (x - \\langle\
-      \ x \\rangle)^2 \\right\\rangle = \\langle x^2 \\rangle - \\langle x \\rangle^2 = I_2 - (I_1)^2$\n\n### Mappings of\
-      \ Random Variables & Conservation of Probability (Slide 7)\nSuppose we have a random variable $x$ with known distribution\
-      \ $p_x(x)$ (for instance, a uniform random number $x \\sim \\text{Uniform}(0, 1)$ where $p_x(x) = 1$) and we map it\
-      \ to a new variable $y = g(x)$. What is the probability density $p_y(y)$ of $y$?\n\nBecause the probability of landing\
-      \ in corresponding infinitesimal intervals must be conserved ($p_y(y)|dy| = p_x(x)|dx|$):\n$$p_y(y) = p_x(x)\\left|\\\
-      frac{dx}{dy}\\right| = p_x(x)\\left|\\frac{dx}{dg(x)}\\right| = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|^{-1}$$\n\n> [!NOTE]\
-      \ What happens when $y = g(x)$ is NOT monotonic? (Slide 7)\n> If multiple distinct values $x^{(1)}, x^{(2)}, \\dots$\
-      \ map to the same output $y = g(x^{(k)})$, all those pre-image intervals contribute to $p_y(y)|dy|$, so we **sum over\
-      \ all branches**:\n> $$p_y(y) = \\sum_{k:\\, g(x^{(k)}) = y} p_x\\!\\left(x^{(k)}\\right) \\left|\\frac{dg}{dx}\\Big|_{x^{(k)}}\\\
-      right|^{-1}$$\n\n**Worked Example (Slide 7):** Let $x \\sim \\text{Uniform}(0, 1]$ (so $p_x(x) = 1$) and define $y =\
-      \ g(x) = -\\ln(x) \\ge 0$.\nThen $\\frac{dg(x)}{dx} = -\\frac{1}{x}$, so $\\left|\\frac{dg}{dx}\\right|^{-1} = x = e^{-y}$.\
-      \ Therefore:\n$$p_y(y)\\,dy = (1)\\cdot e^{-y}\\,dy = e^{-y}\\,dy \\quad (y \\ge 0)$$\nMore generally, scaling by $\\\
-      lambda > 0$ via $y = -\\frac{1}{\\lambda}\\ln(x)$ produces the **exponential (Poisson waiting-time) distribution** $p_y(y)\
-      \ = \\lambda e^{-\\lambda y}$!\n"
+    body_markdown: "### Probability Distribution Functions (PDFs), CDFs, and Moments (Slide 6)\nA continuous random variable $x$ is governed by its **probability distribution function (p.d.f.)** $P(x)$, where $P(x)\\,dx$ is the probability of observing a value in the infinitesimal interval $(x, x + dx)$:\n$$P(x) \\ge 0, \\qquad \\int_{-\\infty}^{\\infty} dx\\, P(x) = 1 \\quad \\text{(Normalization)}$$\n\n- **Cumulative Distribution Function (CDF):** The probability of observing a value less than or equal to $y$:\n  $$C(y) = \\int_{-\\infty}^y dx\\, P(x), \\qquad 0 \\le C(y) \\le 1, \\qquad \\frac{dC(y)}{dy} = P(y)$$\n- **Expectation Value (Average) of an Observable $g(x)$:**\n  $$\\langle g(x) \\rangle = \\bar{g} = \\int_{-\\infty}^{\\infty} dx\\, P(x)\\, g(x)$$\n- **Moments $I_n = \\langle x^n \\rangle = \\int_{-\\infty}^{\\infty} dx\\, P(x)\\, x^n$:**\n  - **Zeroth moment:** $I_0 = \\langle x^0 \\rangle = 1$ (normalization)\n  - **First moment (Mean):** $\\langle x \\rangle = I_1$\n  -\
+      \ **Variance:** $\\sigma_x^2 = \\left\\langle (x - \\langle x \\rangle)^2 \\right\\rangle = \\langle x^2 \\rangle - \\langle x \\rangle^2 = I_2 - (I_1)^2$\n\n### Mappings of Random Variables & Conservation of Probability (Slide 7)\nSuppose we have a random variable $x$ with known distribution $p_x(x)$ (for instance, a uniform random number $x \\sim \\text{Uniform}(0, 1)$ where $p_x(x) = 1$) and we map it to a new variable $y = g(x)$. What is the probability density $p_y(y)$ of $y$?\n\nBecause the probability of landing in corresponding infinitesimal intervals must be conserved ($p_y(y)|dy| = p_x(x)|dx|$):\n$$p_y(y) = p_x(x)\\left|\\frac{dx}{dy}\\right| = p_x(x)\\left|\\frac{dx}{dg(x)}\\right| = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|^{-1}$$\n\n> [!NOTE] What happens when $y = g(x)$ is NOT monotonic? (Slide 7)\n> If multiple distinct values $x^{(1)}, x^{(2)}, \\dots$ map to the same output $y = g(x^{(k)})$, all those pre-image intervals contribute to $p_y(y)|dy|$, so we **sum over all\
+      \ branches**:\n> $$p_y(y) = \\sum_{k:\\, g(x^{(k)}) = y} p_x\\!\\left(x^{(k)}\\right) \\left|\\frac{dg}{dx}\\Big|_{x^{(k)}}\\right|^{-1}$$\n\n**Worked Example (Slide 7):** Let $x \\sim \\text{Uniform}(0, 1]$ (so $p_x(x) = 1$) and define $y = g(x) = -\\ln(x) \\ge 0$.\nThen $\\frac{dg(x)}{dx} = -\\frac{1}{x}$, so $\\left|\\frac{dg}{dx}\\right|^{-1} = x = e^{-y}$. Therefore:\n$$p_y(y)\\,dy = (1)\\cdot e^{-y}\\,dy = e^{-y}\\,dy \\quad (y \\ge 0)$$\nMore generally, scaling by $\\lambda > 0$ via $y = -\\frac{1}{\\lambda}\\ln(x)$ produces the **exponential (Poisson waiting-time) distribution** $p_y(y) = \\lambda e^{-\\lambda y}$!\n"
   - id: q13_pdf_normalization_numeric
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_pdfs_moments_and_mappings
-    prompt_markdown: 'A continuous random variable $x \in [0, 2]$ has probability density function $P(x) = A x^2$ for $0 \le
-      x \le 2$ (and $P(x) = 0$ otherwise). Using the normalization condition $I_0 = \int_{-\infty}^\infty P(x)\,dx = 1$, what
-      is the numerical value of the normalization constant $A$?
+    prompt_markdown: 'A continuous random variable $x \in [0, 2]$ has probability density function $P(x) = A x^2$ for $0 \le x \le 2$ (and $P(x) = 0$ otherwise). Using the normalization condition $I_0 = \int_{-\infty}^\infty P(x)\,dx = 1$, what is the numerical value of the normalization constant $A$?
 
       '
     hint_markdown: Integrate the polynomial PDF over its support and set the total probability to unity.
@@ -483,17 +375,14 @@ worksheet:
     question_type: numeric
     difficulty: easy
     taught_by: sec_pdfs_moments_and_mappings
-    prompt_markdown: For a continuous probability distribution $P(x)$, the first moment is $I_1 = \langle x \rangle = 3.0$
-      and the second moment is $I_2 = \langle x^2 \rangle = 13.5$. What is the variance $\operatorname{Var}(x) = \langle (x
-      - \langle x \rangle)^2 \rangle$?
+    prompt_markdown: For a continuous probability distribution $P(x)$, the first moment is $I_1 = \langle x \rangle = 3.0$ and the second moment is $I_2 = \langle x^2 \rangle = 13.5$. What is the variance $\operatorname{Var}(x) = \langle (x - \langle x \rangle)^2 \rangle$?
     hint_markdown: Relate the variance of a distribution to its first two raw moments.
     correct:
       value: 4.5
       tolerance: 0.01
     rationale_markdown: 'By the identity on Slide 6:
 
-      $$\text{Var}(x) = \left\langle (x - \langle x \rangle)^2 \right\rangle = I_2 - (I_1)^2 = 13.5 - (3.0)^2 = 13.5 - 9.0
-      = 4.50$$
+      $$\text{Var}(x) = \left\langle (x - \langle x \rangle)^2 \right\rangle = I_2 - (I_1)^2 = 13.5 - (3.0)^2 = 13.5 - 9.0 = 4.50$$
 
       '
   - id: q15_cdf_properties
@@ -501,26 +390,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_pdfs_moments_and_mappings
-    prompt_markdown: 'Which of the following statements is **always true** for the cumulative distribution function $C(y)
-      = \int_{-\infty}^y dx\,P(x)$ of any valid continuous probability density $P(x) \ge 0$?
+    prompt_markdown: 'Which of the following statements is **always true** for the cumulative distribution function $C(y) = \int_{-\infty}^y dx\,P(x)$ of any valid continuous probability density $P(x) \ge 0$?
 
       '
-    hint_markdown: Since $P(x) \ge 0$ and $\int_{-\infty}^\infty P(x)\,dx = 1$, how does $C(y)$ behave as $y$ increases from
-      $-\infty$ to $+\infty$?
+    hint_markdown: Since $P(x) \ge 0$ and $\int_{-\infty}^\infty P(x)\,dx = 1$, how does $C(y)$ behave as $y$ increases from $-\infty$ to $+\infty$?
     options:
     - id: a
-      text: $C(y)$ is monotonically non-decreasing with $0 \le C(y) \le 1$, $C(-\infty) = 0$, $C(+\infty) = 1$, and $\frac{dC(y)}{dy}
-        = P(y)$.
+      text: $C(y)$ is monotonically non-decreasing with $0 \le C(y) \le 1$, $C(-\infty) = 0$, $C(+\infty) = 1$, and $\frac{dC(y)}{dy} = P(y)$.
+      text_markdown: $C(y)$ is monotonically non-decreasing with $0 \le C(y) \le 1$, $C(-\infty) = 0$, $C(+\infty) = 1$, and $\frac{dC(y)}{dy} = P(y)$.
     - id: b
       text: $C(y)$ oscillates between $-1$ and $+1$ and integrates to $1$.
+      text_markdown: $C(y)$ oscillates between $-1$ and $+1$ and integrates to $1$.
     - id: c
       text: $C(y)$ equals the second derivative of $P(y)$.
+      text_markdown: $C(y)$ equals the second derivative of $P(y)$.
     - id: d
       text: $C(y)$ can decrease whenever $P(y)$ decreases.
+      text_markdown: $C(y)$ can decrease whenever $P(y)$ decreases.
     correct: a
-    rationale_markdown: 'Because the integrand $P(x) \ge 0$ is non-negative everywhere, accumulating area from $-\infty$ to
-      $y$ produces a monotonically non-decreasing function bounded by $0 \le C(y) \le 1$, with fundamental theorem of calculus
-      derivative $dC(y)/dy = P(y)$.
+    rationale_markdown: 'Because the integrand $P(x) \ge 0$ is non-negative everywhere, accumulating area from $-\infty$ to $y$ produces a monotonically non-decreasing function bounded by $0 \le C(y) \le 1$, with fundamental theorem of calculus derivative $dC(y)/dy = P(y)$.
 
       '
   - id: q16_mapping_jacobian_rule
@@ -528,23 +416,25 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: sec_pdfs_moments_and_mappings
-    prompt_markdown: 'Let $x$ be a continuous random variable with PDF $p_x(x)$, and let $y = g(x)$ be a monotonic differentiable
-      mapping. Which formula correctly gives the transformed PDF $p_y(y)$ (Slide 7)?
+    prompt_markdown: 'Let $x$ be a continuous random variable with PDF $p_x(x)$, and let $y = g(x)$ be a monotonic differentiable mapping. Which formula correctly gives the transformed PDF $p_y(y)$ (Slide 7)?
 
       '
     hint_markdown: Conservation of probability in corresponding intervals requires $p_y(y)|dy| = p_x(x)|dx|$.
     options:
     - id: a
       text: $p_y(y) = p_x(x)\left|\frac{dx}{dy}\right| = p_x(x)\left|\frac{dg(x)}{dx}\right|^{-1}$
+      text_markdown: $p_y(y) = p_x(x)\left|\frac{dx}{dy}\right| = p_x(x)\left|\frac{dg(x)}{dx}\right|^{-1}$
     - id: b
       text: $p_y(y) = p_x(x)\left|\frac{dg(x)}{dx}\right|$
+      text_markdown: $p_y(y) = p_x(x)\left|\frac{dg(x)}{dx}\right|$
     - id: c
       text: $p_y(y) = p_x(g(x))$
+      text_markdown: $p_y(y) = p_x(g(x))$
     - id: d
       text: $p_y(y) = \frac{d}{dy} p_x(x)$
+      text_markdown: $p_y(y) = \frac{d}{dy} p_x(x)$
     correct: a
-    rationale_markdown: 'Equating the probability mass in infinitesimal intervals $p_y(y)|dy| = p_x(x)|dx|$ and dividing by
-      $|dy|$ yields:
+    rationale_markdown: 'Equating the probability mass in infinitesimal intervals $p_y(y)|dy| = p_x(x)|dx|$ and dividing by $|dy|$ yields:
 
       $$p_y(y) = p_x(x)\left|\frac{dx}{dy}\right| = p_x(x)\left|\frac{dg(x)}{dx}\right|^{-1}$$
 
@@ -554,11 +444,8 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_pdfs_moments_and_mappings
-    prompt_markdown: Suppose $x \sim \text{Uniform}(0, 1)$ (so $p_x(x) = 1$ on $0 < x < 1$) and we define a new random variable
-      through the mapping $y = x^2$. What is the numerical value of the transformed probability density $p_y(y)$ evaluated
-      at $y = 0.25$?
-    hint_markdown: Apply the transformation law for continuous probability distributions using the derivative of the mapping
-      function.
+    prompt_markdown: Suppose $x \sim \text{Uniform}(0, 1)$ (so $p_x(x) = 1$ on $0 < x < 1$) and we define a new random variable through the mapping $y = x^2$. What is the numerical value of the transformed probability density $p_y(y)$ evaluated at $y = 0.25$?
+    hint_markdown: Apply the transformation law for continuous probability distributions using the derivative of the mapping function.
     correct:
       value: 1.0
       tolerance: 0.01
@@ -572,28 +459,27 @@ worksheet:
     question_type: single_select
     difficulty: hard
     taught_by: sec_pdfs_moments_and_mappings
-    prompt_markdown: 'Slide 7 asks: *"What happens when $g(x)$ is not monotonic?"* Suppose $x$ is distributed uniformly on
-      $[-1, 1]$ with $p_x(x) = \frac{1}{2}$, and we define the non-monotonic mapping $y = g(x) = x^2 \in (0, 1]$. Because
-      both $x_+ = +\sqrt{y}$ and $x_- = -\sqrt{y}$ map to the same $y$, what is the resulting PDF $p_y(y)$ on $0 < y \le 1$?
+    prompt_markdown: 'Slide 7 asks: *"What happens when $g(x)$ is not monotonic?"* Suppose $x$ is distributed uniformly on $[-1, 1]$ with $p_x(x) = \frac{1}{2}$, and we define the non-monotonic mapping $y = g(x) = x^2 \in (0, 1]$. Because both $x_+ = +\sqrt{y}$ and $x_- = -\sqrt{y}$ map to the same $y$, what is the resulting PDF $p_y(y)$ on $0 < y \le 1$?
 
       '
     hint_markdown: Sum the Jacobian contributions $\sum_{x = \pm\sqrt{y}} p_x(x) |2x|^{-1}$ over both branches!
     options:
     - id: a
-      text: $p_y(y) = \frac{1}{2\sqrt{y}}$, because the two branches $x = +\sqrt{y}$ and $x = -\sqrt{y}$ each contribute $\frac{1}{2}
-        \cdot \frac{1}{2\sqrt{y}} = \frac{1}{4\sqrt{y}}$.
+      text: $p_y(y) = \frac{1}{2\sqrt{y}}$, because the two branches $x = +\sqrt{y}$ and $x = -\sqrt{y}$ each contribute $\frac{1}{2} \cdot \frac{1}{2\sqrt{y}} = \frac{1}{4\sqrt{y}}$.
+      text_markdown: $p_y(y) = \frac{1}{2\sqrt{y}}$, because the two branches $x = +\sqrt{y}$ and $x = -\sqrt{y}$ each contribute $\frac{1}{2} \cdot \frac{1}{2\sqrt{y}} = \frac{1}{4\sqrt{y}}$.
     - id: b
       text: $p_y(y) = 0$, because the positive and negative branches cancel out.
+      text_markdown: $p_y(y) = 0$, because the positive and negative branches cancel out.
     - id: c
       text: $p_y(y) = \frac{1}{4\sqrt{y}}$, because only the positive branch counts.
+      text_markdown: $p_y(y) = \frac{1}{4\sqrt{y}}$, because only the positive branch counts.
     - id: d
       text: $p_y(y) = 2\sqrt{y}$.
+      text_markdown: $p_y(y) = 2\sqrt{y}$.
     correct: a
-    rationale_markdown: 'When $g(x)$ is not monotonic, probability conservation sums the absolute Jacobian contributions from
-      all pre-image roots $g(x^{(k)}) = y$:
+    rationale_markdown: 'When $g(x)$ is not monotonic, probability conservation sums the absolute Jacobian contributions from all pre-image roots $g(x^{(k)}) = y$:
 
-      $$p_y(y) = p_x(+\sqrt{y})\left|\frac{1}{2\sqrt{y}}\right| + p_x(-\sqrt{y})\left|\frac{1}{-2\sqrt{y}}\right| = \frac{1}{2}\frac{1}{2\sqrt{y}}
-      + \frac{1}{2}\frac{1}{2\sqrt{y}} = \frac{1}{2\sqrt{y}}$$
+      $$p_y(y) = p_x(+\sqrt{y})\left|\frac{1}{2\sqrt{y}}\right| + p_x(-\sqrt{y})\left|\frac{1}{-2\sqrt{y}}\right| = \frac{1}{2}\frac{1}{2\sqrt{y}} + \frac{1}{2}\frac{1}{2\sqrt{y}} = \frac{1}{2\sqrt{y}}$$
 
       which properly integrates to $\int_0^1 \frac{dy}{2\sqrt{y}} = [\sqrt{y}]_0^1 = 1$.
 
@@ -601,50 +487,15 @@ worksheet:
   - id: sec_inverse_transform_and_box_muller
     type: markdown_section
     title: 4. Inverse Transform Sampling, Box–Muller, and Marsaglia Polar Gaussian Sampling
-    body_markdown: "### Inverse Transform Sampling: $y = C^{-1}(x)$ (Slides 8–9)\nHow do we turn a standard uniform random\
-      \ number generator $x \\sim \\text{Uniform}(0, 1)$ (where $p_x(x) = 1$ on $0 \\le x \\le 1$) into a generator for **any**\
-      \ desired target distribution $p_y(y) = f(y)$?\n\nSet the mapping relation $\\frac{dx}{dy} = f(y)$ and integrate:\n\
-      $$x = C(y) = \\int_{-\\infty}^y du\\, f(u) \\quad \\Longleftrightarrow \\quad y(x) = C^{-1}(x)$$\n**Geometric & Physical\
-      \ Interpretation (Slide 9):**\n1. Draw a uniform random deviate $x \\in (0, 1]$.\n2. Find the value $y$ on the horizontal\
-      \ axis that has **fraction $x$ of the total area under $f(y)$ to the left of $y$**, i.e., solve $C(y) = x$.\n3. Return\
-      \ $y = C^{-1}(x)$.\n\n#### Key Analytical Examples of Inverse Transform Sampling\n1. **Exponential / Poisson Waiting-Time\
-      \ Distribution (Slide 9):**\n   - Target PDF: $f(y) = \\lambda e^{-\\lambda y}$ for $y \\ge 0$.\n   - CDF: $x = C(y)\
-      \ = \\int_0^y \\lambda e^{-\\lambda u}\\,du = 1 - e^{-\\lambda y}$.\n   - Inversion: $1 - x = e^{-\\lambda y}$. Since\
-      \ $x' = 1 - x$ is also uniformly distributed on $(0, 1]$, we obtain:\n     $$y = -\\frac{1}{\\lambda}\\ln(1 - x) \\\
-      ;\\stackrel{d}{=}\\; -\\frac{1}{\\lambda}\\ln(x')$$\n2. **Power-Law Distribution on $[0, 1]$:**\n   - Target PDF: $f(y)\
-      \ = (n + 1)y^n$ for $0 \\le y \\le 1$ ($n > -1$).\n   - CDF: $x = C(y) = y^{n+1} \\implies y = x^{1/(n+1)}$.\n3. **Cauchy\
-      \ / Lorentzian Distribution:**\n   - Target PDF: $f(y) = \\frac{1}{\\pi}\\frac{\\gamma}{y^2 + \\gamma^2}$ for $-\\infty\
-      \ < y < \\infty$.\n   - CDF: $x = C(y) = \\frac{1}{2} + \\frac{1}{\\pi}\\arctan(y/\\gamma) \\implies y = \\gamma \\\
-      tan\\!\\left[\\pi\\left(x - \\frac{1}{2}\\right)\\right]$.\n\n### Sampling a Normal Gaussian: The Box–Muller Transform\
-      \ (Slide 10)\nIn Molecular Dynamics (Lesson 11!), initializing Maxwell–Boltzmann velocities or running an Andersen/Langevin\
-      \ thermostat requires drawing Gaussian random numbers:\n$$p(y)\\,dy = \\frac{1}{\\sqrt{2\\pi}}e^{-y^2/2}\\,dy$$\nWhy\
-      \ can't we just use 1D Inverse Transform Sampling? Because the Gaussian indefinite integral $C(y) = \\Phi(y) = \\frac{1}{2}\\\
-      left[1 + \\text{erf}(y/\\sqrt{2})\\right]$ **cannot be inverted in closed form using elementary functions!**\n\n**Box\
-      \ and Muller (1958)** solved this ingeniously by pairing **two** independent uniform deviates $x_1, x_2 \\in (0, 1)$\
-      \ to generate **two** independent standard normal deviates $y_1, y_2$ via 2D polar coordinates:\n$$p(y_1, y_2)\\,dy_1\\\
-      ,dy_2 = \\frac{1}{2\\pi}e^{-(y_1^2 + y_2^2)/2}\\,dy_1\\,dy_2 = p(x_1, x_2)\\left|\\frac{\\partial(x_1, x_2)}{\\partial(y_1,\
-      \ y_2)}\\right| dy_1\\,dy_2$$\nDefine the forward and inverse coordinate transformations (Slide 10):\n$$y_1 = \\sqrt{-2\\\
-      ln x_1}\\cos(2\\pi x_2), \\qquad y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$$\n$$x_1 = \\exp\\!\\left(-\\frac{1}{2}[y_1^2\
-      \ + y_2^2]\\right), \\qquad x_2 = \\frac{1}{2\\pi}\\tan^{-1}\\!\\left(\\frac{y_2}{y_1}\\right)$$\nThe $2\\times 2$ Jacobian\
-      \ determinant factors cleanly into the product of two 1D Gaussians:\n$$\\frac{\\partial(x_1, x_2)}{\\partial(y_1, y_2)}\
-      \ = -\\left[\\frac{1}{\\sqrt{2\\pi}}e^{-y_1^2/2}\\right]\\left[\\frac{1}{\\sqrt{2\\pi}}e^{-y_2^2/2}\\right]$$\nproving\
-      \ that $y_1$ and $y_2$ are **statistically independent** standard normal variables! (To obtain mean $\\mu$ and standard\
-      \ deviation $\\sigma = \\sqrt{k_B T / m}$, simply set $v = \\mu + \\sigma y$).\n\n### The Marsaglia Polar Method: Avoiding\
-      \ $\\sin$ and $\\cos$ (Slide 10 Bottom)\nEvaluating transcendental functions $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$\
-      \ is computationally expensive. At the bottom of Slide 10 (\"Better:\"), we instead pick a random point $(v_1, v_2)$\
-      \ uniformly inside the square $[-1, 1]^2$ and accept it if it lies inside the unit disk:\n$$R^2 = v_1^2 + v_2^2 \\le\
-      \ 1 \\quad (\\text{and } R^2 > 0)$$\nBecause $R^2$ is uniformly distributed on $(0, 1]$ and the angle $\\theta$ is uniform\
-      \ on $[0, 2\\pi)$, we can identify $x_1 = R^2$ (or $\\sqrt{R^2}$ in radial parameterization) and replace $\\cos(2\\\
-      pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$:\n$$y_1 = \\sqrt{-2\\\
-      ln(R^2)}\\,\\frac{v_1}{\\sqrt{R^2}}, \\qquad y_2 = \\sqrt{-2\\ln(R^2)}\\,\\frac{v_2}{\\sqrt{R^2}}$$\n- **No $\\sin$\
-      \ or $\\cos$ evaluation required!**\n- **Two independent Gaussian deviates per calculation** (\"1 for now, 2 for next\
-      \ time\").\n"
+    body_markdown: "### Inverse Transform Sampling: $y = C^{-1}(x)$ (Slides 8–9)\nHow do we turn a standard uniform random number generator $x \\sim \\text{Uniform}(0, 1)$ (where $p_x(x) = 1$ on $0 \\le x \\le 1$) into a generator for **any** desired target distribution $p_y(y) = f(y)$?\n\nSet the mapping relation $\\frac{dx}{dy} = f(y)$ and integrate:\n$$x = C(y) = \\int_{-\\infty}^y du\\, f(u) \\quad \\Longleftrightarrow \\quad y(x) = C^{-1}(x)$$\n**Geometric & Physical Interpretation (Slide 9):**\n1. Draw a uniform random deviate $x \\in (0, 1]$.\n2. Find the value $y$ on the horizontal axis that has **fraction $x$ of the total area under $f(y)$ to the left of $y$**, i.e., solve $C(y) = x$.\n3. Return $y = C^{-1}(x)$.\n\n#### Key Analytical Examples of Inverse Transform Sampling\n1. **Exponential / Poisson Waiting-Time Distribution (Slide 9):**\n   - Target PDF: $f(y) = \\lambda e^{-\\lambda y}$ for $y \\ge 0$.\n   - CDF: $x = C(y) = \\int_0^y \\lambda e^{-\\lambda u}\\,du = 1 - e^{-\\\
+      lambda y}$.\n   - Inversion: $1 - x = e^{-\\lambda y}$. Since $x' = 1 - x$ is also uniformly distributed on $(0, 1]$, we obtain:\n     $$y = -\\frac{1}{\\lambda}\\ln(1 - x) \\;\\stackrel{d}{=}\\; -\\frac{1}{\\lambda}\\ln(x')$$\n2. **Power-Law Distribution on $[0, 1]$:**\n   - Target PDF: $f(y) = (n + 1)y^n$ for $0 \\le y \\le 1$ ($n > -1$).\n   - CDF: $x = C(y) = y^{n+1} \\implies y = x^{1/(n+1)}$.\n3. **Cauchy / Lorentzian Distribution:**\n   - Target PDF: $f(y) = \\frac{1}{\\pi}\\frac{\\gamma}{y^2 + \\gamma^2}$ for $-\\infty < y < \\infty$.\n   - CDF: $x = C(y) = \\frac{1}{2} + \\frac{1}{\\pi}\\arctan(y/\\gamma) \\implies y = \\gamma \\tan\\!\\left[\\pi\\left(x - \\frac{1}{2}\\right)\\right]$.\n\n### Sampling a Normal Gaussian: The Box–Muller Transform (Slide 10)\nIn Molecular Dynamics (Lesson 11!), initializing Maxwell–Boltzmann velocities or running an Andersen/Langevin thermostat requires drawing Gaussian random numbers:\n$$p(y)\\,dy = \\frac{1}{\\sqrt{2\\pi}}e^{-y^2/2}\\,dy$$\n\
+      Why can't we just use 1D Inverse Transform Sampling? Because the Gaussian indefinite integral $C(y) = \\Phi(y) = \\frac{1}{2}\\left[1 + \\text{erf}(y/\\sqrt{2})\\right]$ **cannot be inverted in closed form using elementary functions!**\n\n**Box and Muller (1958)** solved this ingeniously by pairing **two** independent uniform deviates $x_1, x_2 \\in (0, 1)$ to generate **two** independent standard normal deviates $y_1, y_2$ via 2D polar coordinates:\n$$p(y_1, y_2)\\,dy_1\\,dy_2 = \\frac{1}{2\\pi}e^{-(y_1^2 + y_2^2)/2}\\,dy_1\\,dy_2 = p(x_1, x_2)\\left|\\frac{\\partial(x_1, x_2)}{\\partial(y_1, y_2)}\\right| dy_1\\,dy_2$$\nDefine the forward and inverse coordinate transformations (Slide 10):\n$$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2), \\qquad y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$$\n$$x_1 = \\exp\\!\\left(-\\frac{1}{2}[y_1^2 + y_2^2]\\right), \\qquad x_2 = \\frac{1}{2\\pi}\\tan^{-1}\\!\\left(\\frac{y_2}{y_1}\\right)$$\nThe $2\\times 2$ Jacobian determinant factors cleanly into the\
+      \ product of two 1D Gaussians:\n$$\\frac{\\partial(x_1, x_2)}{\\partial(y_1, y_2)} = -\\left[\\frac{1}{\\sqrt{2\\pi}}e^{-y_1^2/2}\\right]\\left[\\frac{1}{\\sqrt{2\\pi}}e^{-y_2^2/2}\\right]$$\nproving that $y_1$ and $y_2$ are **statistically independent** standard normal variables! (To obtain mean $\\mu$ and standard deviation $\\sigma = \\sqrt{k_B T / m}$, simply set $v = \\mu + \\sigma y$).\n\n### The Marsaglia Polar Method: Avoiding $\\sin$ and $\\cos$ (Slide 10 Bottom)\nEvaluating transcendental functions $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ is computationally expensive. At the bottom of Slide 10 (\"Better:\"), we instead pick a random point $(v_1, v_2)$ uniformly inside the square $[-1, 1]^2$ and accept it if it lies inside the unit disk:\n$$R^2 = v_1^2 + v_2^2 \\le 1 \\quad (\\text{and } R^2 > 0)$$\nBecause $R^2$ is uniformly distributed on $(0, 1]$ and the angle $\\theta$ is uniform on $[0, 2\\pi)$, we can identify $x_1 = R^2$ (or $\\sqrt{R^2}$ in radial parameterization)\
+      \ and replace $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$:\n$$y_1 = \\sqrt{-2\\ln(R^2)}\\,\\frac{v_1}{\\sqrt{R^2}}, \\qquad y_2 = \\sqrt{-2\\ln(R^2)}\\,\\frac{v_2}{\\sqrt{R^2}}$$\n- **No $\\sin$ or $\\cos$ evaluation required!**\n- **Two independent Gaussian deviates per calculation** (\"1 for now, 2 for next time\").\n"
   - id: concept_inverse_and_box_muller
     type: concept_cell
     title: 'Interactive Explorer: Inverse Transform Sampling & 2D Box–Muller Gaussian Mapping'
-    description_markdown: 'Switch between **Exponential ($y = -\ln(1-u)/\lambda$)**, **Cauchy/Lorentzian ($y = \gamma\tan(\pi(u-1/2))$)**,
-      and the **2D Box–Muller Transform** (Slides 8–10). Observe how quantile inversion $u \to C^{-1}(u)$ maps uniform draws
-      on $(0,1)$ into non-uniform densities, and how Box–Muller maps $(x_1, x_2)$ into concentric 2D Gaussian rings.
+    description_markdown: 'Switch between **Exponential ($y = -\ln(1-u)/\lambda$)**, **Cauchy/Lorentzian ($y = \gamma\tan(\pi(u-1/2))$)**, and the **2D Box–Muller Transform** (Slides 8–10). Observe how quantile inversion $u \to C^{-1}(u)$ maps uniform draws on $(0,1)$ into non-uniform densities, and how Box–Muller maps $(x_1, x_2)$ into concentric 2D Gaussian rings.
 
       '
     render_function: render_inverse_and_box_muller
@@ -675,9 +526,7 @@ worksheet:
         max: 1500
         step: 100
         default: 600
-    takeaway_markdown: '**Key Takeaway:** 1D Inverse Transform Sampling works whenever the indefinite integral $C(y) = \int_{-\infty}^y
-      f(u)\,du$ is analytically known and invertible. When $C^{-1}$ has no closed form—as for the Gaussian—2D coordinate transformations
-      like **Box–Muller** make exact analytical inversion possible!
+    takeaway_markdown: '**Key Takeaway:** 1D Inverse Transform Sampling works whenever the indefinite integral $C(y) = \int_{-\infty}^y f(u)\,du$ is analytically known and invertible. When $C^{-1}$ has no closed form—as for the Gaussian—2D coordinate transformations like **Box–Muller** make exact analytical inversion possible!
 
       '
   - id: q19_inverse_transform_requirements
@@ -685,24 +534,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'According to Slide 8 ("What is the Mapping Doing?"), what mathematical condition must the target probability
-      density $p(y)$ satisfy in order to directly apply 1D **Inverse Transform Sampling** $y = C^{-1}(x)$?
+    prompt_markdown: 'According to Slide 8 ("What is the Mapping Doing?"), what mathematical condition must the target probability density $p(y)$ satisfy in order to directly apply 1D **Inverse Transform Sampling** $y = C^{-1}(x)$?
 
       '
     hint_markdown: Read the second bullet point in the yellow box at the bottom of Slide 8.
     options:
     - id: a
-      text: The definite/indefinite integral $C(y) = \int_{-\infty}^y du\,p(u)$ must be known and analytically (or efficiently
-        numerically) invertible.
+      text: The definite/indefinite integral $C(y) = \int_{-\infty}^y du\,p(u)$ must be known and analytically (or efficiently numerically) invertible.
+      text_markdown: The definite/indefinite integral $C(y) = \int_{-\infty}^y du\,p(u)$ must be known and analytically (or efficiently numerically) invertible.
     - id: b
       text: The target distribution $p(y)$ must be symmetric about $y = 0$.
+      text_markdown: The target distribution $p(y)$ must be symmetric about $y = 0$.
     - id: c
       text: The target distribution $p(y)$ must be a constant function.
+      text_markdown: The target distribution $p(y)$ must be a constant function.
     - id: d
       text: The second derivative $p''(y)$ must be zero everywhere.
+      text_markdown: The second derivative $p''(y)$ must be zero everywhere.
     correct: a
-    rationale_markdown: 'Direct 1D Inverse Transform Sampling sets $x = C(y) = \int_{-\infty}^y p(u)\,du$ and solves for $y
-      = C^{-1}(x)$, which requires that the cumulative distribution function $C(y)$ be known and invertible.
+    rationale_markdown: 'Direct 1D Inverse Transform Sampling sets $x = C(y) = \int_{-\infty}^y p(u)\,du$ and solves for $y = C^{-1}(x)$, which requires that the cumulative distribution function $C(y)$ be known and invertible.
 
       '
   - id: q20_inverse_transform_quantile_meaning
@@ -712,25 +562,25 @@ worksheet:
     taught_by:
     - sec_inverse_transform_and_box_muller
     - concept_inverse_and_box_muller
-    prompt_markdown: 'In 1D Inverse Transform Sampling, suppose the uniform random number generator returns $x = 0.25$. Geometrically,
-      how is the output deviate $y = C^{-1}(0.25)$ related to the target probability density curve $p(y)$ (Slide 9)?
+    prompt_markdown: 'In 1D Inverse Transform Sampling, suppose the uniform random number generator returns $x = 0.25$. Geometrically, how is the output deviate $y = C^{-1}(0.25)$ related to the target probability density curve $p(y)$ (Slide 9)?
 
       '
-    hint_markdown: Since $C(y) = \int_{-\infty}^y p(u)\,du$ is the area under $p(y)$ to the left of $y$, what does $C(y) =
-      0.25$ mean?
+    hint_markdown: Since $C(y) = \int_{-\infty}^y p(u)\,du$ is the area under $p(y)$ to the left of $y$, what does $C(y) = 0.25$ mean?
     options:
     - id: a
-      text: $y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\%$) of the total area under $p(y)$
-        lies to the left of $y$.
+      text: $y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\%$) of the total area under $p(y)$ lies to the left of $y$.
+      text_markdown: $y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\%$) of the total area under $p(y)$ lies to the left of $y$.
     - id: b
       text: $y$ is the point where the height of the PDF equals $p(y) = 0.25$.
+      text_markdown: $y$ is the point where the height of the PDF equals $p(y) = 0.25$.
     - id: c
       text: $y$ is always equal to $0.25$ times the mean $\langle y \rangle$.
+      text_markdown: $y$ is always equal to $0.25$ times the mean $\langle y \rangle$.
     - id: d
       text: $y$ is the point where the slope $dp/dy = 0.25$.
+      text_markdown: $y$ is the point where the slope $dp/dy = 0.25$.
     correct: a
-    rationale_markdown: 'As explained on Slide 9, $C(y)$ is the cumulative area under $p(y)$ to the left of $y$. Solving $C(y)
-      = x = 0.25$ returns the exact quantile $y$ that has $25\%$ of the probability distribution''s area to its left.
+    rationale_markdown: 'As explained on Slide 9, $C(y)$ is the cumulative area under $p(y)$ to the left of $y$. Solving $C(y) = x = 0.25$ returns the exact quantile $y$ that has $25\%$ of the probability distribution''s area to its left.
 
       '
   - id: q21_exponential_sampling_formula
@@ -738,23 +588,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'Given a uniform deviate $x \in (0, 1]$, which formula generates a random waiting time $y \ge 0$ drawn
-      from the exponential (Poisson event) distribution $p(y) = \lambda e^{-\lambda y}$ (Slide 9)?
+    prompt_markdown: 'Given a uniform deviate $x \in (0, 1]$, which formula generates a random waiting time $y \ge 0$ drawn from the exponential (Poisson event) distribution $p(y) = \lambda e^{-\lambda y}$ (Slide 9)?
 
       '
     hint_markdown: Invert $x = C(y) = 1 - e^{-\lambda y}$ and note that $x' = 1 - x$ is also uniform on $(0, 1]$.
     options:
     - id: a
       text: $y = -\frac{1}{\lambda}\ln(x)$ (or equivalently $-\frac{1}{\lambda}\ln(1 - x)$)
+      text_markdown: $y = -\frac{1}{\lambda}\ln(x)$ (or equivalently $-\frac{1}{\lambda}\ln(1 - x)$)
     - id: b
       text: $y = \lambda e^{-\lambda x}$
+      text_markdown: $y = \lambda e^{-\lambda x}$
     - id: c
       text: $y = \sqrt{-2\lambda \ln x}$
+      text_markdown: $y = \sqrt{-2\lambda \ln x}$
     - id: d
       text: $y = -\lambda \ln(x)$
+      text_markdown: $y = -\lambda \ln(x)$
     correct: a
-    rationale_markdown: 'Integrating $p(y) = \lambda e^{-\lambda y}$ gives $C(y) = 1 - e^{-\lambda y}$. Setting $1 - e^{-\lambda
-      y} = x \implies e^{-\lambda y} = 1 - x = x''$, and taking the natural logarithm yields:
+    rationale_markdown: 'Integrating $p(y) = \lambda e^{-\lambda y}$ gives $C(y) = 1 - e^{-\lambda y}$. Setting $1 - e^{-\lambda y} = x \implies e^{-\lambda y} = 1 - x = x''$, and taking the natural logarithm yields:
 
       $$y = -\frac{\ln(x'')}{\lambda}$$
 
@@ -766,11 +618,8 @@ worksheet:
     taught_by:
     - sec_inverse_transform_and_box_muller
     - concept_inverse_and_box_muller
-    prompt_markdown: For an exponential Poisson waiting-time distribution with decay rate $\lambda = 2.0\text{ ps}^{-1}$,
-      what waiting time $y$ (in $\text{ps}$, to three decimal places) is generated via inverse transform sampling when the
-      uniform random deviate is $x = e^{-3} \approx 0.049787$?
-    hint_markdown: Apply the inverse cumulative distribution function for an exponential decay to the given uniform random
-      deviate.
+    prompt_markdown: For an exponential Poisson waiting-time distribution with decay rate $\lambda = 2.0\text{ ps}^{-1}$, what waiting time $y$ (in $\text{ps}$, to three decimal places) is generated via inverse transform sampling when the uniform random deviate is $x = e^{-3} \approx 0.049787$?
+    hint_markdown: Apply the inverse cumulative distribution function for an exponential decay to the given uniform random deviate.
     correct:
       value: 1.5
       tolerance: 0.01
@@ -784,27 +633,25 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'When inverting the exponential CDF $x = 1 - e^{-\lambda y}$, algebra gives $y = -\frac{1}{\lambda}\ln(1
-      - x)$, yet codes almost always write $y = -\frac{1}{\lambda}\ln(x)$ directly (Slide 9). Why is replacing $1 - x$ with
-      $x$ mathematically valid, and why must $x$ be drawn from $(0, 1]$ rather than $[0, 1)$?
+    prompt_markdown: 'When inverting the exponential CDF $x = 1 - e^{-\lambda y}$, algebra gives $y = -\frac{1}{\lambda}\ln(1 - x)$, yet codes almost always write $y = -\frac{1}{\lambda}\ln(x)$ directly (Slide 9). Why is replacing $1 - x$ with $x$ mathematically valid, and why must $x$ be drawn from $(0, 1]$ rather than $[0, 1)$?
 
       '
-    hint_markdown: If $x \sim \text{Uniform}(0, 1)$, what is the distribution of $x' = 1 - x$? And what happens to $\ln(x)$
-      if $x = 0$?
+    hint_markdown: If $x \sim \text{Uniform}(0, 1)$, what is the distribution of $x' = 1 - x$? And what happens to $\ln(x)$ if $x = 0$?
     options:
     - id: a
-      text: If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\text{Uniform}(0, 1)$ distribution; furthermore,
-        $x = 0$ must be excluded so $\ln(x)$ does not diverge to $-\infty$.
+      text: If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\ln(x)$ does not diverge to $-\infty$.
+      text_markdown: If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\ln(x)$ does not diverge to $-\infty$.
     - id: b
       text: Because $\ln(1 - x) = \ln(x)$ for all real numbers $x$.
+      text_markdown: Because $\ln(1 - x) = \ln(x)$ for all real numbers $x$.
     - id: c
       text: Because $1 - x$ is only approximately uniform when $\lambda \gg 1$.
+      text_markdown: Because $1 - x$ is only approximately uniform when $\lambda \gg 1$.
     - id: d
       text: Replacing $1 - x$ with $x$ changes the mean of $y$ from $1/\lambda$ to $2/\lambda$.
+      text_markdown: Replacing $1 - x$ with $x$ changes the mean of $y$ from $1/\lambda$ to $2/\lambda$.
     correct: a
-    rationale_markdown: 'For $x \sim \text{Uniform}(0, 1)$, the reflected variable $x'' = 1 - x$ is identically distributed
-      as $\text{Uniform}(0, 1)$, saving one subtraction per sample. Excluding $0$ (using $x'' \in (0, 1]$ as noted on Slide
-      9) prevents `log(0)` floating-point overflow.
+    rationale_markdown: 'For $x \sim \text{Uniform}(0, 1)$, the reflected variable $x'' = 1 - x$ is identically distributed as $\text{Uniform}(0, 1)$, saving one subtraction per sample. Excluding $0$ (using $x'' \in (0, 1]$ as noted on Slide 9) prevents `log(0)` floating-point overflow.
 
       '
   - id: q24_power_law_inverse_cdf
@@ -812,22 +659,23 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'You want to sample a continuous random variable $y \in [0, 1]$ from the cubic probability density $p(y)
-      = 4y^3$ using a uniform random deviate $u \sim \text{Uniform}(0, 1)$. What is the Inverse Transform Sampling formula
-      $y(u) = C^{-1}(u)$?
+    prompt_markdown: 'You want to sample a continuous random variable $y \in [0, 1]$ from the cubic probability density $p(y) = 4y^3$ using a uniform random deviate $u \sim \text{Uniform}(0, 1)$. What is the Inverse Transform Sampling formula $y(u) = C^{-1}(u)$?
 
       '
-    hint_markdown: Integrate the PDF to determine the cumulative distribution function on $[0, 1]$ and invert the resulting
-      relationship.
+    hint_markdown: Integrate the PDF to determine the cumulative distribution function on $[0, 1]$ and invert the resulting relationship.
     options:
     - id: a
       text: $y = u^{1/4}$
+      text_markdown: $y = u^{1/4}$
     - id: b
       text: $y = u^4$
+      text_markdown: $y = u^4$
     - id: c
       text: $y = \frac{1}{4}u^{1/3}$
+      text_markdown: $y = \frac{1}{4}u^{1/3}$
     - id: d
       text: $y = -\frac{1}{4}\ln u$
+      text_markdown: $y = -\frac{1}{4}\ln u$
     correct: a
     rationale_markdown: 'Integrating the PDF gives the cumulative distribution function:
 
@@ -843,10 +691,8 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: For the normalized quadratic probability density $p(y) = 3y^2$ on the interval $[0, 1]$, what deviate
-      $y$ is generated by inverse transform sampling when the input uniform random number is $u = 0.125$?
-    hint_markdown: Integrate the PDF to find the cumulative distribution function, invert it with respect to $u$, and evaluate
-      at the given deviate.
+    prompt_markdown: For the normalized quadratic probability density $p(y) = 3y^2$ on the interval $[0, 1]$, what deviate $y$ is generated by inverse transform sampling when the input uniform random number is $u = 0.125$?
+    hint_markdown: Integrate the PDF to find the cumulative distribution function, invert it with respect to $u$, and evaluate at the given deviate.
     correct:
       value: 0.5
       tolerance: 0.005
@@ -860,13 +706,10 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'Suppose a random variable $y \in [0, 2]$ has the normalized linear PDF $p(y) = \frac{1}{2}y$ for $0
-      \le y \le 2$. Find the cumulative distribution function $C(y) = \int_0^y \frac{1}{2}t\,dt$, invert $C(y) = u$, and compute
-      the sampled deviate $y$ when $u = 0.36$.
+    prompt_markdown: 'Suppose a random variable $y \in [0, 2]$ has the normalized linear PDF $p(y) = \frac{1}{2}y$ for $0 \le y \le 2$. Find the cumulative distribution function $C(y) = \int_0^y \frac{1}{2}t\,dt$, invert $C(y) = u$, and compute the sampled deviate $y$ when $u = 0.36$.
 
       '
-    hint_markdown: Integrate the linear density to find the CDF on $[0, 2]$, invert the relation, and solve for $y$ given
-      $u$.
+    hint_markdown: Integrate the linear density to find the CDF on $[0, 2]$, invert the relation, and solve for $y$ given $u$.
     correct:
       value: 1.2
       tolerance: 0.01
@@ -886,24 +729,25 @@ worksheet:
     taught_by:
     - sec_inverse_transform_and_box_muller
     - concept_inverse_and_box_muller
-    prompt_markdown: 'The standard **Cauchy (Lorentzian)** distribution $p(y) = \frac{1}{\pi(1 + y^2)}$ on $-\infty < y <
-      \infty$ has cumulative distribution function $C(y) = \frac{1}{2} + \frac{1}{\pi}\arctan(y)$. If $u \sim \text{Uniform}(0,
-      1)$, what is the exact Inverse Transform Sampling formula $y(u) = C^{-1}(u)$?
+    prompt_markdown: 'The standard **Cauchy (Lorentzian)** distribution $p(y) = \frac{1}{\pi(1 + y^2)}$ on $-\infty < y < \infty$ has cumulative distribution function $C(y) = \frac{1}{2} + \frac{1}{\pi}\arctan(y)$. If $u \sim \text{Uniform}(0, 1)$, what is the exact Inverse Transform Sampling formula $y(u) = C^{-1}(u)$?
 
       '
     hint_markdown: Invert the cumulative distribution function by isolating the inverse tangent term.
     options:
     - id: a
       text: $y = \tan\!\left[\pi\left(u - \frac{1}{2}\right)\right]$
+      text_markdown: $y = \tan\!\left[\pi\left(u - \frac{1}{2}\right)\right]$
     - id: b
       text: $y = \arctan(\pi u)$
+      text_markdown: $y = \arctan(\pi u)$
     - id: c
       text: $y = \frac{1}{\pi(1 + u^2)}$
+      text_markdown: $y = \frac{1}{\pi(1 + u^2)}$
     - id: d
       text: $y = \sin(2\pi u)$
+      text_markdown: $y = \sin(2\pi u)$
     correct: a
-    rationale_markdown: 'Rearranging $u = \frac{1}{2} + \frac{1}{\pi}\arctan(y)$ gives $\arctan(y) = \pi\left(u - \frac{1}{2}\right)$,
-      and taking the tangent of both sides yields:
+    rationale_markdown: 'Rearranging $u = \frac{1}{2} + \frac{1}{\pi}\arctan(y)$ gives $\arctan(y) = \pi\left(u - \frac{1}{2}\right)$, and taking the tangent of both sides yields:
 
       $$y = \tan\!\left[\pi\left(u - \frac{1}{2}\right)\right]$$
 
@@ -915,8 +759,7 @@ worksheet:
     taught_by:
     - sec_inverse_transform_and_box_muller
     - concept_inverse_and_box_muller
-    prompt_markdown: 'Using the Cauchy inverse transform $y = \gamma \tan\!\left[\pi\left(u - \frac{1}{2}\right)\right]$ with
-      width parameter $\gamma = 2.0$, what deviate $y$ is generated when $u = 0.75$?
+    prompt_markdown: 'Using the Cauchy inverse transform $y = \gamma \tan\!\left[\pi\left(u - \frac{1}{2}\right)\right]$ with width parameter $\gamma = 2.0$, what deviate $y$ is generated when $u = 0.75$?
 
       '
     hint_markdown: Evaluate the argument of the tangent function at the given quantile and scale by the width parameter.
@@ -933,28 +776,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'Why can we **not** use simple 1D analytical Inverse Transform Sampling $y = C^{-1}(x)$ to draw Normal
-      Gaussian random numbers $p(y) = \frac{1}{\sqrt{2\pi}}e^{-y^2/2}$, motivating the 2D **Box–Muller** method instead?
+    prompt_markdown: 'Why can we **not** use simple 1D analytical Inverse Transform Sampling $y = C^{-1}(x)$ to draw Normal Gaussian random numbers $p(y) = \frac{1}{\sqrt{2\pi}}e^{-y^2/2}$, motivating the 2D **Box–Muller** method instead?
 
       '
-    hint_markdown: Can the 1D Gaussian integral $\Phi(y) = \int_{-\infty}^y \frac{1}{\sqrt{2\pi}}e^{-u^2/2}\,du$ be expressed
-      and inverted in terms of elementary functions?
+    hint_markdown: Can the 1D Gaussian integral $\Phi(y) = \int_{-\infty}^y \frac{1}{\sqrt{2\pi}}e^{-u^2/2}\,du$ be expressed and inverted in terms of elementary functions?
     options:
     - id: a
-      text: Because the 1D Gaussian cumulative distribution function $\Phi(y)$ (the error function $\text{erf}$) cannot be
-        written or inverted in closed form using elementary functions, whereas the 2D Gaussian integral in polar coordinates
-        $r\,dr\,d\theta\,e^{-r^2/2}$ integrates and inverts analytically.
+      text: Because the 1D Gaussian cumulative distribution function $\Phi(y)$ (the error function $\text{erf}$) cannot be written or inverted in closed form using elementary functions, whereas the 2D Gaussian integral in polar coordinates $r\,dr\,d\theta\,e^{-r^2/2}$ integrates and inverts analytically.
+      text_markdown: Because the 1D Gaussian cumulative distribution function $\Phi(y)$ (the error function $\text{erf}$) cannot be written or inverted in closed form using elementary functions, whereas the 2D Gaussian integral in polar coordinates $r\,dr\,d\theta\,e^{-r^2/2}$ integrates and inverts analytically.
     - id: b
       text: Because the Gaussian PDF $p(y)$ can be negative for $y < 0$.
+      text_markdown: Because the Gaussian PDF $p(y)$ can be negative for $y < 0$.
     - id: c
       text: Because the 1D Gaussian integral $\int_{-\infty}^\infty e^{-y^2/2}\,dy$ diverges to infinity.
+      text_markdown: Because the 1D Gaussian integral $\int_{-\infty}^\infty e^{-y^2/2}\,dy$ diverges to infinity.
     - id: d
       text: Because 1D Inverse Transform Sampling only works for discrete variables.
+      text_markdown: Because 1D Inverse Transform Sampling only works for discrete variables.
     correct: a
-    rationale_markdown: 'While $\int e^{-y^2/2}\,dy$ has no elementary antiderivative in 1D, squaring the integral into 2D
-      gives $\iint e^{-(y_1^2+y_2^2)/2}\,dy_1\,dy_2 = \int_0^{2\pi} d\theta \int_0^\infty e^{-r^2/2}\,r\,dr$. The extra factor
-      of $r$ from the polar Jacobian $dy_1\,dy_2 = r\,dr\,d\theta$ makes the radial integral an elementary exponential $x_1
-      = e^{-r^2/2}$ that inverts immediately to $r = \sqrt{-2\ln x_1}$!
+    rationale_markdown: 'While $\int e^{-y^2/2}\,dy$ has no elementary antiderivative in 1D, squaring the integral into 2D gives $\iint e^{-(y_1^2+y_2^2)/2}\,dy_1\,dy_2 = \int_0^{2\pi} d\theta \int_0^\infty e^{-r^2/2}\,r\,dr$. The extra factor of $r$ from the polar Jacobian $dy_1\,dy_2 = r\,dr\,d\theta$ makes the radial integral an elementary exponential $x_1 = e^{-r^2/2}$ that inverts immediately to $r = \sqrt{-2\ln x_1}$!
 
       '
   - id: q30_box_muller_formulas
@@ -962,23 +802,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'Given two independent uniform deviates $x_1, x_2 \in (0, 1)$, what are the **Box–Muller transformation
-      formulas** (Slide 10) that produce two independent standard normal deviates $y_1, y_2 \sim \mathcal{N}(0, 1)$?
+    prompt_markdown: 'Given two independent uniform deviates $x_1, x_2 \in (0, 1)$, what are the **Box–Muller transformation formulas** (Slide 10) that produce two independent standard normal deviates $y_1, y_2 \sim \mathcal{N}(0, 1)$?
 
       '
     hint_markdown: Check the orange equations in the middle of Slide 10.
     options:
     - id: a
       text: $y_1 = \sqrt{-2\ln x_1}\cos(2\pi x_2)$ and $y_2 = \sqrt{-2\ln x_1}\sin(2\pi x_2)$
+      text_markdown: $y_1 = \sqrt{-2\ln x_1}\cos(2\pi x_2)$ and $y_2 = \sqrt{-2\ln x_1}\sin(2\pi x_2)$
     - id: b
       text: $y_1 = -\ln(x_1)\cos(x_2)$ and $y_2 = -\ln(x_1)\sin(x_2)$
+      text_markdown: $y_1 = -\ln(x_1)\cos(x_2)$ and $y_2 = -\ln(x_1)\sin(x_2)$
     - id: c
       text: $y_1 = x_1 \cos(2\pi x_2)$ and $y_2 = x_1 \sin(2\pi x_2)$
+      text_markdown: $y_1 = x_1 \cos(2\pi x_2)$ and $y_2 = x_1 \sin(2\pi x_2)$
     - id: d
       text: $y_1 = \sqrt{x_1 + x_2}$ and $y_2 = \sqrt{x_1 - x_2}$
+      text_markdown: $y_1 = \sqrt{x_1 + x_2}$ and $y_2 = \sqrt{x_1 - x_2}$
     correct: a
-    rationale_markdown: 'In Box–Muller, $r = \sqrt{-2\ln x_1}$ generates the Rayleigh radial distribution and $\theta = 2\pi
-      x_2$ generates a uniform polar angle on $[0, 2\pi)$, giving:
+    rationale_markdown: 'In Box–Muller, $r = \sqrt{-2\ln x_1}$ generates the Rayleigh radial distribution and $\theta = 2\pi x_2$ generates a uniform polar angle on $[0, 2\pi)$, giving:
 
       $$y_1 = \sqrt{-2\ln x_1}\cos(2\pi x_2), \qquad y_2 = \sqrt{-2\ln x_1}\sin(2\pi x_2)$$
 
@@ -990,13 +832,10 @@ worksheet:
     taught_by:
     - sec_inverse_transform_and_box_muller
     - concept_inverse_and_box_muller
-    prompt_markdown: 'In the Box–Muller algorithm, suppose your uniform random number generator produces the pair $x_1 = e^{-2}
-      \approx 0.135335$ and $x_2 = \frac{1}{6} \approx 0.166667$. Compute the first standard normal deviate $y_1 = \sqrt{-2\ln
-      x_1}\cos(2\pi x_2)$.
+    prompt_markdown: 'In the Box–Muller algorithm, suppose your uniform random number generator produces the pair $x_1 = e^{-2} \approx 0.135335$ and $x_2 = \frac{1}{6} \approx 0.166667$. Compute the first standard normal deviate $y_1 = \sqrt{-2\ln x_1}\cos(2\pi x_2)$.
 
       '
-    hint_markdown: Evaluate the radial distance term using the natural logarithm of $x_1$ and multiply by the cosine of the
-      angle specified by $x_2$.
+    hint_markdown: Evaluate the radial distance term using the natural logarithm of $x_1$ and multiply by the cosine of the angle specified by $x_2$.
     correct:
       value: 1.0
       tolerance: 0.01
@@ -1018,8 +857,7 @@ worksheet:
 
       $$x_1 = \exp\!\left(-\frac{1}{2}\left[y_1^2 + y_2^2\right]\right)$$
 
-      if a generated Gaussian pair happens to fall on the circle of radius $\sqrt{y_1^2 + y_2^2} = \sqrt{2\ln 4}$ (so $y_1^2
-      + y_2^2 = 2\ln 4$), what was the value of the input uniform deviate $x_1$?
+      if a generated Gaussian pair happens to fall on the circle of radius $\sqrt{y_1^2 + y_2^2} = \sqrt{2\ln 4}$ (so $y_1^2 + y_2^2 = 2\ln 4$), what was the value of the input uniform deviate $x_1$?
 
       '
     hint_markdown: Substitute the squared radius into the radial CDF mapping and simplify the exponential of the logarithm.
@@ -1040,26 +878,25 @@ worksheet:
 
       $$\frac{\partial(x_1, x_2)}{\partial(y_1, y_2)} = -\left[\frac{1}{\sqrt{2\pi}}e^{-y_1^2/2}\right]\left[\frac{1}{\sqrt{2\pi}}e^{-y_2^2/2}\right]$$
 
-      Why does the fact that the joint density $p(y_1, y_2) = \left|\frac{\partial(x_1, x_2)}{\partial(y_1, y_2)}\right|$
-      factors into the product $p(y_1)\,p(y_2)$ have such an important practical consequence?
+      Why does the fact that the joint density $p(y_1, y_2) = \left|\frac{\partial(x_1, x_2)}{\partial(y_1, y_2)}\right|$ factors into the product $p(y_1)\,p(y_2)$ have such an important practical consequence?
 
       '
-    hint_markdown: In probability theory, what does $p(y_1, y_2) = p(y_1)p(y_2)$ prove about the random variables $y_1$ and
-      $y_2$?
+    hint_markdown: In probability theory, what does $p(y_1, y_2) = p(y_1)p(y_2)$ prove about the random variables $y_1$ and $y_2$?
     options:
     - id: a
-      text: It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as
-        independent draws in a simulation.
+      text: It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation.
+      text_markdown: It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation.
     - id: b
       text: It proves that $y_1$ and $y_2$ are always equal to each other ($y_1 = y_2$).
+      text_markdown: It proves that $y_1$ and $y_2$ are always equal to each other ($y_1 = y_2$).
     - id: c
       text: It proves that $y_1 + y_2 = 0$.
+      text_markdown: It proves that $y_1 + y_2 = 0$.
     - id: d
       text: It shows that one of the two variables must be discarded.
+      text_markdown: It shows that one of the two variables must be discarded.
     correct: a
-    rationale_markdown: 'Two random variables are **statistically independent** if and only if their joint PDF factors into
-      the product of their marginal PDFs: $p(y_1, y_2) = p_1(y_1)p_2(y_2)$. Thus every Box–Muller evaluation produces **two**
-      independent standard normal deviates!
+    rationale_markdown: 'Two random variables are **statistically independent** if and only if their joint PDF factors into the product of their marginal PDFs: $p(y_1, y_2) = p_1(y_1)p_2(y_2)$. Thus every Box–Muller evaluation produces **two** independent standard normal deviates!
 
       '
   - id: q34_marsaglia_polar_advantage
@@ -1067,27 +904,25 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'At the bottom of Slide 10 ("Better: Pick $R^2 = v_1^2 + v_2^2$"), what is the primary computational
-      advantage of the **Marsaglia polar rejection variant** of Box–Muller?
+    prompt_markdown: 'At the bottom of Slide 10 ("Better: Pick $R^2 = v_1^2 + v_2^2$"), what is the primary computational advantage of the **Marsaglia polar rejection variant** of Box–Muller?
 
       '
-    hint_markdown: 'Read the blue box at the bottom of Slide 10: what expensive functions are eliminated by using $v_1/\sqrt{R^2}$
-      and $v_2/\sqrt{R^2}$?'
+    hint_markdown: 'Read the blue box at the bottom of Slide 10: what expensive functions are eliminated by using $v_1/\sqrt{R^2}$ and $v_2/\sqrt{R^2}$?'
     options:
     - id: a
-      text: It avoids evaluating slow trigonometric functions ($\sin$ and $\cos$) by replacing $\cos(2\pi x_2)$ and $\sin(2\pi
-        x_2)$ with the algebraic ratios $v_1/\sqrt{R^2}$ and $v_2/\sqrt{R^2}$, while still yielding two independent Gaussian
-        numbers per accepted pair.
+      text: It avoids evaluating slow trigonometric functions ($\sin$ and $\cos$) by replacing $\cos(2\pi x_2)$ and $\sin(2\pi x_2)$ with the algebraic ratios $v_1/\sqrt{R^2}$ and $v_2/\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair.
+      text_markdown: It avoids evaluating slow trigonometric functions ($\sin$ and $\cos$) by replacing $\cos(2\pi x_2)$ and $\sin(2\pi x_2)$ with the algebraic ratios $v_1/\sqrt{R^2}$ and $v_2/\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair.
     - id: b
       text: It eliminates the square root and natural logarithm operations.
+      text_markdown: It eliminates the square root and natural logarithm operations.
     - id: c
       text: It only requires 1 uniform random number to generate 10 Gaussian numbers.
+      text_markdown: It only requires 1 uniform random number to generate 10 Gaussian numbers.
     - id: d
       text: It works without a random number generator.
+      text_markdown: It works without a random number generator.
     correct: a
-    rationale_markdown: 'By sampling $(v_1, v_2)$ uniformly inside the unit circle ($R^2 = v_1^2 + v_2^2 \le 1$), the directional
-      cosines are given algebraically by $\cos\theta = v_1/\sqrt{R^2}$ and $\sin\theta = v_2/\sqrt{R^2}$, completely bypassing
-      transcendental $\cos$ and $\sin$ calls while still delivering two Gaussian deviates ("1 for now, 2 for next time").
+    rationale_markdown: 'By sampling $(v_1, v_2)$ uniformly inside the unit circle ($R^2 = v_1^2 + v_2^2 \le 1$), the directional cosines are given algebraically by $\cos\theta = v_1/\sqrt{R^2}$ and $\sin\theta = v_2/\sqrt{R^2}$, completely bypassing transcendental $\cos$ and $\sin$ calls while still delivering two Gaussian deviates ("1 for now, 2 for next time").
 
       '
   - id: q35_marsaglia_acceptance_rate
@@ -1097,18 +932,14 @@ worksheet:
     taught_by:
     - sec_mc_intro_and_pi
     - sec_inverse_transform_and_box_muller
-    prompt_markdown: 'In the Marsaglia polar variant of Box–Muller, candidate pairs $(v_1, v_2)$ are drawn uniformly from
-      the square $[-1, 1] \times [-1, 1]$ (area $4$) and accepted only if they fall inside the unit disk $R^2 = v_1^2 + v_2^2
-      \le 1$ (area $\pi$). What is the exact acceptance probability $P_{\text{accept}}$ of a candidate pair (to four decimal
-      places)?
+    prompt_markdown: 'In the Marsaglia polar variant of Box–Muller, candidate pairs $(v_1, v_2)$ are drawn uniformly from the square $[-1, 1] \times [-1, 1]$ (area $4$) and accepted only if they fall inside the unit disk $R^2 = v_1^2 + v_2^2 \le 1$ (area $\pi$). What is the exact acceptance probability $P_{\text{accept}}$ of a candidate pair (to four decimal places)?
 
       '
     hint_markdown: Compute the geometric ratio between the acceptance region area and the bounding sampling domain area.
     correct:
       value: 0.7854
       tolerance: 0.0005
-    rationale_markdown: 'The acceptance probability is the ratio of the area of the unit disk ($\pi r^2 = \pi$) to the area
-      of the enclosing square $[{-1}, 1]^2$ ($(2r)^2 = 4$):
+    rationale_markdown: 'The acceptance probability is the ratio of the area of the unit disk ($\pi r^2 = \pi$) to the area of the enclosing square $[{-1}, 1]^2$ ($(2r)^2 = 4$):
 
       $$P_{\text{accept}} = \frac{\pi}{4} \approx 0.7854 \quad (78.54\%)$$
 
@@ -1120,17 +951,14 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'In the Marsaglia polar method, suppose you draw $(v_1, v_2) = (0.30, 0.40)$ inside the unit circle,
-      so $R = \sqrt{v_1^2 + v_2^2} = 0.50$ and $R^2 = 0.25$. Using $y_1 = \sqrt{-2\ln(R^2)} \frac{v_1}{\sqrt{R^2}}$, compute
-      the resulting standard normal deviate $y_1$ (to three decimal places).
+    prompt_markdown: 'In the Marsaglia polar method, suppose you draw $(v_1, v_2) = (0.30, 0.40)$ inside the unit circle, so $R = \sqrt{v_1^2 + v_2^2} = 0.50$ and $R^2 = 0.25$. Using $y_1 = \sqrt{-2\ln(R^2)} \frac{v_1}{\sqrt{R^2}}$, compute the resulting standard normal deviate $y_1$ (to three decimal places).
 
       '
     hint_markdown: Evaluate the radial amplitude factor at $R^2 = 0.25$ and multiply by the directional ratio $v_1 / R$.
     correct:
       value: 0.999
       tolerance: 0.005
-    rationale_markdown: 'Here $\sqrt{R^2} = 0.50$, so the cosine factor is $\frac{v_1}{\sqrt{R^2}} = \frac{0.30}{0.50} = 0.60$.
-      The radial factor is:
+    rationale_markdown: 'Here $\sqrt{R^2} = 0.50$, so the cosine factor is $\frac{v_1}{\sqrt{R^2}} = \frac{0.30}{0.50} = 0.60$. The radial factor is:
 
       $$\sqrt{-2\ln(0.25)} = \sqrt{2\ln 4} \approx 1.665109$$
 
@@ -1144,17 +972,12 @@ worksheet:
     question_type: numeric
     difficulty: medium
     taught_by: sec_inverse_transform_and_box_muller
-    prompt_markdown: 'Connecting Lesson 12 back to Lesson 11: to initialize an MD simulation or perform an Andersen thermostat
-      collision at temperature $T$, each Cartesian velocity component follows a Gaussian distribution with standard deviation
-      $\sigma_v = \sqrt{k_B T / m}$. If a standard normal deviate $y_1 = -1.50$ is drawn for an atom of mass $m = 4.0$ at
-      thermal energy $k_B T = 9.0$ (in reduced units), what is the assigned velocity $v_x$?'
+    prompt_markdown: 'Connecting Lesson 12 back to Lesson 11: to initialize an MD simulation or perform an Andersen thermostat collision at temperature $T$, each Cartesian velocity component follows a Gaussian distribution with standard deviation $\sigma_v = \sqrt{k_B T / m}$. If a standard normal deviate $y_1 = -1.50$ is drawn for an atom of mass $m = 4.0$ at thermal energy $k_B T = 9.0$ (in reduced units), what is the assigned velocity $v_x$?'
     hint_markdown: Scale the dimensionless standard normal deviate by the thermal velocity standard deviation.
     correct:
       value: -2.25
       tolerance: 0.01
-    rationale_markdown: 'Comparing $\exp\!\left(-\frac{m v_x^2}{2k_B T}\right)$ with $\exp\!\left(-\frac{v_x^2}{2\sigma_v^2}\right)$
-      gives thermal velocity width $\sigma_v = \sqrt{\frac{k_B T}{m}} = \sqrt{\frac{9.0}{4.0}} = 1.50$. Scaling the standard
-      normal deviate $y_1 = -1.50$ gives:
+    rationale_markdown: 'Comparing $\exp\!\left(-\frac{m v_x^2}{2k_B T}\right)$ with $\exp\!\left(-\frac{v_x^2}{2\sigma_v^2}\right)$ gives thermal velocity width $\sigma_v = \sqrt{\frac{k_B T}{m}} = \sqrt{\frac{9.0}{4.0}} = 1.50$. Scaling the standard normal deviate $y_1 = -1.50$ gives:
 
       $$v_x = \sigma_v y_1 = 1.50 \times (-1.50) = -2.25$$
 
@@ -1167,39 +990,33 @@ worksheet:
     - sec_curse_of_dimensionality
     - sec_pdfs_moments_and_mappings
     - sec_inverse_transform_and_box_muller
-    prompt_markdown: 'Which of the following statements connecting random-variable mappings, Monte Carlo integration, and
-      atomistic simulation are **correct**? *(Select all that apply.)*
+    prompt_markdown: 'Which of the following statements connecting random-variable mappings, Monte Carlo integration, and atomistic simulation are **correct**? *(Select all that apply.)*
 
       '
     hint_markdown: Verify each statement against the formulas on Slides 4, 7, 9, and 10.
     options:
     - id: a
-      text: To sample the time $\Delta t_{\text{wait}}$ until the next stochastic heat-bath collision in a Poisson process
-        of rate $\nu$, one uses Inverse Transform Sampling $y = -\ln(u)/\nu$.
+      text: To sample the time $\Delta t_{\text{wait}}$ until the next stochastic heat-bath collision in a Poisson process of rate $\nu$, one uses Inverse Transform Sampling $y = -\ln(u)/\nu$.
+      text_markdown: To sample the time $\Delta t_{\text{wait}}$ until the next stochastic heat-bath collision in a Poisson process of rate $\nu$, one uses Inverse Transform Sampling $y = -\ln(u)/\nu$.
     - id: b
-      text: To sample 3D Maxwell–Boltzmann velocities $(v_x, v_y, v_z)$ for $N$ atoms, one can generate standard normal pairs
-        $(y_1, y_2)$ via Box–Muller and multiply by $\sqrt{k_B T / m}$.
+      text: To sample 3D Maxwell–Boltzmann velocities $(v_x, v_y, v_z)$ for $N$ atoms, one can generate standard normal pairs $(y_1, y_2)$ via Box–Muller and multiply by $\sqrt{k_B T / m}$.
+      text_markdown: To sample 3D Maxwell–Boltzmann velocities $(v_x, v_y, v_z)$ for $N$ atoms, one can generate standard normal pairs $(y_1, y_2)$ via Box–Muller and multiply by $\sqrt{k_B T / m}$.
     - id: c
-      text: For evaluating the 300-dimensional configurational integral of 100 atoms in 3D, Simpson's rule ($\alpha = 4$)
-        is asymptotically faster than Monte Carlo because $\alpha = 4 > 2$.
+      text: For evaluating the 300-dimensional configurational integral of 100 atoms in 3D, Simpson's rule ($\alpha = 4$) is asymptotically faster than Monte Carlo because $\alpha = 4 > 2$.
+      text_markdown: For evaluating the 300-dimensional configurational integral of 100 atoms in 3D, Simpson's rule ($\alpha = 4$) is asymptotically faster than Monte Carlo because $\alpha = 4 > 2$.
     - id: d
-      text: When transforming random variables in $D$ dimensions, probability conservation requires multiplying by the absolute
-        value of the Jacobian determinant $|\det(\partial \mathbf{x} / \partial \mathbf{y})|$.
+      text: When transforming random variables in $D$ dimensions, probability conservation requires multiplying by the absolute value of the Jacobian determinant $|\det(\partial \mathbf{x} / \partial \mathbf{y})|$.
+      text_markdown: When transforming random variables in $D$ dimensions, probability conservation requires multiplying by the absolute value of the Jacobian determinant $|\det(\partial \mathbf{x} / \partial \mathbf{y})|$.
     correct:
     - a
     - b
     - d
-    rationale_markdown: '- **(A) Correct:** Poisson inter-arrival times are exponentially distributed with PDF $\nu e^{-\nu
-      y}$, which is sampled via $y = -\ln(u)/\nu$ (Slide 9).
+    rationale_markdown: '- **(A) Correct:** Poisson inter-arrival times are exponentially distributed with PDF $\nu e^{-\nu y}$, which is sampled via $y = -\ln(u)/\nu$ (Slide 9).
 
-      - **(B) Correct:** Box–Muller generates independent standard normal deviates that scale by $\sqrt{k_B T/m}$ to give
-      Maxwell–Boltzmann velocities.
+      - **(B) Correct:** Box–Muller generates independent standard normal deviates that scale by $\sqrt{k_B T/m}$ to give Maxwell–Boltzmann velocities.
 
-      - **(C) Incorrect:** Simpson''s rule ($\alpha = 4$) only beats Monte Carlo for $D < 2\alpha = 8$. At $D = 300 \gg 8$,
-      deterministic quadrature suffers catastrophically from the Curse of Dimensionality ($T \sim \varepsilon^{-300/4} = \varepsilon^{-75}$
-      vs. $\varepsilon^{-2}$ for MC).
+      - **(C) Incorrect:** Simpson''s rule ($\alpha = 4$) only beats Monte Carlo for $D < 2\alpha = 8$. At $D = 300 \gg 8$, deterministic quadrature suffers catastrophically from the Curse of Dimensionality ($T \sim \varepsilon^{-300/4} = \varepsilon^{-75}$ vs. $\varepsilon^{-2}$ for MC).
 
-      - **(D) Correct:** As shown at the top of Slide 10, multivariate density transformation requires the Jacobian determinant
-      $\left|\frac{\partial(x_1, x_2, \dots)}{\partial(y_1, y_2, \dots)}\right|$.
+      - **(D) Correct:** As shown at the top of Slide 10, multivariate density transformation requires the Jacobian determinant $\left|\frac{\partial(x_1, x_2, \dots)}{\partial(y_1, y_2, \dots)}\right|$.
 
       '

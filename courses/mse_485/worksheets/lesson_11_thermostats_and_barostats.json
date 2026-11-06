@@ -28,19 +28,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized."
+            "text": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized.",
+            "text_markdown": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized."
           },
           {
             "id": "b",
-            "text": "Canonical ($NVT$) ensemble; Helmholtz free energy $F = E - TS$ is minimized."
+            "text": "Canonical ($NVT$) ensemble; Helmholtz free energy $F = E - TS$ is minimized.",
+            "text_markdown": "Canonical ($NVT$) ensemble; Helmholtz free energy $F = E - TS$ is minimized."
           },
           {
             "id": "c",
-            "text": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized."
+            "text": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized.",
+            "text_markdown": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized."
           },
           {
             "id": "d",
-            "text": "Grand canonical ($\\mu VT$) ensemble; grand potential $\\Phi_G = F - \\mu N$ is minimized."
+            "text": "Grand canonical ($\\mu VT$) ensemble; grand potential $\\Phi_G = F - \\mu N$ is minimized.",
+            "text_markdown": "Grand canonical ($\\mu VT$) ensemble; grand potential $\\Phi_G = F - \\mu N$ is minimized."
           }
         ],
         "correct": "c",
@@ -57,19 +61,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Particle number $N$, volume $V$, and total energy $E$."
+            "text": "Particle number $N$, volume $V$, and total energy $E$.",
+            "text_markdown": "Particle number $N$, volume $V$, and total energy $E$."
           },
           {
             "id": "b",
-            "text": "Chemical potential $\\mu$, volume $V$, and temperature $T$."
+            "text": "Chemical potential $\\mu$, volume $V$, and temperature $T$.",
+            "text_markdown": "Chemical potential $\\mu$, volume $V$, and temperature $T$."
           },
           {
             "id": "c",
-            "text": "Chemical potential $\\mu$, pressure $P$, and entropy $S$."
+            "text": "Chemical potential $\\mu$, pressure $P$, and entropy $S$.",
+            "text_markdown": "Chemical potential $\\mu$, pressure $P$, and entropy $S$."
           },
           {
             "id": "d",
-            "text": "Particle number $N$, pressure $P$, and enthalpy $H$."
+            "text": "Particle number $N$, pressure $P$, and enthalpy $H$.",
+            "text_markdown": "Particle number $N$, pressure $P$, and enthalpy $H$."
           }
         ],
         "correct": "b",
@@ -86,19 +94,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$T_I(t)$ remains pinned at $120\\text{ K}$ because the initial velocities were drawn from an exact Maxwell\u2013Boltzmann distribution."
+            "text": "$T_I(t)$ remains pinned at $120\\text{ K}$ because the initial velocities were drawn from an exact Maxwell\u2013Boltzmann distribution.",
+            "text_markdown": "$T_I(t)$ remains pinned at $120\\text{ K}$ because the initial velocities were drawn from an exact Maxwell\u2013Boltzmann distribution."
           },
           {
             "id": "b",
-            "text": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$."
+            "text": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$.",
+            "text_markdown": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$."
           },
           {
             "id": "c",
-            "text": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities."
+            "text": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities.",
+            "text_markdown": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities."
           },
           {
             "id": "d",
-            "text": "$T_I(t)$ drops to $0\\text{ K}$ because total linear momentum conservation cancels opposite velocities."
+            "text": "$T_I(t)$ drops to $0\\text{ K}$ because total linear momentum conservation cancels opposite velocities.",
+            "text_markdown": "$T_I(t)$ drops to $0\\text{ K}$ because total linear momentum conservation cancels opposite velocities."
           }
         ],
         "correct": "b",
@@ -157,19 +169,23 @@
         "options": [
           {
             "id": "a",
-            "text": "They suppress natural canonical kinetic energy fluctuations ($\\langle \\Delta K^2 \\rangle$), failing to sample the true canonical ($NVT$) phase-space distribution."
+            "text": "They suppress natural canonical kinetic energy fluctuations ($\\langle \\Delta K^2 \\rangle$), failing to sample the true canonical ($NVT$) phase-space distribution.",
+            "text_markdown": "They suppress natural canonical kinetic energy fluctuations ($\\langle \\Delta K^2 \\rangle$), failing to sample the true canonical ($NVT$) phase-space distribution."
           },
           {
             "id": "b",
-            "text": "They can induce the 'flying ice cube' effect, draining kinetic energy from high-frequency internal vibrations into low-frequency translational/rotational motion."
+            "text": "They can induce the 'flying ice cube' effect, draining kinetic energy from high-frequency internal vibrations into low-frequency translational/rotational motion.",
+            "text_markdown": "They can induce the 'flying ice cube' effect, draining kinetic energy from high-frequency internal vibrations into low-frequency translational/rotational motion."
           },
           {
             "id": "c",
-            "text": "They violate time-reversibility and do not possess a conserved extended Hamiltonian."
+            "text": "They violate time-reversibility and do not possess a conserved extended Hamiltonian.",
+            "text_markdown": "They violate time-reversibility and do not possess a conserved extended Hamiltonian."
           },
           {
             "id": "d",
-            "text": "They require inverting a $3N \\times 3N$ matrix at every Verlet step, making them $\\mathcal{O}(N^3)$."
+            "text": "They require inverting a $3N \\times 3N$ matrix at every Verlet step, making them $\\mathcal{O}(N^3)$.",
+            "text_markdown": "They require inverting a $3N \\times 3N$ matrix at every Verlet step, making them $\\mathcal{O}(N^3)$."
           }
         ],
         "correct": [
@@ -259,19 +275,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step."
+            "text": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step.",
+            "text_markdown": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step."
           },
           {
             "id": "b",
-            "text": "Between the position update $\\mathbf{r}(t+\\Delta t)$ and the force evaluation $\\mathbf{F}(t+\\Delta t)$, while velocities are at the half-step $t+\\Delta t/2$."
+            "text": "Between the position update $\\mathbf{r}(t+\\Delta t)$ and the force evaluation $\\mathbf{F}(t+\\Delta t)$, while velocities are at the half-step $t+\\Delta t/2$.",
+            "text_markdown": "Between the position update $\\mathbf{r}(t+\\Delta t)$ and the force evaluation $\\mathbf{F}(t+\\Delta t)$, while velocities are at the half-step $t+\\Delta t/2$."
           },
           {
             "id": "c",
-            "text": "By adding a random Gaussian displacement directly to the atomic coordinates $\\mathbf{r}_i(t)$ before computing forces."
+            "text": "By adding a random Gaussian displacement directly to the atomic coordinates $\\mathbf{r}_i(t)$ before computing forces.",
+            "text_markdown": "By adding a random Gaussian displacement directly to the atomic coordinates $\\mathbf{r}_i(t)$ before computing forces."
           },
           {
             "id": "d",
-            "text": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer."
+            "text": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer.",
+            "text_markdown": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer."
           }
         ],
         "correct": "a",
@@ -291,19 +311,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$."
+            "text": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$.",
+            "text_markdown": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$."
           },
           {
             "id": "b",
-            "text": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions)."
+            "text": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions).",
+            "text_markdown": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions)."
           },
           {
             "id": "c",
-            "text": "All four curves have the exact same long-time slope because $D$ is an equilibrium canonical average."
+            "text": "All four curves have the exact same long-time slope because $D$ is an equilibrium canonical average.",
+            "text_markdown": "All four curves have the exact same long-time slope because $D$ is an equilibrium canonical average."
           },
           {
             "id": "d",
-            "text": "Steepest slope at intermediate $\\nu = 10$ due to stochastic resonance; $\\nu = 0$ has zero slope."
+            "text": "Steepest slope at intermediate $\\nu = 10$ due to stochastic resonance; $\\nu = 0$ has zero slope.",
+            "text_markdown": "Steepest slope at intermediate $\\nu = 10$ due to stochastic resonance; $\\nu = 0$ has zero slope."
           }
         ],
         "correct": "b",
@@ -323,19 +347,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Both $g(r)$ and $D$ will be identical between Simulation A and Simulation B."
+            "text": "Both $g(r)$ and $D$ will be identical between Simulation A and Simulation B.",
+            "text_markdown": "Both $g(r)$ and $D$ will be identical between Simulation A and Simulation B."
           },
           {
             "id": "b",
-            "text": "Their static radial distribution functions $g(r)$ will be identical within statistical noise, but Simulation B ($\\nu = 15.0$) will have a significantly smaller self-diffusion coefficient $D$."
+            "text": "Their static radial distribution functions $g(r)$ will be identical within statistical noise, but Simulation B ($\\nu = 15.0$) will have a significantly smaller self-diffusion coefficient $D$.",
+            "text_markdown": "Their static radial distribution functions $g(r)$ will be identical within statistical noise, but Simulation B ($\\nu = 15.0$) will have a significantly smaller self-diffusion coefficient $D$."
           },
           {
             "id": "c",
-            "text": "Simulation B will have sharper crystalline peaks in $g(r)$ because high $\\nu$ freezes the configurational distribution."
+            "text": "Simulation B will have sharper crystalline peaks in $g(r)$ because high $\\nu$ freezes the configurational distribution.",
+            "text_markdown": "Simulation B will have sharper crystalline peaks in $g(r)$ because high $\\nu$ freezes the configurational distribution."
           },
           {
             "id": "d",
-            "text": "Simulation B will have a larger self-diffusion coefficient $D$ because frequent kicks inject extra kinetic energy."
+            "text": "Simulation B will have a larger self-diffusion coefficient $D$ because frequent kicks inject extra kinetic energy.",
+            "text_markdown": "Simulation B will have a larger self-diffusion coefficient $D$ because frequent kicks inject extra kinetic energy."
           }
         ],
         "correct": "b",
@@ -369,19 +397,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It produces trajectories with discontinuous velocities whenever a bath collision occurs."
+            "text": "It produces trajectories with discontinuous velocities whenever a bath collision occurs.",
+            "text_markdown": "It produces trajectories with discontinuous velocities whenever a bath collision occurs."
           },
           {
             "id": "b",
-            "text": "It strictly conserves total linear momentum $\\mathbf{P} = \\sum_i m_i \\mathbf{v}_i$ at every step."
+            "text": "It strictly conserves total linear momentum $\\mathbf{P} = \\sum_i m_i \\mathbf{v}_i$ at every step.",
+            "text_markdown": "It strictly conserves total linear momentum $\\mathbf{P} = \\sum_i m_i \\mathbf{v}_i$ at every step."
           },
           {
             "id": "c",
-            "text": "It is guaranteed to sample configurations according to the canonical Boltzmann probability $\\propto e^{-\\beta H}$."
+            "text": "It is guaranteed to sample configurations according to the canonical Boltzmann probability $\\propto e^{-\\beta H}$.",
+            "text_markdown": "It is guaranteed to sample configurations according to the canonical Boltzmann probability $\\propto e^{-\\beta H}$."
           },
           {
             "id": "d",
-            "text": "It is physically well-suited for modeling a large solute (such as a polymer or colloid) immersed in an implicit solvent bath."
+            "text": "It is physically well-suited for modeling a large solute (such as a polymer or colloid) immersed in an implicit solvent bath.",
+            "text_markdown": "It is physically well-suited for modeling a large solute (such as a polymer or colloid) immersed in an implicit solvent bath."
           }
         ],
         "correct": [
@@ -443,19 +475,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It acts as a viscous drag force that slows the particles down further."
+            "text": "It acts as a viscous drag force that slows the particles down further.",
+            "text_markdown": "It acts as a viscous drag force that slows the particles down further."
           },
           {
             "id": "b",
-            "text": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system."
+            "text": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system.",
+            "text_markdown": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system."
           },
           {
             "id": "c",
-            "text": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy."
+            "text": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy.",
+            "text_markdown": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy."
           },
           {
             "id": "d",
-            "text": "It randomly reassigns velocities from a Gaussian distribution."
+            "text": "It randomly reassigns velocities from a Gaussian distribution.",
+            "text_markdown": "It randomly reassigns velocities from a Gaussian distribution."
           }
         ],
         "correct": "b",
@@ -486,19 +522,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$H' = K + V - \\zeta^2$"
+            "text": "$H' = K + V - \\zeta^2$",
+            "text_markdown": "$H' = K + V - \\zeta^2$"
           },
           {
             "id": "b",
-            "text": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$"
+            "text": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$",
+            "text_markdown": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$"
           },
           {
             "id": "c",
-            "text": "$H' = K - V + Q\\zeta$"
+            "text": "$H' = K - V + Q\\zeta$",
+            "text_markdown": "$H' = K - V + Q\\zeta$"
           },
           {
             "id": "d",
-            "text": "$H' = (K + V)\\exp(-\\zeta t)$"
+            "text": "$H' = (K + V)\\exp(-\\zeta t)$",
+            "text_markdown": "$H' = (K + V)\\exp(-\\zeta t)$"
           }
         ],
         "correct": "b",
@@ -518,19 +558,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The system decouples from the heat bath ($\\dot{\\zeta} \\to 0$, so $\\zeta(t) = 0$) and reduces to standard microcanonical ($NVE$) Molecular Dynamics."
+            "text": "The system decouples from the heat bath ($\\dot{\\zeta} \\to 0$, so $\\zeta(t) = 0$) and reduces to standard microcanonical ($NVE$) Molecular Dynamics.",
+            "text_markdown": "The system decouples from the heat bath ($\\dot{\\zeta} \\to 0$, so $\\zeta(t) = 0$) and reduces to standard microcanonical ($NVE$) Molecular Dynamics."
           },
           {
             "id": "b",
-            "text": "The velocities are rescaled instantaneously at every time step (Quench limit)."
+            "text": "The velocities are rescaled instantaneously at every time step (Quench limit).",
+            "text_markdown": "The velocities are rescaled instantaneously at every time step (Quench limit)."
           },
           {
             "id": "c",
-            "text": "The friction coefficient $\\zeta$ oscillates at infinite frequency, blowing up the integrator."
+            "text": "The friction coefficient $\\zeta$ oscillates at infinite frequency, blowing up the integrator.",
+            "text_markdown": "The friction coefficient $\\zeta$ oscillates at infinite frequency, blowing up the integrator."
           },
           {
             "id": "d",
-            "text": "The system freezes immediately to $T = 0\\text{ K}$."
+            "text": "The system freezes immediately to $T = 0\\text{ K}$.",
+            "text_markdown": "The system freezes immediately to $T = 0\\text{ K}$."
           }
         ],
         "correct": "a",
@@ -550,19 +594,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$."
+            "text": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$.",
+            "text_markdown": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$."
           },
           {
             "id": "b",
-            "text": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step."
+            "text": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step.",
+            "text_markdown": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step."
           },
           {
             "id": "c",
-            "text": "Because $Q = 100$ disables periodic boundary conditions."
+            "text": "Because $Q = 100$ disables periodic boundary conditions.",
+            "text_markdown": "Because $Q = 100$ disables periodic boundary conditions."
           },
           {
             "id": "d",
-            "text": "Because $Q = 1$ changes the Lennard-Jones potential cutoff from $2.5\\sigma$ to $1.0\\sigma$."
+            "text": "Because $Q = 1$ changes the Lennard-Jones potential cutoff from $2.5\\sigma$ to $1.0\\sigma$.",
+            "text_markdown": "Because $Q = 1$ changes the Lennard-Jones potential cutoff from $2.5\\sigma$ to $1.0\\sigma$."
           }
         ],
         "correct": "a",
@@ -593,19 +641,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$."
+            "text": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$.",
+            "text_markdown": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$."
           },
           {
             "id": "b",
-            "text": "Hoover replaced Nos\u00e9's deterministic differential equations with Poisson random collisions."
+            "text": "Hoover replaced Nos\u00e9's deterministic differential equations with Poisson random collisions.",
+            "text_markdown": "Hoover replaced Nos\u00e9's deterministic differential equations with Poisson random collisions."
           },
           {
             "id": "c",
-            "text": "Hoover restricted the thermostat to 1D ideal gases."
+            "text": "Hoover restricted the thermostat to 1D ideal gases.",
+            "text_markdown": "Hoover restricted the thermostat to 1D ideal gases."
           },
           {
             "id": "d",
-            "text": "Hoover eliminated the thermal inertia parameter $Q$ so no user parameter is needed."
+            "text": "Hoover eliminated the thermal inertia parameter $Q$ so no user parameter is needed.",
+            "text_markdown": "Hoover eliminated the thermal inertia parameter $Q$ so no user parameter is needed."
           }
         ],
         "correct": "a",
@@ -678,19 +730,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$"
+            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$",
+            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$"
           },
           {
             "id": "b",
-            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} - \\zeta\\,\\delta t$"
+            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} - \\zeta\\,\\delta t$",
+            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} - \\zeta\\,\\delta t$"
           },
           {
             "id": "c",
-            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} / \\zeta$"
+            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} / \\zeta$",
+            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} / \\zeta$"
           },
           {
             "id": "d",
-            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$"
+            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$",
+            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$"
           }
         ],
         "correct": "a",
@@ -721,19 +777,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Symmetric Trotter splitting guarantees strict time-reversibility ($U(-\\delta t) = U(\\delta t)^{-1}$) and cancels $\\mathcal{O}(\\delta t^2)$ local splitting errors to make the integrator second-order accurate."
+            "text": "Symmetric Trotter splitting guarantees strict time-reversibility ($U(-\\delta t) = U(\\delta t)^{-1}$) and cancels $\\mathcal{O}(\\delta t^2)$ local splitting errors to make the integrator second-order accurate.",
+            "text_markdown": "Symmetric Trotter splitting guarantees strict time-reversibility ($U(-\\delta t) = U(\\delta t)^{-1}$) and cancels $\\mathcal{O}(\\delta t^2)$ local splitting errors to make the integrator second-order accurate."
           },
           {
             "id": "b",
-            "text": "Symmetric splitting eliminates the need to compute interatomic forces $\\mathbf{F}(\\mathbf{r})$."
+            "text": "Symmetric splitting eliminates the need to compute interatomic forces $\\mathbf{F}(\\mathbf{r})$.",
+            "text_markdown": "Symmetric splitting eliminates the need to compute interatomic forces $\\mathbf{F}(\\mathbf{r})$."
           },
           {
             "id": "c",
-            "text": "Sequential splitting only works in 1D, whereas symmetric splitting works in 3D."
+            "text": "Sequential splitting only works in 1D, whereas symmetric splitting works in 3D.",
+            "text_markdown": "Sequential splitting only works in 1D, whereas symmetric splitting works in 3D."
           },
           {
             "id": "d",
-            "text": "Symmetric splitting forces $\\zeta(t)$ to remain strictly positive."
+            "text": "Symmetric splitting forces $\\zeta(t)$ to remain strictly positive.",
+            "text_markdown": "Symmetric splitting forces $\\zeta(t)$ to remain strictly positive."
           }
         ],
         "correct": "a",
@@ -753,19 +813,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The trajectory spirals outward to infinity because the extended energy $H'$ is not conserved."
+            "text": "The trajectory spirals outward to infinity because the extended energy $H'$ is not conserved.",
+            "text_markdown": "The trajectory spirals outward to infinity because the extended energy $H'$ is not conserved."
           },
           {
             "id": "b",
-            "text": "The trajectory is non-ergodic and remains confined to a hollow ring/torus band, completely failing to sample the interior near $(x=0, v=0)$ required by a 2D Gaussian canonical distribution."
+            "text": "The trajectory is non-ergodic and remains confined to a hollow ring/torus band, completely failing to sample the interior near $(x=0, v=0)$ required by a 2D Gaussian canonical distribution.",
+            "text_markdown": "The trajectory is non-ergodic and remains confined to a hollow ring/torus band, completely failing to sample the interior near $(x=0, v=0)$ required by a 2D Gaussian canonical distribution."
           },
           {
             "id": "c",
-            "text": "The velocity $v$ collapses to zero while position $x$ executes a random walk."
+            "text": "The velocity $v$ collapses to zero while position $x$ executes a random walk.",
+            "text_markdown": "The velocity $v$ collapses to zero while position $x$ executes a random walk."
           },
           {
             "id": "d",
-            "text": "The trajectory only visits the first quadrant ($x > 0, v > 0$)."
+            "text": "The trajectory only visits the first quadrant ($x > 0, v > 0$).",
+            "text_markdown": "The trajectory only visits the first quadrant ($x > 0, v > 0$)."
           }
         ],
         "correct": "b",
@@ -782,19 +846,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$"
+            "text": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$",
+            "text_markdown": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$"
           },
           {
             "id": "b",
-            "text": "$\\dot{\\xi}_2 = \\frac{v^2 - T}{Q_2}$"
+            "text": "$\\dot{\\xi}_2 = \\frac{v^2 - T}{Q_2}$",
+            "text_markdown": "$\\dot{\\xi}_2 = \\frac{v^2 - T}{Q_2}$"
           },
           {
             "id": "c",
-            "text": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$"
+            "text": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$",
+            "text_markdown": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$"
           },
           {
             "id": "d",
-            "text": "$\\dot{\\xi}_2 = -\\xi_1 \\xi_2$"
+            "text": "$\\dot{\\xi}_2 = -\\xi_1 \\xi_2$",
+            "text_markdown": "$\\dot{\\xi}_2 = -\\xi_1 \\xi_2$"
           }
         ],
         "correct": "a",
@@ -825,19 +893,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The thermostat interactions are non-local and propagate instantaneously across the entire simulation box via the shared scalar variable $\\zeta(t)$."
+            "text": "The thermostat interactions are non-local and propagate instantaneously across the entire simulation box via the shared scalar variable $\\zeta(t)$.",
+            "text_markdown": "The thermostat interactions are non-local and propagate instantaneously across the entire simulation box via the shared scalar variable $\\zeta(t)$."
           },
           {
             "id": "b",
-            "text": "Coupling the entire system to a single heat-bath variable can produce strange non-ergodic dynamics (especially for harmonic or low-dimensional modes) if the mass $Q$ is not carefully chosen or chained."
+            "text": "Coupling the entire system to a single heat-bath variable can produce strange non-ergodic dynamics (especially for harmonic or low-dimensional modes) if the mass $Q$ is not carefully chosen or chained.",
+            "text_markdown": "Coupling the entire system to a single heat-bath variable can produce strange non-ergodic dynamics (especially for harmonic or low-dimensional modes) if the mass $Q$ is not carefully chosen or chained."
           },
           {
             "id": "c",
-            "text": "It is needed in non-equilibrium steady-state simulations where external work creates a net flux of energy into or out of the system."
+            "text": "It is needed in non-equilibrium steady-state simulations where external work creates a net flux of energy into or out of the system.",
+            "text_markdown": "It is needed in non-equilibrium steady-state simulations where external work creates a net flux of energy into or out of the system."
           },
           {
             "id": "d",
-            "text": "It destroys velocity continuity at every time step."
+            "text": "It destroys velocity continuity at every time step.",
+            "text_markdown": "It destroys velocity continuity at every time step."
           }
         ],
         "correct": [
@@ -910,19 +982,23 @@
         "options": [
           {
             "id": "a",
-            "text": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line."
+            "text": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line.",
+            "text_markdown": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line."
           },
           {
             "id": "b",
-            "text": "Constant-volume simulations cannot compute interatomic forces when a liquid forms."
+            "text": "Constant-volume simulations cannot compute interatomic forces when a liquid forms.",
+            "text_markdown": "Constant-volume simulations cannot compute interatomic forces when a liquid forms."
           },
           {
             "id": "c",
-            "text": "Temperature cannot be controlled in a constant-volume simulation."
+            "text": "Temperature cannot be controlled in a constant-volume simulation.",
+            "text_markdown": "Temperature cannot be controlled in a constant-volume simulation."
           },
           {
             "id": "d",
-            "text": "At constant pressure, surface tension becomes negative so droplets explode."
+            "text": "At constant pressure, surface tension becomes negative so droplets explode.",
+            "text_markdown": "At constant pressure, surface tension becomes negative so droplets explode."
           }
         ],
         "correct": "a",
@@ -956,19 +1032,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Periodic boundary conditions are applied in internal coordinates $\\mathbf{s}_i$ (unit cube $[0,1)^3$), while energies and forces are calculated using physical coordinates $\\mathbf{r}_i = \\mathbf{L}\\mathbf{s}_i$."
+            "text": "Periodic boundary conditions are applied in internal coordinates $\\mathbf{s}_i$ (unit cube $[0,1)^3$), while energies and forces are calculated using physical coordinates $\\mathbf{r}_i = \\mathbf{L}\\mathbf{s}_i$.",
+            "text_markdown": "Periodic boundary conditions are applied in internal coordinates $\\mathbf{s}_i$ (unit cube $[0,1)^3$), while energies and forces are calculated using physical coordinates $\\mathbf{r}_i = \\mathbf{L}\\mathbf{s}_i$."
           },
           {
             "id": "b",
-            "text": "Both periodic boundary conditions and interatomic forces are evaluated directly in $\\mathbf{s}_i$ without ever using $\\mathbf{L}$."
+            "text": "Both periodic boundary conditions and interatomic forces are evaluated directly in $\\mathbf{s}_i$ without ever using $\\mathbf{L}$.",
+            "text_markdown": "Both periodic boundary conditions and interatomic forces are evaluated directly in $\\mathbf{s}_i$ without ever using $\\mathbf{L}$."
           },
           {
             "id": "c",
-            "text": "Periodic boundary conditions are applied in physical coordinates $\\mathbf{r}_i$ assuming a unit cube, while forces are evaluated in $\\mathbf{s}_i$."
+            "text": "Periodic boundary conditions are applied in physical coordinates $\\mathbf{r}_i$ assuming a unit cube, while forces are evaluated in $\\mathbf{s}_i$.",
+            "text_markdown": "Periodic boundary conditions are applied in physical coordinates $\\mathbf{r}_i$ assuming a unit cube, while forces are evaluated in $\\mathbf{s}_i$."
           },
           {
             "id": "d",
-            "text": "Periodic boundary conditions are disabled in Parrinello\u2013Rahman MD."
+            "text": "Periodic boundary conditions are disabled in Parrinello\u2013Rahman MD.",
+            "text_markdown": "Periodic boundary conditions are disabled in Parrinello\u2013Rahman MD."
           }
         ],
         "correct": "a",
@@ -985,19 +1065,23 @@
         "options": [
           {
             "id": "a",
-            "text": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space."
+            "text": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space.",
+            "text_markdown": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space."
           },
           {
             "id": "b",
-            "text": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic."
+            "text": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic.",
+            "text_markdown": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic."
           },
           {
             "id": "c",
-            "text": "Because the determinant of a non-symmetric matrix is always zero."
+            "text": "Because the determinant of a non-symmetric matrix is always zero.",
+            "text_markdown": "Because the determinant of a non-symmetric matrix is always zero."
           },
           {
             "id": "d",
-            "text": "To force the internal virial pressure to be zero."
+            "text": "To force the internal virial pressure to be zero.",
+            "text_markdown": "To force the internal virial pressure to be zero."
           }
         ],
         "correct": "a",
@@ -1048,19 +1132,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$"
+            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$",
+            "text_markdown": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$"
           },
           {
             "id": "b",
-            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = -P\\mathbf{L}$"
+            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = -P\\mathbf{L}$",
+            "text_markdown": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = -P\\mathbf{L}$"
           },
           {
             "id": "c",
-            "text": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$"
+            "text": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$",
+            "text_markdown": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$"
           },
           {
             "id": "d",
-            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = \\sum_i \\mathbf{F}_i$"
+            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = \\sum_i \\mathbf{F}_i$",
+            "text_markdown": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = \\sum_i \\mathbf{F}_i$"
           }
         ],
         "correct": "a",
@@ -1080,19 +1168,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell."
+            "text": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell.",
+            "text_markdown": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell."
           },
           {
             "id": "b",
-            "text": "The KCl crystal sublimates into a diatomic ideal gas."
+            "text": "The KCl crystal sublimates into a diatomic ideal gas.",
+            "text_markdown": "The KCl crystal sublimates into a diatomic ideal gas."
           },
           {
             "id": "c",
-            "text": "The KCl ions disproportionate into metallic potassium and $\\text{Cl}_2$ gas."
+            "text": "The KCl ions disproportionate into metallic potassium and $\\text{Cl}_2$ gas.",
+            "text_markdown": "The KCl ions disproportionate into metallic potassium and $\\text{Cl}_2$ gas."
           },
           {
             "id": "d",
-            "text": "The volume increases by $50\\%$ while remaining in the rocksalt structure."
+            "text": "The volume increases by $50\\%$ while remaining in the rocksalt structure.",
+            "text_markdown": "The volume increases by $50\\%$ while remaining in the rocksalt structure."
           }
         ],
         "correct": "a",
@@ -1109,19 +1201,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Release of latent heat (enthalpy of transformation $\\Delta H = \\Delta V_{\\text{pot}} + P\\Delta \\Omega < 0$): as the ions drop into the lower-enthalpy CsCl structure and $P\\Delta \\Omega$ work is done on the compressing cell, potential enthalpy converts into kinetic energy."
+            "text": "Release of latent heat (enthalpy of transformation $\\Delta H = \\Delta V_{\\text{pot}} + P\\Delta \\Omega < 0$): as the ions drop into the lower-enthalpy CsCl structure and $P\\Delta \\Omega$ work is done on the compressing cell, potential enthalpy converts into kinetic energy.",
+            "text_markdown": "Release of latent heat (enthalpy of transformation $\\Delta H = \\Delta V_{\\text{pot}} + P\\Delta \\Omega < 0$): as the ions drop into the lower-enthalpy CsCl structure and $P\\Delta \\Omega$ work is done on the compressing cell, potential enthalpy converts into kinetic energy."
           },
           {
             "id": "b",
-            "text": "A bug in the periodic boundary conditions that duplicates atoms across the cell wall."
+            "text": "A bug in the periodic boundary conditions that duplicates atoms across the cell wall.",
+            "text_markdown": "A bug in the periodic boundary conditions that duplicates atoms across the cell wall."
           },
           {
             "id": "c",
-            "text": "The Boltzmann constant $k_B$ changes value inside the CsCl phase."
+            "text": "The Boltzmann constant $k_B$ changes value inside the CsCl phase.",
+            "text_markdown": "The Boltzmann constant $k_B$ changes value inside the CsCl phase."
           },
           {
             "id": "d",
-            "text": "The barostat mass $\\omega$ becomes negative in region III."
+            "text": "The barostat mass $\\omega$ becomes negative in region III.",
+            "text_markdown": "The barostat mass $\\omega$ becomes negative in region III."
           }
         ],
         "correct": "a",
@@ -1141,19 +1237,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$"
+            "text": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$",
+            "text_markdown": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$"
           },
           {
             "id": "b",
-            "text": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$"
+            "text": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$",
+            "text_markdown": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$"
           },
           {
             "id": "c",
-            "text": "$r_{ij}^2 = \\text{Tr}(\\mathbf{L})\\,(\\mathbf{s}_i \\cdot \\mathbf{s}_j)$"
+            "text": "$r_{ij}^2 = \\text{Tr}(\\mathbf{L})\\,(\\mathbf{s}_i \\cdot \\mathbf{s}_j)$",
+            "text_markdown": "$r_{ij}^2 = \\text{Tr}(\\mathbf{L})\\,(\\mathbf{s}_i \\cdot \\mathbf{s}_j)$"
           },
           {
             "id": "d",
-            "text": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^{-1} \\mathbf{s}_{ij}$"
+            "text": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^{-1} \\mathbf{s}_{ij}$",
+            "text_markdown": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^{-1} \\mathbf{s}_{ij}$"
           }
         ],
         "correct": "a",
@@ -1170,19 +1270,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Variable-cell MD is not guaranteed to escape a local free-energy minimum within a finite simulation run, so one can get trapped in a metastable polymorph and obtain the wrong structure."
+            "text": "Variable-cell MD is not guaranteed to escape a local free-energy minimum within a finite simulation run, so one can get trapped in a metastable polymorph and obtain the wrong structure.",
+            "text_markdown": "Variable-cell MD is not guaranteed to escape a local free-energy minimum within a finite simulation run, so one can get trapped in a metastable polymorph and obtain the wrong structure."
           },
           {
             "id": "b",
-            "text": "Careful free-energy calculations ($G = E + PV - TS$) are needed to rigorously establish which crystal structure is thermodynamically stable."
+            "text": "Careful free-energy calculations ($G = E + PV - TS$) are needed to rigorously establish which crystal structure is thermodynamically stable.",
+            "text_markdown": "Careful free-energy calculations ($G = E + PV - TS$) are needed to rigorously establish which crystal structure is thermodynamically stable."
           },
           {
             "id": "c",
-            "text": "Variable-cell methods have non-physical dynamics because the global boundary coupling does not respect spatial locality of interactions (though equilibrium thermodynamic finite-size effects are $\\mathcal{O}(1/N)$)."
+            "text": "Variable-cell methods have non-physical dynamics because the global boundary coupling does not respect spatial locality of interactions (though equilibrium thermodynamic finite-size effects are $\\mathcal{O}(1/N)$).",
+            "text_markdown": "Variable-cell methods have non-physical dynamics because the global boundary coupling does not respect spatial locality of interactions (though equilibrium thermodynamic finite-size effects are $\\mathcal{O}(1/N)$)."
           },
           {
             "id": "d",
-            "text": "Parrinello\u2013Rahman MD is mathematically guaranteed to find the global ground-state crystal structure within 100 time steps for any material."
+            "text": "Parrinello\u2013Rahman MD is mathematically guaranteed to find the global ground-state crystal structure within 100 time steps for any material.",
+            "text_markdown": "Parrinello\u2013Rahman MD is mathematically guaranteed to find the global ground-state crystal structure within 100 time steps for any material."
           }
         ],
         "correct": [
@@ -1203,19 +1307,23 @@
         "options": [
           {
             "id": "a",
-            "text": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman."
+            "text": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman.",
+            "text_markdown": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman."
           },
           {
             "id": "b",
-            "text": "3 degrees of freedom in Andersen vs. 27 degrees of freedom in Parrinello\u2013Rahman."
+            "text": "3 degrees of freedom in Andersen vs. 27 degrees of freedom in Parrinello\u2013Rahman.",
+            "text_markdown": "3 degrees of freedom in Andersen vs. 27 degrees of freedom in Parrinello\u2013Rahman."
           },
           {
             "id": "c",
-            "text": "6 degrees of freedom in both barostats."
+            "text": "6 degrees of freedom in both barostats.",
+            "text_markdown": "6 degrees of freedom in both barostats."
           },
           {
             "id": "d",
-            "text": "1 degree of freedom in both barostats."
+            "text": "1 degree of freedom in both barostats.",
+            "text_markdown": "1 degree of freedom in both barostats."
           }
         ],
         "correct": "a",
@@ -1237,19 +1345,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Velocity rescaling (Quench) applied at every time step."
+            "text": "Velocity rescaling (Quench) applied at every time step.",
+            "text_markdown": "Velocity rescaling (Quench) applied at every time step."
           },
           {
             "id": "b",
-            "text": "Andersen thermostat with a very high collision rate $\\nu \\Delta t = 0.5$."
+            "text": "Andersen thermostat with a very high collision rate $\\nu \\Delta t = 0.5$.",
+            "text_markdown": "Andersen thermostat with a very high collision rate $\\nu \\Delta t = 0.5$."
           },
           {
             "id": "c",
-            "text": "A single Nos\u00e9\u2013Hoover thermostat with $Q = 10^8$."
+            "text": "A single Nos\u00e9\u2013Hoover thermostat with $Q = 10^8$.",
+            "text_markdown": "A single Nos\u00e9\u2013Hoover thermostat with $Q = 10^8$."
           },
           {
             "id": "d",
-            "text": "A Nos\u00e9\u2013Hoover Chain thermostat integrated with a symmetric Trotter (MTTK) splitting scheme and a well-matched thermal inertia $Q$."
+            "text": "A Nos\u00e9\u2013Hoover Chain thermostat integrated with a symmetric Trotter (MTTK) splitting scheme and a well-matched thermal inertia $Q$.",
+            "text_markdown": "A Nos\u00e9\u2013Hoover Chain thermostat integrated with a symmetric Trotter (MTTK) splitting scheme and a well-matched thermal inertia $Q$."
           }
         ],
         "correct": "d",

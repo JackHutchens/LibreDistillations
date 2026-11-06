@@ -22,7 +22,7 @@ worksheet:
   - id: concept_swendsen_wang_slowing_down
     type: concept_cell
     title: 'Interactive Explorer: Critical Slowing Down vs. Swendsen–Wang Cluster Scaling'
-    description_markdown: Switch between the 2D and 3D Ising models, vary the box size $L$, and toggle between autocorrelation time $\\tau(L) \\propto L^z$ and total CPU effort $\\propto L^{d+z}$.
+    description_markdown: Switch between the 2D and 3D Ising models, vary the box size $L$, and toggle between autocorrelation time $\tau(L) \propto L^z$ and total CPU effort $\propto L^{d+z}$.
     render_function: render_swendsen_wang_slowing_down
     layout: figure_left
     controls:
@@ -51,25 +51,29 @@ worksheet:
         - label: Total CPU Cost per Sample ~ L^(d+z)
           value: cpu_cost
         default: tau_scaling
-    takeaway_markdown: '**Key Takeaway:** Because local single-spin flips only move domain boundaries by diffusive random walks ($z \\approx 2$), large critical droplets take $\\tau \\propto L^2$ sweeps to decorrelate. Fortuin–Kasteleyn cluster algorithms percolate directly across critical droplets of size $\\xi \\sim L$ and flip them rejection-free ($A=1$), collapsing $z$ to $0.35$ in 2D.'
+    takeaway_markdown: '**Key Takeaway:** Because local single-spin flips only move domain boundaries by diffusive random walks ($z \approx 2$), large critical droplets take $\tau \propto L^2$ sweeps to decorrelate. Fortuin–Kasteleyn cluster algorithms percolate directly across critical droplets of size $\xi \sim L$ and flip them rejection-free ($A=1$), collapsing $z$ to $0.35$ in 2D.'
   - id: q23_01
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_ising_critical_slowing_down
-    prompt_markdown: In a Monte Carlo simulation of a $d$-dimensional system right at its critical temperature $T_c$ (where the bulk correlation length is cut off by the box size, $\\xi \\sim L$), how does the **total CPU time** required to generate one statistically independent configuration scale with linear system size $L$?
+    prompt_markdown: In a Monte Carlo simulation of a $d$-dimensional system right at its critical temperature $T_c$ (where the bulk correlation length is cut off by the box size, $\xi \sim L$), how does the **total CPU time** required to generate one statistically independent configuration scale with linear system size $L$?
     hint_markdown: Consider the computational work needed to perform a single full lattice sweep alongside how the relaxation time (in units of sweeps) grows near criticality as a function of the system dimension and dynamical critical exponent.
     options:
     - id: a
-      text: $\\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume.
+      text: $\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume.
+      text_markdown: $\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume.
     - id: b
-      text: $\\propto L^d$, because the autocorrelation time $\\tau$ approaches a size-independent constant at $T_c$.
+      text: $\propto L^d$, because the autocorrelation time $\tau$ approaches a size-independent constant at $T_c$.
+      text_markdown: $\propto L^d$, because the autocorrelation time $\tau$ approaches a size-independent constant at $T_c$.
     - id: c
-      text: $\\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\\tau \\propto L^z$ sweeps are needed per independent sample.
+      text: $\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\tau \propto L^z$ sweeps are needed per independent sample.
+      text_markdown: $\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\tau \propto L^z$ sweeps are needed per independent sample.
     - id: d
-      text: $\\propto L^{d-z}$, because larger boxes average out spatial fluctuations faster.
+      text: $\propto L^{d-z}$, because larger boxes average out spatial fluctuations faster.
+      text_markdown: $\propto L^{d-z}$, because larger boxes average out spatial fluctuations faster.
     correct: c
-    rationale_markdown: At $T_c$, the correlation length saturates at $\\xi \\sim L$, so the autocorrelation time measured in Monte Carlo sweeps scales as $\\tau(L) \\propto L^z$. Since a single sweep visits all $N = L^d$ sites, the total CPU effort per independent configuration scales as $N \\cdot \\tau(L) \\propto L^{d+z}$.
+    rationale_markdown: At $T_c$, the correlation length saturates at $\xi \sim L$, so the autocorrelation time measured in Monte Carlo sweeps scales as $\tau(L) \propto L^z$. Since a single sweep visits all $N = L^d$ sites, the total CPU effort per independent configuration scales as $N \cdot \tau(L) \propto L^{d+z}$.
   - id: q23_02
     type: problem
     question_type: numeric
@@ -77,18 +81,18 @@ worksheet:
     taught_by:
     - sec_ising_critical_slowing_down
     - concept_swendsen_wang_slowing_down
-    prompt_markdown: In a 2D Ising simulation at $T_c$, local Metropolis dynamics has dynamical exponent $z_{\\text{local}} = 2.125$, whereas the Swendsen–Wang cluster algorithm has $z_{\\text{SW}} = 0.35$. If you increase the linear lattice size from $L = 10$ to $L = 100$ (a factor of $10$), by what factor does the **ratio of autocorrelation times** $\\tau_{\\text{local}}(L) / \\tau_{\\text{SW}}(L)$ grow? *(Round to the nearest tenth.)*
+    prompt_markdown: In a 2D Ising simulation at $T_c$, local Metropolis dynamics has dynamical exponent $z_{\text{local}} = 2.125$, whereas the Swendsen–Wang cluster algorithm has $z_{\text{SW}} = 0.35$. If you increase the linear lattice size from $L = 10$ to $L = 100$ (a factor of $10$), by what factor does the **ratio of autocorrelation times** $\tau_{\text{local}}(L) / \tau_{\text{SW}}(L)$ grow? *(Round to the nearest tenth.)*
     hint_markdown: Express each algorithm's autocorrelation scaling in terms of the linear lattice dimension, form the relative ratio across the two length scales, and evaluate the difference in dynamical critical exponents.
     correct:
       value: 59.6
       tolerance: 0.5
-    rationale_markdown: The ratio of autocorrelation times scales as $(L_2 / L_1)^{z_{\\text{local}} - z_{\\text{SW}}} = 10^{2.125 - 0.35} = 10^{1.775} \\approx 59.566 \\approx 59.6$.
+    rationale_markdown: The ratio of autocorrelation times scales as $(L_2 / L_1)^{z_{\text{local}} - z_{\text{SW}}} = 10^{2.125 - 0.35} = 10^{1.775} \approx 59.566 \approx 59.6$.
   - id: q23_03
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_ising_critical_slowing_down
-    prompt_markdown: Using a local single-spin Metropolis algorithm in $d = 3$ dimensions with dynamical exponent $z = 2.0$, by what factor does the **total CPU time per independent sample** increase at $T_c$ when the linear box size $L$ is doubled ($L \\to 2L$)? *(Enter an exact integer.)*
+    prompt_markdown: Using a local single-spin Metropolis algorithm in $d = 3$ dimensions with dynamical exponent $z = 2.0$, by what factor does the **total CPU time per independent sample** increase at $T_c$ when the linear box size $L$ is doubled ($L \to 2L$)? *(Enter an exact integer.)*
     hint_markdown: Relate the total computational effort to both the volume cost of sweeping the degrees of freedom and the critical slowing down exponent upon scaling the linear dimension.
     correct:
       value: 32
@@ -99,19 +103,23 @@ worksheet:
     question_type: single_select
     difficulty: medium
     taught_by: sec_ising_critical_slowing_down
-    prompt_markdown: Why does choosing the Fortuin–Kasteleyn bond activation probability $p = 1 - e^{-2\\beta J}$ between aligned nearest-neighbor spins ($s_i = s_j$) guarantee a **rejection-free** ($A = 1$) cluster flip in the Swendsen–Wang and Wolff algorithms?
+    prompt_markdown: Why does choosing the Fortuin–Kasteleyn bond activation probability $p = 1 - e^{-2\beta J}$ between aligned nearest-neighbor spins ($s_i = s_j$) guarantee a **rejection-free** ($A = 1$) cluster flip in the Swendsen–Wang and Wolff algorithms?
     hint_markdown: Examine how the conditional probabilities of satisfying or omitting bond connections along the perimeter of the cluster balance against the change in the system's Boltzmann weight under a collective spin inversion.
     options:
     - id: a
-      text: Because every cluster formed with $p = 1 - e^{-2\\beta J}$ has exactly zero net boundary energy change ($\\Delta E = 0$).
+      text: Because every cluster formed with $p = 1 - e^{-2\beta J}$ has exactly zero net boundary energy change ($\Delta E = 0$).
+      text_markdown: Because every cluster formed with $p = 1 - e^{-2\beta J}$ has exactly zero net boundary energy change ($\Delta E = 0$).
     - id: b
-      text: Because the probability $1 - p = e^{-2\\beta J}$ of *not* placing a bond across each of the $m_+$ aligned perimeter edges identically cancels the Boltzmann surface-energy penalty $e^{-2\\beta J (m_+ - m_-)}$ in the detailed balance ratio.
+      text: Because the probability $1 - p = e^{-2\beta J}$ of *not* placing a bond across each of the $m_+$ aligned perimeter edges identically cancels the Boltzmann surface-energy penalty $e^{-2\beta J (m_+ - m_-)}$ in the detailed balance ratio.
+      text_markdown: Because the probability $1 - p = e^{-2\beta J}$ of *not* placing a bond across each of the $m_+$ aligned perimeter edges identically cancels the Boltzmann surface-energy penalty $e^{-2\beta J (m_+ - m_-)}$ in the detailed balance ratio.
     - id: c
       text: Because internal bonds inside the cluster flip their relative alignment and release enough energy to pay for the perimeter bonds.
+      text_markdown: Because internal bonds inside the cluster flip their relative alignment and release enough energy to pay for the perimeter bonds.
     - id: d
       text: Because the cluster algorithm only flips spins in the paramagnetic phase where $J = 0$.
+      text_markdown: Because the cluster algorithm only flips spins in the paramagnetic phase where $J = 0$.
     correct: b
-    rationale_markdown: Flipping a cluster breaks $m_+$ aligned perimeter edges and creates $m_-$ aligned perimeter edges, costing $\\Delta E = 2J(m_+ - m_-)$. In the forward move, those $m_+$ aligned perimeter edges must *fail* to form FK bonds (probability $(1-p)^{m_+}$), whereas in the reverse move the $m_-$ newly aligned perimeter edges must fail to form bonds (probability $(1-p)^{m_-}$). Setting $1 - p = e^{-2\\beta J}$ makes $(1-p)^{-(m_+ - m_-)} e^{-2\\beta J(m_+ - m_-)} = 1$ identically, so $A = 1$.
+    rationale_markdown: Flipping a cluster breaks $m_+$ aligned perimeter edges and creates $m_-$ aligned perimeter edges, costing $\Delta E = 2J(m_+ - m_-)$. In the forward move, those $m_+$ aligned perimeter edges must *fail* to form FK bonds (probability $(1-p)^{m_+}$), whereas in the reverse move the $m_-$ newly aligned perimeter edges must fail to form bonds (probability $(1-p)^{m_-}$). Setting $1 - p = e^{-2\beta J}$ makes $(1-p)^{-(m_+ - m_-)} e^{-2\beta J(m_+ - m_-)} = 1$ identically, so $A = 1$.
   - id: q23_05
     type: problem
     question_type: numeric
@@ -122,7 +130,7 @@ worksheet:
     correct:
       value: 0.586
       tolerance: 0.003
-    rationale_markdown: At $T_c$, $2\\beta_c J = \\ln(1 + \\sqrt{2})$, so $e^{-2\\beta_c J} = \\frac{1}{1 + \\sqrt{2}} = \\sqrt{2} - 1 \\approx 0.41421$. Therefore, $p(T_c) = 1 - (\\sqrt{2} - 1) = 2 - \\sqrt{2} \\approx 0.58579 \\approx 0.586$.
+    rationale_markdown: At $T_c$, $2\beta_c J = \ln(1 + \sqrt{2})$, so $e^{-2\beta_c J} = \frac{1}{1 + \sqrt{2}} = \sqrt{2} - 1 \approx 0.41421$. Therefore, $p(T_c) = 1 - (\sqrt{2} - 1) = 2 - \sqrt{2} \approx 0.58579 \approx 0.586$.
   - id: q23_06
     type: problem
     question_type: single_select
@@ -133,35 +141,43 @@ worksheet:
     options:
     - id: a
       text: Swendsen–Wang partitions the entire lattice into connected FK clusters (via Hoshen–Kopelman) and flips each cluster with probability $1/2$, whereas Wolff grows a single connected cluster from a randomly chosen seed spin and flips it with probability $1$.
+      text_markdown: Swendsen–Wang partitions the entire lattice into connected FK clusters (via Hoshen–Kopelman) and flips each cluster with probability $1/2$, whereas Wolff grows a single connected cluster from a randomly chosen seed spin and flips it with probability $1$.
     - id: b
-      text: Swendsen–Wang bonds anti-aligned spins ($s_i \\neq s_j$), whereas Wolff bonds aligned spins ($s_i = s_j$).
+      text: Swendsen–Wang bonds anti-aligned spins ($s_i \neq s_j$), whereas Wolff bonds aligned spins ($s_i = s_j$).
+      text_markdown: Swendsen–Wang bonds anti-aligned spins ($s_i \neq s_j$), whereas Wolff bonds aligned spins ($s_i = s_j$).
     - id: c
       text: Swendsen–Wang requires a Metropolis rejection step, whereas Wolff is rejection-free.
+      text_markdown: Swendsen–Wang requires a Metropolis rejection step, whereas Wolff is rejection-free.
     - id: d
-      text: Wolff updates only single isolated spins, whereas Swendsen–Wang updates $2\\times 2$ Kadanoff blocks.
+      text: Wolff updates only single isolated spins, whereas Swendsen–Wang updates $2\times 2$ Kadanoff blocks.
+      text_markdown: Wolff updates only single isolated spins, whereas Swendsen–Wang updates $2\times 2$ Kadanoff blocks.
     correct: a
-    rationale_markdown: Both algorithms use the exact same FK bond probability $p = 1 - e^{-2\\beta J}$ between aligned spins and both are rejection-free. Swendsen–Wang decomposes the full lattice into clusters and flips each with probability $1/2$, while Wolff grows a single cluster recursively from a random seed site (preferentially sampling larger clusters by a factor proportional to cluster size) and flips it with probability $1$.
+    rationale_markdown: Both algorithms use the exact same FK bond probability $p = 1 - e^{-2\beta J}$ between aligned spins and both are rejection-free. Swendsen–Wang decomposes the full lattice into clusters and flips each with probability $1/2$, while Wolff grows a single cluster recursively from a random seed site (preferentially sampling larger clusters by a factor proportional to cluster size) and flips it with probability $1$.
   - id: q23_07
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by: sec_ising_critical_slowing_down
-    prompt_markdown: Which of the following statements accurately contrast a **first-order** phase transition (such as sweeping magnetic field $h$ across $0$ at $T < T_c$) with a **second-order (continuous)** critical transition ($T \\to T_c$ at $h = 0$)? *(Select all that apply.)*
+    prompt_markdown: Which of the following statements accurately contrast a **first-order** phase transition (such as sweeping magnetic field $h$ across $0$ at $T < T_c$) with a **second-order (continuous)** critical transition ($T \to T_c$ at $h = 0$)? *(Select all that apply.)*
     hint_markdown: Contrast the continuity of order parameters, latent heat, and divergent spatial fluctuation lengths against mixed-phase coexistence and free energy barriers.
     options:
     - id: a
-      text: At a second-order critical point, the correlation length $\\xi$ diverges ($\\xi \\to \\infty$ in the bulk) and fluctuations occur across all length scales.
+      text: At a second-order critical point, the correlation length $\xi$ diverges ($\xi \to \infty$ in the bulk) and fluctuations occur across all length scales.
+      text_markdown: At a second-order critical point, the correlation length $\xi$ diverges ($\xi \to \infty$ in the bulk) and fluctuations occur across all length scales.
     - id: b
       text: At a first-order transition, the order parameter jumps discontinuously and simulations exhibit hysteresis, metastability, and interface/surface-energy barriers.
+      text_markdown: At a first-order transition, the order parameter jumps discontinuously and simulations exhibit hysteresis, metastability, and interface/surface-energy barriers.
     - id: c
-      text: In a fluid like $\\text{CO}_2$ near its critical point, critical opalescence arises because droplet/density correlation lengths grow comparable to the wavelength of visible light.
+      text: In a fluid like $\text{CO}_2$ near its critical point, critical opalescence arises because droplet/density correlation lengths grow comparable to the wavelength of visible light.
+      text_markdown: In a fluid like $\text{CO}_2$ near its critical point, critical opalescence arises because droplet/density correlation lengths grow comparable to the wavelength of visible light.
     - id: d
-      text: First-order transitions exhibit a diverging correlation length $\\xi = \\infty$ with zero interfacial free energy between coexisting phases.
+      text: First-order transitions exhibit a diverging correlation length $\xi = \infty$ with zero interfacial free energy between coexisting phases.
+      text_markdown: First-order transitions exhibit a diverging correlation length $\xi = \infty$ with zero interfacial free energy between coexisting phases.
     correct:
     - a
     - b
     - c
-    rationale_markdown: 'Options (A), (B), and (C) are all fundamental properties highlighted in the lecture slides. Option (D) is false: at a first-order transition, $\\xi$ remains finite and phase coexistence is governed by a nonzero interfacial surface tension and nucleation barrier.'
+    rationale_markdown: 'Options (A), (B), and (C) are all fundamental properties highlighted in the lecture slides. Option (D) is false: at a first-order transition, $\xi$ remains finite and phase coexistence is governed by a nonzero interfacial surface tension and nucleation barrier.'
   - id: q23_08
     type: problem
     question_type: single_select
@@ -171,15 +187,19 @@ worksheet:
     hint_markdown: Express the variance of the sample mean in terms of the intrinsic variance of the observable, the integrated autocorrelation time, and the number of independent statistical blocks accumulated over the run.
     options:
     - id: a
-      text: $\\zeta = \\left[\\text{var}(O)\\,\\tau_0\\,(\\text{CPU time per step})\\right]^{-1}$
+      text: $\zeta = \left[\text{var}(O)\\,\tau_0\\,(\text{CPU time per step})\right]^{-1}$
+      text_markdown: $\zeta = \left[\text{var}(O)\\,\tau_0\\,(\text{CPU time per step})\right]^{-1}$
     - id: b
-      text: $\\zeta = \\text{var}(O)\\,\\tau_0\\,(\\text{CPU time per step})$
+      text: $\zeta = \text{var}(O)\\,\tau_0\\,(\text{CPU time per step})$
+      text_markdown: $\zeta = \text{var}(O)\\,\tau_0\\,(\text{CPU time per step})$
     - id: c
-      text: $\\zeta = \\tau_0^2 / \\text{var}(O)$
+      text: $\zeta = \tau_0^2 / \text{var}(O)$
+      text_markdown: $\zeta = \tau_0^2 / \text{var}(O)$
     - id: d
-      text: $\\zeta = L^z / \\tau_0$
+      text: $\zeta = L^z / \tau_0$
+      text_markdown: $\zeta = L^z / \tau_0$
     correct: a
-    rationale_markdown: Since $v = \\text{var}(O) / N_{\\text{eff}}$ and $T_{\\text{CPU}} = N_{\\text{steps}}(\\text{time/step}) = N_{\\text{eff}} \\tau_0 (\\text{time/step})$, their product is $v T_{\\text{CPU}} = \\text{var}(O)\\,\\tau_0\\,(\\text{time/step})$, giving $\\zeta = (v T_{\\text{CPU}})^{-1} = [\\text{var}(O)\\,\\tau_0\\,(\\text{time/step})]^{-1}$.
+    rationale_markdown: Since $v = \text{var}(O) / N_{\text{eff}}$ and $T_{\text{CPU}} = N_{\text{steps}}(\text{time/step}) = N_{\text{eff}} \tau_0 (\text{time/step})$, their product is $v T_{\text{CPU}} = \text{var}(O)\\,\tau_0\\,(\text{time/step})$, giving $\zeta = (v T_{\text{CPU}})^{-1} = [\text{var}(O)\\,\tau_0\\,(\text{time/step})]^{-1}$.
   - id: sec_critical_exponents_universality
     type: markdown_section
     title: 2. Static Critical Exponents, Scaling Laws & Universality Classes
@@ -193,19 +213,23 @@ worksheet:
     question_type: single_select
     difficulty: easy
     taught_by: sec_critical_exponents_universality
-    prompt_markdown: Which two fundamental properties of a physical system with short-range interactions determine its **static universality class** (and therefore its exact critical exponents $\\alpha, \\beta, \\gamma, \\delta, \\nu, \\eta$)?
-    hint_markdown: Recall what remains after coarse-graining over diverging correlation lengths $\\xi \\to \\infty$.
+    prompt_markdown: Which two fundamental properties of a physical system with short-range interactions determine its **static universality class** (and therefore its exact critical exponents $\alpha, \beta, \gamma, \delta, \nu, \eta$)?
+    hint_markdown: Recall what remains after coarse-graining over diverging correlation lengths $\xi \to \infty$.
     options:
     - id: a
-      text: The lattice coordination number $z_{\\text{coord}}$ and the magnitude of the exchange coupling $J$.
+      text: The lattice coordination number $z_{\text{coord}}$ and the magnitude of the exchange coupling $J$.
+      text_markdown: The lattice coordination number $z_{\text{coord}}$ and the magnitude of the exchange coupling $J$.
     - id: b
       text: The spatial dimensionality $d$ and the symmetry (number of components $n$) of the order parameter.
+      text_markdown: The spatial dimensionality $d$ and the symmetry (number of components $n$) of the order parameter.
     - id: c
       text: The critical temperature $T_c$ and the critical pressure $P_c$.
+      text_markdown: The critical temperature $T_c$ and the critical pressure $P_c$.
     - id: d
       text: The particle mass $m$ and the choice of Kadanoff block-spin size $b$.
+      text_markdown: The particle mass $m$ and the choice of Kadanoff block-spin size $b$.
     correct: b
-    rationale_markdown: As $\\xi \\to \\infty$, the system forgets lattice structure and coupling strength $J$; only the spatial dimensionality $d$ and the symmetry/dimensionality $n$ of the order parameter (along with interaction range) determine the universality class.
+    rationale_markdown: As $\xi \to \infty$, the system forgets lattice structure and coupling strength $J$; only the spatial dimensionality $d$ and the symmetry/dimensionality $n$ of the order parameter (along with interaction range) determine the universality class.
   - id: q23_10
     type: problem
     question_type: multi_select
@@ -215,18 +239,22 @@ worksheet:
     hint_markdown: Identify which properties depend strictly on long-wavelength fixed-point scale invariance versus those that reflect microscopic non-universal details like coupling constants or coordination geometries.
     options:
     - id: a
-      text: The correlation-length critical exponent $\\nu$ and order-parameter exponent $\\beta$.
+      text: The correlation-length critical exponent $\nu$ and order-parameter exponent $\beta$.
+      text_markdown: The correlation-length critical exponent $\nu$ and order-parameter exponent $\beta$.
     - id: b
       text: The dimensionless critical coupling $K_c = J / (k_B T_c)$ and critical temperature $T_c$.
+      text_markdown: The dimensionless critical coupling $K_c = J / (k_B T_c)$ and critical temperature $T_c$.
     - id: c
-      text: The susceptibility exponent $\\gamma$ and anomalous dimension $\\eta$.
+      text: The susceptibility exponent $\gamma$ and anomalous dimension $\eta$.
+      text_markdown: The susceptibility exponent $\gamma$ and anomalous dimension $\eta$.
     - id: d
       text: Dimensionless finite-size scaling functions and the critical Binder cumulant ratio $U_4^*$ (for matching boundary conditions).
+      text_markdown: Dimensionless finite-size scaling functions and the critical Binder cumulant ratio $U_4^*$ (for matching boundary conditions).
     correct:
     - a
     - c
     - d
-    rationale_markdown: Critical exponents ($\\nu, \\beta, \\gamma, \\eta$) and dimensionless scaling functions are universal across all systems sharing $(d, n)$. By contrast, $T_c$ and $K_c = J/(k_B T_c)$ depend on the microscopic lattice coordination number (e.g., $K_c \\approx 0.22165$ for SC vs. smaller for BCC in Table 1 of slide 15) and are non-universal.
+    rationale_markdown: Critical exponents ($\nu, \beta, \gamma, \eta$) and dimensionless scaling functions are universal across all systems sharing $(d, n)$. By contrast, $T_c$ and $K_c = J/(k_B T_c)$ depend on the microscopic lattice coordination number (e.g., $K_c \approx 0.22165$ for SC vs. smaller for BCC in Table 1 of slide 15) and are non-universal.
   - id: q23_11
     type: problem
     question_type: numeric
@@ -237,7 +265,7 @@ worksheet:
     correct:
       value: 15
       tolerance: 0.01
-    rationale_markdown: By Widom's identity, $\\delta = 1 + \\frac{\\gamma}{\\beta} = 1 + \\frac{7/4}{1/8} = 1 + 14 = 15$.
+    rationale_markdown: By Widom's identity, $\delta = 1 + \frac{\gamma}{\beta} = 1 + \frac{7/4}{1/8} = 1 + 14 = 15$.
   - id: q23_12
     type: problem
     question_type: numeric
@@ -248,7 +276,7 @@ worksheet:
     correct:
       value: 0.11
       tolerance: 0.003
-    rationale_markdown: Using Rushbrooke's identity $\\alpha + 2\\beta + \\gamma = 2$, we obtain $\\alpha = 2 - 2(0.325) - 1.240 = 2 - 0.650 - 1.240 = 0.110$.
+    rationale_markdown: Using Rushbrooke's identity $\alpha + 2\beta + \gamma = 2$, we obtain $\alpha = 2 - 2(0.325) - 1.240 = 2 - 0.650 - 1.240 = 0.110$.
   - id: q23_13
     type: problem
     question_type: numeric
@@ -259,7 +287,7 @@ worksheet:
     correct:
       value: 0.63
       tolerance: 0.003
-    rationale_markdown: From $d\\nu = 2 - \\alpha$, we find $\\nu = \\frac{2 - 0.110}{3} = \\frac{1.890}{3} = 0.630$, matching Table 3.1 of the lecture slides.
+    rationale_markdown: From $d\nu = 2 - \alpha$, we find $\nu = \frac{2 - 0.110}{3} = \frac{1.890}{3} = 0.630$, matching Table 3.1 of the lecture slides.
   - id: q23_14
     type: problem
     question_type: numeric
@@ -270,7 +298,7 @@ worksheet:
     correct:
       value: 0.25
       tolerance: 0.005
-    rationale_markdown: From $\\gamma / \\nu = 2 - \\eta$, we have $\\eta = 2 - \\frac{7/4}{1} = 2 - 1.75 = 0.25 = 1/4$.
+    rationale_markdown: From $\gamma / \nu = 2 - \eta$, we have $\eta = 2 - \frac{7/4}{1} = 2 - 1.75 = 0.25 = 1/4$.
   - id: q23_15
     type: problem
     question_type: numeric
@@ -281,7 +309,7 @@ worksheet:
     correct:
       value: 4
       tolerance: 0.01
-    rationale_markdown: Setting $d_u (1/2) = 2 - 0 = 2$ gives $d_u = 4$. For $d \\ge 4$, thermal fluctuations are weak enough that Mean-Field theory gives the exact critical exponents, whereas for $d < 4$ fluctuations shift the exponents away from their Mean-Field values.
+    rationale_markdown: Setting $d_u (1/2) = 2 - 0 = 2$ gives $d_u = 4$. For $d \ge 4$, thermal fluctuations are weak enough that Mean-Field theory gives the exact critical exponents, whereas for $d < 4$ fluctuations shift the exponents away from their Mean-Field values.
   - id: q23_16
     type: problem
     question_type: single_select
@@ -291,15 +319,19 @@ worksheet:
     hint_markdown: Consider how the scaling factor $\lambda$ is chosen to eliminate the reduced temperature dependence inside the homogeneous scaling function, and read off the resulting power of $(-t)$.
     options:
     - id: a
-      text: $\\beta = \\frac{1 - a_h}{a_t}$
+      text: $\beta = \frac{1 - a_h}{a_t}$
+      text_markdown: $\beta = \frac{1 - a_h}{a_t}$
     - id: b
-      text: $\\beta = \\frac{a_t}{a_h}$
+      text: $\beta = \frac{a_t}{a_h}$
+      text_markdown: $\beta = \frac{a_t}{a_h}$
     - id: c
-      text: $\\beta = a_t + a_h$
+      text: $\beta = a_t + a_h$
+      text_markdown: $\beta = a_t + a_h$
     - id: d
-      text: $\\beta = \\frac{2a_h - 1}{a_t}$
+      text: $\beta = \frac{2a_h - 1}{a_t}$
+      text_markdown: $\beta = \frac{2a_h - 1}{a_t}$
     correct: a
-    rationale_markdown: From $M(t, 0) = \\lambda^{a_h - 1} M(\\lambda^{a_t} t, 0)$, choosing $\\lambda = (-t)^{-1/a_t}$ sets $\\lambda^{a_t} t = -1$, leaving $M(t, 0) = (-t)^{(1 - a_h)/a_t} M(-1, 0) \\propto (-t)^\\beta$. Thus $\\beta = \\frac{1 - a_h}{a_t}$.
+    rationale_markdown: From $M(t, 0) = \lambda^{a_h - 1} M(\lambda^{a_t} t, 0)$, choosing $\lambda = (-t)^{-1/a_t}$ sets $\lambda^{a_t} t = -1$, leaving $M(t, 0) = (-t)^{(1 - a_h)/a_t} M(-1, 0) \propto (-t)^\beta$. Thus $\beta = \frac{1 - a_h}{a_t}$.
   - id: sec_kadanoff_wilson_rg
     type: markdown_section
     title: 3. Kadanoff Block-Spin Transformation & Wilson's Renormalization Group (RG)
@@ -311,7 +343,7 @@ worksheet:
   - id: concept_kadanoff_rg_flow
     type: concept_cell
     title: 'Interactive Explorer: Kadanoff Block-Spin RG Flow & Cobweb Iteration'
-    description_markdown: Adjust the initial dimensionless coupling $K_0 = J/(k_B T)$, the number of RG blocking steps $n$, and the block size $b$ to trace the cobweb trajectory $K^{(n+1)} = R(K^{(n)})$ relative to the unstable critical fixed point $K^* \\approx 0.441$.
+    description_markdown: Adjust the initial dimensionless coupling $K_0 = J/(k_B T)$, the number of RG blocking steps $n$, and the block size $b$ to trace the cobweb trajectory $K^{(n+1)} = R(K^{(n)})$ relative to the unstable critical fixed point $K^* \approx 0.441$.
     render_function: render_kadanoff_rg_flow
     layout: figure_left
     controls:
@@ -338,43 +370,51 @@ worksheet:
         - label: b = 3 (3x3 Kadanoff Blocks)
           value: 3
         default: 2
-    takeaway_markdown: '**Key Takeaway:** Starting anywhere below $K^*$ ($T > T_c$) staircases down to the high-temperature sink $K=0$; starting above $K^*$ ($T < T_c$) staircases up to the $T=0$ sink $K=\\infty$. The slope $\\lambda_T = dR/dK|_{K^*} = b^{1/\\nu}$ at the unstable fixed point $K^*$ controls how rapidly trajectories diverge from criticality.'
+    takeaway_markdown: '**Key Takeaway:** Starting anywhere below $K^*$ ($T > T_c$) staircases down to the high-temperature sink $K=0$; starting above $K^*$ ($T < T_c$) staircases up to the $T=0$ sink $K=\infty$. The slope $\lambda_T = dR/dK|_{K^*} = b^{1/\nu}$ at the unstable fixed point $K^*$ controls how rapidly trajectories diverge from criticality.'
   - id: q23_17
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_kadanoff_wilson_rg
-    prompt_markdown: When a $2\\times 2$ Kadanoff block-spin transformation ($b = 2$) is applied once to a configuration with correlation length $\\xi$ (measured in units of the lattice spacing), what is the renormalized correlation length $\\xi'$ of the blocked lattice (measured in units of the new block-lattice spacing)?
-    hint_markdown: Recall how lengths are rescaled when $b\\times b$ sites are grouped into 1 supersite.
+    prompt_markdown: When a $2\times 2$ Kadanoff block-spin transformation ($b = 2$) is applied once to a configuration with correlation length $\xi$ (measured in units of the lattice spacing), what is the renormalized correlation length $\xi'$ of the blocked lattice (measured in units of the new block-lattice spacing)?
+    hint_markdown: Recall how lengths are rescaled when $b\times b$ sites are grouped into 1 supersite.
     options:
     - id: a
-      text: $\\xi' = 2\\xi$
+      text: $\xi' = 2\xi$
+      text_markdown: $\xi' = 2\xi$
     - id: b
-      text: $\\xi' = \\xi / 2$
+      text: $\xi' = \xi / 2$
+      text_markdown: $\xi' = \xi / 2$
     - id: c
-      text: $\\xi' = \\xi^2$
+      text: $\xi' = \xi^2$
+      text_markdown: $\xi' = \xi^2$
     - id: d
-      text: $\\xi' = \\xi - 2$
+      text: $\xi' = \xi - 2$
+      text_markdown: $\xi' = \xi - 2$
     correct: b
-    rationale_markdown: 'Grouping $b \\times b$ spins into a single superspin increases the unit lattice spacing by a factor of $b = 2$, so in units of the renormalized lattice spacing both the box size and correlation length divide by $b$: $L'' = L/2$ and $\\xi'' = \\xi/2$.'
+    rationale_markdown: 'Grouping $b \times b$ spins into a single superspin increases the unit lattice spacing by a factor of $b = 2$, so in units of the renormalized lattice spacing both the box size and correlation length divide by $b$: $L'' = L/2$ and $\xi'' = \xi/2$.'
   - id: q23_18
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_kadanoff_wilson_rg
-    prompt_markdown: Why must any Renormalization Group fixed point $K^* = R(K^*)$ have a dimensionless correlation length equal to either $\\xi = 0$ or $\\xi = \\infty$?
+    prompt_markdown: Why must any Renormalization Group fixed point $K^* = R(K^*)$ have a dimensionless correlation length equal to either $\xi = 0$ or $\xi = \infty$?
     hint_markdown: Consider how length scales transform under spatial coarse-graining when evaluated at an invariant fixed point of the transformation.
     options:
     - id: a
-      text: Because at $K' = K^*$, the relation $\\xi(K^*) = \\xi(K^*) / b$ for $b > 1$ is only satisfied if $\\xi(K^*) = 0$ (trivial fixed points at $T=0, \\infty$) or $\\xi(K^*) = \\infty$ (critical fixed point at $T = T_c$).
+      text: Because at $K' = K^*$, the relation $\xi(K^*) = \xi(K^*) / b$ for $b > 1$ is only satisfied if $\xi(K^*) = 0$ (trivial fixed points at $T=0, \infty$) or $\xi(K^*) = \infty$ (critical fixed point at $T = T_c$).
+      text_markdown: Because at $K' = K^*$, the relation $\xi(K^*) = \xi(K^*) / b$ for $b > 1$ is only satisfied if $\xi(K^*) = 0$ (trivial fixed points at $T=0, \infty$) or $\xi(K^*) = \infty$ (critical fixed point at $T = T_c$).
     - id: b
       text: Because the partition function $Z$ vanishes at every fixed point.
+      text_markdown: Because the partition function $Z$ vanishes at every fixed point.
     - id: c
-      text: Because Kadanoff blocking deletes all nearest-neighbor interactions when $\\xi$ is finite.
+      text: Because Kadanoff blocking deletes all nearest-neighbor interactions when $\xi$ is finite.
+      text_markdown: Because Kadanoff blocking deletes all nearest-neighbor interactions when $\xi$ is finite.
     - id: d
-      text: Because the Ising model only exists at $T = 0$ and $T = \\infty$.
+      text: Because the Ising model only exists at $T = 0$ and $T = \infty$.
+      text_markdown: Because the Ising model only exists at $T = 0$ and $T = \infty$.
     correct: a
-    rationale_markdown: Under a blocking transformation of scale factor $b > 1$, $\\xi(R(K)) = \\xi(K)/b$. At a fixed point $R(K^*) = K^*$, this requires $\\xi(K^*) = \\xi(K^*)/b$, whose only non-negative solutions are $\\xi = 0$ and $\\xi = \\infty$.
+    rationale_markdown: Under a blocking transformation of scale factor $b > 1$, $\xi(R(K)) = \xi(K)/b$. At a fixed point $R(K^*) = K^*$, this requires $\xi(K^*) = \xi(K^*)/b$, whose only non-negative solutions are $\xi = 0$ and $\xi = \infty$.
   - id: q23_19
     type: problem
     question_type: single_select
@@ -382,19 +422,23 @@ worksheet:
     taught_by:
     - sec_kadanoff_wilson_rg
     - concept_kadanoff_rg_flow
-    prompt_markdown: Suppose we initialize a 2D Ising lattice at a temperature slightly *above* the critical temperature, $T_0 = 1.05\\,T_c$ (so $K_0 < K^*$), and repeatedly apply Kadanoff $2\\times 2$ block-spin transformations ($n = 1, 2, 3, \\dots$). How do the effective coupling $K^{(n)}$ and visual spin snapshots evolve?
+    prompt_markdown: Suppose we initialize a 2D Ising lattice at a temperature slightly *above* the critical temperature, $T_0 = 1.05\\,T_c$ (so $K_0 < K^*$), and repeatedly apply Kadanoff $2\times 2$ block-spin transformations ($n = 1, 2, 3, \dots$). How do the effective coupling $K^{(n)}$ and visual spin snapshots evolve?
     hint_markdown: Trace the direction of renormalization flow for initial couplings weaker than the critical fixed-point coupling and observe how effective correlations evolve across successive blockings.
     options:
     - id: a
-      text: $K^{(n)}$ flows toward $0$ ($T_{\\text{eff}} \\to \\infty$), and the spin snapshots look progressively more random with smaller correlated patches ($\\xi^{(n)} = \\xi_0 / 2^n \\to 0$).
+      text: $K^{(n)}$ flows toward $0$ ($T_{\text{eff}} \to \infty$), and the spin snapshots look progressively more random with smaller correlated patches ($\xi^{(n)} = \xi_0 / 2^n \to 0$).
+      text_markdown: $K^{(n)}$ flows toward $0$ ($T_{\text{eff}} \to \infty$), and the spin snapshots look progressively more random with smaller correlated patches ($\xi^{(n)} = \xi_0 / 2^n \to 0$).
     - id: b
-      text: $K^{(n)}$ flows toward $\\infty$ ($T_{\\text{eff}} \\to 0$), and the spin snapshots lock into a uniform all-up or all-down ferromagnetic state.
+      text: $K^{(n)}$ flows toward $\infty$ ($T_{\text{eff}} \to 0$), and the spin snapshots lock into a uniform all-up or all-down ferromagnetic state.
+      text_markdown: $K^{(n)}$ flows toward $\infty$ ($T_{\text{eff}} \to 0$), and the spin snapshots lock into a uniform all-up or all-down ferromagnetic state.
     - id: c
       text: $K^{(n)}$ converges toward the critical fixed point $K^*$, and the snapshots develop fractal critical domains.
+      text_markdown: $K^{(n)}$ converges toward the critical fixed point $K^*$, and the snapshots develop fractal critical domains.
     - id: d
-      text: $K^{(n)}$ oscillates periodically between $0$ and $\\infty$.
+      text: $K^{(n)}$ oscillates periodically between $0$ and $\infty$.
+      text_markdown: $K^{(n)}$ oscillates periodically between $0$ and $\infty$.
     correct: a
-    rationale_markdown: Because $T_0 > T_c$ ($K_0 < K^*$), the initial correlation length $\\xi_0$ is finite. Each $2\\times 2$ blocking step halves the correlation length ($\\xi^{(n)} = \\xi_0 / 2^n \\to 0$), driving the effective coupling $K^{(n)} \\to 0$ (the stable infinite-temperature paramagnetic sink).
+    rationale_markdown: Because $T_0 > T_c$ ($K_0 < K^*$), the initial correlation length $\xi_0$ is finite. Each $2\times 2$ blocking step halves the correlation length ($\xi^{(n)} = \xi_0 / 2^n \to 0$), driving the effective coupling $K^{(n)} \to 0$ (the stable infinite-temperature paramagnetic sink).
   - id: q23_20
     type: problem
     question_type: numeric
@@ -405,7 +449,7 @@ worksheet:
     correct:
       value: 1.038
       tolerance: 0.005
-    rationale_markdown: From $\\lambda_T = b^{y_T} = b^{1/\\nu}$, we have $\\nu = \\frac{\\ln b}{\\ln \\lambda_T} = \\frac{\\ln(2)}{\\ln(1.95)} \\approx \\frac{0.69315}{0.66783} \\approx 1.0379 \\approx 1.038$ (very close to the exact Onsager value $\\nu = 1$).
+    rationale_markdown: From $\lambda_T = b^{y_T} = b^{1/\nu}$, we have $\nu = \frac{\ln b}{\ln \lambda_T} = \frac{\ln(2)}{\ln(1.95)} \approx \frac{0.69315}{0.66783} \approx 1.0379 \approx 1.038$ (very close to the exact Onsager value $\nu = 1$).
   - id: q23_21
     type: problem
     question_type: numeric
@@ -416,7 +460,7 @@ worksheet:
     correct:
       value: 3
       tolerance: 0.01
-    rationale_markdown: Since $\\lambda_T = b^{y_T} = b^{1/\\nu}$, substituting $b = 3$ and $\\nu = 1.0$ gives $\\lambda_T = 3^{1/1} = 3$.
+    rationale_markdown: Since $\lambda_T = b^{y_T} = b^{1/\nu}$, substituting $b = 3$ and $\nu = 1.0$ gives $\lambda_T = 3^{1/1} = 3$.
   - id: q23_22
     type: problem
     question_type: single_select
@@ -426,15 +470,19 @@ worksheet:
     hint_markdown: Consider whether neighboring blocks interact only through a single nearest-neighbor coupling or also generate diagonal and multi-spin couplings.
     options:
     - id: a
-      text: $H_{\\text{new}}$ remains a pure nearest-neighbor Ising model with the exact same coupling $K_1' = K_1$ at all temperatures.
+      text: $H_{\text{new}}$ remains a pure nearest-neighbor Ising model with the exact same coupling $K_1' = K_1$ at all temperatures.
+      text_markdown: $H_{\text{new}}$ remains a pure nearest-neighbor Ising model with the exact same coupling $K_1' = K_1$ at all temperatures.
     - id: b
-      text: Coarse-graining generates longer-ranged and multi-spin effective couplings ($H_{\\text{new}} = \\sum_\\alpha K_\\alpha S_\\alpha$, including next-nearest-neighbor $K_2$, 4-spin plaquette terms, etc.), so the RG flows in a multi-dimensional coupling space.
+      text: Coarse-graining generates longer-ranged and multi-spin effective couplings ($H_{\text{new}} = \sum_\alpha K_\alpha S_\alpha$, including next-nearest-neighbor $K_2$, 4-spin plaquette terms, etc.), so the RG flows in a multi-dimensional coupling space.
+      text_markdown: Coarse-graining generates longer-ranged and multi-spin effective couplings ($H_{\text{new}} = \sum_\alpha K_\alpha S_\alpha$, including next-nearest-neighbor $K_2$, 4-spin plaquette terms, etc.), so the RG flows in a multi-dimensional coupling space.
     - id: c
       text: All spin interactions vanish after a single blocking step.
+      text_markdown: All spin interactions vanish after a single blocking step.
     - id: d
-      text: The discrete Ising spins $S_I' = \\pm 1$ are converted into continuous $O(3)$ Heisenberg vectors.
+      text: The discrete Ising spins $S_I' = \pm 1$ are converted into continuous $O(3)$ Heisenberg vectors.
+      text_markdown: The discrete Ising spins $S_I' = \pm 1$ are converted into continuous $O(3)$ Heisenberg vectors.
     correct: b
-    rationale_markdown: Integrating out intra-block fluctuations couples blocks diagonally (next-nearest-neighbor $K_2$) and via multi-spin terms ($H_{\\text{new}} = \\sum_\\alpha K_\\alpha S_\\alpha$). Thus RG trajectories flow in a high-dimensional Hamiltonian space.
+    rationale_markdown: Integrating out intra-block fluctuations couples blocks diagonally (next-nearest-neighbor $K_2$) and via multi-spin terms ($H_{\text{new}} = \sum_\alpha K_\alpha S_\alpha$). Thus RG trajectories flow in a high-dimensional Hamiltonian space.
   - id: q23_23
     type: problem
     question_type: single_select
@@ -444,15 +492,19 @@ worksheet:
     hint_markdown: Follow the arrows along the critical surface into the Critical FP vs. the arrows leaving the Critical FP perpendicular to the critical surface.
     options:
     - id: a
-      text: Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\\lambda_T > 1$ and critical exponents!
+      text: Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\lambda_T > 1$ and critical exponents!
+      text_markdown: Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\lambda_T > 1$ and critical exponents!
     - id: b
       text: The critical surface shows that $T_c$ is identical regardless of whether $K_2$ is zero or nonzero.
+      text_markdown: The critical surface shows that $T_c$ is identical regardless of whether $K_2$ is zero or nonzero.
     - id: c
-      text: Every point on the $(K_1, K_2)$ plane is a fixed point with $\\xi = \\infty$.
+      text: Every point on the $(K_1, K_2)$ plane is a fixed point with $\xi = \infty$.
+      text_markdown: Every point on the $(K_1, K_2)$ plane is a fixed point with $\xi = \infty$.
     - id: d
       text: Trajectories on the critical surface flow directly to $(K_1, K_2) = (0, 0)$.
+      text_markdown: Trajectories on the critical surface flow directly to $(K_1, K_2) = (0, 0)$.
     correct: a
-    rationale_markdown: 'The critical fixed point is a **saddle point**: it has one unstable (relevant) direction ($\\lambda_T = b^{y_T} > 1$) driving the system off criticality when $T \\neq T_c$, and attractive (irrelevant) directions ($\\lambda_{\\text{irrel}} < 1$) along the critical manifold. Any critical Hamiltonian on the critical surface flows into the same fixed point $\\mathbf{K}^*$, erasing microscopic differences ($K_2/K_1$) and yielding universal critical exponents.'
+    rationale_markdown: 'The critical fixed point is a **saddle point**: it has one unstable (relevant) direction ($\lambda_T = b^{y_T} > 1$) driving the system off criticality when $T \neq T_c$, and attractive (irrelevant) directions ($\lambda_{\text{irrel}} < 1$) along the critical manifold. Any critical Hamiltonian on the critical surface flows into the same fixed point $\mathbf{K}^*$, erasing microscopic differences ($K_2/K_1$) and yielding universal critical exponents.'
   - id: q23_24
     type: problem
     question_type: single_select
@@ -463,12 +515,16 @@ worksheet:
     options:
     - id: a
       text: Find the temperature $T$ at which correlation functions of configurations blocked $n$ times and $n+1$ times (at matching renormalized lattice size) are identical.
+      text_markdown: Find the temperature $T$ at which correlation functions of configurations blocked $n$ times and $n+1$ times (at matching renormalized lattice size) are identical.
     - id: b
       text: Find the temperature $T$ where the single-spin Metropolis acceptance ratio equals $100\\%$.
+      text_markdown: Find the temperature $T$ where the single-spin Metropolis acceptance ratio equals $100\\%$.
     - id: c
       text: Find the temperature $T$ where the internal energy $U(T)$ equals zero.
+      text_markdown: Find the temperature $T$ where the internal energy $U(T)$ equals zero.
     - id: d
       text: Run at $T = 0$ and count how many blocking steps are needed to reach $L = 1$.
+      text_markdown: Run at $T = 0$ and count how many blocking steps are needed to reach $L = 1$.
     correct: a
     rationale_markdown: 'As stated on slide 13: ''MCRG: Find temperature such that correlation functions, blocked $n$ and $n+1$ times are the same. This will determine $T_c$ and exponents.'' Because $T_c$ corresponds to the scale-invariant fixed point $R(H^*) = H^*$, blocked observables match across successive RG levels.'
   - id: sec_finite_size_scaling
@@ -481,7 +537,7 @@ worksheet:
   - id: concept_finite_size_scaling_collapse
     type: concept_cell
     title: 'Interactive Explorer: Finite-Size Scaling & Universal Data Collapse'
-    description_markdown: Switch between the unscaled finite-size susceptibility curves $\\chi(T, L)$ for $L \\in \\{8, 16, 32, 64\\}$ and the rescaled FSS collapse plot $\\chi L^{-\\gamma/\\nu}$ vs. $t L^{1/\\nu}$. Tune the trial exponents $\\nu_{\\text{trial}}$ and $\\gamma_{\\text{trial}}$ to achieve a single master curve!
+    description_markdown: Switch between the unscaled finite-size susceptibility curves $\chi(T, L)$ for $L \in \\{8, 16, 32, 64\\}$ and the rescaled FSS collapse plot $\chi L^{-\gamma/\nu}$ vs. $t L^{1/\nu}$. Tune the trial exponents $\nu_{\text{trial}}$ and $\gamma_{\text{trial}}$ to achieve a single master curve!
     render_function: render_finite_size_scaling_collapse
     layout: figure_left
     controls:
@@ -508,25 +564,29 @@ worksheet:
         max: 2.25
         step: 0.05
         default: 1.75
-    takeaway_markdown: '**Key Takeaway:** In the raw view, doubling $L$ in the 2D Ising model increases the peak height $\\chi_{\\max}(L) \\propto L^{\\gamma/\\nu} = L^{1.75}$ by $2^{1.75} \\approx 3.36\\times$ and narrows the critical region by $2^{-1/\\nu} = 0.5\\times$. In the rescaled view, the curves collapse onto a single universal scaling function $\\tilde{\\chi}(x)$ only when $\\nu = 1.00$ and $\\gamma = 1.75$.'
+    takeaway_markdown: '**Key Takeaway:** In the raw view, doubling $L$ in the 2D Ising model increases the peak height $\chi_{\max}(L) \propto L^{\gamma/\nu} = L^{1.75}$ by $2^{1.75} \approx 3.36\times$ and narrows the critical region by $2^{-1/\nu} = 0.5\times$. In the rescaled view, the curves collapse onto a single universal scaling function $\tilde{\chi}(x)$ only when $\nu = 1.00$ and $\gamma = 1.75$.'
   - id: q23_25
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_finite_size_scaling
-    prompt_markdown: Why can a canonical partition function $Z_L(T) = \\sum_{\\{s_i\\}} e^{-H/k_B T}$ on a **finite** lattice of $N = L^d$ spins never exhibit a true mathematical singularity (infinite derivative) in $\\chi(T, L)$ or $C_V(T, L)$ at any nonzero temperature $T > 0$?
-    hint_markdown: Consider how many terms appear in the partition sum $Z_L(T)$ when $N < \\infty$.
+    prompt_markdown: Why can a canonical partition function $Z_L(T) = \sum_{\\{s_i\\}} e^{-H/k_B T}$ on a **finite** lattice of $N = L^d$ spins never exhibit a true mathematical singularity (infinite derivative) in $\chi(T, L)$ or $C_V(T, L)$ at any nonzero temperature $T > 0$?
+    hint_markdown: Consider how many terms appear in the partition sum $Z_L(T)$ when $N < \infty$.
     options:
     - id: a
       text: Because $Z_L(T)$ is a finite sum of $2^N$ smooth, strictly positive analytic exponential functions, so its logarithm and all finite-order temperature derivatives are smooth analytic functions of $T$.
+      text_markdown: Because $Z_L(T)$ is a finite sum of $2^N$ smooth, strictly positive analytic exponential functions, so its logarithm and all finite-order temperature derivatives are smooth analytic functions of $T$.
     - id: b
       text: Because periodic boundary conditions set the net magnetization identically to zero for every microstate.
+      text_markdown: Because periodic boundary conditions set the net magnetization identically to zero for every microstate.
     - id: c
       text: Because the Metropolis algorithm violates detailed balance in finite boxes.
+      text_markdown: Because the Metropolis algorithm violates detailed balance in finite boxes.
     - id: d
-      text: Because the correlation length $\\xi$ is infinite at all temperatures in a finite box.
+      text: Because the correlation length $\xi$ is infinite at all temperatures in a finite box.
+      text_markdown: Because the correlation length $\xi$ is infinite at all temperatures in a finite box.
     correct: a
-    rationale_markdown: A phase transition singularity (Lee–Yang theorem) requires the thermodynamic limit $N = L^d \\to \\infty$. For any finite $N$, $Z_L(T)$ is a finite sum of analytic functions $e^{-\\beta E_n} > 0$, so $F_L = -k_B T \\ln Z_L$ and its derivatives are strictly analytic and bounded.
+    rationale_markdown: A phase transition singularity (Lee–Yang theorem) requires the thermodynamic limit $N = L^d \to \infty$. For any finite $N$, $Z_L(T)$ is a finite sum of analytic functions $e^{-\beta E_n} > 0$, so $F_L = -k_B T \ln Z_L$ and its derivatives are strictly analytic and bounded.
   - id: q23_26
     type: problem
     question_type: numeric
@@ -534,12 +594,12 @@ worksheet:
     taught_by:
     - sec_finite_size_scaling
     - concept_finite_size_scaling_collapse
-    prompt_markdown: In a finite-size scaling study of the 2D Ising model ($\\nu = 1$, $\\gamma = 7/4 = 1.75$), how many times larger is the maximum magnetic susceptibility peak $\\chi_{\\max}(L=64)$ in a $64 \\times 64$ lattice compared to $\\chi_{\\max}(L=16)$ in a $16 \\times 16$ lattice? *(Round to 2 decimal places.)*
+    prompt_markdown: In a finite-size scaling study of the 2D Ising model ($\nu = 1$, $\gamma = 7/4 = 1.75$), how many times larger is the maximum magnetic susceptibility peak $\chi_{\max}(L=64)$ in a $64 \times 64$ lattice compared to $\chi_{\max}(L=16)$ in a $16 \times 16$ lattice? *(Round to 2 decimal places.)*
     hint_markdown: Apply the finite-size scaling relation for the peak susceptibility as a function of box size and critical exponents.
     correct:
       value: 11.31
       tolerance: 0.08
-    rationale_markdown: From $\\chi_{\\max}(L) \\propto L^{\\gamma/\\nu}$, the ratio is $(64 / 16)^{1.75} = 4^{7/4} = 2^{7/2} = 8\\sqrt{2} \\approx 11.3137 \\approx 11.31$.
+    rationale_markdown: From $\chi_{\max}(L) \propto L^{\gamma/\nu}$, the ratio is $(64 / 16)^{1.75} = 4^{7/4} = 2^{7/2} = 8\sqrt{2} \approx 11.3137 \approx 11.31$.
   - id: q23_27
     type: problem
     question_type: numeric
@@ -550,7 +610,7 @@ worksheet:
     correct:
       value: 0.424
       tolerance: 0.005
-    rationale_markdown: Since $L_2 / L_1 = 160 / 10 = 16$ and $\\beta / \\nu = 1/8$, the scaling factor is $16^{-1/8} = (2^4)^{-1/8} = 2^{-1/2} = 1/\\sqrt{2} \\approx 0.7071$. Thus $\\langle |M| \\rangle(160) = 0.600 / \\sqrt{2} \\approx 0.42426 \\approx 0.424$.
+    rationale_markdown: Since $L_2 / L_1 = 160 / 10 = 16$ and $\beta / \nu = 1/8$, the scaling factor is $16^{-1/8} = (2^4)^{-1/8} = 2^{-1/2} = 1/\sqrt{2} \approx 0.7071$. Thus $\langle |M| \rangle(160) = 0.600 / \sqrt{2} \approx 0.42426 \approx 0.424$.
   - id: q23_28
     type: problem
     question_type: numeric
@@ -561,7 +621,7 @@ worksheet:
     correct:
       value: 0.63
       tolerance: 0.03
-    rationale_markdown: The shifts from $T_c(\\infty) = 4.5115$ are $\\Delta T_c(10) = 4.5515 - 4.5115 = 0.0400$ and $\\Delta T_c(20) = 4.5248 - 4.5115 = 0.0133$. Their ratio is $\\frac{0.0400}{0.0133} \\approx 3.0075 = (20/10)^{1/\\nu} = 2^{1/\\nu}$. Solving gives $\\nu = \\frac{\\ln 2}{\\ln 3.0075} \\approx \\frac{0.6931}{1.1011} \\approx 0.6295 \\approx 0.63$.
+    rationale_markdown: The shifts from $T_c(\infty) = 4.5115$ are $\Delta T_c(10) = 4.5515 - 4.5115 = 0.0400$ and $\Delta T_c(20) = 4.5248 - 4.5115 = 0.0133$. Their ratio is $\frac{0.0400}{0.0133} \approx 3.0075 = (20/10)^{1/\nu} = 2^{1/\nu}$. Solving gives $\nu = \frac{\ln 2}{\ln 3.0075} \approx \frac{0.6931}{1.1011} \approx 0.6295 \approx 0.63$.
   - id: q23_29
     type: problem
     question_type: single_select
@@ -571,15 +631,19 @@ worksheet:
     hint_markdown: Consider the physical requirement that the magnetization in a finite box must smoothly match the size-independent thermodynamic limit when the box dimension far exceeds the correlation length.
     options:
     - id: a
-      text: Because for $T < T_c$ and $x \\gg 1$, $\\tilde{m}_-(x) \\propto x^{\\beta} = x^{1/8}$ cancels the $L^{\\beta/\\nu}$ factor to recover the $L$-independent bulk magnetization $M \\propto (-t)^{1/8}$; whereas for $T > T_c$, $\\langle |M| \\rangle \\propto L^{-1} |t|^{-\\gamma/2} = L^{-1/8} x^{-7/8}$.
+      text: Because for $T < T_c$ and $x \gg 1$, $\tilde{m}_-(x) \propto x^{\beta} = x^{1/8}$ cancels the $L^{\beta/\nu}$ factor to recover the $L$-independent bulk magnetization $M \propto (-t)^{1/8}$; whereas for $T > T_c$, $\langle |M| \rangle \propto L^{-1} |t|^{-\gamma/2} = L^{-1/8} x^{-7/8}$.
+      text_markdown: Because for $T < T_c$ and $x \gg 1$, $\tilde{m}_-(x) \propto x^{\beta} = x^{1/8}$ cancels the $L^{\beta/\nu}$ factor to recover the $L$-independent bulk magnetization $M \propto (-t)^{1/8}$; whereas for $T > T_c$, $\langle |M| \rangle \propto L^{-1} |t|^{-\gamma/2} = L^{-1/8} x^{-7/8}$.
     - id: b
-      text: Because the critical exponent $\\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system.
+      text: Because the critical exponent $\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system.
+      text_markdown: Because the critical exponent $\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system.
     - id: c
       text: Because the 2D Ising model has two distinct critical temperatures.
+      text_markdown: Because the 2D Ising model has two distinct critical temperatures.
     - id: d
       text: Because periodic boundary conditions break translational invariance above $T_c$.
+      text_markdown: Because periodic boundary conditions break translational invariance above $T_c$.
     correct: a
-    rationale_markdown: 'For $x = L^{1/\\nu}|t| \\gg 1$, the system is much larger than $\\xi$. Below $T_c$, $M(t, L)$ must become independent of $L$: $M L^{\\beta/\\nu} \\propto x^\\beta = (L^{1/\\nu}|t|)^\\beta \\implies M \\propto |t|^\\beta$ with slope $\\beta = 1/8$. Above $T_c$, the spontaneous magnetization is zero in the bulk and finite-size RMS fluctuations scale as $\\sqrt{\\chi / L^d} \\propto L^{-d/2} |t|^{-\\gamma/2}$; in 2D ($\\beta/\\nu = 1/8, \\gamma/2 = 7/8, \\nu=1$), $M L^{1/8} \\propto L^{1/8 - 1} |t|^{-7/8} = (L|t|)^{-7/8} = x^{-7/8}$, giving slope $-7/8$!'
+    rationale_markdown: 'For $x = L^{1/\nu}|t| \gg 1$, the system is much larger than $\xi$. Below $T_c$, $M(t, L)$ must become independent of $L$: $M L^{\beta/\nu} \propto x^\beta = (L^{1/\nu}|t|)^\beta \implies M \propto |t|^\beta$ with slope $\beta = 1/8$. Above $T_c$, the spontaneous magnetization is zero in the bulk and finite-size RMS fluctuations scale as $\sqrt{\chi / L^d} \propto L^{-d/2} |t|^{-\gamma/2}$; in 2D ($\beta/\nu = 1/8, \gamma/2 = 7/8, \nu=1$), $M L^{1/8} \propto L^{1/8 - 1} |t|^{-7/8} = (L|t|)^{-7/8} = x^{-7/8}$, giving slope $-7/8$!'
   - id: q23_30
     type: problem
     question_type: single_select
@@ -589,15 +653,19 @@ worksheet:
     hint_markdown: Consider how the ratio of system size to correlation length behaves when the correlation length saturates at a finite value versus when it is constrained by the system boundaries at criticality.
     options:
     - id: a
-      text: For $K < K^*$ ($T > T_c$), $L/\\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\\xi(K^*, L) \\propto L$; and for $K > K^*$, the curves fan out in the opposite order.
+      text: For $K < K^*$ ($T > T_c$), $L/\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\xi(K^*, L) \propto L$; and for $K > K^*$, the curves fan out in the opposite order.
+      text_markdown: For $K < K^*$ ($T > T_c$), $L/\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\xi(K^*, L) \propto L$; and for $K > K^*$, the curves fan out in the opposite order.
     - id: b
       text: All three curves are parallel horizontal lines that never intersect.
+      text_markdown: All three curves are parallel horizontal lines that never intersect.
     - id: c
-      text: The curves intersect at $K = 0$ ($T = \\infty$) rather than $K^*$.
+      text: The curves intersect at $K = 0$ ($T = \infty$) rather than $K^*$.
+      text_markdown: The curves intersect at $K = 0$ ($T = \infty$) rather than $K^*$.
     - id: d
-      text: For $K < K^*$, $L/\\xi$ decreases to zero as $L \\to \\infty$.
+      text: For $K < K^*$, $L/\xi$ decreases to zero as $L \to \infty$.
+      text_markdown: For $K < K^*$, $L/\xi$ decreases to zero as $L \to \infty$.
     correct: a
-    rationale_markdown: In the disordered phase ($K < K^*$), $\\xi(K, L) \\to \\xi_\\infty(K) < \\infty$, so $L / \\xi(K, L)$ grows linearly with $L$ ($L_3$ curve sits above $L_1$). Right at the critical point $K = K^*$, scale invariance dictates $\\xi(K^*, L) \\propto L$, so $L/\\xi(K^*, L)$ is independent of $L$ and all curves intersect at $K^*$!
+    rationale_markdown: In the disordered phase ($K < K^*$), $\xi(K, L) \to \xi_\infty(K) < \infty$, so $L / \xi(K, L)$ grows linearly with $L$ ($L_3$ curve sits above $L_1$). Right at the critical point $K = K^*$, scale invariance dictates $\xi(K^*, L) \propto L$, so $L/\xi(K^*, L)$ is independent of $L$ and all curves intersect at $K^*$!
   - id: q23_31
     type: problem
     question_type: single_select
@@ -607,15 +675,19 @@ worksheet:
     hint_markdown: Replace the bulk thermal distance to criticality with the effective cutoff imposed by the finite box size.
     options:
     - id: a
-      text: $C_{\\max}(L) \\propto \\ln L$
+      text: $C_{\max}(L) \propto \ln L$
+      text_markdown: $C_{\max}(L) \propto \ln L$
     - id: b
-      text: $C_{\\max}(L) \\propto L^2$
+      text: $C_{\max}(L) \propto L^2$
+      text_markdown: $C_{\max}(L) \propto L^2$
     - id: c
-      text: $C_{\\max}(L) \\propto L^{-1}$
+      text: $C_{\max}(L) \propto L^{-1}$
+      text_markdown: $C_{\max}(L) \propto L^{-1}$
     - id: d
-      text: $C_{\\max}(L)$ decreases exponentially with $L$.
+      text: $C_{\max}(L)$ decreases exponentially with $L$.
+      text_markdown: $C_{\max}(L)$ decreases exponentially with $L$.
     correct: a
-    rationale_markdown: Replacing the correlation length cutoff $|t| \\sim L^{-1/\\nu} = L^{-1}$ inside the bulk logarithmic singularity $C_V(t) \\sim -\\ln|t|$ yields $C_{\\max}(L) \\sim \\ln(L^{1/\\nu}) \\propto \\ln L$.
+    rationale_markdown: Replacing the correlation length cutoff $|t| \sim L^{-1/\nu} = L^{-1}$ inside the bulk logarithmic singularity $C_V(t) \sim -\ln|t|$ yields $C_{\max}(L) \sim \ln(L^{1/\nu}) \propto \ln L$.
   - id: sec_binder_cumulant
     type: markdown_section
     title: 5. Magnetization Probability Distribution $P_L(M)$ & Binder's 4th-Order Cumulant
@@ -627,7 +699,7 @@ worksheet:
   - id: concept_binder_cumulant_crossing
     type: concept_cell
     title: 'Interactive Explorer: Binder''s 4th-Order Cumulant Crossing at T_c'
-    description_markdown: Slide the probe temperature $T$ across the critical region of the 2D Ising model ($T_c \\approx 2.269\\,J/k_B$) to observe how $U_4(T, L)$ approaches $2/3$ below $T_c$, approaches $0$ above $T_c$, and intersects at a single size-independent value $U_4^* \\approx 0.611$ right at $T_c$.
+    description_markdown: Slide the probe temperature $T$ across the critical region of the 2D Ising model ($T_c \approx 2.269\\,J/k_B$) to observe how $U_4(T, L)$ approaches $2/3$ below $T_c$, approaches $0$ above $T_c$, and intersects at a single size-independent value $U_4^* \approx 0.611$ right at $T_c$.
     render_function: render_binder_cumulant_crossing
     layout: figure_left
     controls:
@@ -647,7 +719,7 @@ worksheet:
         - label: Zoomed Near Crossing [0.25 to 0.68]
           value: 0
         default: 1
-    takeaway_markdown: '**Key Takeaway:** Because the $L^{-4\\beta/\\nu}$ prefactors in $\\langle M^4 \\rangle$ and $\\langle M^2 \\rangle^2$ cancel identically, $U_4(T, L) = \\tilde{U}_4(t L^{1/\\nu})$ has zero prefactor exponent. All box sizes cross at $t = 0$ ($T = T_c$) without requiring any trial values of $\\beta$ or $\\nu$!'
+    takeaway_markdown: '**Key Takeaway:** Because the $L^{-4\beta/\nu}$ prefactors in $\langle M^4 \rangle$ and $\langle M^2 \rangle^2$ cancel identically, $U_4(T, L) = \tilde{U}_4(t L^{1/\nu})$ has zero prefactor exponent. All box sizes cross at $t = 0$ ($T = T_c$) without requiring any trial values of $\beta$ or $\nu$!'
   - id: q23_32
     type: problem
     question_type: numeric
@@ -660,7 +732,7 @@ worksheet:
     correct:
       value: 0
       tolerance: 0.001
-    rationale_markdown: For a Gaussian distribution, $\\langle M^4 \\rangle = 3\\langle M^2 \\rangle^2$, so $U_4 = 1 - \\frac{3\\langle M^2 \\rangle^2}{3\\langle M^2 \\rangle^2} = 1 - 1 = 0$.
+    rationale_markdown: For a Gaussian distribution, $\langle M^4 \rangle = 3\langle M^2 \rangle^2$, so $U_4 = 1 - \frac{3\langle M^2 \rangle^2}{3\langle M^2 \rangle^2} = 1 - 1 = 0$.
   - id: q23_33
     type: problem
     question_type: numeric
@@ -673,36 +745,40 @@ worksheet:
     correct:
       value: 0.667
       tolerance: 0.003
-    rationale_markdown: In the bimodal ordered state, $\\langle M^4 \\rangle = M_0^4 = \\langle M^2 \\rangle^2$, yielding $U_4 = 1 - \\frac{M_0^4}{3 M_0^4} = 1 - \\frac{1}{3} = \\frac{2}{3} \\approx 0.667$.
+    rationale_markdown: In the bimodal ordered state, $\langle M^4 \rangle = M_0^4 = \langle M^2 \rangle^2$, yielding $U_4 = 1 - \frac{M_0^4}{3 M_0^4} = 1 - \frac{1}{3} = \frac{2}{3} \approx 0.667$.
   - id: q23_34
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_binder_cumulant
-    prompt_markdown: At a certain temperature $T$ in a Monte Carlo simulation of a $20 \\times 20$ Ising lattice, you measure the second and fourth magnetization moments to be $\\langle M^2 \\rangle = 0.250$ and $\\langle M^4 \\rangle = 0.075$. Calculate Binder's 4th-order cumulant $U_4(T, L)$ at this state point. *(Round to 2 decimal places.)*
+    prompt_markdown: At a certain temperature $T$ in a Monte Carlo simulation of a $20 \times 20$ Ising lattice, you measure the second and fourth magnetization moments to be $\langle M^2 \rangle = 0.250$ and $\langle M^4 \rangle = 0.075$. Calculate Binder's 4th-order cumulant $U_4(T, L)$ at this state point. *(Round to 2 decimal places.)*
     hint_markdown: Apply the definition of the fourth-order Binder cumulant using the measured magnetization moments.
     correct:
       value: 0.6
       tolerance: 0.01
-    rationale_markdown: We compute $3\\langle M^2 \\rangle^2 = 3 \\times (0.250)^2 = 3 \\times 0.0625 = 0.1875$. Then $U_4 = 1 - \\frac{0.075}{0.1875} = 1 - 0.40 = 0.60$.
+    rationale_markdown: We compute $3\langle M^2 \rangle^2 = 3 \times (0.250)^2 = 3 \times 0.0625 = 0.1875$. Then $U_4 = 1 - \frac{0.075}{0.1875} = 1 - 0.40 = 0.60$.
   - id: q23_35
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_binder_cumulant
-    prompt_markdown: What is the primary practical advantage of using the **Binder cumulant crossing** $U_4(T, L)$ to locate the critical temperature $T_c$, compared to performing a full data collapse of $M(T, L)\\,L^{\\beta/\\nu}$ vs. $t L^{1/\\nu}$?
-    hint_markdown: Check whether $U_4(T, L)$ has any $L$-dependent prefactor that requires knowing $\\beta$ or $\\nu$ in advance.
+    prompt_markdown: What is the primary practical advantage of using the **Binder cumulant crossing** $U_4(T, L)$ to locate the critical temperature $T_c$, compared to performing a full data collapse of $M(T, L)\\,L^{\beta/\nu}$ vs. $t L^{1/\nu}$?
+    hint_markdown: Check whether $U_4(T, L)$ has any $L$-dependent prefactor that requires knowing $\beta$ or $\nu$ in advance.
     options:
     - id: a
-      text: Because the $L^{-4\\beta/\\nu}$ scaling prefactors cancel out between $\\langle M^4 \\rangle$ and $\\langle M^2 \\rangle^2$, $U_4(T, L)$ curves for different $L$ intersect directly at $T_c$ without needing any prior knowledge or simultaneous fitting of $\\beta$ or $\\nu$.
+      text: Because the $L^{-4\beta/\nu}$ scaling prefactors cancel out between $\langle M^4 \rangle$ and $\langle M^2 \rangle^2$, $U_4(T, L)$ curves for different $L$ intersect directly at $T_c$ without needing any prior knowledge or simultaneous fitting of $\beta$ or $\nu$.
+      text_markdown: Because the $L^{-4\beta/\nu}$ scaling prefactors cancel out between $\langle M^4 \rangle$ and $\langle M^2 \rangle^2$, $U_4(T, L)$ curves for different $L$ intersect directly at $T_c$ without needing any prior knowledge or simultaneous fitting of $\beta$ or $\nu$.
     - id: b
       text: Binder's cumulant requires running at only a single lattice size $L$ and a single temperature $T$.
+      text_markdown: Binder's cumulant requires running at only a single lattice size $L$ and a single temperature $T$.
     - id: c
       text: Binder's cumulant eliminates critical slowing down so local Metropolis has $z = 0$.
+      text_markdown: Binder's cumulant eliminates critical slowing down so local Metropolis has $z = 0$.
     - id: d
       text: Binder's cumulant is identically equal to $T_c$ at all temperatures.
+      text_markdown: Binder's cumulant is identically equal to $T_c$ at all temperatures.
     correct: a
-    rationale_markdown: Because $\\langle M^4 \\rangle \\propto L^{-4\\beta/\\nu}$ and $\\langle M^2 \\rangle^2 \\propto (L^{-2\\beta/\\nu})^2 = L^{-4\\beta/\\nu}$, their ratio is a pure function of $t L^{1/\\nu}$ with no prefactor power of $L$. Thus $T_c$ is found directly from the intersection of $U_4(T, L)$ vs. $T$ across multiple box sizes $L$, prior to fitting $\\beta$ or $\\nu$.
+    rationale_markdown: Because $\langle M^4 \rangle \propto L^{-4\beta/\nu}$ and $\langle M^2 \rangle^2 \propto (L^{-2\beta/\nu})^2 = L^{-4\beta/\nu}$, their ratio is a pure function of $t L^{1/\nu}$ with no prefactor power of $L$. Thus $T_c$ is found directly from the intersection of $U_4(T, L)$ vs. $T$ across multiple box sizes $L$, prior to fitting $\beta$ or $\nu$.
   - id: q23_36
     type: problem
     question_type: numeric
@@ -713,7 +789,7 @@ worksheet:
     correct:
       value: 0.63
       tolerance: 0.02
-    rationale_markdown: From $\\frac{S(20)}{S(10)} = \\frac{5.41}{1.80} \\approx 3.0056 = (20/10)^{1/\\nu} = 2^{1/\\nu}$, we find $\\nu = \\frac{\\ln 2}{\\ln 3.0056} \\approx \\frac{0.69315}{1.10047} \\approx 0.630$.
+    rationale_markdown: From $\frac{S(20)}{S(10)} = \frac{5.41}{1.80} \approx 3.0056 = (20/10)^{1/\nu} = 2^{1/\nu}$, we find $\nu = \frac{\ln 2}{\ln 3.0056} \approx \frac{0.69315}{1.10047} \approx 0.630$.
   - id: q23_37
     type: problem
     question_type: single_select
@@ -723,15 +799,19 @@ worksheet:
     hint_markdown: Consider the transition from central-limit fluctuations around zero, through scale-invariant critical fluctuations, to broken-symmetry bimodal ordering.
     options:
     - id: a
-      text: From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\\propto L^{-\\beta/\\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\\pm M_{\\text{spont}}$ ($T < T_c$).
+      text: From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\propto L^{-\beta/\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\pm M_{\text{spont}}$ ($T < T_c$).
+      text_markdown: From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\propto L^{-\beta/\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\pm M_{\text{spont}}$ ($T < T_c$).
     - id: b
       text: From a bimodal distribution at $T > T_c$ to a single delta function at $M = 0$ at $T < T_c$.
+      text_markdown: From a bimodal distribution at $T > T_c$ to a single delta function at $M = 0$ at $T < T_c$.
     - id: c
       text: It remains a pure Gaussian centered at $M = 0$ at all temperatures, with only its variance changing.
+      text_markdown: It remains a pure Gaussian centered at $M = 0$ at all temperatures, with only its variance changing.
     - id: d
       text: It is uniform on $[-1, 1]$ for all $T > T_c$.
+      text_markdown: It is uniform on $[-1, 1]$ for all $T > T_c$.
     correct: a
-    rationale_markdown: Above $T_c$, independent correlation volumes of size $\\xi \\ll L$ obey the Central Limit Theorem, producing a single Gaussian peak at $M=0$ of width $\\sqrt{k_B T \\chi / L^d}$. At $T = T_c$, $\\xi \\sim L$ produces a broad non-Gaussian scaling distribution of width $\\propto L^{-\\beta/\\nu}$. Below $T_c$, spontaneous magnetization produces two symmetric peaks at $\\pm M_{\\text{spont}}$.
+    rationale_markdown: Above $T_c$, independent correlation volumes of size $\xi \ll L$ obey the Central Limit Theorem, producing a single Gaussian peak at $M=0$ of width $\sqrt{k_B T \chi / L^d}$. At $T = T_c$, $\xi \sim L$ produces a broad non-Gaussian scaling distribution of width $\propto L^{-\beta/\nu}$. Below $T_c$, spontaneous magnetization produces two symmetric peaks at $\pm M_{\text{spont}}$.
   - id: q23_38
     type: problem
     question_type: numeric
@@ -742,25 +822,29 @@ worksheet:
     correct:
       value: 1.032
       tolerance: 0.002
-    rationale_markdown: At $T = T_c$, $G(r) \\propto r^{-(d - 2 + \\eta)}$. Substituting $d = 3$ and $\\eta = 0.032$ gives $p = 3 - 2 + 0.032 = 1.032$.
+    rationale_markdown: At $T = T_c$, $G(r) \propto r^{-(d - 2 + \eta)}$. Substituting $d = 3$ and $\eta = 0.032$ gives $p = 3 - 2 + 0.032 = 1.032$.
   - id: q23_39
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_binder_cumulant
-    prompt_markdown: In a zero-field ($h = 0$) Monte Carlo simulation of a finite Ising lattice below $T_c$, why do practitioners measure $\\langle |M| \\rangle$ (and define the finite-size susceptibility via $\\chi' \\propto L^d(\\langle M^2 \\rangle - \\langle |M| \\rangle^2)$) rather than using the signed average $\\langle M \\rangle$?
-    hint_markdown: Consider the symmetry $H(\\{-s_i\\}) = H(\\{s_i\\})$ of the zero-field Ising Hamiltonian and the bimodal peaks at $\\pm M_0$.
+    prompt_markdown: In a zero-field ($h = 0$) Monte Carlo simulation of a finite Ising lattice below $T_c$, why do practitioners measure $\langle |M| \rangle$ (and define the finite-size susceptibility via $\chi' \propto L^d(\langle M^2 \rangle - \langle |M| \rangle^2)$) rather than using the signed average $\langle M \rangle$?
+    hint_markdown: Consider the symmetry $H(\\{-s_i\\}) = H(\\{s_i\\})$ of the zero-field Ising Hamiltonian and the bimodal peaks at $\pm M_0$.
     options:
     - id: a
-      text: Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \\to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\\langle M \\rangle$ is identically zero for any finite $L$.
+      text: Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\langle M \rangle$ is identically zero for any finite $L$.
+      text_markdown: Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\langle M \rangle$ is identically zero for any finite $L$.
     - id: b
       text: Because $M$ is a complex number below $T_c$.
+      text_markdown: Because $M$ is a complex number below $T_c$.
     - id: c
       text: Because $|M|$ is an analytic function in the thermodynamic limit.
+      text_markdown: Because $|M|$ is an analytic function in the thermodynamic limit.
     - id: d
-      text: Because $\\langle M^2 \\rangle$ is always negative below $T_c$.
+      text: Because $\langle M^2 \rangle$ is always negative below $T_c$.
+      text_markdown: Because $\langle M^2 \rangle$ is always negative below $T_c$.
     correct: a
-    rationale_markdown: In any finite system at $h = 0$, $P_L(M) = P_L(-M)$ by spin-flip symmetry, so an ergodic simulation visits both $+M_0$ and $-M_0$ basins equally and gives $\\langle M \\rangle = 0$. Taking $\\langle |M| \\rangle$folds the two symmetric peaks together so that $\\langle |M| \\rangle \\to M_0(T)$ as $L \\to \\infty$.
+    rationale_markdown: In any finite system at $h = 0$, $P_L(M) = P_L(-M)$ by spin-flip symmetry, so an ergodic simulation visits both $+M_0$ and $-M_0$ basins equally and gives $\langle M \rangle = 0$. Taking $\langle |M| \rangle$folds the two symmetric peaks together so that $\langle |M| \rangle \to M_0(T)$ as $L \to \infty$.
   - id: q23_40
     type: problem
     question_type: single_select
@@ -770,15 +854,19 @@ worksheet:
     hint_markdown: Consider how finite-size shifts in observable extrema depend on box size and how they behave in the thermodynamic limit.
     options:
     - id: a
-      text: Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\\text{obs}}$, giving a linear shift $K_c(L) = K_c(\\infty) + a_{\\text{obs}}\\,L^{-1/\\nu}$ with observable-dependent slope $a_{\\text{obs}}$, but in the thermodynamic limit ($L^{-1/\\nu} \\to 0$) all observables must converge to the unique bulk critical point $K_c(\\infty)$.
+      text: Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\text{obs}}$, giving a linear shift $K_c(L) = K_c(\infty) + a_{\text{obs}}\\,L^{-1/\nu}$ with observable-dependent slope $a_{\text{obs}}$, but in the thermodynamic limit ($L^{-1/\nu} \to 0$) all observables must converge to the unique bulk critical point $K_c(\infty)$.
+      text_markdown: Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\text{obs}}$, giving a linear shift $K_c(L) = K_c(\infty) + a_{\text{obs}}\\,L^{-1/\nu}$ with observable-dependent slope $a_{\text{obs}}$, but in the thermodynamic limit ($L^{-1/\nu} \to 0$) all observables must converge to the unique bulk critical point $K_c(\infty)$.
     - id: b
-      text: All five observables have the exact same slope $a_{\\text{obs}} = 0$ for all $L$.
+      text: All five observables have the exact same slope $a_{\text{obs}} = 0$ for all $L$.
+      text_markdown: All five observables have the exact same slope $a_{\text{obs}} = 0$ for all $L$.
     - id: c
-      text: The horizontal axis $L^{-1/\\nu}$ diverges to $\\infty$ as $L \\to \\infty$.
+      text: The horizontal axis $L^{-1/\nu}$ diverges to $\infty$ as $L \to \infty$.
+      text_markdown: The horizontal axis $L^{-1/\nu}$ diverges to $\infty$ as $L \to \infty$.
     - id: d
-      text: Because $K_c(\\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions.
+      text: Because $K_c(\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions.
+      text_markdown: Because $K_c(\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions.
     correct: a
-    rationale_markdown: Different observables ($\\chi$, $U_L$, $\\partial \\ln|M|/\\partial K$, etc.) reach their finite-size extrema at different values $x_{\\text{obs}}$ of the scaling variable $x = (K - K_c)L^{1/\\nu}$, producing straight lines against $L^{-1/\\nu}$ with different slopes $x_{\\text{obs}}$ that all extrapolate to the same bulk critical coupling $K_c(\\infty) \\approx 0.22165$ at $L^{-1/\\nu} = 0$.
+    rationale_markdown: Different observables ($\chi$, $U_L$, $\partial \ln|M|/\partial K$, etc.) reach their finite-size extrema at different values $x_{\text{obs}}$ of the scaling variable $x = (K - K_c)L^{1/\nu}$, producing straight lines against $L^{-1/\nu}$ with different slopes $x_{\text{obs}}$ that all extrapolate to the same bulk critical coupling $K_c(\infty) \approx 0.22165$ at $L^{-1/\nu} = 0$.
   - id: q23_41
     type: problem
     question_type: numeric
@@ -789,7 +877,7 @@ worksheet:
     correct:
       value: 15
       tolerance: 0.01
-    rationale_markdown: Substituting $d = 2$ and $\\eta = 0.25$ into $\\delta = \\frac{d + 2 - \\eta}{d - 2 + \\eta}$ gives $\\delta = \\frac{4 - 0.25}{0 + 0.25} = \\frac{3.75}{0.25} = 15$, confirming that all six static critical exponents are fixed once $(d, \\nu, \\eta)$ are known!
+    rationale_markdown: Substituting $d = 2$ and $\eta = 0.25$ into $\delta = \frac{d + 2 - \eta}{d - 2 + \eta}$ gives $\delta = \frac{4 - 0.25}{0 + 0.25} = \frac{3.75}{0.25} = 15$, confirming that all six static critical exponents are fixed once $(d, \nu, \eta)$ are known!
   - id: q23_42
     type: problem
     question_type: multi_select
@@ -803,13 +891,17 @@ worksheet:
     hint_markdown: Review cluster updates, RG fixed points, FSS data collapse, and Binder's cumulant.
     options:
     - id: a
-      text: Swendsen–Wang and Wolff cluster algorithms leave static equilibrium averages ($M, \\chi, C_V, U_4$) unchanged while drastically reducing the dynamical exponent $z$ near $T_c$.
+      text: Swendsen–Wang and Wolff cluster algorithms leave static equilibrium averages ($M, \chi, C_V, U_4$) unchanged while drastically reducing the dynamical exponent $z$ near $T_c$.
+      text_markdown: Swendsen–Wang and Wolff cluster algorithms leave static equilibrium averages ($M, \chi, C_V, U_4$) unchanged while drastically reducing the dynamical exponent $z$ near $T_c$.
     - id: b
-      text: Under Kadanoff–Wilson RG coarse-graining, the critical point $T = T_c$ is a non-trivial unstable fixed point ($K^* = R(K^*)$) where $\\xi = \\infty$.
+      text: Under Kadanoff–Wilson RG coarse-graining, the critical point $T = T_c$ is a non-trivial unstable fixed point ($K^* = R(K^*)$) where $\xi = \infty$.
+      text_markdown: Under Kadanoff–Wilson RG coarse-graining, the critical point $T = T_c$ is a non-trivial unstable fixed point ($K^* = R(K^*)$) where $\xi = \infty$.
     - id: c
-      text: Plotting $M(T, L)\\,L^{\\beta/\\nu}$ against $t L^{1/\\nu}$ collapses data from multiple box sizes $L$ onto a universal scaling curve.
+      text: Plotting $M(T, L)\\,L^{\beta/\nu}$ against $t L^{1/\nu}$ collapses data from multiple box sizes $L$ onto a universal scaling curve.
+      text_markdown: Plotting $M(T, L)\\,L^{\beta/\nu}$ against $t L^{1/\nu}$ collapses data from multiple box sizes $L$ onto a universal scaling curve.
     - id: d
       text: To extract bulk critical exponents accurately, one should simulate only a single box size $L$ far away from $T_c$ and ignore finite-size effects.
+      text_markdown: To extract bulk critical exponents accurately, one should simulate only a single box size $L$ far away from $T_c$ and ignore finite-size effects.
     correct:
     - a
     - b

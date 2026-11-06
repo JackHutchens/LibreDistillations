@@ -82,19 +82,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^5$ (the atom is roughly $100{,}000$ times larger in radius than its nucleus)"
+          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^5$ (the atom is roughly $100{,}000$ times larger in radius than its nucleus)",
+          "text_markdown": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^5$ (the atom is roughly $100{,}000$ times larger in radius than its nucleus)"
         },
         {
           "id": "b",
-          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^2$ (the atom is roughly $100$ times larger in radius than its nucleus)"
+          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^2$ (the atom is roughly $100$ times larger in radius than its nucleus)",
+          "text_markdown": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^2$ (the atom is roughly $100$ times larger in radius than its nucleus)"
         },
         {
           "id": "c",
-          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^9$ (the atom is one billion times larger in radius than its nucleus)"
+          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^9$ (the atom is one billion times larger in radius than its nucleus)",
+          "text_markdown": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10^9$ (the atom is one billion times larger in radius than its nucleus)"
         },
         {
           "id": "d",
-          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10$ (the nucleus occupies roughly one-tenth of the atomic radius)"
+          "text": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10$ (the nucleus occupies roughly one-tenth of the atomic radius)",
+          "text_markdown": "$r_{\\text{atom}} / r_{\\text{nuc}} \\approx 10$ (the nucleus occupies roughly one-tenth of the atomic radius)"
         }
       ],
       "correct": "a",
@@ -111,19 +115,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Semi-empirical models cannot be reliably extrapolated away from the experimental data regime used to fit them."
+          "text": "Semi-empirical models cannot be reliably extrapolated away from the experimental data regime used to fit them.",
+          "text_markdown": "Semi-empirical models cannot be reliably extrapolated away from the experimental data regime used to fit them."
         },
         {
           "id": "b",
-          "text": "Semi-empirical models always require solving the many-body Schr\u00f6dinger equation at every time step."
+          "text": "Semi-empirical models always require solving the many-body Schr\u00f6dinger equation at every time step.",
+          "text_markdown": "Semi-empirical models always require solving the many-body Schr\u00f6dinger equation at every time step."
         },
         {
           "id": "c",
-          "text": "Semi-empirical models are mathematically guaranteed to violate energy conservation in any time-dependent integration."
+          "text": "Semi-empirical models are mathematically guaranteed to violate energy conservation in any time-dependent integration.",
+          "text_markdown": "Semi-empirical models are mathematically guaranteed to violate energy conservation in any time-dependent integration."
         },
         {
           "id": "d",
-          "text": "Semi-empirical models cannot be evaluated on parallel supercomputers."
+          "text": "Semi-empirical models cannot be evaluated on parallel supercomputers.",
+          "text_markdown": "Semi-empirical models cannot be evaluated on parallel supercomputers."
         }
       ],
       "correct": "a",
@@ -164,19 +172,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Classical Molecular Dynamics (MD) and Monte Carlo (MC) are the primary simulation paradigms covered in MSE 485, using packages such as LAMMPS and HOOMD."
+          "text": "Classical Molecular Dynamics (MD) and Monte Carlo (MC) are the primary simulation paradigms covered in MSE 485, using packages such as LAMMPS and HOOMD.",
+          "text_markdown": "Classical Molecular Dynamics (MD) and Monte Carlo (MC) are the primary simulation paradigms covered in MSE 485, using packages such as LAMMPS and HOOMD."
         },
         {
           "id": "b",
-          "text": "Because atomic vibrations occur on femtosecond timescales, explicit Classical MD integration steps must be on the order of $\\Delta t \\sim 1\\text{ fs}$ ($10^{-15}\\text{ s}$)."
+          "text": "Because atomic vibrations occur on femtosecond timescales, explicit Classical MD integration steps must be on the order of $\\Delta t \\sim 1\\text{ fs}$ ($10^{-15}\\text{ s}$).",
+          "text_markdown": "Because atomic vibrations occur on femtosecond timescales, explicit Classical MD integration steps must be on the order of $\\Delta t \\sim 1\\text{ fs}$ ($10^{-15}\\text{ s}$)."
         },
         {
           "id": "c",
-          "text": "In a fixed supercomputing budget, doubling the number of time steps $N_{\\text{steps}}$ allows you to simultaneously double the number of particles $N_{\\text{particles}}$ at no extra cost."
+          "text": "In a fixed supercomputing budget, doubling the number of time steps $N_{\\text{steps}}$ allows you to simultaneously double the number of particles $N_{\\text{particles}}$ at no extra cost.",
+          "text_markdown": "In a fixed supercomputing budget, doubling the number of time steps $N_{\\text{steps}}$ allows you to simultaneously double the number of particles $N_{\\text{particles}}$ at no extra cost."
         },
         {
           "id": "d",
-          "text": "Quantum Mechanical Density Functional Theory (DFT) resolves electronic orbitals at the Angstrom scale but is computationally restricted to much smaller length and time scales than Classical MD."
+          "text": "Quantum Mechanical Density Functional Theory (DFT) resolves electronic orbitals at the Angstrom scale but is computationally restricted to much smaller length and time scales than Classical MD.",
+          "text_markdown": "Quantum Mechanical Density Functional Theory (DFT) resolves electronic orbitals at the Angstrom scale but is computationally restricted to much smaller length and time scales than Classical MD."
         }
       ],
       "correct": [
@@ -238,19 +250,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Metropolis, Rosenbluth, Rosenbluth, Teller, and Teller (1953)"
+          "text": "Metropolis, Rosenbluth, Rosenbluth, Teller, and Teller (1953)",
+          "text_markdown": "Metropolis, Rosenbluth, Rosenbluth, Teller, and Teller (1953)"
         },
         {
           "id": "b",
-          "text": "Alder and Wainwright (1958)"
+          "text": "Alder and Wainwright (1958)",
+          "text_markdown": "Alder and Wainwright (1958)"
         },
         {
           "id": "c",
-          "text": "Rahman (1964)"
+          "text": "Rahman (1964)",
+          "text_markdown": "Rahman (1964)"
         },
         {
           "id": "d",
-          "text": "Car and Parrinello (1985)"
+          "text": "Car and Parrinello (1985)",
+          "text_markdown": "Car and Parrinello (1985)"
         }
       ],
       "correct": "a",
@@ -267,19 +283,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$6N$ coordinates ($3N$ position components and $3N$ momentum components)"
+          "text": "$6N$ coordinates ($3N$ position components and $3N$ momentum components)",
+          "text_markdown": "$6N$ coordinates ($3N$ position components and $3N$ momentum components)"
         },
         {
           "id": "b",
-          "text": "$3N$ coordinates (only the 3D positions of the $N$ particles)"
+          "text": "$3N$ coordinates (only the 3D positions of the $N$ particles)",
+          "text_markdown": "$3N$ coordinates (only the 3D positions of the $N$ particles)"
         },
         {
           "id": "c",
-          "text": "$3$ state variables (energy $E$, volume $V$, and particle number $N$)"
+          "text": "$3$ state variables (energy $E$, volume $V$, and particle number $N$)",
+          "text_markdown": "$3$ state variables (energy $E$, volume $V$, and particle number $N$)"
         },
         {
           "id": "d",
-          "text": "$2^N$ coordinates"
+          "text": "$2^N$ coordinates",
+          "text_markdown": "$2^N$ coordinates"
         }
       ],
       "correct": "a",
@@ -320,19 +340,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Both $x_{\\max}$ and $p_{\\max}$ double ($2\\times$), and the enclosed phase-space area quadruples ($4\\times$)."
+          "text": "Both $x_{\\max}$ and $p_{\\max}$ double ($2\\times$), and the enclosed phase-space area quadruples ($4\\times$).",
+          "text_markdown": "Both $x_{\\max}$ and $p_{\\max}$ double ($2\\times$), and the enclosed phase-space area quadruples ($4\\times$)."
         },
         {
           "id": "b",
-          "text": "Both $x_{\\max}$ and $p_{\\max}$ quadruple ($4\\times$), and the enclosed phase-space area increases by $16\\times$."
+          "text": "Both $x_{\\max}$ and $p_{\\max}$ quadruple ($4\\times$), and the enclosed phase-space area increases by $16\\times$.",
+          "text_markdown": "Both $x_{\\max}$ and $p_{\\max}$ quadruple ($4\\times$), and the enclosed phase-space area increases by $16\\times$."
         },
         {
           "id": "c",
-          "text": "$x_{\\max}$ quadruples while $p_{\\max}$ remains constant, so the area quadruples."
+          "text": "$x_{\\max}$ quadruples while $p_{\\max}$ remains constant, so the area quadruples.",
+          "text_markdown": "$x_{\\max}$ quadruples while $p_{\\max}$ remains constant, so the area quadruples."
         },
         {
           "id": "d",
-          "text": "Both $x_{\\max}$ and $p_{\\max}$ increase by $\\sqrt{2}\\times$, and the enclosed area doubles ($2\\times$)."
+          "text": "Both $x_{\\max}$ and $p_{\\max}$ increase by $\\sqrt{2}\\times$, and the enclosed area doubles ($2\\times$).",
+          "text_markdown": "Both $x_{\\max}$ and $p_{\\max}$ increase by $\\sqrt{2}\\times$, and the enclosed area doubles ($2\\times$)."
         }
       ],
       "correct": "a",
@@ -349,19 +373,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The update rule $T$ is strictly deterministic and local (depending only on a cell's state and its 8 neighbors), yet it generates complex, seemingly unpredictable emergent dynamics."
+          "text": "The update rule $T$ is strictly deterministic and local (depending only on a cell's state and its 8 neighbors), yet it generates complex, seemingly unpredictable emergent dynamics.",
+          "text_markdown": "The update rule $T$ is strictly deterministic and local (depending only on a cell's state and its 8 neighbors), yet it generates complex, seemingly unpredictable emergent dynamics."
         },
         {
           "id": "b",
-          "text": "The update rule $T$ is stochastic, flipping cells with a Boltzmann probability $\\exp(-\\Delta E/k_B T)$."
+          "text": "The update rule $T$ is stochastic, flipping cells with a Boltzmann probability $\\exp(-\\Delta E/k_B T)$.",
+          "text_markdown": "The update rule $T$ is stochastic, flipping cells with a Boltzmann probability $\\exp(-\\Delta E/k_B T)$."
         },
         {
           "id": "c",
-          "text": "Any live cell with 4 or more live neighbors survives to the next generation."
+          "text": "Any live cell with 4 or more live neighbors survives to the next generation.",
+          "text_markdown": "Any live cell with 4 or more live neighbors survives to the next generation."
         },
         {
           "id": "d",
-          "text": "Because the rule is deterministic, the exact state $S_n$ at $n = 10^6$ can always be written as a simple linear function of $S_0$ without running the iteration."
+          "text": "Because the rule is deterministic, the exact state $S_n$ at $n = 10^6$ can always be written as a simple linear function of $S_0$ without running the iteration.",
+          "text_markdown": "Because the rule is deterministic, the exact state $S_n$ at $n = 10^6$ can always be written as a simple linear function of $S_0$ without running the iteration."
         }
       ],
       "correct": "a",
@@ -378,19 +406,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The initial portion of the trace corresponds to a transient **equilibration (warm-up) time** while the system relaxes from its initial state $S_0$, and must be excluded before computing equilibrium averages."
+          "text": "The initial portion of the trace corresponds to a transient **equilibration (warm-up) time** while the system relaxes from its initial state $S_0$, and must be excluded before computing equilibrium averages.",
+          "text_markdown": "The initial portion of the trace corresponds to a transient **equilibration (warm-up) time** while the system relaxes from its initial state $S_0$, and must be excluded before computing equilibrium averages."
         },
         {
           "id": "b",
-          "text": "Projecting the equilibrated trace values onto the vertical axis forms a **histogram** that estimates the equilibrium probability distribution of the observable."
+          "text": "Projecting the equilibrated trace values onto the vertical axis forms a **histogram** that estimates the equilibrium probability distribution of the observable.",
+          "text_markdown": "Projecting the equilibrated trace values onto the vertical axis forms a **histogram** that estimates the equilibrium probability distribution of the observable."
         },
         {
           "id": "c",
-          "text": "Once the system reaches thermal equilibrium, the instantaneous potential energy stops fluctuating and becomes a flat horizontal line."
+          "text": "Once the system reaches thermal equilibrium, the instantaneous potential energy stops fluctuating and becomes a flat horizontal line.",
+          "text_markdown": "Once the system reaches thermal equilibrium, the instantaneous potential energy stops fluctuating and becomes a flat horizontal line."
         },
         {
           "id": "d",
-          "text": "By the Law of Large Numbers, the statistical error of the sample mean decreases toward zero as the equilibrated trace length $N \\to \\infty$."
+          "text": "By the Law of Large Numbers, the statistical error of the sample mean decreases toward zero as the equilibrated trace length $N \\to \\infty$.",
+          "text_markdown": "By the Law of Large Numbers, the statistical error of the sample mean decreases toward zero as the equilibrated trace length $N \\to \\infty$."
         }
       ],
       "correct": [
@@ -500,19 +532,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = c^2 \\sigma_E^2$"
+          "text": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = c^2 \\sigma_E^2$",
+          "text_markdown": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = c^2 \\sigma_E^2$"
         },
         {
           "id": "b",
-          "text": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = E_0^2 + c^2 \\sigma_E^2$"
+          "text": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = E_0^2 + c^2 \\sigma_E^2$",
+          "text_markdown": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = E_0^2 + c^2 \\sigma_E^2$"
         },
         {
           "id": "c",
-          "text": "$\\mu_Y = c\\mu_E$ and $\\text{Var}(Y) = c \\sigma_E^2$"
+          "text": "$\\mu_Y = c\\mu_E$ and $\\text{Var}(Y) = c \\sigma_E^2$",
+          "text_markdown": "$\\mu_Y = c\\mu_E$ and $\\text{Var}(Y) = c \\sigma_E^2$"
         },
         {
           "id": "d",
-          "text": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = c \\sigma_E^2$"
+          "text": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = c \\sigma_E^2$",
+          "text_markdown": "$\\mu_Y = E_0 + c\\mu_E$ and $\\text{Var}(Y) = c \\sigma_E^2$"
         }
       ],
       "correct": "a",
@@ -589,19 +625,23 @@
       "options": [
         {
           "id": "a",
-          "text": "If $X$ and $Y$ are statistically independent, then $\\text{Cov}(X,Y) = 0$ always; however, $\\text{Cov}(X,Y) = 0$ does not generally imply that $X$ and $Y$ are independent (except when $(X,Y)$ are jointly Gaussian)."
+          "text": "If $X$ and $Y$ are statistically independent, then $\\text{Cov}(X,Y) = 0$ always; however, $\\text{Cov}(X,Y) = 0$ does not generally imply that $X$ and $Y$ are independent (except when $(X,Y)$ are jointly Gaussian).",
+          "text_markdown": "If $X$ and $Y$ are statistically independent, then $\\text{Cov}(X,Y) = 0$ always; however, $\\text{Cov}(X,Y) = 0$ does not generally imply that $X$ and $Y$ are independent (except when $(X,Y)$ are jointly Gaussian)."
         },
         {
           "id": "b",
-          "text": "Zero covariance $\\text{Cov}(X,Y) = 0$ is mathematically equivalent to statistical independence for all probability distributions."
+          "text": "Zero covariance $\\text{Cov}(X,Y) = 0$ is mathematically equivalent to statistical independence for all probability distributions.",
+          "text_markdown": "Zero covariance $\\text{Cov}(X,Y) = 0$ is mathematically equivalent to statistical independence for all probability distributions."
         },
         {
           "id": "c",
-          "text": "Independent random variables have $\\text{Cov}(X,Y) = 1$, whereas uncorrelated variables have $\\text{Cov}(X,Y) = 0$."
+          "text": "Independent random variables have $\\text{Cov}(X,Y) = 1$, whereas uncorrelated variables have $\\text{Cov}(X,Y) = 0$.",
+          "text_markdown": "Independent random variables have $\\text{Cov}(X,Y) = 1$, whereas uncorrelated variables have $\\text{Cov}(X,Y) = 0$."
         },
         {
           "id": "d",
-          "text": "If $\\text{Cov}(X,Y) = 0$, then $\\text{Var}(X + Y)$ is always zero."
+          "text": "If $\\text{Cov}(X,Y) = 0$, then $\\text{Var}(X + Y)$ is always zero.",
+          "text_markdown": "If $\\text{Cov}(X,Y) = 0$, then $\\text{Var}(X + Y)$ is always zero."
         }
       ],
       "correct": "a",
@@ -666,19 +706,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{N^{n-1}}$ (so $\\kappa_1(y)=\\mu$, $\\kappa_2(y)=\\sigma^2/N$, $\\kappa_3(y)=\\kappa_3/N^2$, etc.)"
+          "text": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{N^{n-1}}$ (so $\\kappa_1(y)=\\mu$, $\\kappa_2(y)=\\sigma^2/N$, $\\kappa_3(y)=\\kappa_3/N^2$, etc.)",
+          "text_markdown": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{N^{n-1}}$ (so $\\kappa_1(y)=\\mu$, $\\kappa_2(y)=\\sigma^2/N$, $\\kappa_3(y)=\\kappa_3/N^2$, etc.)"
         },
         {
           "id": "b",
-          "text": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{N^n}$ (so the mean itself shrinks as $\\mu/N$)"
+          "text": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{N^n}$ (so the mean itself shrinks as $\\mu/N$)",
+          "text_markdown": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{N^n}$ (so the mean itself shrinks as $\\mu/N$)"
         },
         {
           "id": "c",
-          "text": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{\\sqrt{N}}$ for all orders $n \\ge 1$"
+          "text": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{\\sqrt{N}}$ for all orders $n \\ge 1$",
+          "text_markdown": "$\\kappa_n(y) = \\dfrac{\\kappa_n}{\\sqrt{N}}$ for all orders $n \\ge 1$"
         },
         {
           "id": "d",
-          "text": "$\\kappa_n(y) = N\\kappa_n$ for all orders $n \\ge 1$"
+          "text": "$\\kappa_n(y) = N\\kappa_n$ for all orders $n \\ge 1$",
+          "text_markdown": "$\\kappa_n(y) = N\\kappa_n$ for all orders $n \\ge 1$"
         }
       ],
       "correct": "a",
@@ -731,19 +775,23 @@
       "options": [
         {
           "id": "a",
-          "text": "If $I_0$ is undefined, $F^*(x)$ is not normalizable; if $I_1$ does not exist, there is no finite mean; if $I_2$ does not exist, the variance is infinite and the standard CLT fails."
+          "text": "If $I_0$ is undefined, $F^*(x)$ is not normalizable; if $I_1$ does not exist, there is no finite mean; if $I_2$ does not exist, the variance is infinite and the standard CLT fails.",
+          "text_markdown": "If $I_0$ is undefined, $F^*(x)$ is not normalizable; if $I_1$ does not exist, there is no finite mean; if $I_2$ does not exist, the variance is infinite and the standard CLT fails."
         },
         {
           "id": "b",
-          "text": "If $I_2$ diverges, the sample mean still converges to a Gaussian with standard error $1/\\sqrt{N}$, provided $I_0 = 1$."
+          "text": "If $I_2$ diverges, the sample mean still converges to a Gaussian with standard error $1/\\sqrt{N}$, provided $I_0 = 1$.",
+          "text_markdown": "If $I_2$ diverges, the sample mean still converges to a Gaussian with standard error $1/\\sqrt{N}$, provided $I_0 = 1$."
         },
         {
           "id": "c",
-          "text": "Only $I_0$ and $I_1$ need to exist for the standard error $\\sigma/\\sqrt{N}$ to be finite; $I_2$ only affects skewness."
+          "text": "Only $I_0$ and $I_1$ need to exist for the standard error $\\sigma/\\sqrt{N}$ to be finite; $I_2$ only affects skewness.",
+          "text_markdown": "Only $I_0$ and $I_1$ need to exist for the standard error $\\sigma/\\sqrt{N}$ to be finite; $I_2$ only affects skewness."
         },
         {
           "id": "d",
-          "text": "We can always determine whether $I_2$ is finite purely by computing the empirical sample variance of a finite simulation trace, without analytical inspection."
+          "text": "We can always determine whether $I_2$ is finite purely by computing the empirical sample variance of a finite simulation trace, without analytical inspection.",
+          "text_markdown": "We can always determine whether $I_2$ is finite purely by computing the empirical sample variance of a finite simulation trace, without analytical inspection."
         }
       ],
       "correct": "a",
@@ -760,19 +808,23 @@
       "options": [
         {
           "id": "a",
-          "text": "$2 < \\alpha \\le 3$"
+          "text": "$2 < \\alpha \\le 3$",
+          "text_markdown": "$2 < \\alpha \\le 3$"
         },
         {
           "id": "b",
-          "text": "$\\alpha > 3$"
+          "text": "$\\alpha > 3$",
+          "text_markdown": "$\\alpha > 3$"
         },
         {
           "id": "c",
-          "text": "$1 < \\alpha \\le 2$"
+          "text": "$1 < \\alpha \\le 2$",
+          "text_markdown": "$1 < \\alpha \\le 2$"
         },
         {
           "id": "d",
-          "text": "$0 < \\alpha \\le 1$"
+          "text": "$0 < \\alpha \\le 1$",
+          "text_markdown": "$0 < \\alpha \\le 1$"
         }
       ],
       "correct": "a",
@@ -789,19 +841,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The width of $P(y)$ is identical to the width of a single draw ($1\\times$): averaging 100 Cauchy draws produces zero narrowing."
+          "text": "The width of $P(y)$ is identical to the width of a single draw ($1\\times$): averaging 100 Cauchy draws produces zero narrowing.",
+          "text_markdown": "The width of $P(y)$ is identical to the width of a single draw ($1\\times$): averaging 100 Cauchy draws produces zero narrowing."
         },
         {
           "id": "b",
-          "text": "The width of $P(y)$ is $10\\times$ narrower ($1/\\sqrt{100}$) than a single draw, just like a Gaussian."
+          "text": "The width of $P(y)$ is $10\\times$ narrower ($1/\\sqrt{100}$) than a single draw, just like a Gaussian.",
+          "text_markdown": "The width of $P(y)$ is $10\\times$ narrower ($1/\\sqrt{100}$) than a single draw, just like a Gaussian."
         },
         {
           "id": "c",
-          "text": "The width of $P(y)$ is $100\\times$ narrower ($1/N$) than a single draw."
+          "text": "The width of $P(y)$ is $100\\times$ narrower ($1/N$) than a single draw.",
+          "text_markdown": "The width of $P(y)$ is $100\\times$ narrower ($1/N$) than a single draw."
         },
         {
           "id": "d",
-          "text": "The distribution $P(y)$ becomes a delta function at $y = 0$."
+          "text": "The distribution $P(y)$ becomes a delta function at $y = 0$.",
+          "text_markdown": "The distribution $P(y)$ becomes a delta function at $y = 0$."
         }
       ],
       "correct": "a",
@@ -818,19 +874,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Large, isolated outlier **spikes** in the time series that do not disappear as the simulation runs longer."
+          "text": "Large, isolated outlier **spikes** in the time series that do not disappear as the simulation runs longer.",
+          "text_markdown": "Large, isolated outlier **spikes** in the time series that do not disappear as the simulation runs longer."
         },
         {
           "id": "b",
-          "text": "**Long (heavy) tails** on the marginal histogram distribution."
+          "text": "**Long (heavy) tails** on the marginal histogram distribution.",
+          "text_markdown": "**Long (heavy) tails** on the marginal histogram distribution."
         },
         {
           "id": "c",
-          "text": "A perfectly smooth sinusoidal oscillation with constant amplitude."
+          "text": "A perfectly smooth sinusoidal oscillation with constant amplitude.",
+          "text_markdown": "A perfectly smooth sinusoidal oscillation with constant amplitude."
         },
         {
           "id": "d",
-          "text": "A histogram that is strictly bounded between two sharp vertical walls with zero outliers."
+          "text": "A histogram that is strictly bounded between two sharp vertical walls with zero outliers.",
+          "text_markdown": "A histogram that is strictly bounded between two sharp vertical walls with zero outliers."
         }
       ],
       "correct": [
@@ -850,19 +910,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Because if $F^*(x)$ diverges as $(x - x_0)^{-1}$ or faster at an interior point $x_0$, the integral $\\int F^*(x)\\,dx$ diverges logarithmically (or worse) at $x_0$, destroying normalizability."
+          "text": "Because if $F^*(x)$ diverges as $(x - x_0)^{-1}$ or faster at an interior point $x_0$, the integral $\\int F^*(x)\\,dx$ diverges logarithmically (or worse) at $x_0$, destroying normalizability.",
+          "text_markdown": "Because if $F^*(x)$ diverges as $(x - x_0)^{-1}$ or faster at an interior point $x_0$, the integral $\\int F^*(x)\\,dx$ diverges logarithmically (or worse) at $x_0$, destroying normalizability."
         },
         {
           "id": "b",
-          "text": "Because any probability density function must be strictly equal to zero at $x = 0$."
+          "text": "Because any probability density function must be strictly equal to zero at $x = 0$.",
+          "text_markdown": "Because any probability density function must be strictly equal to zero at $x = 0$."
         },
         {
           "id": "c",
-          "text": "Because a finite discontinuity (step function) at $x_0$ makes the variance infinite."
+          "text": "Because a finite discontinuity (step function) at $x_0$ makes the variance infinite.",
+          "text_markdown": "Because a finite discontinuity (step function) at $x_0$ makes the variance infinite."
         },
         {
           "id": "d",
-          "text": "Because the characteristic function cannot be defined for functions on bounded intervals."
+          "text": "Because the characteristic function cannot be defined for functions on bounded intervals.",
+          "text_markdown": "Because the characteristic function cannot be defined for functions on bounded intervals."
         }
       ],
       "correct": "a",
@@ -885,19 +949,23 @@
       "options": [
         {
           "id": "a",
-          "text": "The histogram standard deviation $s_E$ approaches a constant physical value $\\sigma_E$, whereas the standard error of the mean $\\sigma_{\\bar{E}} = s_E/\\sqrt{N}$ shrinks by a factor of $\\sqrt{1000} \\approx 31.6$."
+          "text": "The histogram standard deviation $s_E$ approaches a constant physical value $\\sigma_E$, whereas the standard error of the mean $\\sigma_{\\bar{E}} = s_E/\\sqrt{N}$ shrinks by a factor of $\\sqrt{1000} \\approx 31.6$.",
+          "text_markdown": "The histogram standard deviation $s_E$ approaches a constant physical value $\\sigma_E$, whereas the standard error of the mean $\\sigma_{\\bar{E}} = s_E/\\sqrt{N}$ shrinks by a factor of $\\sqrt{1000} \\approx 31.6$."
         },
         {
           "id": "b",
-          "text": "Both $s_E$ and $\\sigma_{\\bar{E}}$ shrink toward zero as $1/\\sqrt{N}$."
+          "text": "Both $s_E$ and $\\sigma_{\\bar{E}}$ shrink toward zero as $1/\\sqrt{N}$.",
+          "text_markdown": "Both $s_E$ and $\\sigma_{\\bar{E}}$ shrink toward zero as $1/\\sqrt{N}$."
         },
         {
           "id": "c",
-          "text": "The histogram standard deviation $s_E$ shrinks as $1/\\sqrt{N}$, whereas $\\sigma_{\\bar{E}}$ remains constant."
+          "text": "The histogram standard deviation $s_E$ shrinks as $1/\\sqrt{N}$, whereas $\\sigma_{\\bar{E}}$ remains constant.",
+          "text_markdown": "The histogram standard deviation $s_E$ shrinks as $1/\\sqrt{N}$, whereas $\\sigma_{\\bar{E}}$ remains constant."
         },
         {
           "id": "d",
-          "text": "Both $s_E$ and $\\sigma_{\\bar{E}}$ grow proportional to $\\sqrt{N}$."
+          "text": "Both $s_E$ and $\\sigma_{\\bar{E}}$ grow proportional to $\\sqrt{N}$.",
+          "text_markdown": "Both $s_E$ and $\\sigma_{\\bar{E}}$ grow proportional to $\\sqrt{N}$."
         }
       ],
       "correct": "a",
@@ -914,19 +982,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Approximately $68\\%$ ($\\approx 2/3$) of the time"
+          "text": "Approximately $68\\%$ ($\\approx 2/3$) of the time",
+          "text_markdown": "Approximately $68\\%$ ($\\approx 2/3$) of the time"
         },
         {
           "id": "b",
-          "text": "Approximately $95\\%$ of the time"
+          "text": "Approximately $95\\%$ of the time",
+          "text_markdown": "Approximately $95\\%$ of the time"
         },
         {
           "id": "c",
-          "text": "$100\\%$ of the time, unless there is a bug in the code"
+          "text": "$100\\%$ of the time, unless there is a bug in the code",
+          "text_markdown": "$100\\%$ of the time, unless there is a bug in the code"
         },
         {
           "id": "d",
-          "text": "Approximately $50\\%$ of the time"
+          "text": "Approximately $50\\%$ of the time",
+          "text_markdown": "Approximately $50\\%$ of the time"
         }
       ],
       "correct": "a",
@@ -967,19 +1039,23 @@
       "options": [
         {
           "id": "a",
-          "text": "Either the runs are not actually independent (e.g., reusing the same random seed) or the reported error bars $\\sigma_{\\bar{A}}$ have been grossly overestimated."
+          "text": "Either the runs are not actually independent (e.g., reusing the same random seed) or the reported error bars $\\sigma_{\\bar{A}}$ have been grossly overestimated.",
+          "text_markdown": "Either the runs are not actually independent (e.g., reusing the same random seed) or the reported error bars $\\sigma_{\\bar{A}}$ have been grossly overestimated."
         },
         {
           "id": "b",
-          "text": "The Central Limit Theorem guarantees that all runs lie within $\\pm 0.05\\sigma_{\\bar{A}}$ once $N > 100$."
+          "text": "The Central Limit Theorem guarantees that all runs lie within $\\pm 0.05\\sigma_{\\bar{A}}$ once $N > 100$.",
+          "text_markdown": "The Central Limit Theorem guarantees that all runs lie within $\\pm 0.05\\sigma_{\\bar{A}}$ once $N > 100$."
         },
         {
           "id": "c",
-          "text": "The observable must follow a Cauchy/Lorentzian distribution."
+          "text": "The observable must follow a Cauchy/Lorentzian distribution.",
+          "text_markdown": "The observable must follow a Cauchy/Lorentzian distribution."
         },
         {
           "id": "d",
-          "text": "The simulation time step $\\Delta t$ is too large."
+          "text": "The simulation time step $\\Delta t$ is too large.",
+          "text_markdown": "The simulation time step $\\Delta t$ is too large."
         }
       ],
       "correct": "a",
@@ -1020,19 +1096,23 @@
       "options": [
         {
           "id": "a",
-          "text": "For any two random variables $X$ and $Y$ with finite variance, $\\text{Var}(X - Y) = \\text{Var}(X) + \\text{Var}(Y) - 2\\text{Cov}(X, Y)$."
+          "text": "For any two random variables $X$ and $Y$ with finite variance, $\\text{Var}(X - Y) = \\text{Var}(X) + \\text{Var}(Y) - 2\\text{Cov}(X, Y)$.",
+          "text_markdown": "For any two random variables $X$ and $Y$ with finite variance, $\\text{Var}(X - Y) = \\text{Var}(X) + \\text{Var}(Y) - 2\\text{Cov}(X, Y)$."
         },
         {
           "id": "b",
-          "text": "In the Central Limit Theorem for $N$ i.i.d. samples with finite variance, the skewness cumulant $\\kappa_3(y)$ of the sample mean decays as $N^{-2}$, which is faster than the variance $\\kappa_2(y) \\propto N^{-1}$."
+          "text": "In the Central Limit Theorem for $N$ i.i.d. samples with finite variance, the skewness cumulant $\\kappa_3(y)$ of the sample mean decays as $N^{-2}$, which is faster than the variance $\\kappa_2(y) \\propto N^{-1}$.",
+          "text_markdown": "In the Central Limit Theorem for $N$ i.i.d. samples with finite variance, the skewness cumulant $\\kappa_3(y)$ of the sample mean decays as $N^{-2}$, which is faster than the variance $\\kappa_2(y) \\propto N^{-1}$."
         },
         {
           "id": "c",
-          "text": "In a classical Hamiltonian system $\\mathcal{H}(\\mathbf{r}^N, \\mathbf{p}^N) = K(\\mathbf{p}^N) + U(\\mathbf{r}^N)$, each point in the $6N$-dimensional phase space uniquely specifies the instantaneous microstate of the system."
+          "text": "In a classical Hamiltonian system $\\mathcal{H}(\\mathbf{r}^N, \\mathbf{p}^N) = K(\\mathbf{p}^N) + U(\\mathbf{r}^N)$, each point in the $6N$-dimensional phase space uniquely specifies the instantaneous microstate of the system.",
+          "text_markdown": "In a classical Hamiltonian system $\\mathcal{H}(\\mathbf{r}^N, \\mathbf{p}^N) = K(\\mathbf{p}^N) + U(\\mathbf{r}^N)$, each point in the $6N$-dimensional phase space uniquely specifies the instantaneous microstate of the system."
         },
         {
           "id": "d",
-          "text": "Averaging $N$ independent samples from any normalized probability distribution $F^*(x)$ is guaranteed to reduce the width of the sample mean distribution by $1/\\sqrt{N}$, even if $I_2 = \\int x^2 F^*(x)\\,dx = \\infty$."
+          "text": "Averaging $N$ independent samples from any normalized probability distribution $F^*(x)$ is guaranteed to reduce the width of the sample mean distribution by $1/\\sqrt{N}$, even if $I_2 = \\int x^2 F^*(x)\\,dx = \\infty$.",
+          "text_markdown": "Averaging $N$ independent samples from any normalized probability distribution $F^*(x)$ is guaranteed to reduce the width of the sample mean distribution by $1/\\sqrt{N}$, even if $I_2 = \\int x^2 F^*(x)\\,dx = \\infty$."
         }
       ],
       "correct": [

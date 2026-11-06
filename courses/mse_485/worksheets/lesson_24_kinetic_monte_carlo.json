@@ -570,13 +570,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Binary search tree / cumulative sum tree ($\\\\mathcal{O}(\\\\log M)$ search and update)",
-            "text": "Binary search tree / cumulative sum tree ($\\\\mathcal{O}(\\\\log M)$ search and update)"
+            "text_markdown": "Binary search tree / cumulative sum tree ($\\mathcal{O}(\\log M)$ search and update)",
+            "text": "Binary search tree / cumulative sum tree ($\\mathcal{O}(\\log M)$ search and update)"
           },
           {
             "id": "b",
-            "text_markdown": "Walker's Alias Method ($\\\\mathcal{O}(1)$ event selection)",
-            "text": "Walker's Alias Method ($\\\\mathcal{O}(1)$ event selection)"
+            "text_markdown": "Walker's Alias Method ($\\mathcal{O}(1)$ event selection)",
+            "text": "Walker's Alias Method ($\\mathcal{O}(1)$ event selection)"
           },
           {
             "id": "c",

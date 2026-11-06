@@ -79,19 +79,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because randomness is a property of an infinite sequence (the absence of predictable order and equal distribution across all subsequences), not of an isolated scalar value."
+            "text": "Because randomness is a property of an infinite sequence (the absence of predictable order and equal distribution across all subsequences), not of an isolated scalar value.",
+            "text_markdown": "Because randomness is a property of an infinite sequence (the absence of predictable order and equal distribution across all subsequences), not of an isolated scalar value."
           },
           {
             "id": "b",
-            "text": "Because any floating-point number stored in binary on a computer is rational and therefore cannot be random."
+            "text": "Because any floating-point number stored in binary on a computer is rational and therefore cannot be random.",
+            "text_markdown": "Because any floating-point number stored in binary on a computer is rational and therefore cannot be random."
           },
           {
             "id": "c",
-            "text": "Because a single number is only random if it is irrational, such as $\\pi/4$ or $\\sqrt{2}/2$."
+            "text": "Because a single number is only random if it is irrational, such as $\\pi/4$ or $\\sqrt{2}/2$.",
+            "text_markdown": "Because a single number is only random if it is irrational, such as $\\pi/4$ or $\\sqrt{2}/2$."
           },
           {
             "id": "d",
-            "text": "Because randomness requires the number to be strictly equal to the ensemble mean $1/2$."
+            "text": "Because randomness requires the number to be strictly equal to the ensemble mean $1/2$.",
+            "text_markdown": "Because randomness requires the number to be strictly equal to the ensemble mean $1/2$."
           }
         ],
         "correct": "a",
@@ -108,19 +112,23 @@
         "options": [
           {
             "id": "a",
-            "text": "They are not reproducible, making it impossible to replay an exact trajectory to debug a simulation crash."
+            "text": "They are not reproducible, making it impossible to replay an exact trajectory to debug a simulation crash.",
+            "text_markdown": "They are not reproducible, making it impossible to replay an exact trajectory to debug a simulation crash."
           },
           {
             "id": "b",
-            "text": "They are far too slow and expensive when a simulation requires $\\sim 10^{9}\\text{\u2013}10^{10}$ random numbers per second."
+            "text": "They are far too slow and expensive when a simulation requires $\\sim 10^{9}\\text{\u2013}10^{10}$ random numbers per second.",
+            "text_markdown": "They are far too slow and expensive when a simulation requires $\\sim 10^{9}\\text{\u2013}10^{10}$ random numbers per second."
           },
           {
             "id": "c",
-            "text": "Raw physical noise sources often suffer from hardware drift, bias, or low statistical quality unless heavily post-processed."
+            "text": "Raw physical noise sources often suffer from hardware drift, bias, or low statistical quality unless heavily post-processed.",
+            "text_markdown": "Raw physical noise sources often suffer from hardware drift, bias, or low statistical quality unless heavily post-processed."
           },
           {
             "id": "d",
-            "text": "Physical radioactive decay obeys a deterministic linear congruential recurrence with period $2^{16}$."
+            "text": "Physical radioactive decay obeys a deterministic linear congruential recurrence with period $2^{16}$.",
+            "text_markdown": "Physical radioactive decay obeys a deterministic linear congruential recurrence with period $2^{16}$."
           }
         ],
         "correct": [
@@ -144,19 +152,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space."
+            "text": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space.",
+            "text_markdown": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space."
           },
           {
             "id": "b",
-            "text": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance."
+            "text": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance.",
+            "text_markdown": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance."
           },
           {
             "id": "c",
-            "text": "It sacrifices 1D uniformity, concentrating all points near the origin $x = 0$."
+            "text": "It sacrifices 1D uniformity, concentrating all points near the origin $x = 0$.",
+            "text_markdown": "It sacrifices 1D uniformity, concentrating all points near the origin $x = 0$."
           },
           {
             "id": "d",
-            "text": "It uses a modulus $m = 16$ so that the sequence repeats every 16 evaluations."
+            "text": "It uses a modulus $m = 16$ so that the sequence repeats every 16 evaluations.",
+            "text_markdown": "It uses a modulus $m = 16$ so that the sequence repeats every 16 evaluations."
           }
         ],
         "correct": "a",
@@ -173,19 +185,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$."
+            "text": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$.",
+            "text_markdown": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$."
           },
           {
             "id": "b",
-            "text": "$S_n$ is the statistical variance, $T$ is the CPU temperature, and $F$ is the cumulative distribution function."
+            "text": "$S_n$ is the statistical variance, $T$ is the CPU temperature, and $F$ is the cumulative distribution function.",
+            "text_markdown": "$S_n$ is the statistical variance, $T$ is the CPU temperature, and $F$ is the cumulative distribution function."
           },
           {
             "id": "c",
-            "text": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform."
+            "text": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform.",
+            "text_markdown": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform."
           },
           {
             "id": "d",
-            "text": "$S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive constant."
+            "text": "$S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive constant.",
+            "text_markdown": "$S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive constant."
           }
         ],
         "correct": "a",
@@ -272,19 +288,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$."
+            "text": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$.",
+            "text_markdown": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$."
           },
           {
             "id": "b",
-            "text": "$\\langle x_{i+1} + x_{i+2} + \\cdots + x_{i+k} \\rangle = 0$ for all $k \\ge 1$."
+            "text": "$\\langle x_{i+1} + x_{i+2} + \\cdots + x_{i+k} \\rangle = 0$ for all $k \\ge 1$.",
+            "text_markdown": "$\\langle x_{i+1} + x_{i+2} + \\cdots + x_{i+k} \\rangle = 0$ for all $k \\ge 1$."
           },
           {
             "id": "c",
-            "text": "$x_{i+1} < x_{i+2} < \\cdots < x_{i+k}$ for every block of $k$ numbers."
+            "text": "$x_{i+1} < x_{i+2} < \\cdots < x_{i+k}$ for every block of $k$ numbers.",
+            "text_markdown": "$x_{i+1} < x_{i+2} < \\cdots < x_{i+k}$ for every block of $k$ numbers."
           },
           {
             "id": "d",
-            "text": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes."
+            "text": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes.",
+            "text_markdown": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes."
           }
         ],
         "correct": "a",
@@ -382,19 +402,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding $1.0$), whereas $R_n' = I_n / (m - 1)$ maps onto the closed interval $[0, 1]$ (including both $0.0$ and $1.0$)."
+            "text": "$R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding $1.0$), whereas $R_n' = I_n / (m - 1)$ maps onto the closed interval $[0, 1]$ (including both $0.0$ and $1.0$).",
+            "text_markdown": "$R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding $1.0$), whereas $R_n' = I_n / (m - 1)$ maps onto the closed interval $[0, 1]$ (including both $0.0$ and $1.0$)."
           },
           {
             "id": "b",
-            "text": "$R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas $R_n' = I_n / (m - 1)$ maps onto $(-1, 1)$."
+            "text": "$R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas $R_n' = I_n / (m - 1)$ maps onto $(-1, 1)$.",
+            "text_markdown": "$R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas $R_n' = I_n / (m - 1)$ maps onto $(-1, 1)$."
           },
           {
             "id": "c",
-            "text": "Both mappings produce identical floating-point values for all $m$."
+            "text": "Both mappings produce identical floating-point values for all $m$.",
+            "text_markdown": "Both mappings produce identical floating-point values for all $m$."
           },
           {
             "id": "d",
-            "text": "$R_n = I_n / m$ can exceed $1.0$ whenever $I_n = m - 1$."
+            "text": "$R_n = I_n / m$ can exceed $1.0$ whenever $I_n = m - 1$.",
+            "text_markdown": "$R_n = I_n / m$ can exceed $1.0$ whenever $I_n = m - 1$."
           }
         ],
         "correct": "a",
@@ -414,19 +438,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step."
+            "text": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step.",
+            "text_markdown": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step."
           },
           {
             "id": "b",
-            "text": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity."
+            "text": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity.",
+            "text_markdown": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity."
           },
           {
             "id": "c",
-            "text": "Because $a$ is always an even multiple of $4$ in a full-period LCG."
+            "text": "Because $a$ is always an even multiple of $4$ in a full-period LCG.",
+            "text_markdown": "Because $a$ is always an even multiple of $4$ in a full-period LCG."
           },
           {
             "id": "d",
-            "text": "Because the modulus $m = 2^M$ is a prime number."
+            "text": "Because the modulus $m = 2^M$ is a prime number.",
+            "text_markdown": "Because the modulus $m = 2^M$ is a prime number."
           }
         ],
         "correct": "a",
@@ -488,19 +516,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$."
+            "text": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$.",
+            "text_markdown": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$."
           },
           {
             "id": "b",
-            "text": "It changes the modulus $2^m$ dynamically at every step using a hardware Geiger counter."
+            "text": "It changes the modulus $2^m$ dynamically at every step using a hardware Geiger counter.",
+            "text_markdown": "It changes the modulus $2^m$ dynamically at every step using a hardware Geiger counter."
           },
           {
             "id": "c",
-            "text": "It divides each integer by zero to create an infinite floating-point mantissa."
+            "text": "It divides each integer by zero to create an infinite floating-point mantissa.",
+            "text_markdown": "It divides each integer by zero to create an infinite floating-point mantissa."
           },
           {
             "id": "d",
-            "text": "It evaluates a transcendental cosine function $\\cos(z_{n-1})$ at 1024-bit quadruple precision."
+            "text": "It evaluates a transcendental cosine function $\\cos(z_{n-1})$ at 1024-bit quadruple precision.",
+            "text_markdown": "It evaluates a transcendental cosine function $\\cos(z_{n-1})$ at 1024-bit quadruple precision."
           }
         ],
         "correct": "a",
@@ -531,19 +563,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs)."
+            "text": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs).",
+            "text_markdown": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs)."
           },
           {
             "id": "b",
-            "text": "Lagged Fibonacci generators vary the modulus $2^m$ on each processor, whereas LCGs always use identical seeds and identical parameters on all processors."
+            "text": "Lagged Fibonacci generators vary the modulus $2^m$ on each processor, whereas LCGs always use identical seeds and identical parameters on all processors.",
+            "text_markdown": "Lagged Fibonacci generators vary the modulus $2^m$ on each processor, whereas LCGs always use identical seeds and identical parameters on all processors."
           },
           {
             "id": "c",
-            "text": "Both Lagged Fibonacci and LCGs can only be parallelized by having Processor 0 broadcast every single random number over MPI."
+            "text": "Both Lagged Fibonacci and LCGs can only be parallelized by having Processor 0 broadcast every single random number over MPI.",
+            "text_markdown": "Both Lagged Fibonacci and LCGs can only be parallelized by having Processor 0 broadcast every single random number over MPI."
           },
           {
             "id": "d",
-            "text": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent."
+            "text": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent.",
+            "text_markdown": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent."
           }
         ],
         "correct": "a",
@@ -560,19 +596,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$L = 2^{64} \\approx 1.8 \\times 10^{19}$ (on the order of $10^{18}\\text{\u2013}10^{19}$)"
+            "text": "$L = 2^{64} \\approx 1.8 \\times 10^{19}$ (on the order of $10^{18}\\text{\u2013}10^{19}$)",
+            "text_markdown": "$L = 2^{64} \\approx 1.8 \\times 10^{19}$ (on the order of $10^{18}\\text{\u2013}10^{19}$)"
           },
           {
             "id": "b",
-            "text": "$L = 64^2 = 4096$"
+            "text": "$L = 64^2 = 4096$",
+            "text_markdown": "$L = 64^2 = 4096$"
           },
           {
             "id": "c",
-            "text": "$L = 2^{31} \\approx 2.1 \\times 10^9$"
+            "text": "$L = 2^{31} \\approx 2.1 \\times 10^9$",
+            "text_markdown": "$L = 2^{31} \\approx 2.1 \\times 10^9$"
           },
           {
             "id": "d",
-            "text": "$L = 10^{64}$"
+            "text": "$L = 10^{64}$",
+            "text_markdown": "$L = 10^{64}$"
           }
         ],
         "correct": "a",
@@ -667,19 +707,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined."
+            "text": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined.",
+            "text_markdown": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined."
           },
           {
             "id": "b",
-            "text": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded."
+            "text": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded.",
+            "text_markdown": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded."
           },
           {
             "id": "c",
-            "text": "Because $N - 1$ is always a prime number when $N = 100$."
+            "text": "Because $N - 1$ is always a prime number when $N = 100$.",
+            "text_markdown": "Because $N - 1$ is always a prime number when $N = 100$."
           },
           {
             "id": "d",
-            "text": "Because the incomplete gamma function is undefined for even integers."
+            "text": "Because the incomplete gamma function is undefined for even integers.",
+            "text_markdown": "Because the incomplete gamma function is undefined for even integers."
           }
         ],
         "correct": "a",
@@ -713,19 +757,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random)."
+            "text": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random).",
+            "text_markdown": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random)."
           },
           {
             "id": "b",
-            "text": "$Q$ represents the probability of failure, so $Q$ must always be less than $0.001$ for a good generator."
+            "text": "$Q$ represents the probability of failure, so $Q$ must always be less than $0.001$ for a good generator.",
+            "text_markdown": "$Q$ represents the probability of failure, so $Q$ must always be less than $0.001$ for a good generator."
           },
           {
             "id": "c",
-            "text": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$."
+            "text": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$.",
+            "text_markdown": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$."
           },
           {
             "id": "d",
-            "text": "The chi-squared statistic can never be smaller than $\\nu = 100$ for any sequence of numbers."
+            "text": "The chi-squared statistic can never be smaller than $\\nu = 100$ for any sequence of numbers.",
+            "text_markdown": "The chi-squared statistic can never be smaller than $\\nu = 100$ for any sequence of numbers."
           }
         ],
         "correct": "a",
@@ -742,19 +790,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)"
+            "text": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)",
+            "text_markdown": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)"
           },
           {
             "id": "b",
-            "text": "$Q < 1\\%$ ($Q < 0.01$)"
+            "text": "$Q < 1\\%$ ($Q < 0.01$)",
+            "text_markdown": "$Q < 1\\%$ ($Q < 0.01$)"
           },
           {
             "id": "c",
-            "text": "$Q > 99\\%$ ($Q > 0.99$)"
+            "text": "$Q > 99\\%$ ($Q > 0.99$)",
+            "text_markdown": "$Q > 99\\%$ ($Q > 0.99$)"
           },
           {
             "id": "d",
-            "text": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)"
+            "text": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)",
+            "text_markdown": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)"
           }
         ],
         "correct": "a",
@@ -771,19 +823,23 @@
         "options": [
           {
             "id": "a",
-            "text": "If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum; if $n_k = 0$ and observed $N_k \\ne 0$, the statistic correctly diverges to $\\chi^2 = \\infty$ (immediate rejection)."
+            "text": "If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum; if $n_k = 0$ and observed $N_k \\ne 0$, the statistic correctly diverges to $\\chi^2 = \\infty$ (immediate rejection).",
+            "text_markdown": "If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum; if $n_k = 0$ and observed $N_k \\ne 0$, the statistic correctly diverges to $\\chi^2 = \\infty$ (immediate rejection)."
           },
           {
             "id": "b",
-            "text": "Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically passes."
+            "text": "Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically passes.",
+            "text_markdown": "Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically passes."
           },
           {
             "id": "c",
-            "text": "Set $\\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k = 500$ samples landed in the forbidden bin."
+            "text": "Set $\\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k = 500$ samples landed in the forbidden bin.",
+            "text_markdown": "Set $\\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k = 500$ samples landed in the forbidden bin."
           },
           {
             "id": "d",
-            "text": "Subtract $N_k$ from the degrees of freedom $\\nu$."
+            "text": "Subtract $N_k$ from the degrees of freedom $\\nu$.",
+            "text_markdown": "Subtract $N_k$ from the degrees of freedom $\\nu$."
           }
         ],
         "correct": "a",
@@ -814,19 +870,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Passing standard empirical statistical tests is necessary but not sufficient; a specific physical MC algorithm may still resonate with subtle higher-order correlations of a particular generator."
+            "text": "Passing standard empirical statistical tests is necessary but not sufficient; a specific physical MC algorithm may still resonate with subtle higher-order correlations of a particular generator.",
+            "text_markdown": "Passing standard empirical statistical tests is necessary but not sufficient; a specific physical MC algorithm may still resonate with subtle higher-order correlations of a particular generator."
           },
           {
             "id": "b",
-            "text": "The computational effort of running with multiple valid generators is not wasted, because their independent results can be combined to lower the final statistical error bars."
+            "text": "The computational effort of running with multiple valid generators is not wasted, because their independent results can be combined to lower the final statistical error bars.",
+            "text_markdown": "The computational effort of running with multiple valid generators is not wasted, because their independent results can be combined to lower the final statistical error bars."
           },
           {
             "id": "c",
-            "text": "In modular libraries like SPRNG, switching to an entirely different generator family requires only relinking or changing a single initialization flag."
+            "text": "In modular libraries like SPRNG, switching to an entirely different generator family requires only relinking or changing a single initialization flag.",
+            "text_markdown": "In modular libraries like SPRNG, switching to an entirely different generator family requires only relinking or changing a single initialization flag."
           },
           {
             "id": "d",
-            "text": "Averaging two simulations that both use the exact same broken 8-bit LCG with the exact same seed reduces systematic bias to zero."
+            "text": "Averaging two simulations that both use the exact same broken 8-bit LCG with the exact same seed reduces systematic bias to zero.",
+            "text_markdown": "Averaging two simulations that both use the exact same broken 8-bit LCG with the exact same seed reduces systematic bias to zero."
           }
         ],
         "correct": [
@@ -853,19 +913,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor."
+            "text": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor.",
+            "text_markdown": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor."
           },
           {
             "id": "b",
-            "text": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one."
+            "text": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one.",
+            "text_markdown": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one."
           },
           {
             "id": "c",
-            "text": "Cloning is only possible on shared-memory GPUs, whereas Scanning requires a Geiger counter."
+            "text": "Cloning is only possible on shared-memory GPUs, whereas Scanning requires a Geiger counter.",
+            "text_markdown": "Cloning is only possible on shared-memory GPUs, whereas Scanning requires a Geiger counter."
           },
           {
             "id": "d",
-            "text": "Cloning partitions space-time domains, whereas Scanning forks new child particles."
+            "text": "Cloning partitions space-time domains, whereas Scanning forks new child particles.",
+            "text_markdown": "Cloning partitions space-time domains, whereas Scanning forks new child particles."
           }
         ],
         "correct": "a",
@@ -896,19 +960,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates."
+            "text": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates.",
+            "text_markdown": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates."
           },
           {
             "id": "b",
-            "text": "Note that correlated sampling can sometimes be used deliberately for small differences, but if you treat the scanned points as independent measurements in a fit or phase diagram while their random walks stay in phase, their errors are strongly correlated!"
+            "text": "Note that correlated sampling can sometimes be used deliberately for small differences, but if you treat the scanned points as independent measurements in a fit or phase diagram while their random walks stay in phase, their errors are strongly correlated!",
+            "text_markdown": "Note that correlated sampling can sometimes be used deliberately for small differences, but if you treat the scanned points as independent measurements in a fit or phase diagram while their random walks stay in phase, their errors are strongly correlated!"
           },
           {
             "id": "c",
-            "text": "The cycle length of each processor is reduced by a factor of $2^{32}$."
+            "text": "The cycle length of each processor is reduced by a factor of $2^{32}$.",
+            "text_markdown": "The cycle length of each processor is reduced by a factor of $2^{32}$."
           },
           {
             "id": "d",
-            "text": "The compiler refuses to compile MPI programs when two ranks share a seed."
+            "text": "The compiler refuses to compile MPI programs when two ranks share a seed.",
+            "text_markdown": "The compiler refuses to compile MPI programs when two ranks share a seed."
           }
         ],
         "correct": "a",
@@ -939,19 +1007,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream."
+            "text": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream.",
+            "text_markdown": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream."
           },
           {
             "id": "b",
-            "text": "Cycle Division varies the multiplier $a$; Cycle Parameterization uses a single cycle with leapfrog step $P$; Iteration Parameterization divides the modulus $m$ by the processor rank."
+            "text": "Cycle Division varies the multiplier $a$; Cycle Parameterization uses a single cycle with leapfrog step $P$; Iteration Parameterization divides the modulus $m$ by the processor rank.",
+            "text_markdown": "Cycle Division varies the multiplier $a$; Cycle Parameterization uses a single cycle with leapfrog step $P$; Iteration Parameterization divides the modulus $m$ by the processor rank."
           },
           {
             "id": "c",
-            "text": "All three names refer to initializing every processor with the identical seed $S_0 = 0$."
+            "text": "All three names refer to initializing every processor with the identical seed $S_0 = 0$.",
+            "text_markdown": "All three names refer to initializing every processor with the identical seed $S_0 = 0$."
           },
           {
             "id": "d",
-            "text": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables."
+            "text": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables.",
+            "text_markdown": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables."
           }
         ],
         "correct": "a",
@@ -968,19 +1040,23 @@
         "options": [
           {
             "id": "a",
-            "text": "`spawn_sprng(int *stream, int nspawned, int ***newstreams)`"
+            "text": "`spawn_sprng(int *stream, int nspawned, int ***newstreams)`",
+            "text_markdown": "`spawn_sprng(int *stream, int nspawned, int ***newstreams)`"
           },
           {
             "id": "b",
-            "text": "`free_sprng(int *stream)`"
+            "text": "`free_sprng(int *stream)`",
+            "text_markdown": "`free_sprng(int *stream)`"
           },
           {
             "id": "c",
-            "text": "`print_sprng(int *stream)`"
+            "text": "`print_sprng(int *stream)`",
+            "text_markdown": "`print_sprng(int *stream)`"
           },
           {
             "id": "d",
-            "text": "`unpack_sprng(char *buffer)`"
+            "text": "`unpack_sprng(char *buffer)`",
+            "text_markdown": "`unpack_sprng(char *buffer)`"
           }
         ],
         "correct": "a",
@@ -997,19 +1073,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks."
+            "text": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks.",
+            "text_markdown": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks."
           },
           {
             "id": "b",
-            "text": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences."
+            "text": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences.",
+            "text_markdown": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences."
           },
           {
             "id": "c",
-            "text": "Pass `nstreams = 0` and `param = -1` on every rank."
+            "text": "Pass `nstreams = 0` and `param = -1` on every rank.",
+            "text_markdown": "Pass `nstreams = 0` and `param = -1` on every rank."
           },
           {
             "id": "d",
-            "text": "Call `free_sprng` before calling `init_sprng`."
+            "text": "Call `free_sprng` before calling `init_sprng`.",
+            "text_markdown": "Call `free_sprng` before calling `init_sprng`."
           }
         ],
         "correct": "a",
@@ -1026,19 +1106,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!"
+            "text": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!",
+            "text_markdown": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!"
           },
           {
             "id": "b",
-            "text": "Reaching $\\epsilon = 10^{-6}$ requires only $N = 6$ random numbers, which underflows a 64-bit register."
+            "text": "Reaching $\\epsilon = 10^{-6}$ requires only $N = 6$ random numbers, which underflows a 64-bit register.",
+            "text_markdown": "Reaching $\\epsilon = 10^{-6}$ requires only $N = 6$ random numbers, which underflows a 64-bit register."
           },
           {
             "id": "c",
-            "text": "Feynman diagrams can only be integrated using physical Geiger counters."
+            "text": "Feynman diagrams can only be integrated using physical Geiger counters.",
+            "text_markdown": "Feynman diagrams can only be integrated using physical Geiger counters."
           },
           {
             "id": "d",
-            "text": "Cycle exhaustion only occurs when $N < 16$."
+            "text": "Cycle exhaustion only occurs when $N < 16$.",
+            "text_markdown": "Cycle exhaustion only occurs when $N < 16$."
           }
         ],
         "correct": "a",
@@ -1055,19 +1139,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces."
+            "text": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces.",
+            "text_markdown": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces."
           },
           {
             "id": "b",
-            "text": "Domain decomposition never uses random numbers inside the subdomains."
+            "text": "Domain decomposition never uses random numbers inside the subdomains.",
+            "text_markdown": "Domain decomposition never uses random numbers inside the subdomains."
           },
           {
             "id": "c",
-            "text": "Correlated streams cause the spatial box length $L$ to shrink to zero."
+            "text": "Correlated streams cause the spatial box length $L$ to shrink to zero.",
+            "text_markdown": "Correlated streams cause the spatial box length $L$ to shrink to zero."
           },
           {
             "id": "d",
-            "text": "Each processor only calls its PRNG once at $t = 0$."
+            "text": "Each processor only calls its PRNG once at $t = 0$.",
+            "text_markdown": "Each processor only calls its PRNG once at $t = 0$."
           }
         ],
         "correct": "a",
@@ -1115,19 +1203,23 @@
         "options": [
           {
             "id": "a",
-            "text": "`pack_sprng(int *stream, char **buffer)` and `unpack_sprng(char *buffer)`"
+            "text": "`pack_sprng(int *stream, char **buffer)` and `unpack_sprng(char *buffer)`",
+            "text_markdown": "`pack_sprng(int *stream, char **buffer)` and `unpack_sprng(char *buffer)`"
           },
           {
             "id": "b",
-            "text": "`make_sprng_seed()` and `free_sprng(int *stream)`"
+            "text": "`make_sprng_seed()` and `free_sprng(int *stream)`",
+            "text_markdown": "`make_sprng_seed()` and `free_sprng(int *stream)`"
           },
           {
             "id": "c",
-            "text": "`sprng(int *stream)` and `isprng(int *stream)`"
+            "text": "`sprng(int *stream)` and `isprng(int *stream)`",
+            "text_markdown": "`sprng(int *stream)` and `isprng(int *stream)`"
           },
           {
             "id": "d",
-            "text": "`print_sprng(int *stream)` and `spawn_sprng(...)`"
+            "text": "`print_sprng(int *stream)` and `spawn_sprng(...)`",
+            "text_markdown": "`print_sprng(int *stream)` and `spawn_sprng(...)`"
           }
         ],
         "correct": "a",

@@ -70,19 +70,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It is a stochastic algorithm that uses (pseudo)random numbers as an essential part of evaluating integrals or sampling probability distributions."
+            "text": "It is a stochastic algorithm that uses (pseudo)random numbers as an essential part of evaluating integrals or sampling probability distributions.",
+            "text_markdown": "It is a stochastic algorithm that uses (pseudo)random numbers as an essential part of evaluating integrals or sampling probability distributions."
           },
           {
             "id": "b",
-            "text": "It is a deterministic finite-difference solver for Newton's second law $F = ma$."
+            "text": "It is a deterministic finite-difference solver for Newton's second law $F = ma$.",
+            "text_markdown": "It is a deterministic finite-difference solver for Newton's second law $F = ma$."
           },
           {
             "id": "c",
-            "text": "It requires laying out a uniform $L^D$ mesh across all dimensions."
+            "text": "It requires laying out a uniform $L^D$ mesh across all dimensions.",
+            "text_markdown": "It requires laying out a uniform $L^D$ mesh across all dimensions."
           },
           {
             "id": "d",
-            "text": "It can only be applied to 1D or 2D geometric problems."
+            "text": "It can only be applied to 1D or 2D geometric problems.",
+            "text_markdown": "It can only be applied to 1D or 2D geometric problems."
           }
         ],
         "correct": "a",
@@ -271,19 +275,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$"
+            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$",
+            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$"
           },
           {
             "id": "b",
-            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$"
+            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$",
+            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$"
           },
           {
             "id": "c",
-            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-2}$"
+            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-2}$",
+            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-2}$"
           },
           {
             "id": "d",
-            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-D \\alpha}$"
+            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-D \\alpha}$",
+            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-D \\alpha}$"
           }
         ],
         "correct": "a",
@@ -320,19 +328,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$."
+            "text": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$.",
+            "text_markdown": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$."
           },
           {
             "id": "b",
-            "text": "Because Monte Carlo only works in 4 dimensions."
+            "text": "Because Monte Carlo only works in 4 dimensions.",
+            "text_markdown": "Because Monte Carlo only works in 4 dimensions."
           },
           {
             "id": "c",
-            "text": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$."
+            "text": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$.",
+            "text_markdown": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$."
           },
           {
             "id": "d",
-            "text": "Because random number generators run faster in $4\\text{D}$ than in $2\\text{D}$."
+            "text": "Because random number generators run faster in $4\\text{D}$ than in $2\\text{D}$.",
+            "text_markdown": "Because random number generators run faster in $4\\text{D}$ than in $2\\text{D}$."
           }
         ],
         "correct": "a",
@@ -349,19 +361,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It is conceptually and practically simple to implement, even for complex, high-dimensional, or irregularly shaped integration domains."
+            "text": "It is conceptually and practically simple to implement, even for complex, high-dimensional, or irregularly shaped integration domains.",
+            "text_markdown": "It is conceptually and practically simple to implement, even for complex, high-dimensional, or irregularly shaped integration domains."
           },
           {
             "id": "b",
-            "text": "It comes with built-in statistical error bars (via the sample variance $\\sigma / \\sqrt{M}$)."
+            "text": "It comes with built-in statistical error bars (via the sample variance $\\sigma / \\sqrt{M}$).",
+            "text_markdown": "It comes with built-in statistical error bars (via the sample variance $\\sigma / \\sqrt{M}$)."
           },
           {
             "id": "c",
-            "text": "It gives zero error with just $M = 1$ sample."
+            "text": "It gives zero error with just $M = 1$ sample.",
+            "text_markdown": "It gives zero error with just $M = 1$ sample."
           },
           {
             "id": "d",
-            "text": "It requires knowing the analytical 4th derivative $f^{(4)}(x)$ of the integrand beforehand."
+            "text": "It requires knowing the analytical 4th derivative $f^{(4)}(x)$ of the integrand beforehand.",
+            "text_markdown": "It requires knowing the analytical 4th derivative $f^{(4)}(x)$ of the integrand beforehand."
           }
         ],
         "correct": [
@@ -415,19 +431,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$."
+            "text": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$.",
+            "text_markdown": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$."
           },
           {
             "id": "b",
-            "text": "$C(y)$ oscillates between $-1$ and $+1$ and integrates to $1$."
+            "text": "$C(y)$ oscillates between $-1$ and $+1$ and integrates to $1$.",
+            "text_markdown": "$C(y)$ oscillates between $-1$ and $+1$ and integrates to $1$."
           },
           {
             "id": "c",
-            "text": "$C(y)$ equals the second derivative of $P(y)$."
+            "text": "$C(y)$ equals the second derivative of $P(y)$.",
+            "text_markdown": "$C(y)$ equals the second derivative of $P(y)$."
           },
           {
             "id": "d",
-            "text": "$C(y)$ can decrease whenever $P(y)$ decreases."
+            "text": "$C(y)$ can decrease whenever $P(y)$ decreases.",
+            "text_markdown": "$C(y)$ can decrease whenever $P(y)$ decreases."
           }
         ],
         "correct": "a",
@@ -444,19 +464,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$p_y(y) = p_x(x)\\left|\\frac{dx}{dy}\\right| = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|^{-1}$"
+            "text": "$p_y(y) = p_x(x)\\left|\\frac{dx}{dy}\\right| = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|^{-1}$",
+            "text_markdown": "$p_y(y) = p_x(x)\\left|\\frac{dx}{dy}\\right| = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|^{-1}$"
           },
           {
             "id": "b",
-            "text": "$p_y(y) = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|$"
+            "text": "$p_y(y) = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|$",
+            "text_markdown": "$p_y(y) = p_x(x)\\left|\\frac{dg(x)}{dx}\\right|$"
           },
           {
             "id": "c",
-            "text": "$p_y(y) = p_x(g(x))$"
+            "text": "$p_y(y) = p_x(g(x))$",
+            "text_markdown": "$p_y(y) = p_x(g(x))$"
           },
           {
             "id": "d",
-            "text": "$p_y(y) = \\frac{d}{dy} p_x(x)$"
+            "text": "$p_y(y) = \\frac{d}{dy} p_x(x)$",
+            "text_markdown": "$p_y(y) = \\frac{d}{dy} p_x(x)$"
           }
         ],
         "correct": "a",
@@ -487,19 +511,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$."
+            "text": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$.",
+            "text_markdown": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$."
           },
           {
             "id": "b",
-            "text": "$p_y(y) = 0$, because the positive and negative branches cancel out."
+            "text": "$p_y(y) = 0$, because the positive and negative branches cancel out.",
+            "text_markdown": "$p_y(y) = 0$, because the positive and negative branches cancel out."
           },
           {
             "id": "c",
-            "text": "$p_y(y) = \\frac{1}{4\\sqrt{y}}$, because only the positive branch counts."
+            "text": "$p_y(y) = \\frac{1}{4\\sqrt{y}}$, because only the positive branch counts.",
+            "text_markdown": "$p_y(y) = \\frac{1}{4\\sqrt{y}}$, because only the positive branch counts."
           },
           {
             "id": "d",
-            "text": "$p_y(y) = 2\\sqrt{y}$."
+            "text": "$p_y(y) = 2\\sqrt{y}$.",
+            "text_markdown": "$p_y(y) = 2\\sqrt{y}$."
           }
         ],
         "correct": "a",
@@ -568,19 +596,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible."
+            "text": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible.",
+            "text_markdown": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible."
           },
           {
             "id": "b",
-            "text": "The target distribution $p(y)$ must be symmetric about $y = 0$."
+            "text": "The target distribution $p(y)$ must be symmetric about $y = 0$.",
+            "text_markdown": "The target distribution $p(y)$ must be symmetric about $y = 0$."
           },
           {
             "id": "c",
-            "text": "The target distribution $p(y)$ must be a constant function."
+            "text": "The target distribution $p(y)$ must be a constant function.",
+            "text_markdown": "The target distribution $p(y)$ must be a constant function."
           },
           {
             "id": "d",
-            "text": "The second derivative $p''(y)$ must be zero everywhere."
+            "text": "The second derivative $p''(y)$ must be zero everywhere.",
+            "text_markdown": "The second derivative $p''(y)$ must be zero everywhere."
           }
         ],
         "correct": "a",
@@ -600,19 +632,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$."
+            "text": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$.",
+            "text_markdown": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$."
           },
           {
             "id": "b",
-            "text": "$y$ is the point where the height of the PDF equals $p(y) = 0.25$."
+            "text": "$y$ is the point where the height of the PDF equals $p(y) = 0.25$.",
+            "text_markdown": "$y$ is the point where the height of the PDF equals $p(y) = 0.25$."
           },
           {
             "id": "c",
-            "text": "$y$ is always equal to $0.25$ times the mean $\\langle y \\rangle$."
+            "text": "$y$ is always equal to $0.25$ times the mean $\\langle y \\rangle$.",
+            "text_markdown": "$y$ is always equal to $0.25$ times the mean $\\langle y \\rangle$."
           },
           {
             "id": "d",
-            "text": "$y$ is the point where the slope $dp/dy = 0.25$."
+            "text": "$y$ is the point where the slope $dp/dy = 0.25$.",
+            "text_markdown": "$y$ is the point where the slope $dp/dy = 0.25$."
           }
         ],
         "correct": "a",
@@ -629,19 +665,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$y = -\\frac{1}{\\lambda}\\ln(x)$ (or equivalently $-\\frac{1}{\\lambda}\\ln(1 - x)$)"
+            "text": "$y = -\\frac{1}{\\lambda}\\ln(x)$ (or equivalently $-\\frac{1}{\\lambda}\\ln(1 - x)$)",
+            "text_markdown": "$y = -\\frac{1}{\\lambda}\\ln(x)$ (or equivalently $-\\frac{1}{\\lambda}\\ln(1 - x)$)"
           },
           {
             "id": "b",
-            "text": "$y = \\lambda e^{-\\lambda x}$"
+            "text": "$y = \\lambda e^{-\\lambda x}$",
+            "text_markdown": "$y = \\lambda e^{-\\lambda x}$"
           },
           {
             "id": "c",
-            "text": "$y = \\sqrt{-2\\lambda \\ln x}$"
+            "text": "$y = \\sqrt{-2\\lambda \\ln x}$",
+            "text_markdown": "$y = \\sqrt{-2\\lambda \\ln x}$"
           },
           {
             "id": "d",
-            "text": "$y = -\\lambda \\ln(x)$"
+            "text": "$y = -\\lambda \\ln(x)$",
+            "text_markdown": "$y = -\\lambda \\ln(x)$"
           }
         ],
         "correct": "a",
@@ -675,19 +715,23 @@
         "options": [
           {
             "id": "a",
-            "text": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$."
+            "text": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$.",
+            "text_markdown": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$."
           },
           {
             "id": "b",
-            "text": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$."
+            "text": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$.",
+            "text_markdown": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$."
           },
           {
             "id": "c",
-            "text": "Because $1 - x$ is only approximately uniform when $\\lambda \\gg 1$."
+            "text": "Because $1 - x$ is only approximately uniform when $\\lambda \\gg 1$.",
+            "text_markdown": "Because $1 - x$ is only approximately uniform when $\\lambda \\gg 1$."
           },
           {
             "id": "d",
-            "text": "Replacing $1 - x$ with $x$ changes the mean of $y$ from $1/\\lambda$ to $2/\\lambda$."
+            "text": "Replacing $1 - x$ with $x$ changes the mean of $y$ from $1/\\lambda$ to $2/\\lambda$.",
+            "text_markdown": "Replacing $1 - x$ with $x$ changes the mean of $y$ from $1/\\lambda$ to $2/\\lambda$."
           }
         ],
         "correct": "a",
@@ -704,19 +748,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$y = u^{1/4}$"
+            "text": "$y = u^{1/4}$",
+            "text_markdown": "$y = u^{1/4}$"
           },
           {
             "id": "b",
-            "text": "$y = u^4$"
+            "text": "$y = u^4$",
+            "text_markdown": "$y = u^4$"
           },
           {
             "id": "c",
-            "text": "$y = \\frac{1}{4}u^{1/3}$"
+            "text": "$y = \\frac{1}{4}u^{1/3}$",
+            "text_markdown": "$y = \\frac{1}{4}u^{1/3}$"
           },
           {
             "id": "d",
-            "text": "$y = -\\frac{1}{4}\\ln u$"
+            "text": "$y = -\\frac{1}{4}\\ln u$",
+            "text_markdown": "$y = -\\frac{1}{4}\\ln u$"
           }
         ],
         "correct": "a",
@@ -764,19 +812,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$"
+            "text": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$",
+            "text_markdown": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$"
           },
           {
             "id": "b",
-            "text": "$y = \\arctan(\\pi u)$"
+            "text": "$y = \\arctan(\\pi u)$",
+            "text_markdown": "$y = \\arctan(\\pi u)$"
           },
           {
             "id": "c",
-            "text": "$y = \\frac{1}{\\pi(1 + u^2)}$"
+            "text": "$y = \\frac{1}{\\pi(1 + u^2)}$",
+            "text_markdown": "$y = \\frac{1}{\\pi(1 + u^2)}$"
           },
           {
             "id": "d",
-            "text": "$y = \\sin(2\\pi u)$"
+            "text": "$y = \\sin(2\\pi u)$",
+            "text_markdown": "$y = \\sin(2\\pi u)$"
           }
         ],
         "correct": "a",
@@ -810,19 +862,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because the 1D Gaussian cumulative distribution function $\\Phi(y)$ (the error function $\\text{erf}$) cannot be written or inverted in closed form using elementary functions, whereas the 2D Gaussian integral in polar coordinates $r\\,dr\\,d\\theta\\,e^{-r^2/2}$ integrates and inverts analytically."
+            "text": "Because the 1D Gaussian cumulative distribution function $\\Phi(y)$ (the error function $\\text{erf}$) cannot be written or inverted in closed form using elementary functions, whereas the 2D Gaussian integral in polar coordinates $r\\,dr\\,d\\theta\\,e^{-r^2/2}$ integrates and inverts analytically.",
+            "text_markdown": "Because the 1D Gaussian cumulative distribution function $\\Phi(y)$ (the error function $\\text{erf}$) cannot be written or inverted in closed form using elementary functions, whereas the 2D Gaussian integral in polar coordinates $r\\,dr\\,d\\theta\\,e^{-r^2/2}$ integrates and inverts analytically."
           },
           {
             "id": "b",
-            "text": "Because the Gaussian PDF $p(y)$ can be negative for $y < 0$."
+            "text": "Because the Gaussian PDF $p(y)$ can be negative for $y < 0$.",
+            "text_markdown": "Because the Gaussian PDF $p(y)$ can be negative for $y < 0$."
           },
           {
             "id": "c",
-            "text": "Because the 1D Gaussian integral $\\int_{-\\infty}^\\infty e^{-y^2/2}\\,dy$ diverges to infinity."
+            "text": "Because the 1D Gaussian integral $\\int_{-\\infty}^\\infty e^{-y^2/2}\\,dy$ diverges to infinity.",
+            "text_markdown": "Because the 1D Gaussian integral $\\int_{-\\infty}^\\infty e^{-y^2/2}\\,dy$ diverges to infinity."
           },
           {
             "id": "d",
-            "text": "Because 1D Inverse Transform Sampling only works for discrete variables."
+            "text": "Because 1D Inverse Transform Sampling only works for discrete variables.",
+            "text_markdown": "Because 1D Inverse Transform Sampling only works for discrete variables."
           }
         ],
         "correct": "a",
@@ -839,19 +895,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$"
+            "text": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$",
+            "text_markdown": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$"
           },
           {
             "id": "b",
-            "text": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$"
+            "text": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$",
+            "text_markdown": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$"
           },
           {
             "id": "c",
-            "text": "$y_1 = x_1 \\cos(2\\pi x_2)$ and $y_2 = x_1 \\sin(2\\pi x_2)$"
+            "text": "$y_1 = x_1 \\cos(2\\pi x_2)$ and $y_2 = x_1 \\sin(2\\pi x_2)$",
+            "text_markdown": "$y_1 = x_1 \\cos(2\\pi x_2)$ and $y_2 = x_1 \\sin(2\\pi x_2)$"
           },
           {
             "id": "d",
-            "text": "$y_1 = \\sqrt{x_1 + x_2}$ and $y_2 = \\sqrt{x_1 - x_2}$"
+            "text": "$y_1 = \\sqrt{x_1 + x_2}$ and $y_2 = \\sqrt{x_1 - x_2}$",
+            "text_markdown": "$y_1 = \\sqrt{x_1 + x_2}$ and $y_2 = \\sqrt{x_1 - x_2}$"
           }
         ],
         "correct": "a",
@@ -899,19 +959,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation."
+            "text": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation.",
+            "text_markdown": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation."
           },
           {
             "id": "b",
-            "text": "It proves that $y_1$ and $y_2$ are always equal to each other ($y_1 = y_2$)."
+            "text": "It proves that $y_1$ and $y_2$ are always equal to each other ($y_1 = y_2$).",
+            "text_markdown": "It proves that $y_1$ and $y_2$ are always equal to each other ($y_1 = y_2$)."
           },
           {
             "id": "c",
-            "text": "It proves that $y_1 + y_2 = 0$."
+            "text": "It proves that $y_1 + y_2 = 0$.",
+            "text_markdown": "It proves that $y_1 + y_2 = 0$."
           },
           {
             "id": "d",
-            "text": "It shows that one of the two variables must be discarded."
+            "text": "It shows that one of the two variables must be discarded.",
+            "text_markdown": "It shows that one of the two variables must be discarded."
           }
         ],
         "correct": "a",
@@ -928,19 +992,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair."
+            "text": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair.",
+            "text_markdown": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair."
           },
           {
             "id": "b",
-            "text": "It eliminates the square root and natural logarithm operations."
+            "text": "It eliminates the square root and natural logarithm operations.",
+            "text_markdown": "It eliminates the square root and natural logarithm operations."
           },
           {
             "id": "c",
-            "text": "It only requires 1 uniform random number to generate 10 Gaussian numbers."
+            "text": "It only requires 1 uniform random number to generate 10 Gaussian numbers.",
+            "text_markdown": "It only requires 1 uniform random number to generate 10 Gaussian numbers."
           },
           {
             "id": "d",
-            "text": "It works without a random number generator."
+            "text": "It works without a random number generator.",
+            "text_markdown": "It works without a random number generator."
           }
         ],
         "correct": "a",
@@ -1006,19 +1074,23 @@
         "options": [
           {
             "id": "a",
-            "text": "To sample the time $\\Delta t_{\\text{wait}}$ until the next stochastic heat-bath collision in a Poisson process of rate $\\nu$, one uses Inverse Transform Sampling $y = -\\ln(u)/\\nu$."
+            "text": "To sample the time $\\Delta t_{\\text{wait}}$ until the next stochastic heat-bath collision in a Poisson process of rate $\\nu$, one uses Inverse Transform Sampling $y = -\\ln(u)/\\nu$.",
+            "text_markdown": "To sample the time $\\Delta t_{\\text{wait}}$ until the next stochastic heat-bath collision in a Poisson process of rate $\\nu$, one uses Inverse Transform Sampling $y = -\\ln(u)/\\nu$."
           },
           {
             "id": "b",
-            "text": "To sample 3D Maxwell\u2013Boltzmann velocities $(v_x, v_y, v_z)$ for $N$ atoms, one can generate standard normal pairs $(y_1, y_2)$ via Box\u2013Muller and multiply by $\\sqrt{k_B T / m}$."
+            "text": "To sample 3D Maxwell\u2013Boltzmann velocities $(v_x, v_y, v_z)$ for $N$ atoms, one can generate standard normal pairs $(y_1, y_2)$ via Box\u2013Muller and multiply by $\\sqrt{k_B T / m}$.",
+            "text_markdown": "To sample 3D Maxwell\u2013Boltzmann velocities $(v_x, v_y, v_z)$ for $N$ atoms, one can generate standard normal pairs $(y_1, y_2)$ via Box\u2013Muller and multiply by $\\sqrt{k_B T / m}$."
           },
           {
             "id": "c",
-            "text": "For evaluating the 300-dimensional configurational integral of 100 atoms in 3D, Simpson's rule ($\\alpha = 4$) is asymptotically faster than Monte Carlo because $\\alpha = 4 > 2$."
+            "text": "For evaluating the 300-dimensional configurational integral of 100 atoms in 3D, Simpson's rule ($\\alpha = 4$) is asymptotically faster than Monte Carlo because $\\alpha = 4 > 2$.",
+            "text_markdown": "For evaluating the 300-dimensional configurational integral of 100 atoms in 3D, Simpson's rule ($\\alpha = 4$) is asymptotically faster than Monte Carlo because $\\alpha = 4 > 2$."
           },
           {
             "id": "d",
-            "text": "When transforming random variables in $D$ dimensions, probability conservation requires multiplying by the absolute value of the Jacobian determinant $|\\det(\\partial \\mathbf{x} / \\partial \\mathbf{y})|$."
+            "text": "When transforming random variables in $D$ dimensions, probability conservation requires multiplying by the absolute value of the Jacobian determinant $|\\det(\\partial \\mathbf{x} / \\partial \\mathbf{y})|$.",
+            "text_markdown": "When transforming random variables in $D$ dimensions, probability conservation requires multiplying by the absolute value of the Jacobian determinant $|\\det(\\partial \\mathbf{x} / \\partial \\mathbf{y})|$."
           }
         ],
         "correct": [

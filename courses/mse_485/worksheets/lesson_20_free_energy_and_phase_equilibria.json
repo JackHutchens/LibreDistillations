@@ -257,7 +257,7 @@
         "question_type": "single_select",
         "difficulty": "medium",
         "taught_by": "concept_kirkwood_thermodynamic_integration",
-        "prompt_markdown": "In the concept cell, when switching to 'First-Order Transition Crossing', what causes the forward sweep ($\\\\lambda: 0 \\\\to 1$) and reverse sweep ($\\\\lambda: 1 \\\\to 0$) to form a hysteresis loop?",
+        "prompt_markdown": "In the concept cell, when switching to 'First-Order Transition Crossing', what causes the forward sweep ($\\lambda: 0 \\to 1$) and reverse sweep ($\\lambda: 1 \\to 0$) to form a hysteresis loop?",
         "options": [
           {
             "id": "a",

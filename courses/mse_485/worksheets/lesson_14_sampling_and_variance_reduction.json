@@ -85,19 +85,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$r = R\\sqrt{u}$"
+            "text": "$r = R\\sqrt{u}$",
+            "text_markdown": "$r = R\\sqrt{u}$"
           },
           {
             "id": "b",
-            "text": "$r = R u^2$"
+            "text": "$r = R u^2$",
+            "text_markdown": "$r = R u^2$"
           },
           {
             "id": "c",
-            "text": "$r = -R \\ln(u)$"
+            "text": "$r = -R \\ln(u)$",
+            "text_markdown": "$r = -R \\ln(u)$"
           },
           {
             "id": "d",
-            "text": "$r = R u / 2$"
+            "text": "$r = R u / 2$",
+            "text_markdown": "$r = R u / 2$"
           }
         ],
         "correct": "a",
@@ -128,19 +132,23 @@
         "options": [
           {
             "id": "a",
-            "text": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional."
+            "text": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional.",
+            "text_markdown": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional."
           },
           {
             "id": "b",
-            "text": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$)."
+            "text": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$).",
+            "text_markdown": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$)."
           },
           {
             "id": "c",
-            "text": "Whenever $p(x)$ is an exponential distribution $a e^{-ax}$."
+            "text": "Whenever $p(x)$ is an exponential distribution $a e^{-ax}$.",
+            "text_markdown": "Whenever $p(x)$ is an exponential distribution $a e^{-ax}$."
           },
           {
             "id": "d",
-            "text": "Whenever the integral of $p(x)$ over all space equals $1$."
+            "text": "Whenever the integral of $p(x)$ over all space equals $1$.",
+            "text_markdown": "Whenever the integral of $p(x)$ over all space equals $1$."
           }
         ],
         "correct": "a",
@@ -315,19 +323,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling."
+            "text": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling.",
+            "text_markdown": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling."
           },
           {
             "id": "b",
-            "text": "Because $12$ is the minimum integer for which $\\zeta$ has infinite tails $(-\\infty, \\infty)$."
+            "text": "Because $12$ is the minimum integer for which $\\zeta$ has infinite tails $(-\\infty, \\infty)$.",
+            "text_markdown": "Because $12$ is the minimum integer for which $\\zeta$ has infinite tails $(-\\infty, \\infty)$."
           },
           {
             "id": "c",
-            "text": "Because a 12-bit LCG has a period of $6$."
+            "text": "Because a 12-bit LCG has a period of $6$.",
+            "text_markdown": "Because a 12-bit LCG has a period of $6$."
           },
           {
             "id": "d",
-            "text": "Because $\\sum_{i=1}^{12} u_i - 6$ reproduces the exact Box\u2013Muller cosine transform."
+            "text": "Because $\\sum_{i=1}^{12} u_i - 6$ reproduces the exact Box\u2013Muller cosine transform.",
+            "text_markdown": "Because $\\sum_{i=1}^{12} u_i - 6$ reproduces the exact Box\u2013Muller cosine transform."
           }
         ],
         "correct": "a",
@@ -344,19 +356,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$P(x) = k\\,x^{k-1}$"
+            "text": "$P(x) = k\\,x^{k-1}$",
+            "text_markdown": "$P(x) = k\\,x^{k-1}$"
           },
           {
             "id": "b",
-            "text": "$P(x) = x^k / k!$"
+            "text": "$P(x) = x^k / k!$",
+            "text_markdown": "$P(x) = x^k / k!$"
           },
           {
             "id": "c",
-            "text": "$P(x) = k(1 - x)^{k-1}$"
+            "text": "$P(x) = k(1 - x)^{k-1}$",
+            "text_markdown": "$P(x) = k(1 - x)^{k-1}$"
           },
           {
             "id": "d",
-            "text": "$P(x) = -\\ln(x) / k$"
+            "text": "$P(x) = -\\ln(x) / k$",
+            "text_markdown": "$P(x) = -\\ln(x) / k$"
           }
         ],
         "correct": "a",
@@ -387,19 +403,23 @@
         "options": [
           {
             "id": "a",
-            "text": "An exponential distribution $p(v) = \\frac{1}{2}e^{-v/2}$ ($v \\ge 0$) with rate parameter $a = 1/2$, which can be sampled analytically via $v = r^2 = -2\\ln(x_1)$."
+            "text": "An exponential distribution $p(v) = \\frac{1}{2}e^{-v/2}$ ($v \\ge 0$) with rate parameter $a = 1/2$, which can be sampled analytically via $v = r^2 = -2\\ln(x_1)$.",
+            "text_markdown": "An exponential distribution $p(v) = \\frac{1}{2}e^{-v/2}$ ($v \\ge 0$) with rate parameter $a = 1/2$, which can be sampled analytically via $v = r^2 = -2\\ln(x_1)$."
           },
           {
             "id": "b",
-            "text": "A uniform distribution $p(v) = 1$ on $[0, 1]$, sampled via $v = x_1$."
+            "text": "A uniform distribution $p(v) = 1$ on $[0, 1]$, sampled via $v = x_1$.",
+            "text_markdown": "A uniform distribution $p(v) = 1$ on $[0, 1]$, sampled via $v = x_1$."
           },
           {
             "id": "c",
-            "text": "A Cauchy distribution $p(v) = \\frac{1}{\\pi(1 + v^2)}$."
+            "text": "A Cauchy distribution $p(v) = \\frac{1}{\\pi(1 + v^2)}$.",
+            "text_markdown": "A Cauchy distribution $p(v) = \\frac{1}{\\pi(1 + v^2)}$."
           },
           {
             "id": "d",
-            "text": "A Poisson distribution with discrete integer radii $v \\in \\{0, 1, 2, \\dots\\}$."
+            "text": "A Poisson distribution with discrete integer radii $v \\in \\{0, 1, 2, \\dots\\}$.",
+            "text_markdown": "A Poisson distribution with discrete integer radii $v \\in \\{0, 1, 2, \\dots\\}$."
           }
         ],
         "correct": "a",
@@ -430,19 +450,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It completely avoids calling slow trigonometric functions (`sin` and `cos`)."
+            "text": "It completely avoids calling slow trigonometric functions (`sin` and `cos`).",
+            "text_markdown": "It completely avoids calling slow trigonometric functions (`sin` and `cos`)."
           },
           {
             "id": "b",
-            "text": "The rejection step consumes a variable number of random numbers, which mixes up the crystal-plane regularity (Marsaglia hyperplanes) of simple LCGs."
+            "text": "The rejection step consumes a variable number of random numbers, which mixes up the crystal-plane regularity (Marsaglia hyperplanes) of simple LCGs.",
+            "text_markdown": "The rejection step consumes a variable number of random numbers, which mixes up the crystal-plane regularity (Marsaglia hyperplanes) of simple LCGs."
           },
           {
             "id": "c",
-            "text": "Each successful pass generates $2$ independent normal random numbers (`xnormal` and `ynormal`) at once."
+            "text": "Each successful pass generates $2$ independent normal random numbers (`xnormal` and `ynormal`) at once.",
+            "text_markdown": "Each successful pass generates $2$ independent normal random numbers (`xnormal` and `ynormal`) at once."
           },
           {
             "id": "d",
-            "text": "It never calls `sqrt` or `ln`."
+            "text": "It never calls `sqrt` or `ln`.",
+            "text_markdown": "It never calls `sqrt` or `ln`."
           }
         ],
         "correct": [
@@ -466,19 +490,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$"
+            "text": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$",
+            "text_markdown": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$"
           },
           {
             "id": "b",
-            "text": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$"
+            "text": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$",
+            "text_markdown": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$"
           },
           {
             "id": "c",
-            "text": "$\\mathbf{S}^2 = \\mathbf{I}$"
+            "text": "$\\mathbf{S}^2 = \\mathbf{I}$",
+            "text_markdown": "$\\mathbf{S}^2 = \\mathbf{I}$"
           },
           {
             "id": "d",
-            "text": "$\\det(\\mathbf{S}) = 0$"
+            "text": "$\\det(\\mathbf{S}) = 0$",
+            "text_markdown": "$\\det(\\mathbf{S}) = 0$"
           }
         ],
         "correct": "a",
@@ -512,19 +540,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$."
+            "text": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$.",
+            "text_markdown": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$."
           },
           {
             "id": "b",
-            "text": "$\\mathbf{T}$ must be antisymmetric ($T_{ij} = -T_{ji}$) with zeros on the diagonal."
+            "text": "$\\mathbf{T}$ must be antisymmetric ($T_{ij} = -T_{ji}$) with zeros on the diagonal.",
+            "text_markdown": "$\\mathbf{T}$ must be antisymmetric ($T_{ij} = -T_{ji}$) with zeros on the diagonal."
           },
           {
             "id": "c",
-            "text": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$)."
+            "text": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$).",
+            "text_markdown": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$)."
           },
           {
             "id": "d",
-            "text": "$\\mathbf{T}$ must be an orthogonal permutation matrix."
+            "text": "$\\mathbf{T}$ must be an orthogonal permutation matrix.",
+            "text_markdown": "$\\mathbf{T}$ must be an orthogonal permutation matrix."
           }
         ],
         "correct": "a",
@@ -602,19 +634,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$."
+            "text": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$.",
+            "text_markdown": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$."
           },
           {
             "id": "b",
-            "text": "$\\zeta = v T$; because both variance $v$ and CPU time $T$ decrease linearly with $N$."
+            "text": "$\\zeta = v T$; because both variance $v$ and CPU time $T$ decrease linearly with $N$.",
+            "text_markdown": "$\\zeta = v T$; because both variance $v$ and CPU time $T$ decrease linearly with $N$."
           },
           {
             "id": "c",
-            "text": "$\\zeta = \\frac{T}{v}$; because longer CPU times always imply higher efficiency."
+            "text": "$\\zeta = \\frac{T}{v}$; because longer CPU times always imply higher efficiency.",
+            "text_markdown": "$\\zeta = \\frac{T}{v}$; because longer CPU times always imply higher efficiency."
           },
           {
             "id": "d",
-            "text": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$."
+            "text": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$.",
+            "text_markdown": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$."
           }
         ],
         "correct": "a",
@@ -645,19 +681,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N \\frac{f(x_i)}{p(x_i)}$; its expected mean value $\\langle \\hat{I} \\rangle_p = I$ is completely independent of $p(x)$, whereas its variance depends strongly on $p(x)$."
+            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N \\frac{f(x_i)}{p(x_i)}$; its expected mean value $\\langle \\hat{I} \\rangle_p = I$ is completely independent of $p(x)$, whereas its variance depends strongly on $p(x)$.",
+            "text_markdown": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N \\frac{f(x_i)}{p(x_i)}$; its expected mean value $\\langle \\hat{I} \\rangle_p = I$ is completely independent of $p(x)$, whereas its variance depends strongly on $p(x)$."
           },
           {
             "id": "b",
-            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N f(x_i) p(x_i)$; both its mean and variance are independent of $p(x)$."
+            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N f(x_i) p(x_i)$; both its mean and variance are independent of $p(x)$.",
+            "text_markdown": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N f(x_i) p(x_i)$; both its mean and variance are independent of $p(x)$."
           },
           {
             "id": "c",
-            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N f(x_i)$; its mean equals $I$ only when $p(x)$ is a Gaussian."
+            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N f(x_i)$; its mean equals $I$ only when $p(x)$ is a Gaussian.",
+            "text_markdown": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N f(x_i)$; its mean equals $I$ only when $p(x)$ is a Gaussian."
           },
           {
             "id": "d",
-            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N \\frac{p(x_i)}{f(x_i)}$; its variance is always zero for any $p(x)$."
+            "text": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N \\frac{p(x_i)}{f(x_i)}$; its variance is always zero for any $p(x)$.",
+            "text_markdown": "The estimator is $\\hat{I} = \\frac{1}{N}\\sum_{i=1}^N \\frac{p(x_i)}{f(x_i)}$; its variance is always zero for any $p(x)$."
           }
         ],
         "correct": "a",
@@ -674,19 +714,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!"
+            "text": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!",
+            "text_markdown": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!"
           },
           {
             "id": "b",
-            "text": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative."
+            "text": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative.",
+            "text_markdown": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative."
           },
           {
             "id": "c",
-            "text": "$p^*(x) = \\delta(x - x_0)$; we cannot use it because computers cannot store floating-point numbers."
+            "text": "$p^*(x) = \\delta(x - x_0)$; we cannot use it because computers cannot store floating-point numbers.",
+            "text_markdown": "$p^*(x) = \\delta(x - x_0)$; we cannot use it because computers cannot store floating-point numbers."
           },
           {
             "id": "d",
-            "text": "$p^*(x) = 1$; we cannot use it because uniform distributions have infinite variance."
+            "text": "$p^*(x) = 1$; we cannot use it because uniform distributions have infinite variance.",
+            "text_markdown": "$p^*(x) = 1$; we cannot use it because uniform distributions have infinite variance."
           }
         ],
         "correct": "a",
@@ -703,19 +747,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible)."
+            "text": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible).",
+            "text_markdown": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible)."
           },
           {
             "id": "b",
-            "text": "$\\sigma^2 = 0$ (because $p^*(x)$ always achieves zero variance even when $f(x)$ changes sign)."
+            "text": "$\\sigma^2 = 0$ (because $p^*(x)$ always achieves zero variance even when $f(x)$ changes sign).",
+            "text_markdown": "$\\sigma^2 = 0$ (because $p^*(x)$ always achieves zero variance even when $f(x)$ changes sign)."
           },
           {
             "id": "c",
-            "text": "$\\sigma^2 = \\infty$."
+            "text": "$\\sigma^2 = \\infty$.",
+            "text_markdown": "$\\sigma^2 = \\infty$."
           },
           {
             "id": "d",
-            "text": "$\\sigma^2 = 2$."
+            "text": "$\\sigma^2 = 2$.",
+            "text_markdown": "$\\sigma^2 = 2$."
           }
         ],
         "correct": "a",
@@ -769,19 +817,23 @@
         "options": [
           {
             "id": "a",
-            "text": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band."
+            "text": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band.",
+            "text_markdown": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band."
           },
           {
             "id": "b",
-            "text": "For $a \\le 0.5$, the estimator trace is a perfectly flat horizontal line with zero noise."
+            "text": "For $a \\le 0.5$, the estimator trace is a perfectly flat horizontal line with zero noise.",
+            "text_markdown": "For $a \\le 0.5$, the estimator trace is a perfectly flat horizontal line with zero noise."
           },
           {
             "id": "c",
-            "text": "For $a \\le 0.5$, every single sample $f(x_i)/p_a(x_i)$ is negative."
+            "text": "For $a \\le 0.5$, every single sample $f(x_i)/p_a(x_i)$ is negative.",
+            "text_markdown": "For $a \\le 0.5$, every single sample $f(x_i)/p_a(x_i)$ is negative."
           },
           {
             "id": "d",
-            "text": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical."
+            "text": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical.",
+            "text_markdown": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical."
           }
         ],
         "correct": "a",
@@ -798,19 +850,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because under-sampling causes $f(x)/p(x)$ to blow up in the tails, risking infinite variance ($\\sigma^2 = \\infty$), whereas over-sampling keeps $f(x)/p(x) \\to 0$ bounded in the tails and only incurs a moderate, finite loss in efficiency."
+            "text": "Because under-sampling causes $f(x)/p(x)$ to blow up in the tails, risking infinite variance ($\\sigma^2 = \\infty$), whereas over-sampling keeps $f(x)/p(x) \\to 0$ bounded in the tails and only incurs a moderate, finite loss in efficiency.",
+            "text_markdown": "Because under-sampling causes $f(x)/p(x)$ to blow up in the tails, risking infinite variance ($\\sigma^2 = \\infty$), whereas over-sampling keeps $f(x)/p(x) \\to 0$ bounded in the tails and only incurs a moderate, finite loss in efficiency."
           },
           {
             "id": "b",
-            "text": "Because over-sampling violates conservation of energy."
+            "text": "Because over-sampling violates conservation of energy.",
+            "text_markdown": "Because over-sampling violates conservation of energy."
           },
           {
             "id": "c",
-            "text": "Because under-sampling always reduces the variance to zero."
+            "text": "Because under-sampling always reduces the variance to zero.",
+            "text_markdown": "Because under-sampling always reduces the variance to zero."
           },
           {
             "id": "d",
-            "text": "Because over-sampling makes the integral mean $\\langle f/p \\rangle_p$ depend on $a$."
+            "text": "Because over-sampling makes the integral mean $\\langle f/p \\rangle_p$ depend on $a$.",
+            "text_markdown": "Because over-sampling makes the integral mean $\\langle f/p \\rangle_p$ depend on $a$."
           }
         ],
         "correct": "a",
@@ -847,19 +903,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest)."
+            "text": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest).",
+            "text_markdown": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest)."
           },
           {
             "id": "b",
-            "text": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$."
+            "text": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$.",
+            "text_markdown": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$."
           },
           {
             "id": "c",
-            "text": "$p^*(x) = 1$ (uniform sampling is always optimal for differences)."
+            "text": "$p^*(x) = 1$ (uniform sampling is always optimal for differences).",
+            "text_markdown": "$p^*(x) = 1$ (uniform sampling is always optimal for differences)."
           },
           {
             "id": "d",
-            "text": "$p^*(x) \\propto |f_1(x) / f_2(x)|$."
+            "text": "$p^*(x) \\propto |f_1(x) / f_2(x)|$.",
+            "text_markdown": "$p^*(x) \\propto |f_1(x) / f_2(x)|$."
           }
         ],
         "correct": "a",
@@ -876,19 +936,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$"
+            "text": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$",
+            "text_markdown": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$"
           },
           {
             "id": "b",
-            "text": "$p^*(r) \\propto e^{+\\beta V(r)} / A(r)$"
+            "text": "$p^*(r) \\propto e^{+\\beta V(r)} / A(r)$",
+            "text_markdown": "$p^*(r) \\propto e^{+\\beta V(r)} / A(r)$"
           },
           {
             "id": "c",
-            "text": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)"
+            "text": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)",
+            "text_markdown": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)"
           },
           {
             "id": "d",
-            "text": "$p^*(r) \\propto e^{-2\\beta V(r)}$"
+            "text": "$p^*(r) \\propto e^{-2\\beta V(r)}$",
+            "text_markdown": "$p^*(r) \\propto e^{-2\\beta V(r)}$"
           }
         ],
         "correct": "a",
@@ -905,19 +969,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$)."
+            "text": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$).",
+            "text_markdown": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$)."
           },
           {
             "id": "b",
-            "text": "Because $A_i(\\mathbf{R}) - \\langle A_i \\rangle$ is always equal to $1$ for every configuration $\\mathbf{R}$."
+            "text": "Because $A_i(\\mathbf{R}) - \\langle A_i \\rangle$ is always equal to $1$ for every configuration $\\mathbf{R}$.",
+            "text_markdown": "Because $A_i(\\mathbf{R}) - \\langle A_i \\rangle$ is always equal to $1$ for every configuration $\\mathbf{R}$."
           },
           {
             "id": "c",
-            "text": "Because $e^{-\\beta V(\\mathbf{R})}$ is a flat uniform distribution."
+            "text": "Because $e^{-\\beta V(\\mathbf{R})}$ is a flat uniform distribution.",
+            "text_markdown": "Because $e^{-\\beta V(\\mathbf{R})}$ is a flat uniform distribution."
           },
           {
             "id": "d",
-            "text": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts."
+            "text": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts.",
+            "text_markdown": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts."
           }
         ],
         "correct": "a",
@@ -934,19 +1002,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\text{var}(\\beta F) = \\frac{Z(2\\beta)}{Z(\\beta)^2} - 1 = e^{2\\beta[F(\\beta) - F(2\\beta)]} - 1$"
+            "text": "$\\text{var}(\\beta F) = \\frac{Z(2\\beta)}{Z(\\beta)^2} - 1 = e^{2\\beta[F(\\beta) - F(2\\beta)]} - 1$",
+            "text_markdown": "$\\text{var}(\\beta F) = \\frac{Z(2\\beta)}{Z(\\beta)^2} - 1 = e^{2\\beta[F(\\beta) - F(2\\beta)]} - 1$"
           },
           {
             "id": "b",
-            "text": "$\\text{var}(\\beta F) = \\frac{1}{N}$"
+            "text": "$\\text{var}(\\beta F) = \\frac{1}{N}$",
+            "text_markdown": "$\\text{var}(\\beta F) = \\frac{1}{N}$"
           },
           {
             "id": "c",
-            "text": "$\\text{var}(\\beta F) = 2\\beta F(\\beta)$"
+            "text": "$\\text{var}(\\beta F) = 2\\beta F(\\beta)$",
+            "text_markdown": "$\\text{var}(\\beta F) = 2\\beta F(\\beta)$"
           },
           {
             "id": "d",
-            "text": "$\\text{var}(\\beta F) = 0$"
+            "text": "$\\text{var}(\\beta F) = 0$",
+            "text_markdown": "$\\text{var}(\\beta F) = 0$"
           }
         ],
         "correct": "a",
@@ -963,19 +1035,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$."
+            "text": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$.",
+            "text_markdown": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$."
           },
           {
             "id": "b",
-            "text": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$."
+            "text": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$.",
+            "text_markdown": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$."
           },
           {
             "id": "c",
-            "text": "Because $F(\\beta)$ is always equal to $F(2\\beta)$."
+            "text": "Because $F(\\beta)$ is always equal to $F(2\\beta)$.",
+            "text_markdown": "Because $F(\\beta)$ is always equal to $F(2\\beta)$."
           },
           {
             "id": "d",
-            "text": "Because uniform random number generators stop working when $N > 12$."
+            "text": "Because uniform random number generators stop working when $N > 12$.",
+            "text_markdown": "Because uniform random number generators stop working when $N > 12$."
           }
         ],
         "correct": "a",
@@ -1020,19 +1096,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars)."
+            "text": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars).",
+            "text_markdown": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars)."
           },
           {
             "id": "b",
-            "text": "Verify that the variance $\\sigma^2(a)$ is completely independent of $a$."
+            "text": "Verify that the variance $\\sigma^2(a)$ is completely independent of $a$.",
+            "text_markdown": "Verify that the variance $\\sigma^2(a)$ is completely independent of $a$."
           },
           {
             "id": "c",
-            "text": "Verify that setting $a = -1$ produces positive probabilities."
+            "text": "Verify that setting $a = -1$ produces positive probabilities.",
+            "text_markdown": "Verify that setting $a = -1$ produces positive probabilities."
           },
           {
             "id": "d",
-            "text": "Verify that $\\hat{I}$ increases linearly with the parameter $a$."
+            "text": "Verify that $\\hat{I}$ increases linearly with the parameter $a$.",
+            "text_markdown": "Verify that $\\hat{I}$ increases linearly with the parameter $a$."
           }
         ],
         "correct": "a",
@@ -1066,19 +1146,23 @@
         "options": [
           {
             "id": "a",
-            "text": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$."
+            "text": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$.",
+            "text_markdown": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$."
           },
           {
             "id": "b",
-            "text": "Setting $a < \\max[p/q]$ increases the efficiency above $100\\%$ while still sampling $p(x)$ without bias."
+            "text": "Setting $a < \\max[p/q]$ increases the efficiency above $100\\%$ while still sampling $p(x)$ without bias.",
+            "text_markdown": "Setting $a < \\max[p/q]$ increases the efficiency above $100\\%$ while still sampling $p(x)$ without bias."
           },
           {
             "id": "c",
-            "text": "The rejection algorithm automatically rescales $u$ to $[0, 10]$ so no bias occurs."
+            "text": "The rejection algorithm automatically rescales $u$ to $[0, 10]$ so no bias occurs.",
+            "text_markdown": "The rejection algorithm automatically rescales $u$ to $[0, 10]$ so no bias occurs."
           },
           {
             "id": "d",
-            "text": "The variance of the accepted points becomes zero."
+            "text": "The variance of the accepted points becomes zero.",
+            "text_markdown": "The variance of the accepted points becomes zero."
           }
         ],
         "correct": "a",
@@ -1112,19 +1196,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Multiply independent uniform draws $u_1 u_2 \\cdots$ until the product first drops below $e^{-\\nu} = e^{-at}$ at step $n + 1$ ($\\prod_{k=1}^n u_k \\ge e^{-\\nu} > \\prod_{k=1}^{n+1} u_k$), and return $n$."
+            "text": "Multiply independent uniform draws $u_1 u_2 \\cdots$ until the product first drops below $e^{-\\nu} = e^{-at}$ at step $n + 1$ ($\\prod_{k=1}^n u_k \\ge e^{-\\nu} > \\prod_{k=1}^{n+1} u_k$), and return $n$.",
+            "text_markdown": "Multiply independent uniform draws $u_1 u_2 \\cdots$ until the product first drops below $e^{-\\nu} = e^{-at}$ at step $n + 1$ ($\\prod_{k=1}^n u_k \\ge e^{-\\nu} > \\prod_{k=1}^{n+1} u_k$), and return $n$."
           },
           {
             "id": "b",
-            "text": "Add $12$ uniform draws and subtract $e^{-\\nu}$."
+            "text": "Add $12$ uniform draws and subtract $e^{-\\nu}$.",
+            "text_markdown": "Add $12$ uniform draws and subtract $e^{-\\nu}$."
           },
           {
             "id": "c",
-            "text": "Take $\\max(u_1, \\dots, u_n)$ and divide by $n!$."
+            "text": "Take $\\max(u_1, \\dots, u_n)$ and divide by $n!$.",
+            "text_markdown": "Take $\\max(u_1, \\dots, u_n)$ and divide by $n!$."
           },
           {
             "id": "d",
-            "text": "Reject $u_k$ whenever $u_k > \\nu$."
+            "text": "Reject $u_k$ whenever $u_k > \\nu$.",
+            "text_markdown": "Reject $u_k$ whenever $u_k > \\nu$."
           }
         ],
         "correct": "a",
@@ -1146,19 +1234,23 @@
         "options": [
           {
             "id": "a",
-            "text": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$."
+            "text": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$.",
+            "text_markdown": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$."
           },
           {
             "id": "b",
-            "text": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms."
+            "text": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms.",
+            "text_markdown": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms."
           },
           {
             "id": "c",
-            "text": "(1) Cholesky decomposition; (2) Bisection table search; (3) Geiger counter TRNG; (4) 12-udrn composition."
+            "text": "(1) Cholesky decomposition; (2) Bisection table search; (3) Geiger counter TRNG; (4) 12-udrn composition.",
+            "text_markdown": "(1) Cholesky decomposition; (2) Bisection table search; (3) Geiger counter TRNG; (4) 12-udrn composition."
           },
           {
             "id": "d",
-            "text": "(1) Linear scan; (2) Rejection sampling in 30D; (3) Importance sampling with $a = 0.2$ (under-sampled tails); (4) Uniform grid quadrature."
+            "text": "(1) Linear scan; (2) Rejection sampling in 30D; (3) Importance sampling with $a = 0.2$ (under-sampled tails); (4) Uniform grid quadrature.",
+            "text_markdown": "(1) Linear scan; (2) Rejection sampling in 30D; (3) Importance sampling with $a = 0.2$ (under-sampled tails); (4) Uniform grid quadrature."
           }
         ],
         "correct": "a",

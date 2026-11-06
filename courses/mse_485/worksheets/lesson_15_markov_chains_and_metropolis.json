@@ -29,19 +29,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The overlap between the reference distribution and the true Boltzmann distribution decays exponentially as $\\exp(-aN)$, causing variance and error bars to blow up exponentially with $N$."
+            "text": "The overlap between the reference distribution and the true Boltzmann distribution decays exponentially as $\\exp(-aN)$, causing variance and error bars to blow up exponentially with $N$.",
+            "text_markdown": "The overlap between the reference distribution and the true Boltzmann distribution decays exponentially as $\\exp(-aN)$, causing variance and error bars to blow up exponentially with $N$."
           },
           {
             "id": "b",
-            "text": "Random number generators cannot produce more than $3N$ independent uniform variates without repeating their period."
+            "text": "Random number generators cannot produce more than $3N$ independent uniform variates without repeating their period.",
+            "text_markdown": "Random number generators cannot produce more than $3N$ independent uniform variates without repeating their period."
           },
           {
             "id": "c",
-            "text": "Direct sampling violates Liouville's theorem because it does not integrate Newton's equations of motion."
+            "text": "Direct sampling violates Liouville's theorem because it does not integrate Newton's equations of motion.",
+            "text_markdown": "Direct sampling violates Liouville's theorem because it does not integrate Newton's equations of motion."
           },
           {
             "id": "d",
-            "text": "The normalization constant of a uniform reference distribution $g(s) = V^{-N}$ cannot be computed analytically."
+            "text": "The normalization constant of a uniform reference distribution $g(s) = V^{-N}$ cannot be computed analytically.",
+            "text_markdown": "The normalization constant of a uniform reference distribution $g(s) = V^{-N}$ cannot be computed analytically."
           }
         ],
         "correct": "a",
@@ -58,19 +62,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbb{P}(s_{n+1} \\mid s_n, s_{n-1}, \\dots, s_1) = \\mathbb{P}(s_{n+1} \\mid s_n) = P(s_n \\to s_{n+1})$"
+            "text": "$\\mathbb{P}(s_{n+1} \\mid s_n, s_{n-1}, \\dots, s_1) = \\mathbb{P}(s_{n+1} \\mid s_n) = P(s_n \\to s_{n+1})$",
+            "text_markdown": "$\\mathbb{P}(s_{n+1} \\mid s_n, s_{n-1}, \\dots, s_1) = \\mathbb{P}(s_{n+1} \\mid s_n) = P(s_n \\to s_{n+1})$"
           },
           {
             "id": "b",
-            "text": "$\\mathbb{P}(s_{n+1} \\mid s_n) = \\mathbb{P}(s_{n+1})$ independent of $s_n$"
+            "text": "$\\mathbb{P}(s_{n+1} \\mid s_n) = \\mathbb{P}(s_{n+1})$ independent of $s_n$",
+            "text_markdown": "$\\mathbb{P}(s_{n+1} \\mid s_n) = \\mathbb{P}(s_{n+1})$ independent of $s_n$"
           },
           {
             "id": "c",
-            "text": "$P(s \\to s') = P(s' \\to s)$ for all pairs of states $s, s'$"
+            "text": "$P(s \\to s') = P(s' \\to s)$ for all pairs of states $s, s'$",
+            "text_markdown": "$P(s \\to s') = P(s' \\to s)$ for all pairs of states $s, s'$"
           },
           {
             "id": "d",
-            "text": "$s_{n+1}$ is never allowed to equal $s_n$ or $s_{n-1}$"
+            "text": "$s_{n+1}$ is never allowed to equal $s_n$ or $s_{n-1}$",
+            "text_markdown": "$s_{n+1}$ is never allowed to equal $s_n$ or $s_{n-1}$"
           }
         ],
         "correct": "a",
@@ -87,19 +95,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$P(s \\to s') \\ge 0$ and $\\sum_{s'} P(s \\to s') = 1$ for every initial state $s$ (row normalization)."
+            "text": "$P(s \\to s') \\ge 0$ and $\\sum_{s'} P(s \\to s') = 1$ for every initial state $s$ (row normalization).",
+            "text_markdown": "$P(s \\to s') \\ge 0$ and $\\sum_{s'} P(s \\to s') = 1$ for every initial state $s$ (row normalization)."
           },
           {
             "id": "b",
-            "text": "$P(s \\to s') \\ge 0$ and $\\sum_{s} P(s \\to s') = 1$ for every final state $s'$ (column normalization)."
+            "text": "$P(s \\to s') \\ge 0$ and $\\sum_{s} P(s \\to s') = 1$ for every final state $s'$ (column normalization).",
+            "text_markdown": "$P(s \\to s') \\ge 0$ and $\\sum_{s} P(s \\to s') = 1$ for every final state $s'$ (column normalization)."
           },
           {
             "id": "c",
-            "text": "$\\sum_{s, s'} P(s \\to s') = 1$ across the entire matrix."
+            "text": "$\\sum_{s, s'} P(s \\to s') = 1$ across the entire matrix.",
+            "text_markdown": "$\\sum_{s, s'} P(s \\to s') = 1$ across the entire matrix."
           },
           {
             "id": "d",
-            "text": "$\\sum_{s} [P(s \\to s')]^2 = 1$ (unitary normalization)."
+            "text": "$\\sum_{s} [P(s \\to s')]^2 = 1$ (unitary normalization).",
+            "text_markdown": "$\\sum_{s} [P(s \\to s')]^2 = 1$ (unitary normalization)."
           }
         ],
         "correct": "a",
@@ -116,19 +128,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $\\sum_{s'} f_{n+1}(s') = \\sum_s f_n(s) \\left[\\sum_{s'} P(s \\to s')\\right] = \\sum_s f_n(s) \\cdot 1 = 1$."
+            "text": "Because $\\sum_{s'} f_{n+1}(s') = \\sum_s f_n(s) \\left[\\sum_{s'} P(s \\to s')\\right] = \\sum_s f_n(s) \\cdot 1 = 1$.",
+            "text_markdown": "Because $\\sum_{s'} f_{n+1}(s') = \\sum_s f_n(s) \\left[\\sum_{s'} P(s \\to s')\\right] = \\sum_s f_n(s) \\cdot 1 = 1$."
           },
           {
             "id": "b",
-            "text": "Because $P(s \\to s')$ is always a symmetric matrix ($P = P^T$)."
+            "text": "Because $P(s \\to s')$ is always a symmetric matrix ($P = P^T$).",
+            "text_markdown": "Because $P(s \\to s')$ is always a symmetric matrix ($P = P^T$)."
           },
           {
             "id": "c",
-            "text": "Because the trace of $P$ equals $1$ ($\\operatorname{Tr}(P) = 1$)."
+            "text": "Because the trace of $P$ equals $1$ ($\\operatorname{Tr}(P) = 1$).",
+            "text_markdown": "Because the trace of $P$ equals $1$ ($\\operatorname{Tr}(P) = 1$)."
           },
           {
             "id": "d",
-            "text": "Because $\\det(P) = 1$ for every stochastic matrix."
+            "text": "Because $\\det(P) = 1$ for every stochastic matrix.",
+            "text_markdown": "Because $\\det(P) = 1$ for every stochastic matrix."
           }
         ],
         "correct": "a",
@@ -159,19 +175,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The left eigenvector $\\pi P = \\pi$ gives the stationary probability distribution over states, whereas the right eigenvector $P \\mathbf{1} = \\mathbf{1}$ is trivially the uniform column vector of ones expressing row normalization."
+            "text": "The left eigenvector $\\pi P = \\pi$ gives the stationary probability distribution over states, whereas the right eigenvector $P \\mathbf{1} = \\mathbf{1}$ is trivially the uniform column vector of ones expressing row normalization.",
+            "text_markdown": "The left eigenvector $\\pi P = \\pi$ gives the stationary probability distribution over states, whereas the right eigenvector $P \\mathbf{1} = \\mathbf{1}$ is trivially the uniform column vector of ones expressing row normalization."
           },
           {
             "id": "b",
-            "text": "The right eigenvector gives the stationary distribution, whereas the left eigenvector is always uniform."
+            "text": "The right eigenvector gives the stationary distribution, whereas the left eigenvector is always uniform.",
+            "text_markdown": "The right eigenvector gives the stationary distribution, whereas the left eigenvector is always uniform."
           },
           {
             "id": "c",
-            "text": "The left and right eigenvectors of $P$ are always identical because every stochastic matrix is Hermitian."
+            "text": "The left and right eigenvectors of $P$ are always identical because every stochastic matrix is Hermitian.",
+            "text_markdown": "The left and right eigenvectors of $P$ are always identical because every stochastic matrix is Hermitian."
           },
           {
             "id": "d",
-            "text": "The right eigenvector gives the relaxation rate, whereas the left eigenvector gives the partition function $Z$."
+            "text": "The right eigenvector gives the relaxation rate, whereas the left eigenvector gives the partition function $Z$.",
+            "text_markdown": "The right eigenvector gives the relaxation rate, whereas the left eigenvector gives the partition function $Z$."
           }
         ],
         "correct": "a",
@@ -254,19 +274,23 @@
         "options": [
           {
             "id": "a",
-            "text": "A single non-degenerate eigenvalue $\\varepsilon_0 = 1$, and all other eigenvalues strictly inside the unit circle ($|\\varepsilon_\\lambda| < 1$ for all $\\lambda \\ge 1$)."
+            "text": "A single non-degenerate eigenvalue $\\varepsilon_0 = 1$, and all other eigenvalues strictly inside the unit circle ($|\\varepsilon_\\lambda| < 1$ for all $\\lambda \\ge 1$).",
+            "text_markdown": "A single non-degenerate eigenvalue $\\varepsilon_0 = 1$, and all other eigenvalues strictly inside the unit circle ($|\\varepsilon_\\lambda| < 1$ for all $\\lambda \\ge 1$)."
           },
           {
             "id": "b",
-            "text": "All eigenvalues equal to $+1$ ($\\varepsilon_\\lambda = 1$ for all $\\lambda$)."
+            "text": "All eigenvalues equal to $+1$ ($\\varepsilon_\\lambda = 1$ for all $\\lambda$).",
+            "text_markdown": "All eigenvalues equal to $+1$ ($\\varepsilon_\\lambda = 1$ for all $\\lambda$)."
           },
           {
             "id": "c",
-            "text": "At least one eigenvalue with $\\varepsilon_\\lambda > 1$ so that equilibrium states grow exponentially."
+            "text": "At least one eigenvalue with $\\varepsilon_\\lambda > 1$ so that equilibrium states grow exponentially.",
+            "text_markdown": "At least one eigenvalue with $\\varepsilon_\\lambda > 1$ so that equilibrium states grow exponentially."
           },
           {
             "id": "d",
-            "text": "All eigenvalues equal to $0$ ($\\varepsilon_\\lambda = 0$ for all $\\lambda$)."
+            "text": "All eigenvalues equal to $0$ ($\\varepsilon_\\lambda = 0$ for all $\\lambda$).",
+            "text_markdown": "All eigenvalues equal to $0$ ($\\varepsilon_\\lambda = 0$ for all $\\lambda$)."
           }
         ],
         "correct": "a",
@@ -300,19 +324,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Irreducibility (no infinite barriers): the system can move from any state to any other state in a finite number of steps with non-zero probability."
+            "text": "Irreducibility (no infinite barriers): the system can move from any state to any other state in a finite number of steps with non-zero probability.",
+            "text_markdown": "Irreducibility (no infinite barriers): the system can move from any state to any other state in a finite number of steps with non-zero probability."
           },
           {
             "id": "b",
-            "text": "Aperiodicity: the transition rules are non-periodic (e.g., not trapped in deterministic alternating hops on a bipartite lattice)."
+            "text": "Aperiodicity: the transition rules are non-periodic (e.g., not trapped in deterministic alternating hops on a bipartite lattice).",
+            "text_markdown": "Aperiodicity: the transition rules are non-periodic (e.g., not trapped in deterministic alternating hops on a bipartite lattice)."
           },
           {
             "id": "c",
-            "text": "Positive recurrence: the average return time to any state is finite (no 'expanding universe' escape to infinity)."
+            "text": "Positive recurrence: the average return time to any state is finite (no 'expanding universe' escape to infinity).",
+            "text_markdown": "Positive recurrence: the average return time to any state is finite (no 'expanding universe' escape to infinity)."
           },
           {
             "id": "d",
-            "text": "Zero rejection rate: every proposed trial move must be accepted with probability $A = 1$."
+            "text": "Zero rejection rate: every proposed trial move must be accepted with probability $A = 1$.",
+            "text_markdown": "Zero rejection rate: every proposed trial move must be accepted with probability $A = 1$."
           }
         ],
         "correct": [
@@ -336,19 +364,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The unit eigenvalue $\\varepsilon = 1$ becomes $3$-fold degenerate, so the limiting distribution $f_\\infty$ is not unique and depends on the initial state $f_0$."
+            "text": "The unit eigenvalue $\\varepsilon = 1$ becomes $3$-fold degenerate, so the limiting distribution $f_\\infty$ is not unique and depends on the initial state $f_0$.",
+            "text_markdown": "The unit eigenvalue $\\varepsilon = 1$ becomes $3$-fold degenerate, so the limiting distribution $f_\\infty$ is not unique and depends on the initial state $f_0$."
           },
           {
             "id": "b",
-            "text": "All eigenvalues of $P$ become strictly negative ($\\varepsilon_\\lambda < 0$)."
+            "text": "All eigenvalues of $P$ become strictly negative ($\\varepsilon_\\lambda < 0$).",
+            "text_markdown": "All eigenvalues of $P$ become strictly negative ($\\varepsilon_\\lambda < 0$)."
           },
           {
             "id": "c",
-            "text": "The largest eigenvalue exceeds unity ($\\varepsilon_0 = 3$)."
+            "text": "The largest eigenvalue exceeds unity ($\\varepsilon_0 = 3$).",
+            "text_markdown": "The largest eigenvalue exceeds unity ($\\varepsilon_0 = 3$)."
           },
           {
             "id": "d",
-            "text": "The transition matrix $P$ has no eigenvectors at all."
+            "text": "The transition matrix $P$ has no eigenvectors at all.",
+            "text_markdown": "The transition matrix $P$ has no eigenvectors at all."
           }
         ],
         "correct": "a",
@@ -368,19 +400,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$P$ has a second eigenvalue $\\varepsilon_1 = -1$ with $|\\varepsilon_1| = 1$, so $f_n$ alternates between $(1, 0)$ and $(0, 1)$ forever as $(-1)^n$ without converging to $\\pi = (0.5, 0.5)$."
+            "text": "$P$ has a second eigenvalue $\\varepsilon_1 = -1$ with $|\\varepsilon_1| = 1$, so $f_n$ alternates between $(1, 0)$ and $(0, 1)$ forever as $(-1)^n$ without converging to $\\pi = (0.5, 0.5)$.",
+            "text_markdown": "$P$ has a second eigenvalue $\\varepsilon_1 = -1$ with $|\\varepsilon_1| = 1$, so $f_n$ alternates between $(1, 0)$ and $(0, 1)$ forever as $(-1)^n$ without converging to $\\pi = (0.5, 0.5)$."
           },
           {
             "id": "b",
-            "text": "$f_n$ converges monotonically to $(0.5, 0.5)$ in exactly $2$ steps because $P$ is doubly stochastic."
+            "text": "$f_n$ converges monotonically to $(0.5, 0.5)$ in exactly $2$ steps because $P$ is doubly stochastic.",
+            "text_markdown": "$f_n$ converges monotonically to $(0.5, 0.5)$ in exactly $2$ steps because $P$ is doubly stochastic."
           },
           {
             "id": "c",
-            "text": "$P$ violates row normalization because its diagonal entries are zero."
+            "text": "$P$ violates row normalization because its diagonal entries are zero.",
+            "text_markdown": "$P$ violates row normalization because its diagonal entries are zero."
           },
           {
             "id": "d",
-            "text": "The total probability $\\sum_s f_n(s)$ decays to zero as $n \\to \\infty$."
+            "text": "The total probability $\\sum_s f_n(s)$ decays to zero as $n \\to \\infty$.",
+            "text_markdown": "The total probability $\\sum_s f_n(s)$ decays to zero as $n \\to \\infty$."
           }
         ],
         "correct": "a",
@@ -473,19 +509,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\pi(s)\\, P(s \\to s') = \\pi(s')\\, P(s' \\to s)$ for every pair of states $(s, s')$"
+            "text": "$\\pi(s)\\, P(s \\to s') = \\pi(s')\\, P(s' \\to s)$ for every pair of states $(s, s')$",
+            "text_markdown": "$\\pi(s)\\, P(s \\to s') = \\pi(s')\\, P(s' \\to s)$ for every pair of states $(s, s')$"
           },
           {
             "id": "b",
-            "text": "$P(s \\to s') = P(s' \\to s)$ for every pair of states $(s, s')$"
+            "text": "$P(s \\to s') = P(s' \\to s)$ for every pair of states $(s, s')$",
+            "text_markdown": "$P(s \\to s') = P(s' \\to s)$ for every pair of states $(s, s')$"
           },
           {
             "id": "c",
-            "text": "$\\pi(s) = \\pi(s')$ for every pair of states $(s, s')$"
+            "text": "$\\pi(s) = \\pi(s')$ for every pair of states $(s, s')$",
+            "text_markdown": "$\\pi(s) = \\pi(s')$ for every pair of states $(s, s')$"
           },
           {
             "id": "d",
-            "text": "$\\sum_{s'} \\pi(s')\\, P(s \\to s') = 1$ for every state $s$"
+            "text": "$\\sum_{s'} \\pi(s')\\, P(s \\to s') = 1$ for every state $s$",
+            "text_markdown": "$\\sum_{s'} \\pi(s')\\, P(s \\to s') = 1$ for every state $s$"
           }
         ],
         "correct": "a",
@@ -502,19 +542,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{\\pi(s')}{\\pi(s)} = \\exp\\big(-\\beta[E(s') - E(s)]\\big)$"
+            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{\\pi(s')}{\\pi(s)} = \\exp\\big(-\\beta[E(s') - E(s)]\\big)$",
+            "text_markdown": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{\\pi(s')}{\\pi(s)} = \\exp\\big(-\\beta[E(s') - E(s)]\\big)$"
           },
           {
             "id": "b",
-            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{\\pi(s)}{\\pi(s')} = \\exp\\big(+\\beta[E(s') - E(s)]\\big)$"
+            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{\\pi(s)}{\\pi(s')} = \\exp\\big(+\\beta[E(s') - E(s)]\\big)$",
+            "text_markdown": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{\\pi(s)}{\\pi(s')} = \\exp\\big(+\\beta[E(s') - E(s)]\\big)$"
           },
           {
             "id": "c",
-            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = 1$"
+            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = 1$",
+            "text_markdown": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = 1$"
           },
           {
             "id": "d",
-            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{E(s)}{E(s')}$"
+            "text": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{E(s)}{E(s')}$",
+            "text_markdown": "$\\dfrac{P(s \\to s')}{P(s' \\to s)} = \\dfrac{E(s)}{E(s')}$"
           }
         ],
         "correct": "a",
@@ -531,19 +575,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Detailed balance is a **sufficient** condition for global stationary balance, but it is **not strictly necessary** (a chain with steady-state probability currents around cycles can still preserve $\\pi = \\pi P$)."
+            "text": "Detailed balance is a **sufficient** condition for global stationary balance, but it is **not strictly necessary** (a chain with steady-state probability currents around cycles can still preserve $\\pi = \\pi P$).",
+            "text_markdown": "Detailed balance is a **sufficient** condition for global stationary balance, but it is **not strictly necessary** (a chain with steady-state probability currents around cycles can still preserve $\\pi = \\pi P$)."
           },
           {
             "id": "b",
-            "text": "Detailed balance is both necessary and sufficient; no Markov chain can have $\\pi = \\pi P$ without satisfying detailed balance."
+            "text": "Detailed balance is both necessary and sufficient; no Markov chain can have $\\pi = \\pi P$ without satisfying detailed balance.",
+            "text_markdown": "Detailed balance is both necessary and sufficient; no Markov chain can have $\\pi = \\pi P$ without satisfying detailed balance."
           },
           {
             "id": "c",
-            "text": "Global stationary balance implies detailed balance, but detailed balance does not imply global balance."
+            "text": "Global stationary balance implies detailed balance, but detailed balance does not imply global balance.",
+            "text_markdown": "Global stationary balance implies detailed balance, but detailed balance does not imply global balance."
           },
           {
             "id": "d",
-            "text": "Detailed balance only applies to 2-state chains and fails for $N > 2$ states."
+            "text": "Detailed balance only applies to 2-state chains and fails for $N > 2$ states.",
+            "text_markdown": "Detailed balance only applies to 2-state chains and fails for $N > 2$ states."
           }
         ],
         "correct": "a",
@@ -574,19 +622,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Sample phase space by using an ergodic random walk."
+            "text": "Sample phase space by using an ergodic random walk.",
+            "text_markdown": "Sample phase space by using an ergodic random walk."
           },
           {
             "id": "b",
-            "text": "Determine the equilibrium state $\\pi(s)$ by imposing detailed balance."
+            "text": "Determine the equilibrium state $\\pi(s)$ by imposing detailed balance.",
+            "text_markdown": "Determine the equilibrium state $\\pi(s)$ by imposing detailed balance."
           },
           {
             "id": "c",
-            "text": "Achieve detailed balance by rejecting trial moves."
+            "text": "Achieve detailed balance by rejecting trial moves.",
+            "text_markdown": "Achieve detailed balance by rejecting trial moves."
           },
           {
             "id": "d",
-            "text": "Integrate Hamilton's equations of motion using a symplectic Verlet time step."
+            "text": "Integrate Hamilton's equations of motion using a symplectic Verlet time step.",
+            "text_markdown": "Integrate Hamilton's equations of motion using a symplectic Verlet time step."
           }
         ],
         "correct": [
@@ -644,19 +696,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $A(s \\to s')$ depends only on the ratio $\\pi(s')/\\pi(s)$, so the state-independent normalization constant $1/Z$ cancels out between numerator and denominator."
+            "text": "Because $A(s \\to s')$ depends only on the ratio $\\pi(s')/\\pi(s)$, so the state-independent normalization constant $1/Z$ cancels out between numerator and denominator.",
+            "text_markdown": "Because $A(s \\to s')$ depends only on the ratio $\\pi(s')/\\pi(s)$, so the state-independent normalization constant $1/Z$ cancels out between numerator and denominator."
           },
           {
             "id": "b",
-            "text": "Because $Z = 1$ identically at all temperatures in the canonical ensemble."
+            "text": "Because $Z = 1$ identically at all temperatures in the canonical ensemble.",
+            "text_markdown": "Because $Z = 1$ identically at all temperatures in the canonical ensemble."
           },
           {
             "id": "c",
-            "text": "Because the proposal matrix $T(s \\to s')$ is normalized by $Z$."
+            "text": "Because the proposal matrix $T(s \\to s')$ is normalized by $Z$.",
+            "text_markdown": "Because the proposal matrix $T(s \\to s')$ is normalized by $Z$."
           },
           {
             "id": "d",
-            "text": "Because rejected moves automatically compute $Z$ at the end of the run."
+            "text": "Because rejected moves automatically compute $Z$ at the end of the run.",
+            "text_markdown": "Because rejected moves automatically compute $Z$ at the end of the run."
           }
         ],
         "correct": "a",
@@ -704,19 +760,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Reject the move (since $u_n > e^{-\\beta \\Delta E}$), keeping $s_{n+1} = s_n$."
+            "text": "Reject the move (since $u_n > e^{-\\beta \\Delta E}$), keeping $s_{n+1} = s_n$.",
+            "text_markdown": "Reject the move (since $u_n > e^{-\\beta \\Delta E}$), keeping $s_{n+1} = s_n$."
           },
           {
             "id": "b",
-            "text": "Accept the move (since $u_n > e^{-\\beta \\Delta E}$), setting $s_{n+1} = s'$."
+            "text": "Accept the move (since $u_n > e^{-\\beta \\Delta E}$), setting $s_{n+1} = s'$.",
+            "text_markdown": "Accept the move (since $u_n > e^{-\\beta \\Delta E}$), setting $s_{n+1} = s'$."
           },
           {
             "id": "c",
-            "text": "Redraw $u_n$ repeatedly until $u_n < e^{-\\beta \\Delta E}$."
+            "text": "Redraw $u_n$ repeatedly until $u_n < e^{-\\beta \\Delta E}$.",
+            "text_markdown": "Redraw $u_n$ repeatedly until $u_n < e^{-\\beta \\Delta E}$."
           },
           {
             "id": "d",
-            "text": "Accept half of the displacement vector $\\Delta \\mathbf{r} / 2$."
+            "text": "Accept half of the displacement vector $\\Delta \\mathbf{r} / 2$.",
+            "text_markdown": "Accept half of the displacement vector $\\Delta \\mathbf{r} / 2$."
           }
         ],
         "correct": "a",
@@ -767,19 +827,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$A_M = 1.0$ vs. $A_B = 0.5$ (twice as high at $\\Delta E = 0$); by maximizing all off-diagonal transition probabilities $P(s \\to s')$, Metropolis minimizes the asymptotic variance of sample averages for a fixed proposal $T$."
+            "text": "$A_M = 1.0$ vs. $A_B = 0.5$ (twice as high at $\\Delta E = 0$); by maximizing all off-diagonal transition probabilities $P(s \\to s')$, Metropolis minimizes the asymptotic variance of sample averages for a fixed proposal $T$.",
+            "text_markdown": "$A_M = 1.0$ vs. $A_B = 0.5$ (twice as high at $\\Delta E = 0$); by maximizing all off-diagonal transition probabilities $P(s \\to s')$, Metropolis minimizes the asymptotic variance of sample averages for a fixed proposal $T$."
           },
           {
             "id": "b",
-            "text": "$A_M = 0.5$ vs. $A_B = 1.0$; Barker's rule is always twice as fast as Metropolis."
+            "text": "$A_M = 0.5$ vs. $A_B = 1.0$; Barker's rule is always twice as fast as Metropolis.",
+            "text_markdown": "$A_M = 0.5$ vs. $A_B = 1.0$; Barker's rule is always twice as fast as Metropolis."
           },
           {
             "id": "c",
-            "text": "$A_M$ and $A_B$ are identical at $\\Delta E = 0$ and only differ when $\\Delta E \\to \\infty$."
+            "text": "$A_M$ and $A_B$ are identical at $\\Delta E = 0$ and only differ when $\\Delta E \\to \\infty$.",
+            "text_markdown": "$A_M$ and $A_B$ are identical at $\\Delta E = 0$ and only differ when $\\Delta E \\to \\infty$."
           },
           {
             "id": "d",
-            "text": "Metropolis violates detailed balance at $\\Delta E = 0$, whereas Barker satisfies it."
+            "text": "Metropolis violates detailed balance at $\\Delta E = 0$, whereas Barker satisfies it.",
+            "text_markdown": "Metropolis violates detailed balance at $\\Delta E = 0$, whereas Barker satisfies it."
           }
         ],
         "correct": "a",
@@ -796,19 +860,23 @@
         "options": [
           {
             "id": "a",
-            "text": "As $T \\to \\infty$ ($\\beta \\to 0$), $A_M \\to 1$ for all finite-energy moves (unbiased random walk); as $T \\to 0$ ($\\beta \\to \\infty$), $A_M \\to 0$ for uphill moves ($\\Delta E > 0$) and $A_M = 1$ for downhill moves ($\\Delta E \\le 0$, greedy quench)."
+            "text": "As $T \\to \\infty$ ($\\beta \\to 0$), $A_M \\to 1$ for all finite-energy moves (unbiased random walk); as $T \\to 0$ ($\\beta \\to \\infty$), $A_M \\to 0$ for uphill moves ($\\Delta E > 0$) and $A_M = 1$ for downhill moves ($\\Delta E \\le 0$, greedy quench).",
+            "text_markdown": "As $T \\to \\infty$ ($\\beta \\to 0$), $A_M \\to 1$ for all finite-energy moves (unbiased random walk); as $T \\to 0$ ($\\beta \\to \\infty$), $A_M \\to 0$ for uphill moves ($\\Delta E > 0$) and $A_M = 1$ for downhill moves ($\\Delta E \\le 0$, greedy quench)."
           },
           {
             "id": "b",
-            "text": "As $T \\to \\infty$, $A_M \\to 0$; as $T \\to 0$, $A_M \\to 1$ for all moves."
+            "text": "As $T \\to \\infty$, $A_M \\to 0$; as $T \\to 0$, $A_M \\to 1$ for all moves.",
+            "text_markdown": "As $T \\to \\infty$, $A_M \\to 0$; as $T \\to 0$, $A_M \\to 1$ for all moves."
           },
           {
             "id": "c",
-            "text": "As $T \\to \\infty$, $A_M \\to 0.5$; as $T \\to 0$, $A_M \\to 0.5$."
+            "text": "As $T \\to \\infty$, $A_M \\to 0.5$; as $T \\to 0$, $A_M \\to 0.5$.",
+            "text_markdown": "As $T \\to \\infty$, $A_M \\to 0.5$; as $T \\to 0$, $A_M \\to 0.5$."
           },
           {
             "id": "d",
-            "text": "Temperature has no effect on $A_M$ because $\\beta$ cancels out with $Z$."
+            "text": "Temperature has no effect on $A_M$ because $\\beta$ cancels out with $Z$.",
+            "text_markdown": "Temperature has no effect on $A_M$ because $\\beta$ cancels out with $Z$."
           }
         ],
         "correct": "a",
@@ -825,19 +893,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Accept the move with probability $A_M = 1$ if no spheres overlap ($r_{ij}' \\ge \\sigma$), and reject with probability $A_M = 0$ if any pair overlaps ($r_{ij}' < \\sigma$), independent of temperature."
+            "text": "Accept the move with probability $A_M = 1$ if no spheres overlap ($r_{ij}' \\ge \\sigma$), and reject with probability $A_M = 0$ if any pair overlaps ($r_{ij}' < \\sigma$), independent of temperature.",
+            "text_markdown": "Accept the move with probability $A_M = 1$ if no spheres overlap ($r_{ij}' \\ge \\sigma$), and reject with probability $A_M = 0$ if any pair overlaps ($r_{ij}' < \\sigma$), independent of temperature."
           },
           {
             "id": "b",
-            "text": "Accept every move with probability $0.5$ regardless of overlaps."
+            "text": "Accept every move with probability $0.5$ regardless of overlaps.",
+            "text_markdown": "Accept every move with probability $0.5$ regardless of overlaps."
           },
           {
             "id": "c",
-            "text": "Accept overlapping moves with probability $e^{-\\beta \\sigma}$."
+            "text": "Accept overlapping moves with probability $e^{-\\beta \\sigma}$.",
+            "text_markdown": "Accept overlapping moves with probability $e^{-\\beta \\sigma}$."
           },
           {
             "id": "d",
-            "text": "Hard spheres cannot be simulated with Metropolis MC because the force $-\\nabla v(r)$ is a delta function."
+            "text": "Hard spheres cannot be simulated with Metropolis MC because the force $-\\nabla v(r)$ is a delta function.",
+            "text_markdown": "Hard spheres cannot be simulated with Metropolis MC because the force $-\\nabla v(r)$ is a delta function."
           }
         ],
         "correct": "a",
@@ -905,19 +977,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Moving one particle requires computing only $\\mathcal{O}(1)$ local pair-energy differences within the cutoff range and maintains a much larger acceptance ratio for a given step size $\\Delta$."
+            "text": "Moving one particle requires computing only $\\mathcal{O}(1)$ local pair-energy differences within the cutoff range and maintains a much larger acceptance ratio for a given step size $\\Delta$.",
+            "text_markdown": "Moving one particle requires computing only $\\mathcal{O}(1)$ local pair-energy differences within the cutoff range and maintains a much larger acceptance ratio for a given step size $\\Delta$."
           },
           {
             "id": "b",
-            "text": "Moving more than one particle at a time violates the Markov property and detailed balance."
+            "text": "Moving more than one particle at a time violates the Markov property and detailed balance.",
+            "text_markdown": "Moving more than one particle at a time violates the Markov property and detailed balance."
           },
           {
             "id": "c",
-            "text": "Moving all $N$ particles simultaneously always gives an acceptance probability of $A = 1.0$, which prevents rejection."
+            "text": "Moving all $N$ particles simultaneously always gives an acceptance probability of $A = 1.0$, which prevents rejection.",
+            "text_markdown": "Moving all $N$ particles simultaneously always gives an acceptance probability of $A = 1.0$, which prevents rejection."
           },
           {
             "id": "d",
-            "text": "Single-particle moves allow exact calculation of real-time phonon dispersion curves."
+            "text": "Single-particle moves allow exact calculation of real-time phonon dispersion curves.",
+            "text_markdown": "Single-particle moves allow exact calculation of real-time phonon dispersion curves."
           }
         ],
         "correct": "a",
@@ -934,19 +1010,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It evaluates the reverse proposal probability $T_{\\text{old}} = T(s_{\\text{new}} \\to s_{\\text{old}})$ without generating a new state, which is needed in the numerator of $A(s_{\\text{old}} \\to s_{\\text{new}})$ whenever $T$ is asymmetric."
+            "text": "It evaluates the reverse proposal probability $T_{\\text{old}} = T(s_{\\text{new}} \\to s_{\\text{old}})$ without generating a new state, which is needed in the numerator of $A(s_{\\text{old}} \\to s_{\\text{new}})$ whenever $T$ is asymmetric.",
+            "text_markdown": "It evaluates the reverse proposal probability $T_{\\text{old}} = T(s_{\\text{new}} \\to s_{\\text{old}})$ without generating a new state, which is needed in the numerator of $A(s_{\\text{old}} \\to s_{\\text{new}})$ whenever $T$ is asymmetric."
           },
           {
             "id": "b",
-            "text": "It immediately undoes the move and resets the coordinates back to `s_old` before testing acceptance."
+            "text": "It immediately undoes the move and resets the coordinates back to `s_old` before testing acceptance.",
+            "text_markdown": "It immediately undoes the move and resets the coordinates back to `s_old` before testing acceptance."
           },
           {
             "id": "c",
-            "text": "It sets the temperature $T_{\\text{old}}$ to absolute zero ($0\\text{ K}$)."
+            "text": "It sets the temperature $T_{\\text{old}}$ to absolute zero ($0\\text{ K}$).",
+            "text_markdown": "It sets the temperature $T_{\\text{old}}$ to absolute zero ($0\\text{ K}$)."
           },
           {
             "id": "d",
-            "text": "It computes the partition function $Z$ of the old configuration."
+            "text": "It computes the partition function $Z$ of the old configuration.",
+            "text_markdown": "It computes the partition function $Z$ of the old configuration."
           }
         ],
         "correct": "a",
@@ -983,19 +1063,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Low-energy states (which reject a large fraction of uphill trial moves) are systematically under-weighted relative to high-energy states, shifting $P(E)$ and $\\langle E \\rangle$ toward artificially high energies."
+            "text": "Low-energy states (which reject a large fraction of uphill trial moves) are systematically under-weighted relative to high-energy states, shifting $P(E)$ and $\\langle E \\rangle$ toward artificially high energies.",
+            "text_markdown": "Low-energy states (which reject a large fraction of uphill trial moves) are systematically under-weighted relative to high-energy states, shifting $P(E)$ and $\\langle E \\rangle$ toward artificially high energies."
           },
           {
             "id": "b",
-            "text": "High-energy states are under-weighted, causing the system to freeze into the $T = 0$ ground state."
+            "text": "High-energy states are under-weighted, causing the system to freeze into the $T = 0$ ground state.",
+            "text_markdown": "High-energy states are under-weighted, causing the system to freeze into the $T = 0$ ground state."
           },
           {
             "id": "c",
-            "text": "No bias occurs in $\\langle E \\rangle$; it only reduces the number of samples and slightly increases the statistical error bar."
+            "text": "No bias occurs in $\\langle E \\rangle$; it only reduces the number of samples and slightly increases the statistical error bar.",
+            "text_markdown": "No bias occurs in $\\langle E \\rangle$; it only reduces the number of samples and slightly increases the statistical error bar."
           },
           {
             "id": "d",
-            "text": "The acceptance ratio becomes greater than $1.0$."
+            "text": "The acceptance ratio becomes greater than $1.0$.",
+            "text_markdown": "The acceptance ratio becomes greater than $1.0$."
           }
         ],
         "correct": "a",
@@ -1012,19 +1096,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Proposal reversibility: $T(x \\to x') > 0$ for $x' > x$, but the reverse proposal probability $T(x' \\to x) = 0$, violating detailed balance and driving an unphysical one-way drift."
+            "text": "Proposal reversibility: $T(x \\to x') > 0$ for $x' > x$, but the reverse proposal probability $T(x' \\to x) = 0$, violating detailed balance and driving an unphysical one-way drift.",
+            "text_markdown": "Proposal reversibility: $T(x \\to x') > 0$ for $x' > x$, but the reverse proposal probability $T(x' \\to x) = 0$, violating detailed balance and driving an unphysical one-way drift."
           },
           {
             "id": "b",
-            "text": "Row normalization: $\\int T(x \\to x')\\,dx'$ is no longer equal to $1$."
+            "text": "Row normalization: $\\int T(x \\to x')\\,dx'$ is no longer equal to $1$.",
+            "text_markdown": "Row normalization: $\\int T(x \\to x')\\,dx'$ is no longer equal to $1$."
           },
           {
             "id": "c",
-            "text": "Energy conservation: potential energy is no longer a function of $x$."
+            "text": "Energy conservation: potential energy is no longer a function of $x$.",
+            "text_markdown": "Energy conservation: potential energy is no longer a function of $x$."
           },
           {
             "id": "d",
-            "text": "Nothing is violated as long as periodic boundary conditions are used."
+            "text": "Nothing is violated as long as periodic boundary conditions are used.",
+            "text_markdown": "Nothing is violated as long as periodic boundary conditions are used."
           }
         ],
         "correct": "a",
@@ -1081,19 +1169,23 @@
         "options": [
           {
             "id": "a",
-            "text": "An acceptance ratio of $99.9\\%$ means the trial step size $\\Delta$ is tiny, so consecutive states are nearly identical and the random walk diffuses through phase space extremely slowly."
+            "text": "An acceptance ratio of $99.9\\%$ means the trial step size $\\Delta$ is tiny, so consecutive states are nearly identical and the random walk diffuses through phase space extremely slowly.",
+            "text_markdown": "An acceptance ratio of $99.9\\%$ means the trial step size $\\Delta$ is tiny, so consecutive states are nearly identical and the random walk diffuses through phase space extremely slowly."
           },
           {
             "id": "b",
-            "text": "An acceptance ratio above $90\\%$ violates detailed balance and produces a uniform distribution instead of a Boltzmann distribution."
+            "text": "An acceptance ratio above $90\\%$ violates detailed balance and produces a uniform distribution instead of a Boltzmann distribution.",
+            "text_markdown": "An acceptance ratio above $90\\%$ violates detailed balance and produces a uniform distribution instead of a Boltzmann distribution."
           },
           {
             "id": "c",
-            "text": "High acceptance ratios cause a finite-step-size truncation error $\\mathcal{O}(\\Delta^2)$ in the equilibrium ensemble."
+            "text": "High acceptance ratios cause a finite-step-size truncation error $\\mathcal{O}(\\Delta^2)$ in the equilibrium ensemble.",
+            "text_markdown": "High acceptance ratios cause a finite-step-size truncation error $\\mathcal{O}(\\Delta^2)$ in the equilibrium ensemble."
           },
           {
             "id": "d",
-            "text": "When $\\text{a.r.} > 0.9$, the partition function $Z$ no longer cancels out."
+            "text": "When $\\text{a.r.} > 0.9$, the partition function $Z$ no longer cancels out.",
+            "text_markdown": "When $\\text{a.r.} > 0.9$, the partition function $Z$ no longer cancels out."
           }
         ],
         "correct": "a",
@@ -1113,19 +1205,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The $20\\%$ acceptance ratio achieves higher 100-step mean-squared displacement (faster spatial diffusion) than the $50\\%$ acceptance ratio because each accepted step covers more than twice the distance ($\\Delta^2$ is $\\sim 5\\times$ larger)."
+            "text": "The $20\\%$ acceptance ratio achieves higher 100-step mean-squared displacement (faster spatial diffusion) than the $50\\%$ acceptance ratio because each accepted step covers more than twice the distance ($\\Delta^2$ is $\\sim 5\\times$ larger).",
+            "text_markdown": "The $20\\%$ acceptance ratio achieves higher 100-step mean-squared displacement (faster spatial diffusion) than the $50\\%$ acceptance ratio because each accepted step covers more than twice the distance ($\\Delta^2$ is $\\sim 5\\times$ larger)."
           },
           {
             "id": "b",
-            "text": "The $20\\%$ acceptance ratio gives zero diffusion because $80\\%$ of moves are rejected."
+            "text": "The $20\\%$ acceptance ratio gives zero diffusion because $80\\%$ of moves are rejected.",
+            "text_markdown": "The $20\\%$ acceptance ratio gives zero diffusion because $80\\%$ of moves are rejected."
           },
           {
             "id": "c",
-            "text": "The $50\\%$ acceptance ratio always maximizes diffusion in every physical system."
+            "text": "The $50\\%$ acceptance ratio always maximizes diffusion in every physical system.",
+            "text_markdown": "The $50\\%$ acceptance ratio always maximizes diffusion in every physical system."
           },
           {
             "id": "d",
-            "text": "The variance of the potential energy $\\sigma_V$ diverges at $20\\%$ acceptance."
+            "text": "The variance of the potential energy $\\sigma_V$ diverges at $20\\%$ acceptance.",
+            "text_markdown": "The variance of the potential energy $\\sigma_V$ diverges at $20\\%$ acceptance."
           }
         ],
         "correct": "a",
@@ -1142,19 +1238,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The variance of the potential energy is relatively insensitive to step size across a wide acceptable range ($0.1 < \\text{a.r.} < 0.9$), showing that MC is a robust method that does not require delicate fine-tuning of $\\Delta$."
+            "text": "The variance of the potential energy is relatively insensitive to step size across a wide acceptable range ($0.1 < \\text{a.r.} < 0.9$), showing that MC is a robust method that does not require delicate fine-tuning of $\\Delta$.",
+            "text_markdown": "The variance of the potential energy is relatively insensitive to step size across a wide acceptable range ($0.1 < \\text{a.r.} < 0.9$), showing that MC is a robust method that does not require delicate fine-tuning of $\\Delta$."
           },
           {
             "id": "b",
-            "text": "The potential energy variance is a sharp delta-function minimum at $\\Delta/\\sigma = 0.200$ and blows up if $\\Delta$ changes by $5\\%$."
+            "text": "The potential energy variance is a sharp delta-function minimum at $\\Delta/\\sigma = 0.200$ and blows up if $\\Delta$ changes by $5\\%$.",
+            "text_markdown": "The potential energy variance is a sharp delta-function minimum at $\\Delta/\\sigma = 0.200$ and blows up if $\\Delta$ changes by $5\\%$."
           },
           {
             "id": "c",
-            "text": "The potential energy variance decreases monotonically as $\\Delta/\\sigma \\to 0$."
+            "text": "The potential energy variance decreases monotonically as $\\Delta/\\sigma \\to 0$.",
+            "text_markdown": "The potential energy variance decreases monotonically as $\\Delta/\\sigma \\to 0$."
           },
           {
             "id": "d",
-            "text": "Local energy variance can only be measured in Molecular Dynamics, not Monte Carlo."
+            "text": "Local energy variance can only be measured in Molecular Dynamics, not Monte Carlo.",
+            "text_markdown": "Local energy variance can only be measured in Molecular Dynamics, not Monte Carlo."
           }
         ],
         "correct": "a",
@@ -1171,19 +1271,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Zero systematic discretization error: Metropolis MC is exact for any ergodic step size $\\Delta > 0$ because the acceptance test enforces exact detailed balance for the true Boltzmann distribution $\\pi(s)$."
+            "text": "Zero systematic discretization error: Metropolis MC is exact for any ergodic step size $\\Delta > 0$ because the acceptance test enforces exact detailed balance for the true Boltzmann distribution $\\pi(s)$.",
+            "text_markdown": "Zero systematic discretization error: Metropolis MC is exact for any ergodic step size $\\Delta > 0$ because the acceptance test enforces exact detailed balance for the true Boltzmann distribution $\\pi(s)$."
           },
           {
             "id": "b",
-            "text": "The systematic error quadruples as $\\mathcal{O}(\\Delta^2)$, just like Verlet MD."
+            "text": "The systematic error quadruples as $\\mathcal{O}(\\Delta^2)$, just like Verlet MD.",
+            "text_markdown": "The systematic error quadruples as $\\mathcal{O}(\\Delta^2)$, just like Verlet MD."
           },
           {
             "id": "c",
-            "text": "The systematic error doubles as $\\mathcal{O}(\\Delta)$."
+            "text": "The systematic error doubles as $\\mathcal{O}(\\Delta)$.",
+            "text_markdown": "The systematic error doubles as $\\mathcal{O}(\\Delta)$."
           },
           {
             "id": "d",
-            "text": "Doubling $\\Delta$ doubles the simulated temperature $T$."
+            "text": "Doubling $\\Delta$ doubles the simulated temperature $T$.",
+            "text_markdown": "Doubling $\\Delta$ doubles the simulated temperature $T$."
           }
         ],
         "correct": "a",
@@ -1200,19 +1304,23 @@
         "options": [
           {
             "id": "a",
-            "text": "MD computes true physical real-time dynamics (e.g., velocity autocorrelation and vibrations), whereas MC generates stochastic Markov kinetics."
+            "text": "MD computes true physical real-time dynamics (e.g., velocity autocorrelation and vibrations), whereas MC generates stochastic Markov kinetics.",
+            "text_markdown": "MD computes true physical real-time dynamics (e.g., velocity autocorrelation and vibrations), whereas MC generates stochastic Markov kinetics."
           },
           {
             "id": "b",
-            "text": "Classic MC is simpler than MD because it requires no forces (only energy differences), has no time-step discretization error, and directly samples the canonical ($NVT$) ensemble."
+            "text": "Classic MC is simpler than MD because it requires no forces (only energy differences), has no time-step discretization error, and directly samples the canonical ($NVT$) ensemble.",
+            "text_markdown": "Classic MC is simpler than MD because it requires no forces (only energy differences), has no time-step discretization error, and directly samples the canonical ($NVT$) ensemble."
           },
           {
             "id": "c",
-            "text": "MC is more general for discrete degrees of freedom (such as Ising spin models, alloy species swaps, and grand canonical particle insertions) where continuous MD forces are undefined."
+            "text": "MC is more general for discrete degrees of freedom (such as Ising spin models, alloy species swaps, and grand canonical particle insertions) where continuous MD forces are undefined.",
+            "text_markdown": "MC is more general for discrete degrees of freedom (such as Ising spin models, alloy species swaps, and grand canonical particle insertions) where continuous MD forces are undefined."
           },
           {
             "id": "d",
-            "text": "Combining both in the same code allows you to use fast, non-local MC moves to warm up (equilibrate) the structure and then switch to MD to measure real-time dynamics."
+            "text": "Combining both in the same code allows you to use fast, non-local MC moves to warm up (equilibrate) the structure and then switch to MD to measure real-time dynamics.",
+            "text_markdown": "Combining both in the same code allows you to use fast, non-local MC moves to warm up (equilibrate) the structure and then switch to MD to measure real-time dynamics."
           }
         ],
         "correct": [
@@ -1234,19 +1342,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because biasing the proposal in the direction of the downhill force makes $T(s \\to s') \\ne T(s' \\to s)$ asymmetric, so the proposal ratio $T(s' \\to s)/T(s \\to s')$ must be included in $A(s \\to s')$ to preserve exact detailed balance."
+            "text": "Because biasing the proposal in the direction of the downhill force makes $T(s \\to s') \\ne T(s' \\to s)$ asymmetric, so the proposal ratio $T(s' \\to s)/T(s \\to s')$ must be included in $A(s \\to s')$ to preserve exact detailed balance.",
+            "text_markdown": "Because biasing the proposal in the direction of the downhill force makes $T(s \\to s') \\ne T(s' \\to s)$ asymmetric, so the proposal ratio $T(s' \\to s)/T(s \\to s')$ must be included in $A(s \\to s')$ to preserve exact detailed balance."
           },
           {
             "id": "b",
-            "text": "Because any use of forces in Monte Carlo makes the partition function $Z$ depend on the step number $n$."
+            "text": "Because any use of forces in Monte Carlo makes the partition function $Z$ depend on the step number $n$.",
+            "text_markdown": "Because any use of forces in Monte Carlo makes the partition function $Z$ depend on the step number $n$."
           },
           {
             "id": "c",
-            "text": "Because $T(s \\to s')$ is still symmetric ($T(s \\to s') = T(s' \\to s)$), so the $T$ factors cancel out anyway."
+            "text": "Because $T(s \\to s')$ is still symmetric ($T(s \\to s') = T(s' \\to s)$), so the $T$ factors cancel out anyway.",
+            "text_markdown": "Because $T(s \\to s')$ is still symmetric ($T(s \\to s') = T(s' \\to s)$), so the $T$ factors cancel out anyway."
           },
           {
             "id": "d",
-            "text": "Because Force-Bias Monte Carlo does not use rejections."
+            "text": "Because Force-Bias Monte Carlo does not use rejections.",
+            "text_markdown": "Because Force-Bias Monte Carlo does not use rejections."
           }
         ],
         "correct": "a",

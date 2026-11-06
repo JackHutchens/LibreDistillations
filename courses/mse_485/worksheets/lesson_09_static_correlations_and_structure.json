@@ -27,23 +27,28 @@
         "options": [
           {
             "id": "a",
-            "text": "Helmholtz free energy $F = -k_B T \\ln Z$"
+            "text": "Helmholtz free energy $F = -k_B T \\ln Z$",
+            "text_markdown": "Helmholtz free energy $F = -k_B T \\ln Z$"
           },
           {
             "id": "b",
-            "text": "Configurational entropy $S = (E - F)/T$"
+            "text": "Configurational entropy $S = (E - F)/T$",
+            "text_markdown": "Configurational entropy $S = (E - F)/T$"
           },
           {
             "id": "c",
-            "text": "Virial pressure $P$"
+            "text": "Virial pressure $P$",
+            "text_markdown": "Virial pressure $P$"
           },
           {
             "id": "d",
-            "text": "Constant-volume heat capacity $C_V$"
+            "text": "Constant-volume heat capacity $C_V$",
+            "text_markdown": "Constant-volume heat capacity $C_V$"
           },
           {
             "id": "e",
-            "text": "Average potential energy $U = \\langle V(\\mathbf{R}) \\rangle$"
+            "text": "Average potential energy $U = \\langle V(\\mathbf{R}) \\rangle$",
+            "text_markdown": "Average potential energy $U = \\langle V(\\mathbf{R}) \\rangle$"
           }
         ],
         "correct": [
@@ -63,23 +68,28 @@
         "options": [
           {
             "id": "a",
-            "text": "Virial pressure $P$"
+            "text": "Virial pressure $P$",
+            "text_markdown": "Virial pressure $P$"
           },
           {
             "id": "b",
-            "text": "Total potential energy $U = \\sum_{i<j} V(r_{ij})$"
+            "text": "Total potential energy $U = \\sum_{i<j} V(r_{ij})$",
+            "text_markdown": "Total potential energy $U = \\sum_{i<j} V(r_{ij})$"
           },
           {
             "id": "c",
-            "text": "Kinetic temperature $T = \\frac{2\\langle K\\rangle}{3 N k_B}$"
+            "text": "Kinetic temperature $T = \\frac{2\\langle K\\rangle}{3 N k_B}$",
+            "text_markdown": "Kinetic temperature $T = \\frac{2\\langle K\\rangle}{3 N k_B}$"
           },
           {
             "id": "d",
-            "text": "Total energy variance $\\langle (E - \\langle E\\rangle)^2 \\rangle$"
+            "text": "Total energy variance $\\langle (E - \\langle E\\rangle)^2 \\rangle$",
+            "text_markdown": "Total energy variance $\\langle (E - \\langle E\\rangle)^2 \\rangle$"
           },
           {
             "id": "e",
-            "text": "Pair correlation function $g(r)$ for $r < L/2$"
+            "text": "Pair correlation function $g(r)$ for $r < L/2$",
+            "text_markdown": "Pair correlation function $g(r)$ for $r < L/2$"
           }
         ],
         "correct": [
@@ -100,19 +110,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It increases the pressure above the ideal-gas value $\\rho k_B T$ because $dV/dr < 0$ makes $-r(dV/dr) > 0$."
+            "text": "It increases the pressure above the ideal-gas value $\\rho k_B T$ because $dV/dr < 0$ makes $-r(dV/dr) > 0$.",
+            "text_markdown": "It increases the pressure above the ideal-gas value $\\rho k_B T$ because $dV/dr < 0$ makes $-r(dV/dr) > 0$."
           },
           {
             "id": "b",
-            "text": "It decreases the pressure below $\\rho k_B T$ because repulsive forces push particles inward."
+            "text": "It decreases the pressure below $\\rho k_B T$ because repulsive forces push particles inward.",
+            "text_markdown": "It decreases the pressure below $\\rho k_B T$ because repulsive forces push particles inward."
           },
           {
             "id": "c",
-            "text": "It leaves the pressure equal to $\\rho k_B T$ because pairwise internal forces cancel by Newton's third law."
+            "text": "It leaves the pressure equal to $\\rho k_B T$ because pairwise internal forces cancel by Newton's third law.",
+            "text_markdown": "It leaves the pressure equal to $\\rho k_B T$ because pairwise internal forces cancel by Newton's third law."
           },
           {
             "id": "d",
-            "text": "It makes the total pressure negative."
+            "text": "It makes the total pressure negative.",
+            "text_markdown": "It makes the total pressure negative."
           }
         ],
         "correct": "a",
@@ -143,19 +157,23 @@
         "options": [
           {
             "id": "a",
-            "text": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$."
+            "text": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$.",
+            "text_markdown": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$."
           },
           {
             "id": "b",
-            "text": "It remains constant ($O(1)$) regardless of system size $N$."
+            "text": "It remains constant ($O(1)$) regardless of system size $N$.",
+            "text_markdown": "It remains constant ($O(1)$) regardless of system size $N$."
           },
           {
             "id": "c",
-            "text": "It grows as $N^{+1/2}$."
+            "text": "It grows as $N^{+1/2}$.",
+            "text_markdown": "It grows as $N^{+1/2}$."
           },
           {
             "id": "d",
-            "text": "It scales as $N^{-1}$."
+            "text": "It scales as $N^{-1}$.",
+            "text_markdown": "It scales as $N^{-1}$."
           }
         ],
         "correct": "a",
@@ -206,19 +224,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken."
+            "text": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken.",
+            "text_markdown": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken."
           },
           {
             "id": "b",
-            "text": "Only continuous translational symmetry is broken; rotational symmetry remains unbroken."
+            "text": "Only continuous translational symmetry is broken; rotational symmetry remains unbroken.",
+            "text_markdown": "Only continuous translational symmetry is broken; rotational symmetry remains unbroken."
           },
           {
             "id": "c",
-            "text": "Only rotational symmetry is broken; translational symmetry remains continuous."
+            "text": "Only rotational symmetry is broken; translational symmetry remains continuous.",
+            "text_markdown": "Only rotational symmetry is broken; translational symmetry remains continuous."
           },
           {
             "id": "d",
-            "text": "Time-reversal symmetry and particle-exchange symmetry are broken."
+            "text": "Time-reversal symmetry and particle-exchange symmetry are broken.",
+            "text_markdown": "Time-reversal symmetry and particle-exchange symmetry are broken."
           }
         ],
         "correct": "a",
@@ -235,19 +257,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$."
+            "text": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$.",
+            "text_markdown": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$."
           },
           {
             "id": "b",
-            "text": "In a fluid $\\langle \\rho_{\\mathbf{G}} \\rangle = N$, whereas in a crystal $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$."
+            "text": "In a fluid $\\langle \\rho_{\\mathbf{G}} \\rangle = N$, whereas in a crystal $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$.",
+            "text_markdown": "In a fluid $\\langle \\rho_{\\mathbf{G}} \\rangle = N$, whereas in a crystal $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$."
           },
           {
             "id": "c",
-            "text": "$\\rho_{\\mathbf{G}}$ measures the average kinetic energy of the crystal."
+            "text": "$\\rho_{\\mathbf{G}}$ measures the average kinetic energy of the crystal.",
+            "text_markdown": "$\\rho_{\\mathbf{G}}$ measures the average kinetic energy of the crystal."
           },
           {
             "id": "d",
-            "text": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point."
+            "text": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point.",
+            "text_markdown": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point."
           }
         ],
         "correct": "a",
@@ -264,19 +290,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Approximately $10\\%\\text{\u2013}15\\%$ of the nearest-neighbor spacing $d$"
+            "text": "Approximately $10\\%\\text{\u2013}15\\%$ of the nearest-neighbor spacing $d$",
+            "text_markdown": "Approximately $10\\%\\text{\u2013}15\\%$ of the nearest-neighbor spacing $d$"
           },
           {
             "id": "b",
-            "text": "Approximately $1\\%\\text{\u2013}2\\%$ of the nearest-neighbor spacing $d$"
+            "text": "Approximately $1\\%\\text{\u2013}2\\%$ of the nearest-neighbor spacing $d$",
+            "text_markdown": "Approximately $1\\%\\text{\u2013}2\\%$ of the nearest-neighbor spacing $d$"
           },
           {
             "id": "c",
-            "text": "Approximately $50\\%$ of the nearest-neighbor spacing $d$"
+            "text": "Approximately $50\\%$ of the nearest-neighbor spacing $d$",
+            "text_markdown": "Approximately $50\\%$ of the nearest-neighbor spacing $d$"
           },
           {
             "id": "d",
-            "text": "Exactly $100\\%$ of the simulation box length $L$"
+            "text": "Exactly $100\\%$ of the simulation box length $L$",
+            "text_markdown": "Exactly $100\\%$ of the simulation box length $L$"
           }
         ],
         "correct": "a",
@@ -370,19 +400,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated."
+            "text": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated.",
+            "text_markdown": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated."
           },
           {
             "id": "b",
-            "text": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$."
+            "text": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$.",
+            "text_markdown": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$."
           },
           {
             "id": "c",
-            "text": "$g(r \\to 0) = \\infty$ and $g(r \\to \\infty) = \\rho$."
+            "text": "$g(r \\to 0) = \\infty$ and $g(r \\to \\infty) = \\rho$.",
+            "text_markdown": "$g(r \\to 0) = \\infty$ and $g(r \\to \\infty) = \\rho$."
           },
           {
             "id": "d",
-            "text": "$g(r) = 1$ for all $r$ including $r \\to 0$."
+            "text": "$g(r) = 1$ for all $r$ including $r \\to 0$.",
+            "text_markdown": "$g(r) = 1$ for all $r$ including $r \\to 0$."
           }
         ],
         "correct": "a",
@@ -402,19 +436,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations."
+            "text": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations.",
+            "text_markdown": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations."
           },
           {
             "id": "b",
-            "text": "$g(r) = 1 - \\beta V(r)$ with strong oscillations out to $r = 5\\sigma$."
+            "text": "$g(r) = 1 - \\beta V(r)$ with strong oscillations out to $r = 5\\sigma$.",
+            "text_markdown": "$g(r) = 1 - \\beta V(r)$ with strong oscillations out to $r = 5\\sigma$."
           },
           {
             "id": "c",
-            "text": "$g(r) = 0$ everywhere because the gas density approaches zero."
+            "text": "$g(r) = 0$ everywhere because the gas density approaches zero.",
+            "text_markdown": "$g(r) = 0$ everywhere because the gas density approaches zero."
           },
           {
             "id": "d",
-            "text": "$g(r) = \\beta V(r)$."
+            "text": "$g(r) = \\beta V(r)$.",
+            "text_markdown": "$g(r) = \\beta V(r)$."
           }
         ],
         "correct": "a",
@@ -459,19 +497,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass."
+            "text": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass.",
+            "text_markdown": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass."
           },
           {
             "id": "b",
-            "text": "Because $g(r)$ cannot be computed in Monte Carlo simulations, only in Molecular Dynamics force loops."
+            "text": "Because $g(r)$ cannot be computed in Monte Carlo simulations, only in Molecular Dynamics force loops.",
+            "text_markdown": "Because $g(r)$ cannot be computed in Monte Carlo simulations, only in Molecular Dynamics force loops."
           },
           {
             "id": "c",
-            "text": "Because binning $g(r)$ modifies the atomic forces at each time step."
+            "text": "Because binning $g(r)$ modifies the atomic forces at each time step.",
+            "text_markdown": "Because binning $g(r)$ modifies the atomic forces at each time step."
           },
           {
             "id": "d",
-            "text": "Because `g[index]` automatically normalizes the pressure without needing a volume factor."
+            "text": "Because `g[index]` automatically normalizes the pressure without needing a volume factor.",
+            "text_markdown": "Because `g[index]` automatically normalizes the pressure without needing a volume factor."
           }
         ],
         "correct": "a",
@@ -508,19 +550,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$1.0\\sigma,\\; \\sqrt{2}\\sigma \\approx 1.414\\sigma,\\; \\sqrt{3}\\sigma \\approx 1.732\\sigma$"
+            "text": "$1.0\\sigma,\\; \\sqrt{2}\\sigma \\approx 1.414\\sigma,\\; \\sqrt{3}\\sigma \\approx 1.732\\sigma$",
+            "text_markdown": "$1.0\\sigma,\\; \\sqrt{2}\\sigma \\approx 1.414\\sigma,\\; \\sqrt{3}\\sigma \\approx 1.732\\sigma$"
           },
           {
             "id": "b",
-            "text": "$1.0\\sigma,\\; 2.0\\sigma,\\; 3.0\\sigma$"
+            "text": "$1.0\\sigma,\\; 2.0\\sigma,\\; 3.0\\sigma$",
+            "text_markdown": "$1.0\\sigma,\\; 2.0\\sigma,\\; 3.0\\sigma$"
           },
           {
             "id": "c",
-            "text": "$1.0\\sigma,\\; \\sqrt{4/3}\\sigma \\approx 1.155\\sigma,\\; \\sqrt{8/3}\\sigma \\approx 1.633\\sigma$"
+            "text": "$1.0\\sigma,\\; \\sqrt{4/3}\\sigma \\approx 1.155\\sigma,\\; \\sqrt{8/3}\\sigma \\approx 1.633\\sigma$",
+            "text_markdown": "$1.0\\sigma,\\; \\sqrt{4/3}\\sigma \\approx 1.155\\sigma,\\; \\sqrt{8/3}\\sigma \\approx 1.633\\sigma$"
           },
           {
             "id": "d",
-            "text": "$0.5\\sigma,\\; 1.0\\sigma,\\; 1.5\\sigma$"
+            "text": "$0.5\\sigma,\\; 1.0\\sigma,\\; 1.5\\sigma$",
+            "text_markdown": "$0.5\\sigma,\\; 1.0\\sigma,\\; 1.5\\sigma$"
           }
         ],
         "correct": "a",
@@ -537,19 +583,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering)."
+            "text": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering).",
+            "text_markdown": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering)."
           },
           {
             "id": "b",
-            "text": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix."
+            "text": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix.",
+            "text_markdown": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix."
           },
           {
             "id": "c",
-            "text": "That aluminum atoms have zero atomic radius in molten nickel."
+            "text": "That aluminum atoms have zero atomic radius in molten nickel.",
+            "text_markdown": "That aluminum atoms have zero atomic radius in molten nickel."
           },
           {
             "id": "d",
-            "text": "That the simulation box is too small to resolve Al\u2013Al distances."
+            "text": "That the simulation box is too small to resolve Al\u2013Al distances.",
+            "text_markdown": "That the simulation box is too small to resolve Al\u2013Al distances."
           }
         ],
         "correct": "a",
@@ -566,19 +616,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$."
+            "text": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$.",
+            "text_markdown": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$."
           },
           {
             "id": "b",
-            "text": "Because $g_{\\text{OO}}(r)$ is identically $1$ at all distances in liquid water."
+            "text": "Because $g_{\\text{OO}}(r)$ is identically $1$ at all distances in liquid water.",
+            "text_markdown": "Because $g_{\\text{OO}}(r)$ is identically $1$ at all distances in liquid water."
           },
           {
             "id": "c",
-            "text": "Because oxygen atoms do not scatter X-rays or neutrons."
+            "text": "Because oxygen atoms do not scatter X-rays or neutrons.",
+            "text_markdown": "Because oxygen atoms do not scatter X-rays or neutrons."
           },
           {
             "id": "d",
-            "text": "Because periodic boundary conditions only apply to dipolar angles $\\alpha$."
+            "text": "Because periodic boundary conditions only apply to dipolar angles $\\alpha$.",
+            "text_markdown": "Because periodic boundary conditions only apply to dipolar angles $\\alpha$."
           }
         ],
         "correct": "a",
@@ -689,19 +743,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
+            "text": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$",
+            "text_markdown": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
           },
           {
             "id": "b",
-            "text": "$S(\\mathbf{k}) = \\frac{1}{N^2} \\langle \\rho_{\\mathbf{k}} \\rangle$"
+            "text": "$S(\\mathbf{k}) = \\frac{1}{N^2} \\langle \\rho_{\\mathbf{k}} \\rangle$",
+            "text_markdown": "$S(\\mathbf{k}) = \\frac{1}{N^2} \\langle \\rho_{\\mathbf{k}} \\rangle$"
           },
           {
             "id": "c",
-            "text": "$S(\\mathbf{k}) = \\Omega \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
+            "text": "$S(\\mathbf{k}) = \\Omega \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$",
+            "text_markdown": "$S(\\mathbf{k}) = \\Omega \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
           },
           {
             "id": "d",
-            "text": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$"
+            "text": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$",
+            "text_markdown": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$"
           }
         ],
         "correct": "a",
@@ -749,19 +807,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $g(r)$ is only known up to $r < L/2$ in periodic boundary conditions, and truncating the Fourier integral introduces unphysical cutoff ripples at small $k$."
+            "text": "Because $g(r)$ is only known up to $r < L/2$ in periodic boundary conditions, and truncating the Fourier integral introduces unphysical cutoff ripples at small $k$.",
+            "text_markdown": "Because $g(r)$ is only known up to $r < L/2$ in periodic boundary conditions, and truncating the Fourier integral introduces unphysical cutoff ripples at small $k$."
           },
           {
             "id": "b",
-            "text": "Because in an anisotropic crystal or oriented phase, pair correlations depend on the 3D vector $\\mathbf{r}$ rather than just the spherically averaged scalar distance $r$."
+            "text": "Because in an anisotropic crystal or oriented phase, pair correlations depend on the 3D vector $\\mathbf{r}$ rather than just the spherically averaged scalar distance $r$.",
+            "text_markdown": "Because in an anisotropic crystal or oriented phase, pair correlations depend on the 3D vector $\\mathbf{r}$ rather than just the spherically averaged scalar distance $r$."
           },
           {
             "id": "c",
-            "text": "Because $g(r)$ can only be defined in 1D systems."
+            "text": "Because $g(r)$ can only be defined in 1D systems.",
+            "text_markdown": "Because $g(r)$ can only be defined in 1D systems."
           },
           {
             "id": "d",
-            "text": "Because $S(\\mathbf{k})$ does not exist in fluids."
+            "text": "Because $S(\\mathbf{k})$ does not exist in fluids.",
+            "text_markdown": "Because $S(\\mathbf{k})$ does not exist in fluids."
           }
         ],
         "correct": [
@@ -784,19 +846,23 @@
         "options": [
           {
             "id": "a",
-            "text": "In a crystal, the Bragg peaks $S(\\mathbf{G})$ at reciprocal lattice vectors scale linearly with the number of atoms ($S(\\mathbf{G}) \\propto N$), whereas in a liquid or glass all peaks of $S(k)$ remain $O(1)$ as $N$ grows."
+            "text": "In a crystal, the Bragg peaks $S(\\mathbf{G})$ at reciprocal lattice vectors scale linearly with the number of atoms ($S(\\mathbf{G}) \\propto N$), whereas in a liquid or glass all peaks of $S(k)$ remain $O(1)$ as $N$ grows.",
+            "text_markdown": "In a crystal, the Bragg peaks $S(\\mathbf{G})$ at reciprocal lattice vectors scale linearly with the number of atoms ($S(\\mathbf{G}) \\propto N$), whereas in a liquid or glass all peaks of $S(k)$ remain $O(1)$ as $N$ grows."
           },
           {
             "id": "b",
-            "text": "In a liquid, the main peak of $S(k)$ scales as $N^2$, whereas in a crystal it scales as $N$."
+            "text": "In a liquid, the main peak of $S(k)$ scales as $N^2$, whereas in a crystal it scales as $N$.",
+            "text_markdown": "In a liquid, the main peak of $S(k)$ scales as $N^2$, whereas in a crystal it scales as $N$."
           },
           {
             "id": "c",
-            "text": "In a crystal, $S(k) = 0$ for all $k$, whereas in a liquid $S(k) = N$."
+            "text": "In a crystal, $S(k) = 0$ for all $k$, whereas in a liquid $S(k) = N$.",
+            "text_markdown": "In a crystal, $S(k) = 0$ for all $k$, whereas in a liquid $S(k) = N$."
           },
           {
             "id": "d",
-            "text": "Both crystals and glasses have $S(\\mathbf{G}) \\propto N$."
+            "text": "Both crystals and glasses have $S(\\mathbf{G}) \\propto N$.",
+            "text_markdown": "Both crystals and glasses have $S(\\mathbf{G}) \\propto N$."
           }
         ],
         "correct": "a",
@@ -833,19 +899,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$."
+            "text": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$.",
+            "text_markdown": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$."
           },
           {
             "id": "b",
-            "text": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks."
+            "text": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks.",
+            "text_markdown": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks."
           },
           {
             "id": "c",
-            "text": "All Bragg peaks are reduced by the exact same constant fraction independent of $G$."
+            "text": "All Bragg peaks are reduced by the exact same constant fraction independent of $G$.",
+            "text_markdown": "All Bragg peaks are reduced by the exact same constant fraction independent of $G$."
           },
           {
             "id": "d",
-            "text": "The Bragg peaks shift to $G = 0$."
+            "text": "The Bragg peaks shift to $G = 0$.",
+            "text_markdown": "The Bragg peaks shift to $G = 0$."
           }
         ],
         "correct": "a",
@@ -879,19 +949,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence."
+            "text": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence.",
+            "text_markdown": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence."
           },
           {
             "id": "b",
-            "text": "$S(k \\to 0)$ drops to zero because the fluid becomes incompressible."
+            "text": "$S(k \\to 0)$ drops to zero because the fluid becomes incompressible.",
+            "text_markdown": "$S(k \\to 0)$ drops to zero because the fluid becomes incompressible."
           },
           {
             "id": "c",
-            "text": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$."
+            "text": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$.",
+            "text_markdown": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$."
           },
           {
             "id": "d",
-            "text": "$S(k)$ becomes negative at small $k$."
+            "text": "$S(k)$ becomes negative at small $k$.",
+            "text_markdown": "$S(k)$ becomes negative at small $k$."
           }
         ],
         "correct": "a",
@@ -948,19 +1022,23 @@
         "options": [
           {
             "id": "a",
-            "text": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$)."
+            "text": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$).",
+            "text_markdown": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$)."
           },
           {
             "id": "b",
-            "text": "The species-blind total radial distribution function $g_{\\text{tot}}(r)$ that ignores particle colors."
+            "text": "The species-blind total radial distribution function $g_{\\text{tot}}(r)$ that ignores particle colors.",
+            "text_markdown": "The species-blind total radial distribution function $g_{\\text{tot}}(r)$ that ignores particle colors."
           },
           {
             "id": "c",
-            "text": "The average total kinetic energy $\\langle K \\rangle$."
+            "text": "The average total kinetic energy $\\langle K \\rangle$.",
+            "text_markdown": "The average total kinetic energy $\\langle K \\rangle$."
           },
           {
             "id": "d",
-            "text": "The ideal-gas partition function."
+            "text": "The ideal-gas partition function.",
+            "text_markdown": "The ideal-gas partition function."
           }
         ],
         "correct": "a",
@@ -977,19 +1055,23 @@
         "options": [
           {
             "id": "a",
-            "text": "A crystal exhibits discrete, sharp Bragg peaks $S(\\mathbf{G}) \\propto N$ at reciprocal lattice vectors, whereas a glass is isotropic and displays only broad, $O(1)$ diffuse scattering rings like a liquid."
+            "text": "A crystal exhibits discrete, sharp Bragg peaks $S(\\mathbf{G}) \\propto N$ at reciprocal lattice vectors, whereas a glass is isotropic and displays only broad, $O(1)$ diffuse scattering rings like a liquid.",
+            "text_markdown": "A crystal exhibits discrete, sharp Bragg peaks $S(\\mathbf{G}) \\propto N$ at reciprocal lattice vectors, whereas a glass is isotropic and displays only broad, $O(1)$ diffuse scattering rings like a liquid."
           },
           {
             "id": "b",
-            "text": "A glass has $S(\\mathbf{G}) = N^2$, whereas a crystal has $S(\\mathbf{G}) = N$."
+            "text": "A glass has $S(\\mathbf{G}) = N^2$, whereas a crystal has $S(\\mathbf{G}) = N$.",
+            "text_markdown": "A glass has $S(\\mathbf{G}) = N^2$, whereas a crystal has $S(\\mathbf{G}) = N$."
           },
           {
             "id": "c",
-            "text": "A glass has $g(r) = 1$ everywhere like an ideal gas."
+            "text": "A glass has $g(r) = 1$ everywhere like an ideal gas.",
+            "text_markdown": "A glass has $g(r) = 1$ everywhere like an ideal gas."
           },
           {
             "id": "d",
-            "text": "A crystal has no exclusion hole at small $r$ in $g(r)$."
+            "text": "A crystal has no exclusion hole at small $r$ in $g(r)$.",
+            "text_markdown": "A crystal has no exclusion hole at small $r$ in $g(r)$."
           }
         ],
         "correct": "a",
@@ -1006,19 +1088,23 @@
         "options": [
           {
             "id": "a",
-            "text": "By measuring time-dependent correlations and transport: in a glass, particles are dynamically arrested in cages ($D \\to 0$, intermediate scattering function $F(k, t)$ plateaus at a non-zero Edwards-Anderson order parameter $q_{\\text{EA}} > 0$)."
+            "text": "By measuring time-dependent correlations and transport: in a glass, particles are dynamically arrested in cages ($D \\to 0$, intermediate scattering function $F(k, t)$ plateaus at a non-zero Edwards-Anderson order parameter $q_{\\text{EA}} > 0$).",
+            "text_markdown": "By measuring time-dependent correlations and transport: in a glass, particles are dynamically arrested in cages ($D \\to 0$, intermediate scattering function $F(k, t)$ plateaus at a non-zero Edwards-Anderson order parameter $q_{\\text{EA}} > 0$)."
           },
           {
             "id": "b",
-            "text": "By inspecting the time-averaged local density $\\langle \\rho(\\mathbf{r}) \\rangle_t$: in a liquid it smears out to a uniform constant $\\rho_0$, whereas in a glass it remains spatially inhomogeneous around the frozen amorphous atomic positions."
+            "text": "By inspecting the time-averaged local density $\\langle \\rho(\\mathbf{r}) \\rangle_t$: in a liquid it smears out to a uniform constant $\\rho_0$, whereas in a glass it remains spatially inhomogeneous around the frozen amorphous atomic positions.",
+            "text_markdown": "By inspecting the time-averaged local density $\\langle \\rho(\\mathbf{r}) \\rangle_t$: in a liquid it smears out to a uniform constant $\\rho_0$, whereas in a glass it remains spatially inhomogeneous around the frozen amorphous atomic positions."
           },
           {
             "id": "c",
-            "text": "By checking if $g(r \\to \\infty) = 0$ in the liquid and $g(r \\to \\infty) = 10$ in the glass."
+            "text": "By checking if $g(r \\to \\infty) = 0$ in the liquid and $g(r \\to \\infty) = 10$ in the glass.",
+            "text_markdown": "By checking if $g(r \\to \\infty) = 0$ in the liquid and $g(r \\to \\infty) = 10$ in the glass."
           },
           {
             "id": "d",
-            "text": "By checking if the kinetic energy violates equipartition $\\langle K \\rangle = \\frac{3}{2} N k_B T$ in a classical glass."
+            "text": "By checking if the kinetic energy violates equipartition $\\langle K \\rangle = \\frac{3}{2} N k_B T$ in a classical glass.",
+            "text_markdown": "By checking if the kinetic energy violates equipartition $\\langle K \\rangle = \\frac{3}{2} N k_B T$ in a classical glass."
           }
         ],
         "correct": [
@@ -1041,19 +1127,23 @@
         "options": [
           {
             "id": "a",
-            "text": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation."
+            "text": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation.",
+            "text_markdown": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation."
           },
           {
             "id": "b",
-            "text": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$."
+            "text": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$.",
+            "text_markdown": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$."
           },
           {
             "id": "c",
-            "text": "The exclusion hole at $r < \\sigma$ disappears."
+            "text": "The exclusion hole at $r < \\sigma$ disappears.",
+            "text_markdown": "The exclusion hole at $r < \\sigma$ disappears."
           },
           {
             "id": "d",
-            "text": "The first peak shifts to $r = 0$."
+            "text": "The first peak shifts to $r = 0$.",
+            "text_markdown": "The first peak shifts to $r = 0$."
           }
         ],
         "correct": "a",
@@ -1070,19 +1160,23 @@
         "options": [
           {
             "id": "a",
-            "text": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$."
+            "text": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$.",
+            "text_markdown": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$."
           },
           {
             "id": "b",
-            "text": "At extremely high temperature $T \\to \\infty$ where thermal kinetic energy dominates."
+            "text": "At extremely high temperature $T \\to \\infty$ where thermal kinetic energy dominates.",
+            "text_markdown": "At extremely high temperature $T \\to \\infty$ where thermal kinetic energy dominates."
           },
           {
             "id": "c",
-            "text": "Only when the Coulomb interaction is turned off ($e = 0$)."
+            "text": "Only when the Coulomb interaction is turned off ($e = 0$).",
+            "text_markdown": "Only when the Coulomb interaction is turned off ($e = 0$)."
           },
           {
             "id": "d",
-            "text": "At infinite density ($r_s \\to 0$) where electrons behave as an ideal Fermi gas."
+            "text": "At infinite density ($r_s \\to 0$) where electrons behave as an ideal Fermi gas.",
+            "text_markdown": "At infinite density ($r_s \\to 0$) where electrons behave as an ideal Fermi gas."
           }
         ],
         "correct": "a",
@@ -1102,19 +1196,23 @@
         "options": [
           {
             "id": "a",
-            "text": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$."
+            "text": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$.",
+            "text_markdown": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$."
           },
           {
             "id": "b",
-            "text": "$P = \\rho k_B T$ identically at all densities because $V(r) = 0$ for $r > \\sigma$."
+            "text": "$P = \\rho k_B T$ identically at all densities because $V(r) = 0$ for $r > \\sigma$.",
+            "text_markdown": "$P = \\rho k_B T$ identically at all densities because $V(r) = 0$ for $r > \\sigma$."
           },
           {
             "id": "c",
-            "text": "$P = 0$ at all temperatures."
+            "text": "$P = 0$ at all temperatures.",
+            "text_markdown": "$P = 0$ at all temperatures."
           },
           {
             "id": "d",
-            "text": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$."
+            "text": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$.",
+            "text_markdown": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$."
           }
         ],
         "correct": "a",
@@ -1148,19 +1246,23 @@
         "options": [
           {
             "id": "a",
-            "text": "For $T \\gg T_c$ and $T \\ll T_c$, connected correlations $G(r)$ decay exponentially over a finite correlation length $\\xi$, whereas at $T = T_c$ the correlation length diverges ($\\xi \\to \\infty$) and $G(r)$ decays algebraically as a power law."
+            "text": "For $T \\gg T_c$ and $T \\ll T_c$, connected correlations $G(r)$ decay exponentially over a finite correlation length $\\xi$, whereas at $T = T_c$ the correlation length diverges ($\\xi \\to \\infty$) and $G(r)$ decays algebraically as a power law.",
+            "text_markdown": "For $T \\gg T_c$ and $T \\ll T_c$, connected correlations $G(r)$ decay exponentially over a finite correlation length $\\xi$, whereas at $T = T_c$ the correlation length diverges ($\\xi \\to \\infty$) and $G(r)$ decays algebraically as a power law."
           },
           {
             "id": "b",
-            "text": "For $T \\gg T_c$, $G(r) = 1$ for all $r$, whereas at $T = T_c$, $G(r) = 0$ for all $r > 0$."
+            "text": "For $T \\gg T_c$, $G(r) = 1$ for all $r$, whereas at $T = T_c$, $G(r) = 0$ for all $r > 0$.",
+            "text_markdown": "For $T \\gg T_c$, $G(r) = 1$ for all $r$, whereas at $T = T_c$, $G(r) = 0$ for all $r > 0$."
           },
           {
             "id": "c",
-            "text": "The correlation length $\\xi$ is largest at $T \\to \\infty$."
+            "text": "The correlation length $\\xi$ is largest at $T \\to \\infty$.",
+            "text_markdown": "The correlation length $\\xi$ is largest at $T \\to \\infty$."
           },
           {
             "id": "d",
-            "text": "$\\langle \\sigma \\rangle = 1$ for $T \\gg T_c$ and $\\langle \\sigma \\rangle = 0$ for $T \\ll T_c$."
+            "text": "$\\langle \\sigma \\rangle = 1$ for $T \\gg T_c$ and $\\langle \\sigma \\rangle = 0$ for $T \\ll T_c$.",
+            "text_markdown": "$\\langle \\sigma \\rangle = 1$ for $T \\gg T_c$ and $\\langle \\sigma \\rangle = 0$ for $T \\ll T_c$."
           }
         ],
         "correct": "a",
@@ -1211,19 +1313,23 @@
         "options": [
           {
             "id": "a",
-            "text": "For any pairwise-additive potential $V(\\mathbf{R}) = \\sum_{i<j} v(r_{ij})$, both the average potential energy $U$ and the excess virial pressure $P_{\\text{ex}}$ can be expressed exactly as 1D radial integrals involving $g(r)$."
+            "text": "For any pairwise-additive potential $V(\\mathbf{R}) = \\sum_{i<j} v(r_{ij})$, both the average potential energy $U$ and the excess virial pressure $P_{\\text{ex}}$ can be expressed exactly as 1D radial integrals involving $g(r)$.",
+            "text_markdown": "For any pairwise-additive potential $V(\\mathbf{R}) = \\sum_{i<j} v(r_{ij})$, both the average potential energy $U$ and the excess virial pressure $P_{\\text{ex}}$ can be expressed exactly as 1D radial integrals involving $g(r)$."
           },
           {
             "id": "b",
-            "text": "The isothermal compressibility $\\chi_T$ is directly proportional to the long-wavelength limit of the static structure factor, $\\chi_T = S(0) / (\\rho k_B T)$."
+            "text": "The isothermal compressibility $\\chi_T$ is directly proportional to the long-wavelength limit of the static structure factor, $\\chi_T = S(0) / (\\rho k_B T)$.",
+            "text_markdown": "The isothermal compressibility $\\chi_T$ is directly proportional to the long-wavelength limit of the static structure factor, $\\chi_T = S(0) / (\\rho k_B T)$."
           },
           {
             "id": "c",
-            "text": "In a canonical ($NVT$) simulation, the specific heat $C_V$ is determined by the variance of total energy fluctuations divided by $(k_B T)^2$."
+            "text": "In a canonical ($NVT$) simulation, the specific heat $C_V$ is determined by the variance of total energy fluctuations divided by $(k_B T)^2$.",
+            "text_markdown": "In a canonical ($NVT$) simulation, the specific heat $C_V$ is determined by the variance of total energy fluctuations divided by $(k_B T)^2$."
           },
           {
             "id": "d",
-            "text": "The radial distribution function $g(r)$ of a crystalline solid scales linearly with the total number of particles $N$ at large $r$."
+            "text": "The radial distribution function $g(r)$ of a crystalline solid scales linearly with the total number of particles $N$ at large $r$.",
+            "text_markdown": "The radial distribution function $g(r)$ of a crystalline solid scales linearly with the total number of particles $N$ at large $r$."
           }
         ],
         "correct": [

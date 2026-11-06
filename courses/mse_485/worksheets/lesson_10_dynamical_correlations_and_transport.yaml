@@ -3,73 +3,42 @@ worksheet:
   title: Lesson 10 — Dynamical Correlations, Linear Response, and Transport Coefficients
   estimated_minutes: 115
   learning_objectives:
-  - Derive static linear response from perturbation theory and explain why the static structure factor S(k) governs the linear
-    density response to an external field.
-  - Apply stationarity, Cauchy-Schwarz bounds, the Onsager regression hypothesis, and the Fluctuation-Dissipation Theorem
-    to equilibrium time correlation functions.
-  - Relate the intermediate scattering function F(k, t) and dynamical structure factor S(k, ω) to inelastic scattering, collective
-    sound modes, Kramers-Kronig relations, and quantum detailed balance.
-  - Compute self-diffusion coefficients via both the Einstein unwrapped mean-squared displacement (MSD) route and the Green-Kubo
-    velocity autocorrelation (VACF) integral, and explain Alder-Wainwright hydrodynamic long-time tails.
+  - Derive static linear response from perturbation theory and explain why the static structure factor S(k) governs the linear density response to an external field.
+  - Apply stationarity, Cauchy-Schwarz bounds, the Onsager regression hypothesis, and the Fluctuation-Dissipation Theorem to equilibrium time correlation functions.
+  - Relate the intermediate scattering function F(k, t) and dynamical structure factor S(k, ω) to inelastic scattering, collective sound modes, Kramers-Kronig relations, and quantum detailed balance.
+  - Compute self-diffusion coefficients via both the Einstein unwrapped mean-squared displacement (MSD) route and the Green-Kubo velocity autocorrelation (VACF) integral, and explain Alder-Wainwright hydrodynamic long-time tails.
   sections:
   - id: sec_static_perturbation_and_time_correlations
     type: markdown_section
     title: 1. Static Perturbation Theory, Linear Response, and Time Correlation Functions
-    body_markdown: "Why perform **Molecular Dynamics (MD)** rather than **Monte Carlo (MC)**? While both methods sample static\
-      \ equilibrium averages, **only MD propagates Newton's equations in real physical time $t$**, unlocking dynamical correlation\
-      \ functions, collective excitations, and transport coefficients (diffusion, viscosity, thermal and electrical conductivity).\n\
-      \n### Static Perturbation Theory & Linear Susceptibility\nSuppose we perturb the potential energy $V(\\mathbf{R})$ of\
-      \ a canonical ensemble by a weak external field $\\lambda A(\\mathbf{R})$:\n$$H(\\lambda) = V(\\mathbf{R}) + \\lambda\
-      \ A(\\mathbf{R}), \\qquad e^{-\\beta F(\\lambda)} = \\int d^{3N}r\\, e^{-\\beta V(\\mathbf{R}) - \\beta \\lambda A(\\\
-      mathbf{R})}$$\nExpanding $e^{-\\beta\\lambda A}$ in powers of $\\beta\\lambda$ and taking the logarithm yields the cumulant\
-      \ expansion of the free energy:\n$$F(\\lambda) = F(0) + \\lambda \\langle A \\rangle_0 - \\frac{1}{2}\\beta \\lambda^2\
-      \ \\left[\\langle A^2 \\rangle_0 - \\langle A \\rangle_0^2\\right] + \\cdots$$\nSimilarly, the expectation value of\
-      \ any observable $B(\\mathbf{R})$ in the perturbed system is:\n$$\\langle B \\rangle_\\lambda = \\langle B \\rangle_0\
-      \ - \\beta \\lambda \\left[\\langle B A \\rangle_0 - \\langle B \\rangle_0 \\langle A \\rangle_0\\right] + O(\\lambda^2)\
-      \ \\implies \\left.\\frac{\\partial \\langle B \\rangle_\\lambda}{\\partial \\lambda}\\right|_{\\lambda=0} = -\\beta\
-      \ \\langle \\delta B\\, \\delta A \\rangle_0$$\n**Density Response Example:** Let the external perturbation couple to\
-      \ Fourier mode $\\mathbf{k}$ of the density ($A = \\rho_{\\mathbf{k}}$) and measure the induced density wave $B = \\\
-      rho_{-\\mathbf{k}}$ (with $\\langle \\rho_{\\mathbf{k}} \\rangle_0 = 0$ for $\\mathbf{k} \\neq \\mathbf{0}$ in a fluid):\n\
-      $$\\left.\\frac{\\partial \\langle \\rho_{-\\mathbf{k}} \\rangle}{\\partial \\lambda_{\\mathbf{k}}}\\right|_{\\lambda=0}\
-      \ = -\\beta \\left\\langle |\\rho_{\\mathbf{k}}|^2 \\right\\rangle_0 = -\\beta N S(\\mathbf{k})$$\nThus, the **static\
-      \ structure factor $S(\\mathbf{k})$ is directly proportional to the static linear density susceptibility**, which is\
-      \ why X-ray and neutron scattering measure $S(\\mathbf{k})$.\n\n### Dynamical Correlation Functions $C_{AB}(t)$\nFor\
-      \ two observables $A$ and $B$ with fluctuations $\\delta A(t) = A(t) - \\langle A \\rangle$, the equilibrium **time\
-      \ correlation function** is:\n$$C_{AB}(t) = \\left\\langle \\delta A(t_0)\\, \\delta B(t_0 + t) \\right\\rangle = \\\
-      left\\langle \\delta A(0)\\, \\delta B(t) \\right\\rangle$$\n- **Stationarity & Ergodicity:** In thermal equilibrium,\
-      \ ensemble averages are invariant under time translation ($t_0 \\to 0$). If the system is **ergodic**, we can average\
-      \ over many time origins $t_0$ along a single long MD trajectory to dramatically reduce statistical noise.\n- **Decorrelation\
-      \ at Long Times:** In an ergodic mixing system, observables become statistically independent as $t \\to \\infty$, so\
-      \ $\\lim_{t\\to\\infty} C_{AB}(t) = \\langle \\delta A\\rangle \\langle \\delta B\\rangle = 0$.\n- **Autocorrelation\
-      \ Bounds & Wiener-Khinchin Positivity ($B = A^*$):** By the Cauchy-Schwarz inequality, an autocorrelation function never\
-      \ exceeds its zero-time variance:\n  $$\\left| C_{AA}(t) \\right| \\le C_{AA}(0) = \\langle |\\delta A|^2 \\rangle$$\n\
-      \  Moreover, by the Wiener-Khinchin theorem, its temporal Fourier transform (power spectral density) is strictly non-negative\
-      \ at all frequencies:\n  $$C_{AA}(\\omega) = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi}\\, e^{i\\omega t} C_{AA}(t)\
-      \ \\ge 0$$\n"
+    body_markdown: "Why perform **Molecular Dynamics (MD)** rather than **Monte Carlo (MC)**? While both methods sample static equilibrium averages, **only MD propagates Newton's equations in real physical time $t$**, unlocking dynamical correlation functions, collective excitations, and transport coefficients (diffusion, viscosity, thermal and electrical conductivity).\n\n### Static Perturbation Theory & Linear Susceptibility\nSuppose we perturb the potential energy $V(\\mathbf{R})$ of a canonical ensemble by a weak external field $\\lambda A(\\mathbf{R})$:\n$$H(\\lambda) = V(\\mathbf{R}) + \\lambda A(\\mathbf{R}), \\qquad e^{-\\beta F(\\lambda)} = \\int d^{3N}r\\, e^{-\\beta V(\\mathbf{R}) - \\beta \\lambda A(\\mathbf{R})}$$\nExpanding $e^{-\\beta\\lambda A}$ in powers of $\\beta\\lambda$ and taking the logarithm yields the cumulant expansion of the free energy:\n$$F(\\lambda) = F(0) + \\lambda \\langle A \\rangle_0 - \\frac{1}{2}\\beta \\lambda^2 \\left[\\langle A^2 \\rangle_0 - \\langle\
+      \ A \\rangle_0^2\\right] + \\cdots$$\nSimilarly, the expectation value of any observable $B(\\mathbf{R})$ in the perturbed system is:\n$$\\langle B \\rangle_\\lambda = \\langle B \\rangle_0 - \\beta \\lambda \\left[\\langle B A \\rangle_0 - \\langle B \\rangle_0 \\langle A \\rangle_0\\right] + O(\\lambda^2) \\implies \\left.\\frac{\\partial \\langle B \\rangle_\\lambda}{\\partial \\lambda}\\right|_{\\lambda=0} = -\\beta \\langle \\delta B\\, \\delta A \\rangle_0$$\n**Density Response Example:** Let the external perturbation couple to Fourier mode $\\mathbf{k}$ of the density ($A = \\rho_{\\mathbf{k}}$) and measure the induced density wave $B = \\rho_{-\\mathbf{k}}$ (with $\\langle \\rho_{\\mathbf{k}} \\rangle_0 = 0$ for $\\mathbf{k} \\neq \\mathbf{0}$ in a fluid):\n$$\\left.\\frac{\\partial \\langle \\rho_{-\\mathbf{k}} \\rangle}{\\partial \\lambda_{\\mathbf{k}}}\\right|_{\\lambda=0} = -\\beta \\left\\langle |\\rho_{\\mathbf{k}}|^2 \\right\\rangle_0 = -\\beta N S(\\mathbf{k})$$\nThus,\
+      \ the **static structure factor $S(\\mathbf{k})$ is directly proportional to the static linear density susceptibility**, which is why X-ray and neutron scattering measure $S(\\mathbf{k})$.\n\n### Dynamical Correlation Functions $C_{AB}(t)$\nFor two observables $A$ and $B$ with fluctuations $\\delta A(t) = A(t) - \\langle A \\rangle$, the equilibrium **time correlation function** is:\n$$C_{AB}(t) = \\left\\langle \\delta A(t_0)\\, \\delta B(t_0 + t) \\right\\rangle = \\left\\langle \\delta A(0)\\, \\delta B(t) \\right\\rangle$$\n- **Stationarity & Ergodicity:** In thermal equilibrium, ensemble averages are invariant under time translation ($t_0 \\to 0$). If the system is **ergodic**, we can average over many time origins $t_0$ along a single long MD trajectory to dramatically reduce statistical noise.\n- **Decorrelation at Long Times:** In an ergodic mixing system, observables become statistically independent as $t \\to \\infty$, so $\\lim_{t\\to\\infty} C_{AB}(t) = \\langle \\delta\
+      \ A\\rangle \\langle \\delta B\\rangle = 0$.\n- **Autocorrelation Bounds & Wiener-Khinchin Positivity ($B = A^*$):** By the Cauchy-Schwarz inequality, an autocorrelation function never exceeds its zero-time variance:\n  $$\\left| C_{AA}(t) \\right| \\le C_{AA}(0) = \\langle |\\delta A|^2 \\rangle$$\n  Moreover, by the Wiener-Khinchin theorem, its temporal Fourier transform (power spectral density) is strictly non-negative at all frequencies:\n  $$C_{AA}(\\omega) = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi}\\, e^{i\\omega t} C_{AA}(t) \\ge 0$$\n"
   - id: q01_why_md_over_mc
     type: problem
     taught_by: sec_static_perturbation_and_time_correlations
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'What is the primary physical motivation for performing **Molecular Dynamics (MD)** simulations rather
-      than equilibrium **Monte Carlo (MC)** simulations when studying transport and relaxation phenomena?
+    prompt_markdown: 'What is the primary physical motivation for performing **Molecular Dynamics (MD)** simulations rather than equilibrium **Monte Carlo (MC)** simulations when studying transport and relaxation phenomena?
 
       '
     hint_markdown: Compare deterministic Newtonian time evolution in MD with stochastic Markov chain trial moves in MC.
     options:
     - id: a
-      text: MD integrates the physical equations of motion in real time $t$, allowing direct evaluation of time correlation
-        functions $C_{AB}(t)$, collective excitations $S(k, \omega)$, and transport coefficients.
+      text: MD integrates the physical equations of motion in real time $t$, allowing direct evaluation of time correlation functions $C_{AB}(t)$, collective excitations $S(k, \omega)$, and transport coefficients.
+      text_markdown: MD integrates the physical equations of motion in real time $t$, allowing direct evaluation of time correlation functions $C_{AB}(t)$, collective excitations $S(k, \omega)$, and transport coefficients.
     - id: b
       text: MC cannot compute static equilibrium properties such as pressure $P$ or radial distribution function $g(r)$.
+      text_markdown: MC cannot compute static equilibrium properties such as pressure $P$ or radial distribution function $g(r)$.
     - id: c
       text: MD does not require an interatomic potential energy function $V(\mathbf{R})$.
+      text_markdown: MD does not require an interatomic potential energy function $V(\mathbf{R})$.
     - id: d
       text: MC simulations are restricted to 1D systems.
+      text_markdown: MC simulations are restricted to 1D systems.
     correct: a
-    rationale_markdown: 'Monte Carlo generates a stochastic sequence of configurations without physical momenta or real time
-      $t$. Molecular Dynamics integrates Newton''s equations of motion, providing true dynamical trajectories needed for time
-      correlation functions and transport coefficients (**A**).
+    rationale_markdown: 'Monte Carlo generates a stochastic sequence of configurations without physical momenta or real time $t$. Molecular Dynamics integrates Newton''s equations of motion, providing true dynamical trajectories needed for time correlation functions and transport coefficients (**A**).
 
       '
   - id: q02_static_perturbation_free_energy
@@ -77,32 +46,29 @@ worksheet:
     taught_by: sec_static_perturbation_and_time_correlations
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'When the Hamiltonian is perturbed by $\lambda A(\mathbf{R})$, static perturbation theory yields the
-      Taylor expansion of the Helmholtz free energy:
+    prompt_markdown: 'When the Hamiltonian is perturbed by $\lambda A(\mathbf{R})$, static perturbation theory yields the Taylor expansion of the Helmholtz free energy:
 
-      $$F(\lambda) = F(0) + \lambda \langle A \rangle_0 - \frac{1}{2}\beta \lambda^2 \left[\langle A^2 \rangle_0 - \langle
-      A \rangle_0^2\right] + \cdots$$
+      $$F(\lambda) = F(0) + \lambda \langle A \rangle_0 - \frac{1}{2}\beta \lambda^2 \left[\langle A^2 \rangle_0 - \langle A \rangle_0^2\right] + \cdots$$
 
-      Since variance $\langle A^2 \rangle_0 - \langle A \rangle_0^2 = \langle (\delta A)^2 \rangle_0 \ge 0$ is always non-negative,
-      what is the sign of the second-order free-energy shift $\Delta F^{(2)} = -\frac{1}{2}\beta \lambda^2 \langle (\delta
-      A)^2 \rangle_0$?
+      Since variance $\langle A^2 \rangle_0 - \langle A \rangle_0^2 = \langle (\delta A)^2 \rangle_0 \ge 0$ is always non-negative, what is the sign of the second-order free-energy shift $\Delta F^{(2)} = -\frac{1}{2}\beta \lambda^2 \langle (\delta A)^2 \rangle_0$?
 
       '
     hint_markdown: Note that $\beta = 1/(k_B T) > 0$, $\lambda^2 > 0$, and $\langle (\delta A)^2 \rangle_0 \ge 0$.
     options:
     - id: a
-      text: It is always negative or zero ($\Delta F^{(2)} \le 0$), meaning thermal fluctuations allow the system to relax
-        into states that lower its free energy in response to the perturbation.
+      text: It is always negative or zero ($\Delta F^{(2)} \le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation.
+      text_markdown: It is always negative or zero ($\Delta F^{(2)} \le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation.
     - id: b
       text: It is always strictly positive ($\Delta F^{(2)} > 0$).
+      text_markdown: It is always strictly positive ($\Delta F^{(2)} > 0$).
     - id: c
       text: Its sign alternates randomly with particle number $N$.
+      text_markdown: Its sign alternates randomly with particle number $N$.
     - id: d
       text: It is identically zero at all temperatures.
+      text_markdown: It is identically zero at all temperatures.
     correct: a
-    rationale_markdown: 'Because $\beta > 0$, $\lambda^2 \ge 0$, and the variance $\langle (\delta A)^2\rangle_0 \ge 0$, the
-      second-order correction $-\frac{1}{2}\beta\lambda^2 \langle (\delta A)^2\rangle_0$ is always $\le 0$ (**A**), making
-      $F(\lambda)$ a concave function of the field $\lambda$.
+    rationale_markdown: 'Because $\beta > 0$, $\lambda^2 \ge 0$, and the variance $\langle (\delta A)^2\rangle_0 \ge 0$, the second-order correction $-\frac{1}{2}\beta\lambda^2 \langle (\delta A)^2\rangle_0$ is always $\le 0$ (**A**), making $F(\lambda)$ a concave function of the field $\lambda$.
 
       '
   - id: q03_density_susceptibility_sk_numeric
@@ -110,9 +76,7 @@ worksheet:
     taught_by: sec_static_perturbation_and_time_correlations
     difficulty: medium
     question_type: numeric
-    prompt_markdown: 'In a liquid of $N = 400$ atoms at inverse temperature $\beta = (k_B T)^{-1} = 0.50\,\varepsilon^{-1}$,
-      the static structure factor at wavevector $k_1$ has its main peak value $S(k_1) = 2.50$. Using the static linear response
-      relation:
+    prompt_markdown: 'In a liquid of $N = 400$ atoms at inverse temperature $\beta = (k_B T)^{-1} = 0.50\,\varepsilon^{-1}$, the static structure factor at wavevector $k_1$ has its main peak value $S(k_1) = 2.50$. Using the static linear response relation:
 
       $$\left.\frac{d\langle \rho_{-k_1} \rangle}{d\lambda_{k_1}}\right|_{\lambda=0} = -\beta N S(k_1)$$
 
@@ -125,8 +89,7 @@ worksheet:
       tolerance: 0.5
     rationale_markdown: 'Substituting $\beta = 0.50\,\varepsilon^{-1}$, $N = 400$, and $S(k_1) = 2.50$:
 
-      $$\left|\frac{d\langle \rho_{-k_1} \rangle}{d\lambda_{k_1}}\right| = \beta N S(k_1) = 0.50 \times 400 \times 2.50 =
-      500.0\,\varepsilon^{-1}$$
+      $$\left|\frac{d\langle \rho_{-k_1} \rangle}{d\lambda_{k_1}}\right| = \beta N S(k_1) = 0.50 \times 400 \times 2.50 = 500.0\,\varepsilon^{-1}$$
 
       '
   - id: q04_time_correlation_stationarity
@@ -134,26 +97,25 @@ worksheet:
     taught_by: sec_static_perturbation_and_time_correlations
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'Why can an equilibrium MD simulation improve the statistical precision of a time correlation function
-      $C_{AB}(t) = \langle \delta A(t_0)\, \delta B(t_0 + t) \rangle$ by averaging over many different starting times $t_0$
-      along a single trajectory?
+    prompt_markdown: 'Why can an equilibrium MD simulation improve the statistical precision of a time correlation function $C_{AB}(t) = \langle \delta A(t_0)\, \delta B(t_0 + t) \rangle$ by averaging over many different starting times $t_0$ along a single trajectory?
 
       '
     hint_markdown: Does an equilibrium ensemble depend on the absolute clock time $t_0$, or only on the time lag $t$?
     options:
     - id: a
-      text: Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\langle \delta A(t_0)\delta
-        B(t_0 + t)\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$.
+      text: Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\langle \delta A(t_0)\delta B(t_0 + t)\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$.
+      text_markdown: Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\langle \delta A(t_0)\delta B(t_0 + t)\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$.
     - id: b
       text: Because $C_{AB}(t)$ is independent of the lag time $t$.
+      text_markdown: Because $C_{AB}(t)$ is independent of the lag time $t$.
     - id: c
       text: Because energy is not conserved in Molecular Dynamics.
+      text_markdown: Because energy is not conserved in Molecular Dynamics.
     - id: d
       text: Because $t_0$ must always be set to $+\infty$.
+      text_markdown: Because $t_0$ must always be set to $+\infty$.
     correct: a
-    rationale_markdown: 'In thermal equilibrium, the Liouville distribution is stationary under time translation, so $\langle
-      \delta A(t_0)\delta B(t_0+t)\rangle = \langle \delta A(0)\delta B(t)\rangle$. By ergodicity, averaging over thousands
-      of time origins $t_0$ along an equilibrium trajectory converges to the ensemble average (**A**).
+    rationale_markdown: 'In thermal equilibrium, the Liouville distribution is stationary under time translation, so $\langle \delta A(t_0)\delta B(t_0+t)\rangle = \langle \delta A(0)\delta B(t)\rangle$. By ergodicity, averaging over thousands of time origins $t_0$ along an equilibrium trajectory converges to the ensemble average (**A**).
 
       '
   - id: q05_autocorrelation_properties
@@ -161,70 +123,38 @@ worksheet:
     taught_by: sec_static_perturbation_and_time_correlations
     difficulty: medium
     question_type: multi_select
-    prompt_markdown: 'Which of the following mathematical properties must hold for any classical equilibrium autocorrelation
-      function $C_{AA}(t) = \langle \delta A(0)\, \delta A^*(t) \rangle$ in an ergodic mixing system? (Select all that apply.)
+    prompt_markdown: 'Which of the following mathematical properties must hold for any classical equilibrium autocorrelation function $C_{AA}(t) = \langle \delta A(0)\, \delta A^*(t) \rangle$ in an ergodic mixing system? (Select all that apply.)
 
       '
-    hint_markdown: Check Slide 3 for the large-time limit, the upper bound at $t=0$, and the sign of the Fourier transform
-      $C_{AA}(\omega)$.
+    hint_markdown: Check Slide 3 for the large-time limit, the upper bound at $t=0$, and the sign of the Fourier transform $C_{AA}(\omega)$.
     options:
     - id: a
       text: 'Cauchy-Schwarz upper bound: $|C_{AA}(t)| \le C_{AA}(0)$ for all $t$.'
+      text_markdown: 'Cauchy-Schwarz upper bound: $|C_{AA}(t)| \le C_{AA}(0)$ for all $t$.'
     - id: b
       text: 'Long-time decorrelation: $\lim_{t \to \infty} C_{AA}(t) = 0$.'
+      text_markdown: 'Long-time decorrelation: $\lim_{t \to \infty} C_{AA}(t) = 0$.'
     - id: c
-      text: 'Non-negative power spectrum: $C_{AA}(\omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} C_{AA}(t)
-        \ge 0$ for all $\omega$.'
+      text: 'Non-negative power spectrum: $C_{AA}(\omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} C_{AA}(t) \ge 0$ for all $\omega$.'
+      text_markdown: 'Non-negative power spectrum: $C_{AA}(\omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} C_{AA}(t) \ge 0$ for all $\omega$.'
     - id: d
       text: 'Strict monotonicity: $C_{AA}(t)$ can never become negative at intermediate times $t > 0$.'
+      text_markdown: 'Strict monotonicity: $C_{AA}(t)$ can never become negative at intermediate times $t > 0$.'
     correct:
     - a
     - b
     - c
-    rationale_markdown: 'Properties **A** ($|C_{AA}(t)| \le C_{AA}(0)$), **B** ($\lim_{t\to\infty} C_{AA}(t) = 0$), and **C**
-      ($C_{AA}(\omega) \ge 0$) are fundamental theorems shown on Slide 3. Statement **D** is false: autocorrelation functions
-      (such as the velocity autocorrelation function in a dense liquid or solid) frequently oscillate and dip negative ($-C_{AA}(0)
-      \le C_{AA}(t) < 0$) due to cage rebounding or vibrations!
+    rationale_markdown: 'Properties **A** ($|C_{AA}(t)| \le C_{AA}(0)$), **B** ($\lim_{t\to\infty} C_{AA}(t) = 0$), and **C** ($C_{AA}(\omega) \ge 0$) are fundamental theorems shown on Slide 3. Statement **D** is false: autocorrelation functions (such as the velocity autocorrelation function in a dense liquid or solid) frequently oscillate and dip negative ($-C_{AA}(0) \le C_{AA}(t) < 0$) due to cage rebounding or vibrations!
 
       '
   - id: sec_fdt_and_onsager_and_scattering
     type: markdown_section
     title: 2. Fluctuation-Dissipation Theorem, Onsager Regression, and Dynamical Structure Factor S(k, ω)
-    body_markdown: "### Onsager's Regression Hypothesis & Fluctuation-Dissipation Theorem (FDT)\nHow does a system disturbed\
-      \ slightly out of equilibrium relax back toward equilibrium? Lars Onsager (1931, Nobel Prize 1968) formulated the **Onsager\
-      \ Regression Hypothesis**:\n> *The relaxation of macroscopic non-equilibrium disturbances is governed by the exact same\
-      \ laws as the regression of spontaneous microscopic fluctuations in an unperturbed equilibrium system.*\n\nMathematically,\
-      \ if a weak time-dependent field $f(t) = f_\\omega e^{-i\\omega t}$ couples to observable $A$, the linear response of\
-      \ observable $B$ is $\\delta\\langle B(\\omega)\\rangle = \\chi_{BA}(\\omega) f_\\omega$, where the **dynamical susceptibility**\
-      \ $\\chi(\\omega) = \\chi'(\\omega) + i\\chi''(\\omega)$ is given by the **Fluctuation-Dissipation Theorem (FDT)**:\n\
-      $$\\chi_{BA}(\\omega) = \\beta \\int_0^\\infty dt\\, e^{i\\omega t} \\left\\langle B(t) \\left.\\frac{dA}{dt}\\right|_{t=0}\
-      \ \\right\\rangle_0$$\n- **Causality & Kramers-Kronig Relations:** Because the response cannot precede the perturbation\
-      \ ($\\chi(t < 0) = 0$), $\\chi(\\omega)$ is analytic in the upper half of the complex frequency plane, so its dispersive\
-      \ real part $\\chi'(\\omega)$ and dissipative imaginary part $\\chi''(\\omega)$ determine each other via the **Kramers-Kronig\
-      \ principal-value integrals**:\n  $$\\chi'(\\omega) = \\frac{1}{\\pi} \\mathcal{P}\\!\\int_{-\\infty}^\\infty d\\omega'\\\
-      , \\frac{\\chi''(\\omega')}{\\omega' - \\omega}, \\qquad \\chi''(\\omega) = -\\frac{1}{\\pi} \\mathcal{P}\\!\\int_{-\\\
-      infty}^\\infty d\\omega'\\, \\frac{\\chi'(\\omega')}{\\omega' - \\omega}$$\n- **Energy Dissipation & Quantum FDT:**\
-      \ The average power absorbed by the system from a harmonic drive of amplitude $A(\\omega)$ at frequency $\\omega$ is\
-      \ proportional to the imaginary part $\\chi''(\\omega)$:\n  $$P_{\\text{diss}}(\\omega) = \\frac{\\omega}{2}\\, \\chi''(\\\
-      omega)\\, A^2(\\omega)$$\n  In quantum mechanics, the dissipative susceptibility is linked to the equilibrium correlation\
-      \ function by:\n  $$\\chi''(\\omega) = \\frac{1}{2\\hbar}\\left(e^{\\beta\\hbar\\omega} - 1\\right) \\int_{-\\infty}^\\\
-      infty dt\\, e^{-i\\omega t} \\langle \\delta B(t)\\,\\delta A(0)\\rangle \\;\\;\\xrightarrow{\\hbar\\to 0}\\;\\; \\\
-      frac{1}{2}\\beta\\omega \\int_{-\\infty}^\\infty dt\\, e^{-i\\omega t} \\langle \\delta B(t)\\,\\delta A(0)\\rangle$$\n\
-      \  In inelastic scattering, the quantum factor $e^{\\beta\\hbar\\omega}$ produces the **detailed balance asymmetry**\
-      \ $S(\\mathbf{k}, -\\omega) = e^{-\\beta\\hbar\\omega} S(\\mathbf{k}, \\omega)$ between neutron/photon energy loss (Stokes,\
-      \ $\\omega > 0$) and energy gain (anti-Stokes, $\\omega < 0$).\n\n### Intermediate Scattering Function $F(\\mathbf{k},\
-      \ t)$ and Dynamical Structure Factor $S(\\mathbf{k}, \\omega)$\nTo probe collective density excitations at wavevector\
-      \ $\\mathbf{k}$, we correlate $\\rho_{\\mathbf{k}}(t)$ with $\\rho_{-\\mathbf{k}}(0)$ to form the **intermediate scattering\
-      \ function** $F(\\mathbf{k}, t)$ (normalized by $1/N$, or $1/2$ in the lecture slide convention):\n$$F(\\mathbf{k},\
-      \ t) = \\frac{1}{N}\\left\\langle \\rho_{\\mathbf{k}}(t)\\, \\rho_{-\\mathbf{k}}(0) \\right\\rangle, \\qquad F(\\mathbf{k},\
-      \ t=0) = S(\\mathbf{k})$$\nIts temporal Fourier transform is the **dynamical structure factor** $S(\\mathbf{k}, \\omega)$,\
-      \ measured directly by **inelastic neutron scattering (INS)** and inelastic X-ray scattering:\n$$S(\\mathbf{k}, \\omega)\
-      \ = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi}\\, e^{i\\omega t} F(\\mathbf{k}, t), \\qquad \\int_{-\\infty}^\\infty\
-      \ d\\omega\\, S(\\mathbf{k}, \\omega) = F(\\mathbf{k}, 0) = S(\\mathbf{k})$$\n- **Sound Waves & Damping (Slide 13):**\
-      \ A propagating acoustic sound wave $\\delta\\rho(x,t) = \\varepsilon \\cos(qx - c_s q t)$ creates sharp **Brillouin\
-      \ side-peaks** in $S(k, \\omega)$ at $\\omega = \\pm c_s k$. Viscous and thermal damping of the sound wave broadens\
-      \ these delta peaks into Lorentzians of width $\\Gamma_s \\propto k^2$, while diffusive heat/entropy relaxation produces\
-      \ a central **Rayleigh peak** around $\\omega = 0$.\n"
+    body_markdown: "### Onsager's Regression Hypothesis & Fluctuation-Dissipation Theorem (FDT)\nHow does a system disturbed slightly out of equilibrium relax back toward equilibrium? Lars Onsager (1931, Nobel Prize 1968) formulated the **Onsager Regression Hypothesis**:\n> *The relaxation of macroscopic non-equilibrium disturbances is governed by the exact same laws as the regression of spontaneous microscopic fluctuations in an unperturbed equilibrium system.*\n\nMathematically, if a weak time-dependent field $f(t) = f_\\omega e^{-i\\omega t}$ couples to observable $A$, the linear response of observable $B$ is $\\delta\\langle B(\\omega)\\rangle = \\chi_{BA}(\\omega) f_\\omega$, where the **dynamical susceptibility** $\\chi(\\omega) = \\chi'(\\omega) + i\\chi''(\\omega)$ is given by the **Fluctuation-Dissipation Theorem (FDT)**:\n$$\\chi_{BA}(\\omega) = \\beta \\int_0^\\infty dt\\, e^{i\\omega t} \\left\\langle B(t) \\left.\\frac{dA}{dt}\\right|_{t=0} \\right\\rangle_0$$\n- **Causality\
+      \ & Kramers-Kronig Relations:** Because the response cannot precede the perturbation ($\\chi(t < 0) = 0$), $\\chi(\\omega)$ is analytic in the upper half of the complex frequency plane, so its dispersive real part $\\chi'(\\omega)$ and dissipative imaginary part $\\chi''(\\omega)$ determine each other via the **Kramers-Kronig principal-value integrals**:\n  $$\\chi'(\\omega) = \\frac{1}{\\pi} \\mathcal{P}\\!\\int_{-\\infty}^\\infty d\\omega'\\, \\frac{\\chi''(\\omega')}{\\omega' - \\omega}, \\qquad \\chi''(\\omega) = -\\frac{1}{\\pi} \\mathcal{P}\\!\\int_{-\\infty}^\\infty d\\omega'\\, \\frac{\\chi'(\\omega')}{\\omega' - \\omega}$$\n- **Energy Dissipation & Quantum FDT:** The average power absorbed by the system from a harmonic drive of amplitude $A(\\omega)$ at frequency $\\omega$ is proportional to the imaginary part $\\chi''(\\omega)$:\n  $$P_{\\text{diss}}(\\omega) = \\frac{\\omega}{2}\\, \\chi''(\\omega)\\, A^2(\\omega)$$\n  In quantum mechanics, the dissipative susceptibility\
+      \ is linked to the equilibrium correlation function by:\n  $$\\chi''(\\omega) = \\frac{1}{2\\hbar}\\left(e^{\\beta\\hbar\\omega} - 1\\right) \\int_{-\\infty}^\\infty dt\\, e^{-i\\omega t} \\langle \\delta B(t)\\,\\delta A(0)\\rangle \\;\\;\\xrightarrow{\\hbar\\to 0}\\;\\; \\frac{1}{2}\\beta\\omega \\int_{-\\infty}^\\infty dt\\, e^{-i\\omega t} \\langle \\delta B(t)\\,\\delta A(0)\\rangle$$\n  In inelastic scattering, the quantum factor $e^{\\beta\\hbar\\omega}$ produces the **detailed balance asymmetry** $S(\\mathbf{k}, -\\omega) = e^{-\\beta\\hbar\\omega} S(\\mathbf{k}, \\omega)$ between neutron/photon energy loss (Stokes, $\\omega > 0$) and energy gain (anti-Stokes, $\\omega < 0$).\n\n### Intermediate Scattering Function $F(\\mathbf{k}, t)$ and Dynamical Structure Factor $S(\\mathbf{k}, \\omega)$\nTo probe collective density excitations at wavevector $\\mathbf{k}$, we correlate $\\rho_{\\mathbf{k}}(t)$ with $\\rho_{-\\mathbf{k}}(0)$ to form the **intermediate scattering function**\
+      \ $F(\\mathbf{k}, t)$ (normalized by $1/N$, or $1/2$ in the lecture slide convention):\n$$F(\\mathbf{k}, t) = \\frac{1}{N}\\left\\langle \\rho_{\\mathbf{k}}(t)\\, \\rho_{-\\mathbf{k}}(0) \\right\\rangle, \\qquad F(\\mathbf{k}, t=0) = S(\\mathbf{k})$$\nIts temporal Fourier transform is the **dynamical structure factor** $S(\\mathbf{k}, \\omega)$, measured directly by **inelastic neutron scattering (INS)** and inelastic X-ray scattering:\n$$S(\\mathbf{k}, \\omega) = \\int_{-\\infty}^\\infty \\frac{dt}{2\\pi}\\, e^{i\\omega t} F(\\mathbf{k}, t), \\qquad \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega) = F(\\mathbf{k}, 0) = S(\\mathbf{k})$$\n- **Sound Waves & Damping (Slide 13):** A propagating acoustic sound wave $\\delta\\rho(x,t) = \\varepsilon \\cos(qx - c_s q t)$ creates sharp **Brillouin side-peaks** in $S(k, \\omega)$ at $\\omega = \\pm c_s k$. Viscous and thermal damping of the sound wave broadens these delta peaks into Lorentzians of width $\\Gamma_s \\propto k^2$,\
+      \ while diffusive heat/entropy relaxation produces a central **Rayleigh peak** around $\\omega = 0$.\n"
   - id: q06_onsager_regression_hypothesis
     type: problem
     taught_by: sec_fdt_and_onsager_and_scattering
@@ -233,23 +163,22 @@ worksheet:
     prompt_markdown: 'What is the central physical statement of **Onsager''s regression hypothesis** (1930s, Nobel Prize 1968)?
 
       '
-    hint_markdown: Compare how a small non-equilibrium perturbation relaxes back to equilibrium with how spontaneous thermal
-      fluctuations decay inside an unperturbed equilibrium system.
+    hint_markdown: Compare how a small non-equilibrium perturbation relaxes back to equilibrium with how spontaneous thermal fluctuations decay inside an unperturbed equilibrium system.
     options:
     - id: a
-      text: The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay
-        law as the regression of spontaneous microscopic fluctuations in thermal equilibrium.
+      text: The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium.
+      text_markdown: The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium.
     - id: b
       text: A system in thermal equilibrium never experiences any microscopic fluctuations.
+      text_markdown: A system in thermal equilibrium never experiences any microscopic fluctuations.
     - id: c
       text: Non-equilibrium systems always relax instantaneously in zero time.
+      text_markdown: Non-equilibrium systems always relax instantaneously in zero time.
     - id: d
       text: Transport coefficients can only be measured at infinite temperature.
+      text_markdown: Transport coefficients can only be measured at infinite temperature.
     correct: a
-    rationale_markdown: 'Onsager''s regression hypothesis states that a system cannot tell whether a small deviation $\delta
-      A$ from the mean arose from a weak external perturbation just turned off or from a spontaneous thermal fluctuation;
-      therefore, macroscopic non-equilibrium relaxation obeys the same time correlation decay as equilibrium fluctuations
-      (**A**).
+    rationale_markdown: 'Onsager''s regression hypothesis states that a system cannot tell whether a small deviation $\delta A$ from the mean arose from a weak external perturbation just turned off or from a spontaneous thermal fluctuation; therefore, macroscopic non-equilibrium relaxation obeys the same time correlation decay as equilibrium fluctuations (**A**).
 
       '
   - id: q07_kramers_kronig_physical_origin
@@ -257,28 +186,25 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'In linear response theory, the **Kramers-Kronig relations** allow you to compute the real (dispersive)
-      part $\chi''(\omega)$ of the dynamical susceptibility from an integral over the imaginary (dissipative) part $\chi''''(\omega'')$,
-      and vice versa. What fundamental physical principle guarantees the Kramers-Kronig relations?
+    prompt_markdown: 'In linear response theory, the **Kramers-Kronig relations** allow you to compute the real (dispersive) part $\chi''(\omega)$ of the dynamical susceptibility from an integral over the imaginary (dissipative) part $\chi''''(\omega'')$, and vice versa. What fundamental physical principle guarantees the Kramers-Kronig relations?
 
       '
-    hint_markdown: Why is the time-domain response function $\chi(t)$ strictly zero for $t < 0$ (making $\chi(\omega)$ analytic
-      in the upper half-plane)?
+    hint_markdown: Why is the time-domain response function $\chi(t)$ strictly zero for $t < 0$ (making $\chi(\omega)$ analytic in the upper half-plane)?
     options:
     - id: a
-      text: 'Causality: the response of the system cannot precede the applied perturbation in time ($\chi(t) = 0$ for $t <
-        0$).'
+      text: 'Causality: the response of the system cannot precede the applied perturbation in time ($\chi(t) = 0$ for $t < 0$).'
+      text_markdown: 'Causality: the response of the system cannot precede the applied perturbation in time ($\chi(t) = 0$ for $t < 0$).'
     - id: b
       text: Periodic boundary conditions in a cubic box.
+      text_markdown: Periodic boundary conditions in a cubic box.
     - id: c
       text: The ideal-gas law $P\Omega = N k_B T$.
+      text_markdown: The ideal-gas law $P\Omega = N k_B T$.
     - id: d
       text: Absence of interatomic forces.
+      text_markdown: Absence of interatomic forces.
     correct: a
-    rationale_markdown: 'Because a physical system cannot respond before a perturbation is applied (**causality**, $\chi(t)
-      = 0$ for $t < 0$), the one-sided Fourier integral $\chi(\omega) = \int_0^\infty dt\, e^{i\omega t}\chi(t)$ is analytic
-      in the upper half of the complex $\omega$-plane. Cauchy''s integral theorem then yields the Kramers-Kronig relations
-      between $\chi''(\omega)$ and $\chi''''(\omega)$ (**A**).
+    rationale_markdown: 'Because a physical system cannot respond before a perturbation is applied (**causality**, $\chi(t) = 0$ for $t < 0$), the one-sided Fourier integral $\chi(\omega) = \int_0^\infty dt\, e^{i\omega t}\chi(t)$ is analytic in the upper half of the complex $\omega$-plane. Cauchy''s integral theorem then yields the Kramers-Kronig relations between $\chi''(\omega)$ and $\chi''''(\omega)$ (**A**).
 
       '
   - id: q08_power_dissipation_formula
@@ -286,25 +212,25 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'When an external monochromatic field of amplitude $A(\omega)$ and frequency $\omega$ drives a system
-      with complex susceptibility $\chi(\omega) = \chi''(\omega) + i\chi''''(\omega)$, which component of $\chi(\omega)$ governs
-      the net **power dissipation** (energy absorption per unit time, $\text{Power} = \frac{\omega}{2}\chi''''(\omega) A^2(\omega)$)?
+    prompt_markdown: 'When an external monochromatic field of amplitude $A(\omega)$ and frequency $\omega$ drives a system with complex susceptibility $\chi(\omega) = \chi''(\omega) + i\chi''''(\omega)$, which component of $\chi(\omega)$ governs the net **power dissipation** (energy absorption per unit time, $\text{Power} = \frac{\omega}{2}\chi''''(\omega) A^2(\omega)$)?
 
       '
     hint_markdown: Check Slide 5 for the formula for Power dissipation.
     options:
     - id: a
       text: The imaginary (out-of-phase) part $\chi''(\omega)$.
+      text_markdown: The imaginary (out-of-phase) part $\chi''(\omega)$.
     - id: b
       text: The real (in-phase) part $\chi'(\omega)$.
+      text_markdown: The real (in-phase) part $\chi'(\omega)$.
     - id: c
       text: The zero-frequency static susceptibility $\chi'(0)$ only.
+      text_markdown: The zero-frequency static susceptibility $\chi'(0)$ only.
     - id: d
       text: Neither; linear response never dissipates energy.
+      text_markdown: Neither; linear response never dissipates energy.
     correct: a
-    rationale_markdown: 'The in-phase response $\chi''(\omega)$ represents reversible reactive energy storage over a cycle,
-      whereas the out-of-phase imaginary part $\chi''''(\omega)$ governs irreversible energy absorption (dissipation) $\text{Power}
-      = \frac{\omega}{2}\chi''''(\omega)A^2(\omega)$ (**A**).
+    rationale_markdown: 'The in-phase response $\chi''(\omega)$ represents reversible reactive energy storage over a cycle, whereas the out-of-phase imaginary part $\chi''''(\omega)$ governs irreversible energy absorption (dissipation) $\text{Power} = \frac{\omega}{2}\chi''''(\omega)A^2(\omega)$ (**A**).
 
       '
   - id: q09_quantum_classical_fdt_limit
@@ -312,14 +238,10 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: medium
     question_type: numeric
-    prompt_markdown: 'In the quantum Fluctuation-Dissipation Theorem (Slide 5), the prefactor relating $\chi''''(\omega)$
-      to the correlation spectrum is $\frac{1}{2\hbar}(e^{\beta\hbar\omega} - 1)$. In the classical / low-frequency limit
-      where $\beta\hbar\omega \ll 1$, Taylor-expanding $e^{\beta\hbar\omega} - 1 \approx \beta\hbar\omega$ reduces this prefactor
-      to $\frac{1}{2}\beta\omega$.
+    prompt_markdown: 'In the quantum Fluctuation-Dissipation Theorem (Slide 5), the prefactor relating $\chi''''(\omega)$ to the correlation spectrum is $\frac{1}{2\hbar}(e^{\beta\hbar\omega} - 1)$. In the classical / low-frequency limit where $\beta\hbar\omega \ll 1$, Taylor-expanding $e^{\beta\hbar\omega} - 1 \approx \beta\hbar\omega$ reduces this prefactor to $\frac{1}{2}\beta\omega$.
 
 
-      What is the exact value of the dimensionless ratio $\frac{(e^{\beta\hbar\omega} - 1) / (2\hbar)}{\frac{1}{2}\beta\omega}
-      = \frac{e^x - 1}{x}$ when $x = \beta\hbar\omega = 1.0$? (Round to two decimal places.)
+      What is the exact value of the dimensionless ratio $\frac{(e^{\beta\hbar\omega} - 1) / (2\hbar)}{\frac{1}{2}\beta\omega} = \frac{e^x - 1}{x}$ when $x = \beta\hbar\omega = 1.0$? (Round to two decimal places.)
 
       '
     hint_markdown: Compute the ratio $(e^x - 1)/x$ at the specified dimensionless argument.
@@ -330,8 +252,7 @@ worksheet:
 
       $$\frac{e^{1.0} - 1}{1.0} = e - 1 \approx 2.718 - 1 = 1.72$$
 
-      When $\hbar\omega \gtrsim k_B T$, quantum Bose/detailed-balance factors significantly modify the classical susceptibility
-      prefactor.
+      When $\hbar\omega \gtrsim k_B T$, quantum Bose/detailed-balance factors significantly modify the classical susceptibility prefactor.
 
       '
   - id: q10_detailed_balance_neutron_scattering
@@ -339,27 +260,22 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: medium
     question_type: numeric
-    prompt_markdown: 'In an inelastic neutron scattering experiment on liquid water (Slide 15), quantum detailed balance requires
-      that the dynamical structure factor obey:
+    prompt_markdown: 'In an inelastic neutron scattering experiment on liquid water (Slide 15), quantum detailed balance requires that the dynamical structure factor obey:
 
       $$\frac{S(\mathbf{k}, +\omega)}{S(\mathbf{k}, -\omega)} = e^{+\beta\hbar\omega}$$
 
-      where $+\omega$ corresponds to neutron energy loss (creating an excitation) and $-\omega$ corresponds to neutron energy
-      gain (absorbing a thermally populated excitation). If an excitation has energy $\hbar\omega = 2.0\,k_B T$ ($\beta\hbar\omega
-      = 2.0$), what is the intensity ratio $S(\mathbf{k}, +\omega) / S(\mathbf{k}, -\omega)$? (Round to two decimal places.)
+      where $+\omega$ corresponds to neutron energy loss (creating an excitation) and $-\omega$ corresponds to neutron energy gain (absorbing a thermally populated excitation). If an excitation has energy $\hbar\omega = 2.0\,k_B T$ ($\beta\hbar\omega = 2.0$), what is the intensity ratio $S(\mathbf{k}, +\omega) / S(\mathbf{k}, -\omega)$? (Round to two decimal places.)
 
       '
     hint_markdown: Apply the detailed balance relation using the ratio of excitation energy to thermal energy.
     correct:
       value: 7.39
       tolerance: 0.05
-    rationale_markdown: 'By quantum detailed balance, the Stokes to anti-Stokes intensity ratio at $\beta\hbar\omega = 2.0$
-      is:
+    rationale_markdown: 'By quantum detailed balance, the Stokes to anti-Stokes intensity ratio at $\beta\hbar\omega = 2.0$ is:
 
       $$\frac{S(\mathbf{k}, +\omega)}{S(\mathbf{k}, -\omega)} = e^{2.0} \approx 7.39$$
 
-      This explains why the experimental neutron scattering spectra in Slide 15 are noticeably taller on the positive energy-transfer
-      side than on the negative side at low temperatures.
+      This explains why the experimental neutron scattering spectra in Slide 15 are noticeably taller on the positive energy-transfer side than on the negative side at low temperatures.
 
       '
   - id: q11_f_kt_sum_rule
@@ -367,27 +283,25 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'How is the **static structure factor** $S(\mathbf{k}) = \frac{1}{N}\langle |\rho_{\mathbf{k}}|^2 \rangle$
-      obtained from the intermediate scattering function $F(\mathbf{k}, t) = \frac{1}{N}\langle \rho_{\mathbf{k}}(t)\rho_{-\mathbf{k}}(0)\rangle$
-      and the dynamical structure factor $S(\mathbf{k}, \omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} F(\mathbf{k},
-      t)$?
+    prompt_markdown: 'How is the **static structure factor** $S(\mathbf{k}) = \frac{1}{N}\langle |\rho_{\mathbf{k}}|^2 \rangle$ obtained from the intermediate scattering function $F(\mathbf{k}, t) = \frac{1}{N}\langle \rho_{\mathbf{k}}(t)\rho_{-\mathbf{k}}(0)\rangle$ and the dynamical structure factor $S(\mathbf{k}, \omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} F(\mathbf{k}, t)$?
 
       '
     hint_markdown: Evaluate $F(\mathbf{k}, t)$ at $t = 0$ using inverse Fourier transformation of $S(\mathbf{k}, \omega)$.
     options:
     - id: a
       text: $S(\mathbf{k}) = F(\mathbf{k}, t=0) = \int_{-\infty}^\infty d\omega\, S(\mathbf{k}, \omega)$
+      text_markdown: $S(\mathbf{k}) = F(\mathbf{k}, t=0) = \int_{-\infty}^\infty d\omega\, S(\mathbf{k}, \omega)$
     - id: b
       text: $S(\mathbf{k}) = \lim_{t \to \infty} F(\mathbf{k}, t) = S(\mathbf{k}, \omega=0)$
+      text_markdown: $S(\mathbf{k}) = \lim_{t \to \infty} F(\mathbf{k}, t) = S(\mathbf{k}, \omega=0)$
     - id: c
       text: $S(\mathbf{k}) = \frac{d}{dt} F(\mathbf{k}, t)\big|_{t=0}$
+      text_markdown: $S(\mathbf{k}) = \frac{d}{dt} F(\mathbf{k}, t)\big|_{t=0}$
     - id: d
       text: $S(\mathbf{k})$ and $S(\mathbf{k}, \omega)$ are completely unrelated.
+      text_markdown: $S(\mathbf{k})$ and $S(\mathbf{k}, \omega)$ are completely unrelated.
     correct: a
-    rationale_markdown: 'By the inverse Fourier transform $F(\mathbf{k}, t) = \int_{-\infty}^\infty d\omega\, e^{-i\omega
-      t} S(\mathbf{k}, \omega)$, setting $t = 0$ gives the zeroth-moment sum rule $S(\mathbf{k}) = F(\mathbf{k}, 0) = \int_{-\infty}^\infty
-      d\omega\, S(\mathbf{k}, \omega)$ (**A**). That is why conventional X-ray diffraction (which integrates over all scattered
-      photon energies $\hbar\omega$) measures $S(\mathbf{k})$.
+    rationale_markdown: 'By the inverse Fourier transform $F(\mathbf{k}, t) = \int_{-\infty}^\infty d\omega\, e^{-i\omega t} S(\mathbf{k}, \omega)$, setting $t = 0$ gives the zeroth-moment sum rule $S(\mathbf{k}) = F(\mathbf{k}, 0) = \int_{-\infty}^\infty d\omega\, S(\mathbf{k}, \omega)$ (**A**). That is why conventional X-ray diffraction (which integrates over all scattered photon energies $\hbar\omega$) measures $S(\mathbf{k})$.
 
       '
   - id: q12_sound_wave_s_kw_peaks
@@ -395,28 +309,25 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'As derived on Slide 13, suppose a fluid supports an acoustic sound wave at wavevector $q$ with dispersion
-      $\omega_s(q) = c_s q$ that undergoes viscous damping with decay rate $\Gamma_s$. How does this collective sound wave
-      appear in the dynamical structure factor $S(q, \omega)$ as a function of frequency $\omega$?
+    prompt_markdown: 'As derived on Slide 13, suppose a fluid supports an acoustic sound wave at wavevector $q$ with dispersion $\omega_s(q) = c_s q$ that undergoes viscous damping with decay rate $\Gamma_s$. How does this collective sound wave appear in the dynamical structure factor $S(q, \omega)$ as a function of frequency $\omega$?
 
       '
-    hint_markdown: An undamped cosine wave $e^{\pm i\omega_s t}$ gives delta peaks at $\pm \omega_s$; exponential damping
-      $e^{-\Gamma_s t}$ broadens those peaks.
+    hint_markdown: An undamped cosine wave $e^{\pm i\omega_s t}$ gives delta peaks at $\pm \omega_s$; exponential damping $e^{-\Gamma_s t}$ broadens those peaks.
     options:
     - id: a
-      text: As a pair of broadened peaks (Brillouin doublets) centered at $\omega = \pm c_s q$, whose frequency width increases
-        with the sound damping rate $\Gamma_s$.
+      text: As a pair of broadened peaks (Brillouin doublets) centered at $\omega = \pm c_s q$, whose frequency width increases with the sound damping rate $\Gamma_s$.
+      text_markdown: As a pair of broadened peaks (Brillouin doublets) centered at $\omega = \pm c_s q$, whose frequency width increases with the sound damping rate $\Gamma_s$.
     - id: b
       text: As a single infinitely sharp delta function at $\omega = 0$ independent of $q$.
+      text_markdown: As a single infinitely sharp delta function at $\omega = 0$ independent of $q$.
     - id: c
       text: As a flat horizontal line $S(q, \omega) = 1$ for all $\omega$.
+      text_markdown: As a flat horizontal line $S(q, \omega) = 1$ for all $\omega$.
     - id: d
       text: As negative spikes where $S(q, \omega) < 0$.
+      text_markdown: As negative spikes where $S(q, \omega) < 0$.
     correct: a
-    rationale_markdown: 'A propagating density wave at frequency $\omega_s = c_s q$ produces symmetric side-peaks at $\omega
-      = \pm c_s q$ in $S(q, \omega)$, and damping of the sound wave broadens these peaks (**A**). This is clearly visible
-      in the hard-sphere $S(k, \omega)$ curves (Slide 14, panels a and c at low $kd$) and the experimental neutron scattering
-      data (Slide 15).
+    rationale_markdown: 'A propagating density wave at frequency $\omega_s = c_s q$ produces symmetric side-peaks at $\omega = \pm c_s q$ in $S(q, \omega)$, and damping of the sound wave broadens these peaks (**A**). This is clearly visible in the hard-sphere $S(k, \omega)$ curves (Slide 14, panels a and c at low $kd$) and the experimental neutron scattering data (Slide 15).
 
       '
   - id: q13_hard_sphere_skw_wavelength_dependence
@@ -424,31 +335,25 @@ worksheet:
     taught_by: sec_fdt_and_onsager_and_scattering
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'In Slide 14 (*Dynamical Structure Factor for Hard Spheres* from Alley et al., 1983), compare panel (a)
-      at small wavevector $kd = 0.38$ (long wavelength, $\lambda \gg d$) with panel (b) at larger wavevector $kd = 2.28$ (short
-      wavelength comparable to interparticle spacing, $\lambda \sim d$) at the same high density $V/V_0 = 1.6$. Why does the
-      collective sound side-peak at $\omega^* \approx 0.35$ appear clearly in panel (a) ($kd = 0.38$) but disappear in panel
-      (b) ($kd = 2.28$)?
+    prompt_markdown: 'In Slide 14 (*Dynamical Structure Factor for Hard Spheres* from Alley et al., 1983), compare panel (a) at small wavevector $kd = 0.38$ (long wavelength, $\lambda \gg d$) with panel (b) at larger wavevector $kd = 2.28$ (short wavelength comparable to interparticle spacing, $\lambda \sim d$) at the same high density $V/V_0 = 1.6$. Why does the collective sound side-peak at $\omega^* \approx 0.35$ appear clearly in panel (a) ($kd = 0.38$) but disappear in panel (b) ($kd = 2.28$)?
 
       '
-    hint_markdown: Can a continuum hydrodynamic sound wave propagate when its wavelength $\lambda = 2\pi/k$ shrinks down to
-      the individual particle diameter $d$?
+    hint_markdown: Can a continuum hydrodynamic sound wave propagate when its wavelength $\lambda = 2\pi/k$ shrinks down to the individual particle diameter $d$?
     options:
     - id: a
-      text: At small $kd = 0.38$ ($\lambda \gg d$), collective hydrodynamic sound waves propagate coherently over many particle
-        diameters; at $kd = 2.28$ ($\lambda \sim d$), scattering probes single-particle diffusive/collisional motion where
-        sound modes are overdamped.
+      text: At small $kd = 0.38$ ($\lambda \gg d$), collective hydrodynamic sound waves propagate coherently over many particle diameters; at $kd = 2.28$ ($\lambda \sim d$), scattering probes single-particle diffusive/collisional motion where sound modes are overdamped.
+      text_markdown: At small $kd = 0.38$ ($\lambda \gg d$), collective hydrodynamic sound waves propagate coherently over many particle diameters; at $kd = 2.28$ ($\lambda \sim d$), scattering probes single-particle diffusive/collisional motion where sound modes are overdamped.
     - id: b
       text: Because hard spheres do not collide at $kd = 2.28$.
+      text_markdown: Because hard spheres do not collide at $kd = 2.28$.
     - id: c
       text: Because the temperature is zero in panel (b).
+      text_markdown: Because the temperature is zero in panel (b).
     - id: d
       text: Because $S(k, \omega)$ is only defined for $kd > 10$.
+      text_markdown: Because $S(k, \omega)$ is only defined for $kd > 10$.
     correct: a
-    rationale_markdown: 'Collective acoustic sound modes exist in the long-wavelength hydrodynamic regime ($kd \ll 1$, panel
-      a). When the wavelength $\lambda = 2\pi/k$ becomes comparable to the atomic diameter ($kd = 2.28$, panel b), continuum
-      hydrodynamics breaks down into individual particle-cage relaxation, and the acoustic side-peak merges into a single
-      overdamped diffusive peak (**A**).
+    rationale_markdown: 'Collective acoustic sound modes exist in the long-wavelength hydrodynamic regime ($kd \ll 1$, panel a). When the wavelength $\lambda = 2\pi/k$ becomes comparable to the atomic diameter ($kd = 2.28$, panel b), continuum hydrodynamics breaks down into individual particle-cage relaxation, and the acoustic side-peak merges into a single overdamped diffusive peak (**A**).
 
       '
   - id: sec_diffusion_einstein_and_green_kubo
@@ -456,75 +361,51 @@ worksheet:
     title: 3. Fick's Laws and the Two Equivalent Routes to Self-Diffusion (Einstein MSD vs. Green-Kubo VACF)
     body_markdown: '### Macroscopic Diffusion: Fick''s 1st and 2nd Laws
 
-      When a tagged particle concentration gradient $\nabla \rho(\mathbf{r}, t)$ exists, **Fick''s First Law** states that
-      the diffusive particle flux $\mathbf{j}(\mathbf{r}, t)$ is proportional to the negative gradient:
+      When a tagged particle concentration gradient $\nabla \rho(\mathbf{r}, t)$ exists, **Fick''s First Law** states that the diffusive particle flux $\mathbf{j}(\mathbf{r}, t)$ is proportional to the negative gradient:
 
       $$\mathbf{j}(\mathbf{r}, t) = -D\, \nabla \rho(\mathbf{r}, t)$$
 
-      Combining Fick''s First Law with local **conservation of mass** (the continuity equation $\frac{\partial \rho}{\partial
-      t} + \nabla\cdot\mathbf{j} = 0$) yields **Fick''s Second Law** (the diffusion equation):
+      Combining Fick''s First Law with local **conservation of mass** (the continuity equation $\frac{\partial \rho}{\partial t} + \nabla\cdot\mathbf{j} = 0$) yields **Fick''s Second Law** (the diffusion equation):
 
       $$\frac{\partial \rho(\mathbf{r}, t)}{\partial t} = D\, \nabla^2 \rho(\mathbf{r}, t)$$
 
-      In $d$ spatial dimensions, a point source $\rho(\mathbf{r}, 0) = \delta(\mathbf{r})$ spreads as a Gaussian packet $P(\mathbf{r},
-      t) = (4\pi D t)^{-d/2} \exp\!\left(-\frac{r^2}{4Dt}\right)$ whose second moment grows linearly with time:
+      In $d$ spatial dimensions, a point source $\rho(\mathbf{r}, 0) = \delta(\mathbf{r})$ spreads as a Gaussian packet $P(\mathbf{r}, t) = (4\pi D t)^{-d/2} \exp\!\left(-\frac{r^2}{4Dt}\right)$ whose second moment grows linearly with time:
 
       $$\left\langle |\mathbf{r}(t) - \mathbf{r}(0)|^2 \right\rangle = \int d^d r\, r^2 P(\mathbf{r}, t) = 2 d D t$$
 
 
       ### Route 1: The Einstein Mean-Squared Displacement (MSD) Relation
 
-      In $d$ dimensions ($2d = 6$ in 3D, $4$ in 2D, $2$ in 1D), the self-diffusion constant $D$ is determined by the long-time
-      slope of the **mean-squared displacement (MSD)**:
+      In $d$ dimensions ($2d = 6$ in 3D, $4$ in 2D, $2$ in 1D), the self-diffusion constant $D$ is determined by the long-time slope of the **mean-squared displacement (MSD)**:
 
-      $$D = \lim_{t \to \infty} \frac{1}{2 d t} \left\langle \left|\mathbf{r}_i(t) - \mathbf{r}_i(0)\right|^2 \right\rangle
-      \quad \xrightarrow{d=3} \quad D = \lim_{t \to \infty} \frac{1}{6 t} \left\langle \left|\mathbf{r}_i(t) - \mathbf{r}_i(0)\right|^2
-      \right\rangle$$
+      $$D = \lim_{t \to \infty} \frac{1}{2 d t} \left\langle \left|\mathbf{r}_i(t) - \mathbf{r}_i(0)\right|^2 \right\rangle \quad \xrightarrow{d=3} \quad D = \lim_{t \to \infty} \frac{1}{6 t} \left\langle \left|\mathbf{r}_i(t) - \mathbf{r}_i(0)\right|^2 \right\rangle$$
 
-      - **Short-Time Ballistic Regime ($t \ll \tau_c$):** Before colliding with neighbors, a particle moves at constant velocity
-      $\mathbf{r}_i(t) - \mathbf{r}_i(0) \approx \mathbf{v}_i(0) t$, so $\text{MSD}(t) \approx \langle v^2 \rangle t^2 = \left(\frac{d
-      k_B T}{m}\right) t^2$ (quadratic in $t$!).
+      - **Short-Time Ballistic Regime ($t \ll \tau_c$):** Before colliding with neighbors, a particle moves at constant velocity $\mathbf{r}_i(t) - \mathbf{r}_i(0) \approx \mathbf{v}_i(0) t$, so $\text{MSD}(t) \approx \langle v^2 \rangle t^2 = \left(\frac{d k_B T}{m}\right) t^2$ (quadratic in $t$!).
 
-      - **CRITICAL PBC RULE — Use Unwrapped ("Unwound") Positions:** In an MD simulation with periodic boundary conditions,
-      whenever an atom crosses a box boundary its wrapped coordinate jumps by $\pm L$. If you plug PBC-wrapped coordinates
-      $\mathbf{r}_{\text{wrapped}} \in [0, L)^3$ into the Einstein formula, $|\mathbf{r}_{\text{wrapped}}(t) - \mathbf{r}_{\text{wrapped}}(0)|^2$
-      **cannot exceed $3 L^2$** and saturates to a flat plateau $\sim L^2/2$, falsely giving $D = 0$! You **must** accumulate
-      continuous, **unwound (unwrapped)** positions $\mathbf{r}_i^{\text{unwrap}}(t) = \mathbf{r}_i(0) + \int_0^t \mathbf{v}_i(t'')\,
-      dt''$.
+      - **CRITICAL PBC RULE — Use Unwrapped ("Unwound") Positions:** In an MD simulation with periodic boundary conditions, whenever an atom crosses a box boundary its wrapped coordinate jumps by $\pm L$. If you plug PBC-wrapped coordinates $\mathbf{r}_{\text{wrapped}} \in [0, L)^3$ into the Einstein formula, $|\mathbf{r}_{\text{wrapped}}(t) - \mathbf{r}_{\text{wrapped}}(0)|^2$ **cannot exceed $3 L^2$** and saturates to a flat plateau $\sim L^2/2$, falsely giving $D = 0$! You **must** accumulate continuous, **unwound (unwrapped)** positions $\mathbf{r}_i^{\text{unwrap}}(t) = \mathbf{r}_i(0) + \int_0^t \mathbf{v}_i(t'')\, dt''$.
 
 
       ### Route 2: The Green-Kubo Velocity Autocorrelation (VACF) Integral
 
-      Writing the unwrapped displacement as the time integral of velocity, $\mathbf{r}_i(t) - \mathbf{r}_i(0) = \int_0^t dt''\,
-      \mathbf{v}_i(t'')$, we can prove the exact mathematical equivalence between the Einstein MSD and the **Green-Kubo**
-      formula:
+      Writing the unwrapped displacement as the time integral of velocity, $\mathbf{r}_i(t) - \mathbf{r}_i(0) = \int_0^t dt''\, \mathbf{v}_i(t'')$, we can prove the exact mathematical equivalence between the Einstein MSD and the **Green-Kubo** formula:
 
-      $$\left\langle |\Delta\mathbf{r}(t)|^2 \right\rangle = \int_0^t dt'' \int_0^t dt''''\, \left\langle \mathbf{v}_i(t'')\cdot\mathbf{v}_i(t'''')
-      \right\rangle = 2 \int_0^t dt'' \int_0^{t''} d\tau\, \left\langle \mathbf{v}_i(\tau)\cdot\mathbf{v}_i(0) \right\rangle$$
+      $$\left\langle |\Delta\mathbf{r}(t)|^2 \right\rangle = \int_0^t dt'' \int_0^t dt''''\, \left\langle \mathbf{v}_i(t'')\cdot\mathbf{v}_i(t'''') \right\rangle = 2 \int_0^t dt'' \int_0^{t''} d\tau\, \left\langle \mathbf{v}_i(\tau)\cdot\mathbf{v}_i(0) \right\rangle$$
 
       Differentiating with respect to $t$ and dividing by $2d$ (with $d=3$ in 3D) yields the **Green-Kubo formula for self-diffusion**:
 
-      $$D = \frac{1}{d} \int_0^\infty dt\, \left\langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \right\rangle \quad \xrightarrow{d=3}
-      \quad D = \frac{1}{3} \int_0^\infty dt\, \left\langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \right\rangle$$
+      $$D = \frac{1}{d} \int_0^\infty dt\, \left\langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \right\rangle \quad \xrightarrow{d=3} \quad D = \frac{1}{3} \int_0^\infty dt\, \left\langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \right\rangle$$
 
-      - **Dilute Gas:** Uncorrelated binary collisions cause $\langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle = \frac{3k_B
-      T}{m} e^{-t/\tau_c}$ to decay monotonically.
+      - **Dilute Gas:** Uncorrelated binary collisions cause $\langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle = \frac{3k_B T}{m} e^{-t/\tau_c}$ to decay monotonically.
 
-      - **Dense Liquid (Cage Effect):** Near the triple point (Slide 10), a moving atom quickly collides with its surrounding
-      shell of nearest neighbors and rebounds backward, producing a pronounced **negative dip** ($\langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle
-      < 0$) before decaying to zero.
+      - **Dense Liquid (Cage Effect):** Near the triple point (Slide 10), a moving atom quickly collides with its surrounding shell of nearest neighbors and rebounds backward, producing a pronounced **negative dip** ($\langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle < 0$) before decaying to zero.
 
-      - **Crystalline Solid:** Atoms oscillate harmonically around fixed lattice sites; positive and negative lobes of $\langle
-      \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle$ cancel so that the integral equals $D = 0$.
+      - **Crystalline Solid:** Atoms oscillate harmonically around fixed lattice sites; positive and negative lobes of $\langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle$ cancel so that the integral equals $D = 0$.
 
       '
   - id: concept_vacf_msd_duality
     type: concept_cell
     title: 'Interactive Explorer: VACF C_vv(t), Cage Backscattering, and Einstein MSD Duality'
-    description_markdown: 'Explore the mathematical duality between the **Green-Kubo VACF integral** $D(t) = \frac{1}{3}\int_0^t
-      \langle \mathbf{v}(t'')\cdot\mathbf{v}(0)\rangle dt''$ and the **Einstein Mean-Squared Displacement** $\langle |\Delta\mathbf{r}(t)|^2\rangle
-      = 6\int_0^t D(t'')dt''$ across four physical regimes: **Dilute Gas**, **Dense Liquid**, **Glassy/Arrested**, and **Crystalline
-      Solid**.
+    description_markdown: 'Explore the mathematical duality between the **Green-Kubo VACF integral** $D(t) = \frac{1}{3}\int_0^t \langle \mathbf{v}(t'')\cdot\mathbf{v}(0)\rangle dt''$ and the **Einstein Mean-Squared Displacement** $\langle |\Delta\mathbf{r}(t)|^2\rangle = 6\int_0^t D(t'')dt''$ across four physical regimes: **Dilute Gas**, **Dense Liquid**, **Glassy/Arrested**, and **Crystalline Solid**.
 
       '
     render_function: render_vacf_and_msd_duality
@@ -559,18 +440,13 @@ worksheet:
         max: 2.0
         step: 0.1
         default: 1.0
-    takeaway_markdown: '**Key Takeaway:** In a **Dense Liquid**, the negative rebound dip in $C_{vv}(t)$ causes the running
-      diffusivity $D(t)$ to peak and then drop down to its plateau value $D_\infty$. Switching to **Einstein MSD View** shows
-      that every regime starts out ballistically ($\propto t^2$) at very short times before transitioning to linear $6Dt$
-      diffusion (in gases/liquids) or a bounded vibrational plateau (in solids/glasses).
+    takeaway_markdown: '**Key Takeaway:** In a **Dense Liquid**, the negative rebound dip in $C_{vv}(t)$ causes the running diffusivity $D(t)$ to peak and then drop down to its plateau value $D_\infty$. Switching to **Einstein MSD View** shows that every regime starts out ballistically ($\propto t^2$) at very short times before transitioning to linear $6Dt$ diffusion (in gases/liquids) or a bounded vibrational plateau (in solids/glasses).
 
       '
   - id: concept_pbc_unwrapping_bug
     type: concept_cell
     title: 'Interactive Explorer: Why Einstein MSD Requires Unwound (Unwrapped) PBC Positions'
-    description_markdown: 'One of the most frequent bugs in MD analysis scripts is computing the Einstein MSD directly from
-      PBC-wrapped box coordinates $\mathbf{r}_i \in [0, L)^3$ or minimum-image displacements $\Delta\mathbf{r}_i \in [-L/2,
-      L/2]^3$. Adjust the diffusivity $D$ and box size $L$ below to see what happens when particles diffuse past $L/2$.
+    description_markdown: 'One of the most frequent bugs in MD analysis scripts is computing the Einstein MSD directly from PBC-wrapped box coordinates $\mathbf{r}_i \in [0, L)^3$ or minimum-image displacements $\Delta\mathbf{r}_i \in [-L/2, L/2]^3$. Adjust the diffusivity $D$ and box size $L$ below to see what happens when particles diffuse past $L/2$.
 
       '
     render_function: render_pbc_unwrapping_msd
@@ -599,10 +475,7 @@ worksheet:
           value: 1
         - label: Show Only Box-Coordinate Bug
           value: 0
-    takeaway_markdown: '**Key Takeaway:** Because the Green-Kubo formula integrates $\mathbf{v}_i(t)$, it implies continuous
-      trajectories $\mathbf{r}_i^{\text{unwrap}}(t) - \mathbf{r}_i(0) = \int_0^t \mathbf{v}_i(t'')dt''$. Wrapping coordinates
-      back into the simulation box destroys long-time displacements and causes the apparent MSD to saturate at $L^2/2$ (or
-      $L^2/4$ for minimum-image differences)!
+    takeaway_markdown: '**Key Takeaway:** Because the Green-Kubo formula integrates $\mathbf{v}_i(t)$, it implies continuous trajectories $\mathbf{r}_i^{\text{unwrap}}(t) - \mathbf{r}_i(0) = \int_0^t \mathbf{v}_i(t'')dt''$. Wrapping coordinates back into the simulation box destroys long-time displacements and causes the apparent MSD to saturate at $L^2/2$ (or $L^2/4$ for minimum-image differences)!
 
       '
   - id: q14_ficks_laws_derivation
@@ -610,25 +483,25 @@ worksheet:
     taught_by: sec_diffusion_einstein_and_green_kubo
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'As shown on Slide 8, which two physical equations are combined to derive Fick''s Second Law (the diffusion
-      equation $\frac{\partial \rho}{\partial t} = D \nabla^2 \rho$)?
+    prompt_markdown: 'As shown on Slide 8, which two physical equations are combined to derive Fick''s Second Law (the diffusion equation $\frac{\partial \rho}{\partial t} = D \nabla^2 \rho$)?
 
       '
     hint_markdown: 'Look at the two labels next to Fick''s equations on Slide 8: ''Linear response + Conservation of mass''.'
     options:
     - id: a
-      text: Fick's First Law of linear response ($\mathbf{j} = -D\nabla\rho$) and local conservation of mass (the continuity
-        equation $\frac{\partial \rho}{\partial t} = -\nabla\cdot\mathbf{j}$).
+      text: Fick's First Law of linear response ($\mathbf{j} = -D\nabla\rho$) and local conservation of mass (the continuity equation $\frac{\partial \rho}{\partial t} = -\nabla\cdot\mathbf{j}$).
+      text_markdown: Fick's First Law of linear response ($\mathbf{j} = -D\nabla\rho$) and local conservation of mass (the continuity equation $\frac{\partial \rho}{\partial t} = -\nabla\cdot\mathbf{j}$).
     - id: b
       text: Newton's third law and the ideal gas equation of state.
+      text_markdown: Newton's third law and the ideal gas equation of state.
     - id: c
       text: The Debye-Waller factor and Lindemann's melting criterion.
+      text_markdown: The Debye-Waller factor and Lindemann's melting criterion.
     - id: d
       text: Quantum detailed balance and the virial pressure theorem.
+      text_markdown: Quantum detailed balance and the virial pressure theorem.
     correct: a
-    rationale_markdown: 'Substituting the linear constitutive relation $\mathbf{j}(\mathbf{r}, t) = -D\nabla\rho(\mathbf{r},
-      t)$ (Fick''s 1st law) into the mass continuity equation $\frac{\partial \rho}{\partial t} = -\nabla\cdot\mathbf{j}$
-      yields $\frac{\partial \rho}{\partial t} = D\nabla^2\rho$ (**A**).
+    rationale_markdown: 'Substituting the linear constitutive relation $\mathbf{j}(\mathbf{r}, t) = -D\nabla\rho(\mathbf{r}, t)$ (Fick''s 1st law) into the mass continuity equation $\frac{\partial \rho}{\partial t} = -\nabla\cdot\mathbf{j}$ yields $\frac{\partial \rho}{\partial t} = D\nabla^2\rho$ (**A**).
 
       '
   - id: q15_einstein_dimension_prefactor
@@ -636,29 +509,23 @@ worksheet:
     taught_by: sec_diffusion_einstein_and_green_kubo
     difficulty: easy
     question_type: single_select
-    prompt_markdown: In a $d$-dimensional isotropic fluid, how do the geometric dimensionality prefactors relate the self-diffusion
-      coefficient $D$ to the mean-squared displacement $\langle |\mathbf{r}(t) - \mathbf{r}(0)|^2 \rangle$ and the velocity
-      autocorrelation integral $\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$ for a **2D monolayer** ($d=2$)
-      versus a **3D bulk fluid** ($d=3$)?
-    hint_markdown: Consider the number of independent spatial dimensions contributing to the total particle displacement and
-      velocity vector dot product.
+    prompt_markdown: In a $d$-dimensional isotropic fluid, how do the geometric dimensionality prefactors relate the self-diffusion coefficient $D$ to the mean-squared displacement $\langle |\mathbf{r}(t) - \mathbf{r}(0)|^2 \rangle$ and the velocity autocorrelation integral $\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$ for a **2D monolayer** ($d=2$) versus a **3D bulk fluid** ($d=3$)?
+    hint_markdown: Consider the number of independent spatial dimensions contributing to the total particle displacement and velocity vector dot product.
     options:
     - id: a
-      text: 'In 2D: $\text{MSD} = 4 D t$ and $D = \frac{1}{2}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle
-        dt$; in 3D: $\text{MSD} = 6 D t$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle
-        dt$.'
+      text: 'In 2D: $\text{MSD} = 4 D t$ and $D = \frac{1}{2}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$; in 3D: $\text{MSD} = 6 D t$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$.'
+      text_markdown: 'In 2D: $\text{MSD} = 4 D t$ and $D = \frac{1}{2}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$; in 3D: $\text{MSD} = 6 D t$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$.'
     - id: b
-      text: 'In both 2D and 3D: $\text{MSD} = 6 D t$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle
-        dt$.'
+      text: 'In both 2D and 3D: $\text{MSD} = 6 D t$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$.'
+      text_markdown: 'In both 2D and 3D: $\text{MSD} = 6 D t$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$.'
     - id: c
       text: 'In 2D: $\text{MSD} = 2 D t$; in 3D: $\text{MSD} = 3 D t$.'
+      text_markdown: 'In 2D: $\text{MSD} = 2 D t$; in 3D: $\text{MSD} = 3 D t$.'
     - id: d
       text: 'In 2D: $\text{MSD} = 4 D t^2$; in 3D: $\text{MSD} = 6 D t^2$.'
+      text_markdown: 'In 2D: $\text{MSD} = 4 D t^2$; in 3D: $\text{MSD} = 6 D t^2$.'
     correct: a
-    rationale_markdown: 'Each independent Cartesian coordinate ($x, y, \dots$) contributes $2Dt$ to the mean-squared displacement
-      and $D$ to the velocity integral $\int_0^\infty \langle v_\alpha(t)v_\alpha(0)\rangle dt$. Hence in $d=2$, $\text{MSD}
-      = 4Dt$ and $D = \frac{1}{2}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$, whereas in $d=3$, $\text{MSD}
-      = 6Dt$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$ (**A**).
+    rationale_markdown: 'Each independent Cartesian coordinate ($x, y, \dots$) contributes $2Dt$ to the mean-squared displacement and $D$ to the velocity integral $\int_0^\infty \langle v_\alpha(t)v_\alpha(0)\rangle dt$. Hence in $d=2$, $\text{MSD} = 4Dt$ and $D = \frac{1}{2}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$, whereas in $d=3$, $\text{MSD} = 6Dt$ and $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$ (**A**).
 
       '
   - id: q16_msd_short_time_ballistic
@@ -668,28 +535,25 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'At very short times $t \ll \tau_c$ (before a particle experiences significant collisions with its neighbors),
-      how does the 3D mean-squared displacement $\langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2 \rangle$ scale with time $t$
-      and temperature $T$?
+    prompt_markdown: 'At very short times $t \ll \tau_c$ (before a particle experiences significant collisions with its neighbors), how does the 3D mean-squared displacement $\langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2 \rangle$ scale with time $t$ and temperature $T$?
 
       '
-    hint_markdown: At $t \to 0$, $\mathbf{r}_i(t) - \mathbf{r}_i(0) \approx \mathbf{v}_i(0) t$. Use equipartition $\langle
-      v^2 \rangle = 3 k_B T / m$.
+    hint_markdown: At $t \to 0$, $\mathbf{r}_i(t) - \mathbf{r}_i(0) \approx \mathbf{v}_i(0) t$. Use equipartition $\langle v^2 \rangle = 3 k_B T / m$.
     options:
     - id: a
-      text: 'Ballistically (quadratically in time): $\langle |\Delta\mathbf{r}(t)|^2 \rangle \approx \langle v^2 \rangle t^2
-        = \left(\frac{3 k_B T}{m}\right) t^2$.'
+      text: 'Ballistically (quadratically in time): $\langle |\Delta\mathbf{r}(t)|^2 \rangle \approx \langle v^2 \rangle t^2 = \left(\frac{3 k_B T}{m}\right) t^2$.'
+      text_markdown: 'Ballistically (quadratically in time): $\langle |\Delta\mathbf{r}(t)|^2 \rangle \approx \langle v^2 \rangle t^2 = \left(\frac{3 k_B T}{m}\right) t^2$.'
     - id: b
       text: 'Linearly in time: $\langle |\Delta\mathbf{r}(t)|^2 \rangle = 6 D t$ even at $t \to 0$.'
+      text_markdown: 'Linearly in time: $\langle |\Delta\mathbf{r}(t)|^2 \rangle = 6 D t$ even at $t \to 0$.'
     - id: c
       text: 'Exponentially in time: $\langle |\Delta\mathbf{r}(t)|^2 \rangle \propto e^{t/\tau_c}$.'
+      text_markdown: 'Exponentially in time: $\langle |\Delta\mathbf{r}(t)|^2 \rangle \propto e^{t/\tau_c}$.'
     - id: d
       text: 'Inversely with time: $\langle |\Delta\mathbf{r}(t)|^2 \rangle \propto t^{-3/2}$.'
+      text_markdown: 'Inversely with time: $\langle |\Delta\mathbf{r}(t)|^2 \rangle \propto t^{-3/2}$.'
     correct: a
-    rationale_markdown: 'For $t \ll \tau_c$, velocity hasn''t changed yet ($\mathbf{v}_i(t) \approx \mathbf{v}_i(0)$), so
-      $\Delta\mathbf{r}_i(t) \approx \mathbf{v}_i(0) t$. Squaring and averaging with classical equipartition $\frac{1}{2}m\langle
-      v^2\rangle = \frac{3}{2}k_B T$ gives the ballistic law $\langle |\Delta\mathbf{r}(t)|^2\rangle = \frac{3k_B T}{m} t^2$
-      (**A**).
+    rationale_markdown: 'For $t \ll \tau_c$, velocity hasn''t changed yet ($\mathbf{v}_i(t) \approx \mathbf{v}_i(0)$), so $\Delta\mathbf{r}_i(t) \approx \mathbf{v}_i(0) t$. Squaring and averaging with classical equipartition $\frac{1}{2}m\langle v^2\rangle = \frac{3}{2}k_B T$ gives the ballistic law $\langle |\Delta\mathbf{r}(t)|^2\rangle = \frac{3k_B T}{m} t^2$ (**A**).
 
       '
   - id: q17_einstein_msd_slope_numeric
@@ -699,13 +563,10 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: easy
     question_type: numeric
-    prompt_markdown: 'In a 3D MD simulation of molten nickel (similar to Slide 11), the unwrapped mean-squared displacement
-      increases linearly from $\text{MSD}(2.0\,\text{ps}) = 6.2\,\text{Å}^2$ to $\text{MSD}(6.0\,\text{ps}) = 18.2\,\text{Å}^2$.
-      Calculate the self-diffusion coefficient $D$ in units of $\text{Å}^2/\text{ps}$.
+    prompt_markdown: 'In a 3D MD simulation of molten nickel (similar to Slide 11), the unwrapped mean-squared displacement increases linearly from $\text{MSD}(2.0\,\text{ps}) = 6.2\,\text{Å}^2$ to $\text{MSD}(6.0\,\text{ps}) = 18.2\,\text{Å}^2$. Calculate the self-diffusion coefficient $D$ in units of $\text{Å}^2/\text{ps}$.
 
       '
-    hint_markdown: Relate the asymptotic linear growth rate of the 3D mean-squared displacement to the diffusion coefficient
-      via the Einstein relation.
+    hint_markdown: Relate the asymptotic linear growth rate of the 3D mean-squared displacement to the diffusion coefficient via the Einstein relation.
     correct:
       value: 0.5
       tolerance: 0.01
@@ -723,28 +584,25 @@ worksheet:
     - concept_pbc_unwrapping_bug
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'Why does Slide 8 emphasize **"Einstein relation (no PBC!) — Use ''unwound'' positions to get equivalence
-      between the 2 forms"**?
+    prompt_markdown: 'Why does Slide 8 emphasize **"Einstein relation (no PBC!) — Use ''unwound'' positions to get equivalence between the 2 forms"**?
 
       '
-    hint_markdown: What happens to $|\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2$ at large $t$ if coordinates are wrapped back into
-      $[0, L)^3$ every time a particle crosses a periodic box wall?
+    hint_markdown: What happens to $|\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2$ at large $t$ if coordinates are wrapped back into $[0, L)^3$ every time a particle crosses a periodic box wall?
     options:
     - id: a
-      text: Because PBC-wrapped coordinates are confined to $[0, L)^3$, causing the wrapped MSD to artificially saturate at
-        $\sim L^2/2$ (giving an apparent long-time slope $D = 0$), whereas $\int_0^t \mathbf{v}_i(t')dt'$ equals the continuous
-        unwound displacement.
+      text: Because PBC-wrapped coordinates are confined to $[0, L)^3$, causing the wrapped MSD to artificially saturate at $\sim L^2/2$ (giving an apparent long-time slope $D = 0$), whereas $\int_0^t \mathbf{v}_i(t')dt'$ equals the continuous unwound displacement.
+      text_markdown: Because PBC-wrapped coordinates are confined to $[0, L)^3$, causing the wrapped MSD to artificially saturate at $\sim L^2/2$ (giving an apparent long-time slope $D = 0$), whereas $\int_0^t \mathbf{v}_i(t')dt'$ equals the continuous unwound displacement.
     - id: b
       text: Because periodic boundary conditions violate conservation of momentum during collisions.
+      text_markdown: Because periodic boundary conditions violate conservation of momentum during collisions.
     - id: c
       text: Because the Green-Kubo velocity integral only works if all velocities are set to zero at the box boundaries.
+      text_markdown: Because the Green-Kubo velocity integral only works if all velocities are set to zero at the box boundaries.
     - id: d
       text: Because PBC-wrapped coordinates cause the MSD to grow as $t^4$.
+      text_markdown: Because PBC-wrapped coordinates cause the MSD to grow as $t^4$.
     correct: a
-    rationale_markdown: 'The identity $\mathbf{r}_i(t) - \mathbf{r}_i(0) = \int_0^t \mathbf{v}_i(t'')dt''$ used to prove equivalence
-      between the Einstein and Green-Kubo formulas holds **only** for continuous, unwound trajectories. If discontinuous $\pm
-      L$ PBC wrapping jumps are included in $\mathbf{r}_i(t)$, the displacement is bounded by the box size $L$ and the MSD
-      saturates to a constant plateau (**A**).
+    rationale_markdown: 'The identity $\mathbf{r}_i(t) - \mathbf{r}_i(0) = \int_0^t \mathbf{v}_i(t'')dt''$ used to prove equivalence between the Einstein and Green-Kubo formulas holds **only** for continuous, unwound trajectories. If discontinuous $\pm L$ PBC wrapping jumps are included in $\mathbf{r}_i(t)$, the displacement is bounded by the box size $L$ and the MSD saturates to a constant plateau (**A**).
 
       '
   - id: q19_pbc_wrapped_msd_saturation_numeric
@@ -754,26 +612,19 @@ worksheet:
     - concept_pbc_unwrapping_bug
     difficulty: hard
     question_type: numeric
-    prompt_markdown: 'Suppose a student forgets to unwrap periodic boundary crossings in a 3D cubic box of side length $L
-      = 10.0\,\text{Å}$ and computes the long-time limit of $\langle |\mathbf{r}_{\text{wrapped}}(t) - \mathbf{r}_{\text{wrapped}}(0)|^2
-      \rangle$, where $\mathbf{r}_{\text{wrapped}} \in [0, L)^3$.
+    prompt_markdown: 'Suppose a student forgets to unwrap periodic boundary crossings in a 3D cubic box of side length $L = 10.0\,\text{Å}$ and computes the long-time limit of $\langle |\mathbf{r}_{\text{wrapped}}(t) - \mathbf{r}_{\text{wrapped}}(0)|^2 \rangle$, where $\mathbf{r}_{\text{wrapped}} \in [0, L)^3$.
 
 
-      As $t \to \infty$, $\mathbf{r}_{\text{wrapped}}(t)$ and $\mathbf{r}_{\text{wrapped}}(0)$ become two independent, uniformly
-      distributed points in $[0, L)^3$. Since for a single coordinate $x \sim \text{Uniform}(0, L)$ the mean-squared difference
-      between two independent draws is $\langle (x_1 - x_2)^2 \rangle = 2 \text{Var}(x) = 2(L^2 / 12) = L^2 / 6$, what plateau
-      value (in $\text{Å}^2$) does the 3D wrapped MSD saturate to as $t \to \infty$?
+      As $t \to \infty$, $\mathbf{r}_{\text{wrapped}}(t)$ and $\mathbf{r}_{\text{wrapped}}(0)$ become two independent, uniformly distributed points in $[0, L)^3$. Since for a single coordinate $x \sim \text{Uniform}(0, L)$ the mean-squared difference between two independent draws is $\langle (x_1 - x_2)^2 \rangle = 2 \text{Var}(x) = 2(L^2 / 12) = L^2 / 6$, what plateau value (in $\text{Å}^2$) does the 3D wrapped MSD saturate to as $t \to \infty$?
 
       '
     hint_markdown: Sum the independent mean-squared coordinate separation across all three Cartesian directions.
     correct:
       value: 50.0
       tolerance: 0.5
-    rationale_markdown: 'In 3D, the three independent coordinates $x, y, z$ each contribute $L^2 / 6$ as $t \to \infty$, so
-      the wrapped MSD saturates at:
+    rationale_markdown: 'In 3D, the three independent coordinates $x, y, z$ each contribute $L^2 / 6$ as $t \to \infty$, so the wrapped MSD saturates at:
 
-      $$\lim_{t\to\infty} \left\langle |\mathbf{r}_{\text{wrapped}}(t) - \mathbf{r}_{\text{wrapped}}(0)|^2 \right\rangle =
-      3 \times \frac{L^2}{6} = \frac{L^2}{2} = \frac{(10.0)^2}{2} = 50.0\,\text{Å}^2$$
+      $$\lim_{t\to\infty} \left\langle |\mathbf{r}_{\text{wrapped}}(t) - \mathbf{r}_{\text{wrapped}}(0)|^2 \right\rangle = 3 \times \frac{L^2}{6} = \frac{L^2}{2} = \frac{(10.0)^2}{2} = 50.0\,\text{Å}^2$$
 
       You can verify this directly in the **PBC Unwrapping Explorer** above!
 
@@ -785,19 +636,14 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: medium
     question_type: numeric
-    prompt_markdown: 'At lag time $t = 0$, the 3D velocity autocorrelation function $C_{vv}(0) = \langle \mathbf{v}_i(0)\cdot\mathbf{v}_i(0)
-      \rangle = \langle v_i^2 \rangle$ is fixed purely by equilibrium statistical mechanics (independent of density or interatomic
-      forces!). For a classical particle of mass $m = 2.0$ (in reduced units) at temperature $k_B T = 1.5$, what is the exact
-      value of $C_{vv}(0) = \langle \mathbf{v}_i(0)\cdot\mathbf{v}_i(0) \rangle$?
+    prompt_markdown: 'At lag time $t = 0$, the 3D velocity autocorrelation function $C_{vv}(0) = \langle \mathbf{v}_i(0)\cdot\mathbf{v}_i(0) \rangle = \langle v_i^2 \rangle$ is fixed purely by equilibrium statistical mechanics (independent of density or interatomic forces!). For a classical particle of mass $m = 2.0$ (in reduced units) at temperature $k_B T = 1.5$, what is the exact value of $C_{vv}(0) = \langle \mathbf{v}_i(0)\cdot\mathbf{v}_i(0) \rangle$?
 
       '
-    hint_markdown: Relate the mean-squared velocity of a particle to the temperature and particle mass using equipartition
-      across the three translational degrees of freedom.
+    hint_markdown: Relate the mean-squared velocity of a particle to the temperature and particle mass using equipartition across the three translational degrees of freedom.
     correct:
       value: 2.25
       tolerance: 0.01
-    rationale_markdown: 'By the classical equipartition theorem, each of the 3 translational velocity components has $\langle
-      v_\alpha^2 \rangle = k_B T / m$, so:
+    rationale_markdown: 'By the classical equipartition theorem, each of the 3 translational velocity components has $\langle v_\alpha^2 \rangle = k_B T / m$, so:
 
       $$C_{vv}(0) = \langle \mathbf{v}_i(0)\cdot\mathbf{v}_i(0) \rangle = \frac{3 k_B T}{m} = \frac{3 \times 1.5}{2.0} = 2.25$$
 
@@ -813,9 +659,7 @@ worksheet:
 
       $$\langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \rangle = \left(\frac{3 k_B T}{m}\right) e^{-t / \tau_c}$$
 
-      with $\frac{k_B T}{m} = 1.20\,\text{Å}^2/\text{ps}^2$ and collision relaxation time $\tau_c = 0.50\,\text{ps}$, calculate
-      the self-diffusion coefficient $D$ (in $\text{Å}^2/\text{ps}$) using the 3D Green-Kubo formula $D = \frac{1}{3}\int_0^\infty
-      \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt$.
+      with $\frac{k_B T}{m} = 1.20\,\text{Å}^2/\text{ps}^2$ and collision relaxation time $\tau_c = 0.50\,\text{ps}$, calculate the self-diffusion coefficient $D$ (in $\text{Å}^2/\text{ps}$) using the 3D Green-Kubo formula $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt$.
 
       '
     hint_markdown: Integrate the exponential correlation decay over positive time and apply the Green-Kubo prefactor.
@@ -824,8 +668,7 @@ worksheet:
       tolerance: 0.01
     rationale_markdown: 'Evaluating the Green-Kubo integral:
 
-      $$D = \frac{1}{3} \int_0^\infty \left(\frac{3 k_B T}{m}\right) e^{-t/\tau_c} dt = \left(\frac{k_B T}{m}\right) \tau_c
-      = 1.20 \times 0.50 = 0.60\,\text{Å}^2/\text{ps}$$
+      $$D = \frac{1}{3} \int_0^\infty \left(\frac{3 k_B T}{m}\right) e^{-t/\tau_c} dt = \left(\frac{k_B T}{m}\right) \tau_c = 1.20 \times 0.50 = 0.60\,\text{Å}^2/\text{ps}$$
 
       '
   - id: q22_vacf_negative_dip_cage_effect
@@ -835,27 +678,25 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'In Slide 10 (Fig. 2.3a, Lennard-Jones liquid near the triple point at $\rho^* = 0.85, T^* = 0.76$) and
-      in the **Dense Liquid** mode of the interactive explorer, why does the velocity autocorrelation function $C_{vv}(t)$
-      become **negative** around $t \approx 0.3\text{–}0.5\,\text{ps}$ before decaying to zero?
+    prompt_markdown: 'In Slide 10 (Fig. 2.3a, Lennard-Jones liquid near the triple point at $\rho^* = 0.85, T^* = 0.76$) and in the **Dense Liquid** mode of the interactive explorer, why does the velocity autocorrelation function $C_{vv}(t)$ become **negative** around $t \approx 0.3\text{–}0.5\,\text{ps}$ before decaying to zero?
 
       '
-    hint_markdown: Think about what happens when an atom in a tightly packed liquid moves a fraction of an angstrom and hits
-      its first coordination shell.
+    hint_markdown: Think about what happens when an atom in a tightly packed liquid moves a fraction of an angstrom and hits its first coordination shell.
     options:
     - id: a
-      text: 'Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell
-        of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector.'
+      text: 'Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector.'
+      text_markdown: 'Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector.'
     - id: b
       text: Because the kinetic temperature $T$ becomes negative at $t = 0.4\,\text{ps}$.
+      text_markdown: Because the kinetic temperature $T$ becomes negative at $t = 0.4\,\text{ps}$.
     - id: c
       text: Because the mass of the Lennard-Jones atoms changes sign.
+      text_markdown: Because the mass of the Lennard-Jones atoms changes sign.
     - id: d
       text: Because periodic boundary conditions invert the velocity vector when an atom crosses $L/2$.
+      text_markdown: Because periodic boundary conditions invert the velocity vector when an atom crosses $L/2$.
     correct: a
-    rationale_markdown: 'In a dense liquid near its triple point, each atom is transiently surrounded by a tight cage of $\sim
-      12$ nearest neighbors. After moving a short distance, the atom collides with this cage wall and bounces backward ($\mathbf{v}(t)\cdot\mathbf{v}(0)
-      < 0$), creating the characteristic negative backscattering dip in $C_{vv}(t)$ (**A**).
+    rationale_markdown: 'In a dense liquid near its triple point, each atom is transiently surrounded by a tight cage of $\sim 12$ nearest neighbors. After moving a short distance, the atom collides with this cage wall and bounces backward ($\mathbf{v}(t)\cdot\mathbf{v}(0) < 0$), creating the characteristic negative backscattering dip in $C_{vv}(t)$ (**A**).
 
       '
   - id: q23_vacf_fourier_spectrum_liquid
@@ -865,28 +706,25 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'Look at Fig. 2.3(b) on Slide 10, which plots the temporal Fourier transform $\hat{c}_{vv}(\omega)$ of
-      the velocity autocorrelation function for a dense Lennard-Jones liquid. What do (i) the non-zero intercept $\hat{c}_{vv}(\omega
-      = 0) > 0$ and (ii) the broad peak at finite frequency $\omega \approx 25\,\text{cm}^{-1}$ physically represent?
+    prompt_markdown: 'Look at Fig. 2.3(b) on Slide 10, which plots the temporal Fourier transform $\hat{c}_{vv}(\omega)$ of the velocity autocorrelation function for a dense Lennard-Jones liquid. What do (i) the non-zero intercept $\hat{c}_{vv}(\omega = 0) > 0$ and (ii) the broad peak at finite frequency $\omega \approx 25\,\text{cm}^{-1}$ physically represent?
 
       '
-    hint_markdown: Evaluate $\int_0^\infty C_{vv}(t) e^{i\omega t} dt$ at $\omega = 0$ to connect to the Green-Kubo diffusivity
-      $D$, and connect the finite-$\omega$ peak to the cage oscillation frequency.
+    hint_markdown: Evaluate $\int_0^\infty C_{vv}(t) e^{i\omega t} dt$ at $\omega = 0$ to connect to the Green-Kubo diffusivity $D$, and connect the finite-$\omega$ peak to the cage oscillation frequency.
     options:
     - id: a
-      text: The zero-frequency intercept $\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while
-        the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages.
+      text: The zero-frequency intercept $\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages.
+      text_markdown: The zero-frequency intercept $\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages.
     - id: b
       text: The zero-frequency intercept $\hat{c}_{vv}(0)$ is the shear viscosity $\eta$, and the peak is the ideal-gas pressure.
+      text_markdown: The zero-frequency intercept $\hat{c}_{vv}(0)$ is the shear viscosity $\eta$, and the peak is the ideal-gas pressure.
     - id: c
       text: Both $\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid.
+      text_markdown: Both $\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid.
     - id: d
       text: $\hat{c}_{vv}(0)$ measures the crystal lattice constant.
+      text_markdown: $\hat{c}_{vv}(0)$ measures the crystal lattice constant.
     correct: a
-    rationale_markdown: 'By the Green-Kubo relation, $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle
-      dt$, so the zero-frequency value $\hat{c}_{vv}(\omega = 0)$ of the velocity power spectrum (vibrational density of states)
-      is directly proportional to $D$, while the peak at finite $\omega > 0$ arises from damped oscillatory rattling in local
-      liquid cages (**A**).
+    rationale_markdown: 'By the Green-Kubo relation, $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}(t)\cdot\mathbf{v}(0)\rangle dt$, so the zero-frequency value $\hat{c}_{vv}(\omega = 0)$ of the velocity power spectrum (vibrational density of states) is directly proportional to $D$, while the peak at finite $\omega > 0$ arises from damped oscillatory rattling in local liquid cages (**A**).
 
       '
   - id: q24_vacf_crystalline_solid_integral
@@ -896,23 +734,17 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: medium
     question_type: numeric
-    prompt_markdown: 'In a defect-free harmonic crystalline solid at thermal equilibrium, atoms vibrate around fixed lattice
-      sites without long-range diffusive hopping, so the mean-squared displacement saturates to a bounded constant $\lim_{t\to\infty}
-      \langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2 \rangle = 2\langle u^2 \rangle < \infty$.
+    prompt_markdown: 'In a defect-free harmonic crystalline solid at thermal equilibrium, atoms vibrate around fixed lattice sites without long-range diffusive hopping, so the mean-squared displacement saturates to a bounded constant $\lim_{t\to\infty} \langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2 \rangle = 2\langle u^2 \rangle < \infty$.
 
 
-      What is the exact value of the Green-Kubo integral $\frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)
-      \rangle dt$ in this crystalline solid?
+      What is the exact value of the Green-Kubo integral $\frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \rangle dt$ in this crystalline solid?
 
       '
     hint_markdown: Consider the long-time growth rate of the mean-squared displacement in a system without macroscopic diffusion.
     correct:
       value: 0.0
       tolerance: 0.001
-    rationale_markdown: 'Because $\text{MSD}(t)$ approaches a finite constant $2\langle u^2\rangle$ as $t \to \infty$, dividing
-      by $6t$ gives $D = \lim_{t\to\infty} \frac{2\langle u^2\rangle}{6t} = 0$. Equivalently, the positive and negative vibrational
-      lobes of the phonon velocity autocorrelation function cancel exactly so that $\frac{1}{3}\int_0^\infty C_{vv}(t)\,dt
-      = 0.0$.
+    rationale_markdown: 'Because $\text{MSD}(t)$ approaches a finite constant $2\langle u^2\rangle$ as $t \to \infty$, dividing by $6t$ gives $D = \lim_{t\to\infty} \frac{2\langle u^2\rangle}{6t} = 0$. Equivalently, the positive and negative vibrational lobes of the phonon velocity autocorrelation function cancel exactly so that $\frac{1}{3}\int_0^\infty C_{vv}(t)\,dt = 0.0$.
 
       '
   - id: q25_anisotropic_diffusion_cs2
@@ -920,29 +752,25 @@ worksheet:
     taught_by: sec_diffusion_einstein_and_green_kubo
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'Slide 10 (Fig. 6.5, Tildesley & Madden 1983) shows the MSD and VACF of linear triatomic carbon disulfide
-      ($\text{CS}_2$, $\text{S=C=S}$) molecules in the liquid phase, resolved into components **parallel** ($\parallel$) and
-      **perpendicular** ($\perp$) to the molecular axis at $t = 0$. Why does the perpendicular VACF component $c_{vv}^\perp(t)$
-      show a strong negative cage-rebound dip at $192\,\text{K}$ while the parallel component $c_{vv}^\parallel(t)$ decays
-      much more smoothly and gives a steeper initial MSD slope?
+    prompt_markdown: 'Slide 10 (Fig. 6.5, Tildesley & Madden 1983) shows the MSD and VACF of linear triatomic carbon disulfide ($\text{CS}_2$, $\text{S=C=S}$) molecules in the liquid phase, resolved into components **parallel** ($\parallel$) and **perpendicular** ($\perp$) to the molecular axis at $t = 0$. Why does the perpendicular VACF component $c_{vv}^\perp(t)$ show a strong negative cage-rebound dip at $192\,\text{K}$ while the parallel component $c_{vv}^\parallel(t)$ decays much more smoothly and gives a steeper initial MSD slope?
 
       '
-    hint_markdown: Compare the cross-sectional area of a needle-like linear molecule moving end-on (parallel to its axis)
-      versus broadside (perpendicular to its axis).
+    hint_markdown: Compare the cross-sectional area of a needle-like linear molecule moving end-on (parallel to its axis) versus broadside (perpendicular to its axis).
     options:
     - id: a
-      text: Moving broadside ($\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring
-        molecules, whereas sliding end-on ($\parallel$) along the molecular axis experiences less steric hindrance.
+      text: Moving broadside ($\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\parallel$) along the molecular axis experiences less steric hindrance.
+      text_markdown: Moving broadside ($\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\parallel$) along the molecular axis experiences less steric hindrance.
     - id: b
       text: Because a linear molecule has zero mass along its parallel axis.
+      text_markdown: Because a linear molecule has zero mass along its parallel axis.
     - id: c
       text: Because equipartition is violated at $t = 0$ between parallel and perpendicular translational velocities.
+      text_markdown: Because equipartition is violated at $t = 0$ between parallel and perpendicular translational velocities.
     - id: d
       text: Because $\text{CS}_2$ is a crystalline solid at $294\,\text{K}$.
+      text_markdown: Because $\text{CS}_2$ is a crystalline solid at $294\,\text{K}$.
     correct: a
-    rationale_markdown: 'A rod-like $\text{S=C=S}$ molecule experiences anisotropic steric caging: motion perpendicular to
-      the molecular axis ($\perp$) quickly hits neighboring molecules broadside and rebounds strongly ($c_{vv}^\perp(t) <
-      0$), whereas motion parallel to the axis ($\parallel$) slips through the cage more easily (**A**).
+    rationale_markdown: 'A rod-like $\text{S=C=S}$ molecule experiences anisotropic steric caging: motion perpendicular to the molecular axis ($\perp$) quickly hits neighboring molecules broadside and rebounds strongly ($c_{vv}^\perp(t) < 0$), whereas motion parallel to the axis ($\parallel$) slips through the cage more easily (**A**).
 
       '
   - id: q26_liquid_metal_solute_diffusion
@@ -950,80 +778,39 @@ worksheet:
     taught_by: sec_diffusion_einstein_and_green_kubo
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'In Slide 11 (*Multiple species diffusion in liquid metal*, Woodward et al. 2010), the *ab initio* MD
-      trajectories of molten $\text{Ni}_{400}\text{X}_{100}$ alloys ($\text{X} = \text{Al}, \text{W}, \text{Re}$) yield solute
-      diffusion constants $D(\text{Al}) = 0.38\,\text{Å}^2/\text{ps}$, $D(\text{W}) = 0.27\,\text{Å}^2/\text{ps}$, and $D(\text{Re})
-      = 0.25\,\text{Å}^2/\text{ps}$, andalso show that adding $\text{W}$, $\text{Re}$, or $\text{Al}$ reduces the solvent
-      $\text{Ni}$ diffusivity from $0.50\,\text{Å}^2/\text{ps}$ (pure $\text{Ni}$) down to $0.33\text{–}0.37\,\text{Å}^2/\text{ps}$.
-      What physical factors explain why $\text{W}$ and $\text{Re}$ diffuse significantly more slowly than $\text{Al}$ in molten
-      $\text{Ni}$?
+    prompt_markdown: 'In Slide 11 (*Multiple species diffusion in liquid metal*, Woodward et al. 2010), the *ab initio* MD trajectories of molten $\text{Ni}_{400}\text{X}_{100}$ alloys ($\text{X} = \text{Al}, \text{W}, \text{Re}$) yield solute diffusion constants $D(\text{Al}) = 0.38\,\text{Å}^2/\text{ps}$, $D(\text{W}) = 0.27\,\text{Å}^2/\text{ps}$, and $D(\text{Re}) = 0.25\,\text{Å}^2/\text{ps}$, andalso show that adding $\text{W}$, $\text{Re}$, or $\text{Al}$ reduces the solvent $\text{Ni}$ diffusivity from $0.50\,\text{Å}^2/\text{ps}$ (pure $\text{Ni}$) down to $0.33\text{–}0.37\,\text{Å}^2/\text{ps}$. What physical factors explain why $\text{W}$ and $\text{Re}$ diffuse significantly more slowly than $\text{Al}$ in molten $\text{Ni}$?
 
       '
-    hint_markdown: Compare the atomic masses and refractory transition-metal bonding of W ($Z=74, m\approx 184$) and Re ($Z=75,
-      m\approx 186$) against light Al ($Z=13, m\approx 27$).
+    hint_markdown: Compare the atomic masses and refractory transition-metal bonding of W ($Z=74, m\approx 184$) and Re ($Z=75, m\approx 186$) against light Al ($Z=13, m\approx 27$).
     options:
     - id: a
-      text: W and Re are heavy 5d refractory transition metals ($m \approx 184\text{–}186\,\text{u}$, thermal velocity $v_{\text{th}}
-        \propto m^{-1/2}$) with strong directional d-band bonding that slows both their own hopping and the surrounding Ni
-        solvent cage.
+      text: W and Re are heavy 5d refractory transition metals ($m \approx 184\text{–}186\,\text{u}$, thermal velocity $v_{\text{th}} \propto m^{-1/2}$) with strong directional d-band bonding that slows both their own hopping and the surrounding Ni solvent cage.
+      text_markdown: W and Re are heavy 5d refractory transition metals ($m \approx 184\text{–}186\,\text{u}$, thermal velocity $v_{\text{th}} \propto m^{-1/2}$) with strong directional d-band bonding that slows both their own hopping and the surrounding Ni solvent cage.
     - id: b
       text: Al atoms have a larger atomic mass than W and Re.
+      text_markdown: Al atoms have a larger atomic mass than W and Re.
     - id: c
       text: A steeper MSD slope on Slide 11 corresponds to a smaller diffusion constant $D$.
+      text_markdown: A steeper MSD slope on Slide 11 corresponds to a smaller diffusion constant $D$.
     - id: d
       text: Solute diffusion cannot be measured using the Einstein MSD relation.
+      text_markdown: Solute diffusion cannot be measured using the Einstein MSD relation.
     correct: a
-    rationale_markdown: 'Tungsten ($m \approx 183.8\,\text{u}$) and rhenium ($m \approx 186.2\,\text{u}$) arenearly $7\times$
-      heavier than aluminum ($m \approx 27.0\,\text{u}$) and form stiff $d$-electron bonds with the Ni matrix, reducing their
-      thermal velocities ($\propto m^{-1/2}$) and caging rates so that both $D(\text{X})$ and the host $D(\text{Ni})$ decrease
-      (**A**).
+    rationale_markdown: 'Tungsten ($m \approx 183.8\,\text{u}$) and rhenium ($m \approx 186.2\,\text{u}$) arenearly $7\times$ heavier than aluminum ($m \approx 27.0\,\text{u}$) and form stiff $d$-electron bonds with the Ni matrix, reducing their thermal velocities ($\propto m^{-1/2}$) and caging rates so that both $D(\text{X})$ and the host $D(\text{Ni})$ decrease (**A**).
 
       '
   - id: sec_green_kubo_transport_and_hydro_tails
     type: markdown_section
     title: 4. General Green-Kubo Transport Coefficients & Alder-Wainwright Hydrodynamic Tails
-    body_markdown: "### The Green-Kubo Family of Transport Coefficients\nTaking the zero-frequency, long-wavelength limit\
-      \ ($\\omega \\to 0, k \\to 0$) of the Fluctuation-Dissipation Theorem shows that **every linear transport coefficient\
-      \ $\\mu$ can be written in Green-Kubo form as the time integral of a microscopic flux/current autocorrelation function**:\n\
-      $$\\mu \\propto \\int_0^\\infty dt\\, \\left\\langle J(t_0)\\, J(t_0 + t) \\right\\rangle_0$$\n\n| Transport Coefficient\
-      \ | Macroscopic Law | Microscopic Flux / Current $J(t)$ | Green-Kubo Formula (3D) |\n| :--- | :--- | :--- | :--- |\n\
-      | **Self-Diffusion** $D$ | $\\mathbf{j} = -D\\nabla\\rho$ | Tagged particle velocity $\\mathbf{v}_i(t)$ | $D = \\frac{1}{3}\\\
-      int_0^\\infty dt\\, \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle$ |\n| **Shear Viscosity** $\\eta$ | $\\\
-      sigma_{xy} = -\\eta \\frac{\\partial u_x}{\\partial y}$ | Off-diagonal stress tensor $\\sigma_{xy}(t)$ | $\\eta = \\\
-      frac{\\Omega}{k_B T} \\int_0^\\infty dt\\, \\langle \\sigma_{xy}(t)\\,\\sigma_{xy}(0)\\rangle$ |\n| **Thermal Conductivity**\
-      \ $\\lambda_T$ | $\\mathbf{J}^Q = -\\lambda_T \\nabla T$ | Microscopic heat/energy current $\\mathbf{J}^Q(t)$ | $\\\
-      lambda_T = \\frac{\\Omega}{3 k_B T^2} \\int_0^\\infty dt\\, \\langle \\mathbf{J}^Q(t)\\cdot\\mathbf{J}^Q(0)\\rangle$\
-      \ |\n| **Electrical Conductivity** $\\sigma_{\\text{el}}$ | $\\mathbf{J}^e = \\sigma_{\\text{el}} \\mathbf{E}$ | Total\
-      \ electric current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ | $\\sigma_{\\text{el}} = \\frac{1}{3\\Omega k_B\
-      \ T} \\int_0^\\infty dt\\, \\langle \\mathbf{J}(t)\\cdot\\mathbf{J}(0)\\rangle$ |\n\n### Non-Equilibrium Molecular Dynamics\
-      \ (NEMD) & Thermostats\nInstead of integrating equilibrium fluctuations via Green-Kubo, we can also measure transport\
-      \ coefficients using **Non-Equilibrium MD (NEMD)** by directly imposing a finite shear rate, temperature gradient, or\
-      \ electric field and measuring the steady-state response flux.\n- **Why NEMD Requires a Thermostat (Slide 7):** Driving\
-      \ a steady current or shear flow performs continuous mechanical/electrical work on the system, generating irreversible\
-      \ **Joule/viscous heating** ($P_{\\text{diss}} > 0$). Without a **thermostat** to remove this heat, the total energy\
-      \ and temperature of the simulation would rise indefinitely and a steady state could never be reached!\n\n### Alder–Wainwright\
-      \ Hydrodynamic Long-Time Tails ($t^{-d/2}$)\nBefore computer simulations, kinetic theory (Boltzmann/Enskog \"molecular\
-      \ chaos\") assumed that successive collisions are uncorrelated, predicting that the velocity autocorrelation function\
-      \ $C_{vv}(t)$ decays **exponentially** ($e^{-t/\\tau_E}$) at long times.\n- In 1967–1970, **Berni Alder and Thomas Wainwright**\
-      \ used hard-sphere MD simulations to discover a shocking result: at long times, $C_{vv}(t)$ does **not** decay exponentially,\
-      \ but instead exhibits a positive **algebraic power-law tail**:\n  $$C_{vv}(t) = \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\
-      \ \\rangle \\propto t^{-d/2} \\qquad (t \\gg \\tau_E)$$\n- **Physical Mechanism (Vortex & Train Effects, Slide 12):**\
-      \ A moving particle pushes fluid ahead of it and leaves a low-pressure wake behind it. Momentum conservation in the\
-      \ surrounding fluid creates a pair of circulating **hydrodynamic vortices** that loop around and push the particle from\
-      \ behind in its original direction (**train/vortex effect**)! Because vorticity diffuses hydrodynamically over a volume\
-      \ $\\sim (\\nu t)^{d/2}$, the recirculated velocity decays as $t^{-d/2}$.\n- **Catastrophic Consequence in 2D ($d =\
-      \ 2$):**\n  - In **3D ($d = 3$)**, the tail scales as $t^{-3/2}$, whose Green-Kubo integral $\\int^\\infty t^{-3/2}\
-      \ dt < \\infty$ **converges** to a finite diffusion constant $D$.\n  - In **2D ($d = 2$)**, the tail scales as $t^{-2/2}\
-      \ = t^{-1}$, so the Green-Kubo integral $\\int_0^t (t')^{-1} dt' \\propto \\ln(t)$ **diverges logarithmically** as $t\
-      \ \\to \\infty$ (and scales as $\\ln L$ with box size)! Strictly speaking, **Fickian transport coefficients do not exist\
-      \ in infinite 2D fluids** because of hydrodynamic long-time tails.\n"
+    body_markdown: "### The Green-Kubo Family of Transport Coefficients\nTaking the zero-frequency, long-wavelength limit ($\\omega \\to 0, k \\to 0$) of the Fluctuation-Dissipation Theorem shows that **every linear transport coefficient $\\mu$ can be written in Green-Kubo form as the time integral of a microscopic flux/current autocorrelation function**:\n$$\\mu \\propto \\int_0^\\infty dt\\, \\left\\langle J(t_0)\\, J(t_0 + t) \\right\\rangle_0$$\n\n| Transport Coefficient | Macroscopic Law | Microscopic Flux / Current $J(t)$ | Green-Kubo Formula (3D) |\n| :--- | :--- | :--- | :--- |\n| **Self-Diffusion** $D$ | $\\mathbf{j} = -D\\nabla\\rho$ | Tagged particle velocity $\\mathbf{v}_i(t)$ | $D = \\frac{1}{3}\\int_0^\\infty dt\\, \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle$ |\n| **Shear Viscosity** $\\eta$ | $\\sigma_{xy} = -\\eta \\frac{\\partial u_x}{\\partial y}$ | Off-diagonal stress tensor $\\sigma_{xy}(t)$ | $\\eta = \\frac{\\Omega}{k_B T} \\int_0^\\infty dt\\, \\langle\
+      \ \\sigma_{xy}(t)\\,\\sigma_{xy}(0)\\rangle$ |\n| **Thermal Conductivity** $\\lambda_T$ | $\\mathbf{J}^Q = -\\lambda_T \\nabla T$ | Microscopic heat/energy current $\\mathbf{J}^Q(t)$ | $\\lambda_T = \\frac{\\Omega}{3 k_B T^2} \\int_0^\\infty dt\\, \\langle \\mathbf{J}^Q(t)\\cdot\\mathbf{J}^Q(0)\\rangle$ |\n| **Electrical Conductivity** $\\sigma_{\\text{el}}$ | $\\mathbf{J}^e = \\sigma_{\\text{el}} \\mathbf{E}$ | Total electric current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ | $\\sigma_{\\text{el}} = \\frac{1}{3\\Omega k_B T} \\int_0^\\infty dt\\, \\langle \\mathbf{J}(t)\\cdot\\mathbf{J}(0)\\rangle$ |\n\n### Non-Equilibrium Molecular Dynamics (NEMD) & Thermostats\nInstead of integrating equilibrium fluctuations via Green-Kubo, we can also measure transport coefficients using **Non-Equilibrium MD (NEMD)** by directly imposing a finite shear rate, temperature gradient, or electric field and measuring the steady-state response flux.\n- **Why NEMD Requires a Thermostat (Slide 7):**\
+      \ Driving a steady current or shear flow performs continuous mechanical/electrical work on the system, generating irreversible **Joule/viscous heating** ($P_{\\text{diss}} > 0$). Without a **thermostat** to remove this heat, the total energy and temperature of the simulation would rise indefinitely and a steady state could never be reached!\n\n### Alder–Wainwright Hydrodynamic Long-Time Tails ($t^{-d/2}$)\nBefore computer simulations, kinetic theory (Boltzmann/Enskog \"molecular chaos\") assumed that successive collisions are uncorrelated, predicting that the velocity autocorrelation function $C_{vv}(t)$ decays **exponentially** ($e^{-t/\\tau_E}$) at long times.\n- In 1967–1970, **Berni Alder and Thomas Wainwright** used hard-sphere MD simulations to discover a shocking result: at long times, $C_{vv}(t)$ does **not** decay exponentially, but instead exhibits a positive **algebraic power-law tail**:\n  $$C_{vv}(t) = \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0) \\rangle \\propto t^{-d/2}\
+      \ \\qquad (t \\gg \\tau_E)$$\n- **Physical Mechanism (Vortex & Train Effects, Slide 12):** A moving particle pushes fluid ahead of it and leaves a low-pressure wake behind it. Momentum conservation in the surrounding fluid creates a pair of circulating **hydrodynamic vortices** that loop around and push the particle from behind in its original direction (**train/vortex effect**)! Because vorticity diffuses hydrodynamically over a volume $\\sim (\\nu t)^{d/2}$, the recirculated velocity decays as $t^{-d/2}$.\n- **Catastrophic Consequence in 2D ($d = 2$):**\n  - In **3D ($d = 3$)**, the tail scales as $t^{-3/2}$, whose Green-Kubo integral $\\int^\\infty t^{-3/2} dt < \\infty$ **converges** to a finite diffusion constant $D$.\n  - In **2D ($d = 2$)**, the tail scales as $t^{-2/2} = t^{-1}$, so the Green-Kubo integral $\\int_0^t (t')^{-1} dt' \\propto \\ln(t)$ **diverges logarithmically** as $t \\to \\infty$ (and scales as $\\ln L$ with box size)! Strictly speaking, **Fickian transport\
+      \ coefficients do not exist in infinite 2D fluids** because of hydrodynamic long-time tails.\n"
   - id: concept_alder_wainwright_explorer
     type: concept_cell
     title: 'Interactive Explorer: Alder–Wainwright Hydrodynamic Long-Time Tails (t^{-d/2})'
-    description_markdown: 'Compare the classical Boltzmann/Enskog exponential prediction ($e^{-t/\tau_E}$) against the true
-      **Alder–Wainwright hydrodynamic vortex tails** ($\propto t^{-d/2}$) in 2D ($t^{-1}$) and 3D ($t^{-3/2}$). Switch `panel_mode`
-      to see how the running Green-Kubo integral $D(t)$ converges in 3D but diverges logarithmically ($\propto \ln t$) in
-      2D!
+    description_markdown: 'Compare the classical Boltzmann/Enskog exponential prediction ($e^{-t/\tau_E}$) against the true **Alder–Wainwright hydrodynamic vortex tails** ($\propto t^{-d/2}$) in 2D ($t^{-1}$) and 3D ($t^{-3/2}$). Switch `panel_mode` to see how the running Green-Kubo integral $D(t)$ converges in 3D but diverges logarithmically ($\propto \ln t$) in 2D!
 
       '
     render_function: render_alder_wainwright_tails
@@ -1054,9 +841,7 @@ worksheet:
         max: 2.0
         step: 0.25
         default: 1.0
-    takeaway_markdown: '**Key Takeaway:** On a log-log plot, a power law $t^{-d/2}$ is a straight line with slope $-1$ (in
-      2D) or $-1.5$ (in 3D), completely dominating over the plunging exponential curve $e^{-t/\tau_E}$ for $t \gtrsim 10\tau_E$.
-      Even simple hard-sphere collisions reproduce this collective hydrodynamic vortex effect!
+    takeaway_markdown: '**Key Takeaway:** On a log-log plot, a power law $t^{-d/2}$ is a straight line with slope $-1$ (in 2D) or $-1.5$ (in 3D), completely dominating over the plunging exponential curve $e^{-t/\tau_E}$ for $t \gtrsim 10\tau_E$. Even simple hard-sphere collisions reproduce this collective hydrodynamic vortex effect!
 
       '
   - id: q27_green_kubo_flux_matching
@@ -1064,24 +849,25 @@ worksheet:
     taught_by: sec_green_kubo_transport_and_hydro_tails
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'In the Green-Kubo formulation of linear transport coefficients $\mu \propto \int_0^\infty dt\, \langle
-      A(0) A(t) \rangle$, which microscopic observable $A(t)$ is autocorrelated to obtain the **shear viscosity** $\eta$?
+    prompt_markdown: 'In the Green-Kubo formulation of linear transport coefficients $\mu \propto \int_0^\infty dt\, \langle A(0) A(t) \rangle$, which microscopic observable $A(t)$ is autocorrelated to obtain the **shear viscosity** $\eta$?
 
       '
     hint_markdown: Check Slide 1 and Slide 7 for the microscopic conjugate flux paired with Viscosity.
     options:
     - id: a
       text: The off-diagonal component of the microscopic stress (pressure) tensor $\sigma_{xy}(t)$.
+      text_markdown: The off-diagonal component of the microscopic stress (pressure) tensor $\sigma_{xy}(t)$.
     - id: b
       text: The total electric current $\mathbf{J}^e(t) = \sum_i q_i \mathbf{v}_i(t)$.
+      text_markdown: The total electric current $\mathbf{J}^e(t) = \sum_i q_i \mathbf{v}_i(t)$.
     - id: c
       text: The microscopic heat/energy current $\mathbf{J}^Q(t)$.
+      text_markdown: The microscopic heat/energy current $\mathbf{J}^Q(t)$.
     - id: d
       text: The static radial distribution function $g(r)$.
+      text_markdown: The static radial distribution function $g(r)$.
     correct: a
-    rationale_markdown: 'Shear viscosity $\eta$ measures momentum flux perpendicular to the flow direction, so its Green-Kubo
-      integral autocorrelates the off-diagonal stress tensor $\sigma_{xy}(t)$: $\eta = \frac{\Omega}{k_B T}\int_0^\infty \langle
-      \sigma_{xy}(t)\sigma_{xy}(0)\rangle dt$ (**A**).
+    rationale_markdown: 'Shear viscosity $\eta$ measures momentum flux perpendicular to the flow direction, so its Green-Kubo integral autocorrelates the off-diagonal stress tensor $\sigma_{xy}(t)$: $\eta = \frac{\Omega}{k_B T}\int_0^\infty \langle \sigma_{xy}(t)\sigma_{xy}(0)\rangle dt$ (**A**).
 
       '
   - id: q28_green_kubo_heat_and_electrical_flux
@@ -1089,24 +875,25 @@ worksheet:
     taught_by: sec_green_kubo_transport_and_hydro_tails
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'Which pair of microscopic currents $(J_{\text{heat}}, J_{\text{elec}})$ are integrated in the Green-Kubo
-      formulas for **thermal conductivity** $\lambda_T$ and **electrical conductivity** $\sigma_{\text{el}}$, respectively?
+    prompt_markdown: 'Which pair of microscopic currents $(J_{\text{heat}}, J_{\text{elec}})$ are integrated in the Green-Kubo formulas for **thermal conductivity** $\lambda_T$ and **electrical conductivity** $\sigma_{\text{el}}$, respectively?
 
       '
     hint_markdown: 'Look at Slide 7 (''Heat transport: energy current; Electrical Conductivity: electrical current'').'
     options:
     - id: a
-      text: Microscopic energy (heat) current $\mathbf{J}^Q(t)$ for $\lambda_T$, and total electrical current $\mathbf{J}(t)
-        = \sum_i q_i \mathbf{v}_i(t)$ for $\sigma_{\text{el}}$.
+      text: Microscopic energy (heat) current $\mathbf{J}^Q(t)$ for $\lambda_T$, and total electrical current $\mathbf{J}(t) = \sum_i q_i \mathbf{v}_i(t)$ for $\sigma_{\text{el}}$.
+      text_markdown: Microscopic energy (heat) current $\mathbf{J}^Q(t)$ for $\lambda_T$, and total electrical current $\mathbf{J}(t) = \sum_i q_i \mathbf{v}_i(t)$ for $\sigma_{\text{el}}$.
     - id: b
       text: Stress tensor $\sigma_{xy}(t)$ for $\lambda_T$, and particle density $\rho_{\mathbf{k}}(t)$ for $\sigma_{\text{el}}$.
+      text_markdown: Stress tensor $\sigma_{xy}(t)$ for $\lambda_T$, and particle density $\rho_{\mathbf{k}}(t)$ for $\sigma_{\text{el}}$.
     - id: c
       text: Total potential energy $V(t)$ for both.
+      text_markdown: Total potential energy $V(t)$ for both.
     - id: d
       text: Single-particle position $\mathbf{r}_1(t)$ for both.
+      text_markdown: Single-particle position $\mathbf{r}_1(t)$ for both.
     correct: a
-    rationale_markdown: 'Thermal conductivity autocorrelates the microscopic energy current $\mathbf{J}^Q(t)$, while electrical
-      conductivity autocorrelates the total charge current $\mathbf{J}(t) = \sum_i q_i \mathbf{v}_i(t)$ (**A**).
+    rationale_markdown: 'Thermal conductivity autocorrelates the microscopic energy current $\mathbf{J}^Q(t)$, while electrical conductivity autocorrelates the total charge current $\mathbf{J}(t) = \sum_i q_i \mathbf{v}_i(t)$ (**A**).
 
       '
   - id: q29_collective_vs_self_green_kubo
@@ -1114,29 +901,25 @@ worksheet:
     taught_by: sec_green_kubo_transport_and_hydro_tails
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'Why can the self-diffusion coefficient $D$ be averaged over all $N$ individual particles ($D = \frac{1}{3N}\sum_{i=1}^N
-      \int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt$, giving $N$ independent samples per snapshot),
-      whereas the shear viscosity $\eta = \frac{\Omega}{k_B T}\int_0^\infty \langle \sigma_{xy}(t)\sigma_{xy}(0)\rangle dt$
-      and thermal conductivity $\lambda_T$ have much larger statistical noise for the same trajectory length?
+    prompt_markdown: 'Why can the self-diffusion coefficient $D$ be averaged over all $N$ individual particles ($D = \frac{1}{3N}\sum_{i=1}^N \int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt$, giving $N$ independent samples per snapshot), whereas the shear viscosity $\eta = \frac{\Omega}{k_B T}\int_0^\infty \langle \sigma_{xy}(t)\sigma_{xy}(0)\rangle dt$ and thermal conductivity $\lambda_T$ have much larger statistical noise for the same trajectory length?
 
       '
     hint_markdown: Is $\sigma_{xy}(t)$ a single-particle property or a single collective box-wide observable?
     options:
     - id: a
-      text: Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\sigma_{xy}(t)$,
-        $\mathbf{J}^Q(t)$, and $\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample
-        per time origin).
+      text: Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\sigma_{xy}(t)$, $\mathbf{J}^Q(t)$, and $\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin).
+      text_markdown: Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\sigma_{xy}(t)$, $\mathbf{J}^Q(t)$, and $\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin).
     - id: b
       text: Because $\sigma_{xy}(t)$ is only defined for $N = 1$ particle.
+      text_markdown: Because $\sigma_{xy}(t)$ is only defined for $N = 1$ particle.
     - id: c
       text: Because the velocity autocorrelation function never decays to zero.
+      text_markdown: Because the velocity autocorrelation function never decays to zero.
     - id: d
       text: Because viscosity cannot be computed in 3D.
+      text_markdown: Because viscosity cannot be computed in 3D.
     correct: a
-    rationale_markdown: 'Self-diffusion tracks individual tagged particles $\mathbf{v}_i(t)$, so a single simulation of $N$
-      atoms gives $N$ nearly independent velocity autocorrelation trajectories. In contrast, the stress tensor $\sigma_{xy}(t)$
-      and heat current $\mathbf{J}^Q(t)$ are collective sums over the entire box, providing only a single scalar time series
-      and therefore requiring roughly $N\times$ longer trajectories for comparable relative error (**A**).
+    rationale_markdown: 'Self-diffusion tracks individual tagged particles $\mathbf{v}_i(t)$, so a single simulation of $N$ atoms gives $N$ nearly independent velocity autocorrelation trajectories. In contrast, the stress tensor $\sigma_{xy}(t)$ and heat current $\mathbf{J}^Q(t)$ are collective sums over the entire box, providing only a single scalar time series and therefore requiring roughly $N\times$ longer trajectories for comparable relative error (**A**).
 
       '
   - id: q30_nemd_thermostat_requirement
@@ -1144,28 +927,25 @@ worksheet:
     taught_by: sec_green_kubo_transport_and_hydro_tails
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'As noted on Slide 7, when evaluating a transport coefficient via a **non-equilibrium simulation (NEMD)**—for
-      example, by applying a continuous external electric field $\mathbf{E}$ or continuous shear rate $\dot{\gamma}$—why is
-      it mandatory to couple the system to a **thermostat**?
+    prompt_markdown: 'As noted on Slide 7, when evaluating a transport coefficient via a **non-equilibrium simulation (NEMD)**—for example, by applying a continuous external electric field $\mathbf{E}$ or continuous shear rate $\dot{\gamma}$—why is it mandatory to couple the system to a **thermostat**?
 
       '
-    hint_markdown: What happens to the internal energy and temperature when an external force continuously does dissipative
-      work ($P_{\text{diss}} = \sigma_{\text{el}} E^2 > 0$ or $\eta \dot{\gamma}^2 > 0$) on a closed system?
+    hint_markdown: What happens to the internal energy and temperature when an external force continuously does dissipative work ($P_{\text{diss}} = \sigma_{\text{el}} E^2 > 0$ or $\eta \dot{\gamma}^2 > 0$) on a closed system?
     options:
     - id: a
-      text: Because the external driving field continuously performs irreversible work (viscous or Joule heating) on the system;
-        without a thermostat to extract this heat, the energy and temperature would drift upward indefinitely instead of reaching
-        a steady state.
+      text: Because the external driving field continuously performs irreversible work (viscous or Joule heating) on the system; without a thermostat to extract this heat, the energy and temperature would drift upward indefinitely instead of reaching a steady state.
+      text_markdown: Because the external driving field continuously performs irreversible work (viscous or Joule heating) on the system; without a thermostat to extract this heat, the energy and temperature would drift upward indefinitely instead of reaching a steady state.
     - id: b
       text: Because without a thermostat, all particles stop moving immediately when an electric field is applied.
+      text_markdown: Because without a thermostat, all particles stop moving immediately when an electric field is applied.
     - id: c
       text: Because a thermostat is required to break conservation of mass.
+      text_markdown: Because a thermostat is required to break conservation of mass.
     - id: d
       text: Because Green-Kubo integrals can only be evaluated at $T = 0\,\text{K}$.
+      text_markdown: Because Green-Kubo integrals can only be evaluated at $T = 0\,\text{K}$.
     correct: a
-    rationale_markdown: 'In a driven steady-state NEMD simulation, the external field continuously pumps energy into the system
-      at rate $P_{\text{diss}} > 0$. A thermostat is essential to remove the generated heat so that the system maintains a
-      constant temperature and reaches a stationary non-equilibrium state (**A**).
+    rationale_markdown: 'In a driven steady-state NEMD simulation, the external field continuously pumps energy into the system at rate $P_{\text{diss}} > 0$. A thermostat is essential to remove the generated heat so that the system maintains a constant temperature and reaches a stationary non-equilibrium state (**A**).
 
       '
   - id: q31_alder_wainwright_discovery
@@ -1175,25 +955,25 @@ worksheet:
     - concept_alder_wainwright_explorer
     difficulty: easy
     question_type: single_select
-    prompt_markdown: 'What celebrated discovery did **Alder and Wainwright** make using hard-sphere Molecular Dynamics simulations
-      (Slide 12) that overturned the classical Boltzmann/Enskog picture of uncorrelated binary collisions?
+    prompt_markdown: 'What celebrated discovery did **Alder and Wainwright** make using hard-sphere Molecular Dynamics simulations (Slide 12) that overturned the classical Boltzmann/Enskog picture of uncorrelated binary collisions?
 
       '
     hint_markdown: Check Slide 12 and the interactive Alder-Wainwright explorer for the long-time behavior of $C_{vv}(t)$.
     options:
     - id: a
-      text: They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times,
-        but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \propto t^{-d/2}$ caused by vortex recirculation.
+      text: They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \propto t^{-d/2}$ caused by vortex recirculation.
+      text_markdown: They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \propto t^{-d/2}$ caused by vortex recirculation.
     - id: b
       text: They discovered that hard spheres never collide in 2D or 3D.
+      text_markdown: They discovered that hard spheres never collide in 2D or 3D.
     - id: c
       text: They proved that the velocity autocorrelation function is identically zero for all $t > 0$.
+      text_markdown: They proved that the velocity autocorrelation function is identically zero for all $t > 0$.
     - id: d
       text: They showed that attractive Lennard-Jones tails are required to produce hydrodynamic vortices.
+      text_markdown: They showed that attractive Lennard-Jones tails are required to produce hydrodynamic vortices.
     correct: a
-    rationale_markdown: 'Alder and Wainwright discovered that momentum conservation in the fluid creates a circulating vortex
-      wake around a moving particle, producing an algebraic long-time tail $C_{vv}(t) \propto t^{-d/2}$ even in purely repulsive
-      hard-sphere fluids (**A**).
+    rationale_markdown: 'Alder and Wainwright discovered that momentum conservation in the fluid creates a circulating vortex wake around a moving particle, producing an algebraic long-time tail $C_{vv}(t) \propto t^{-d/2}$ even in purely repulsive hard-sphere fluids (**A**).
 
       '
   - id: q32_alder_wainwright_2d_divergence
@@ -1203,25 +983,25 @@ worksheet:
     - concept_alder_wainwright_explorer
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'Why does Slide 12 state that **"The diffusion constant does not exist in 2D because of hydrodynamic
-      effects"**?
+    prompt_markdown: 'Why does Slide 12 state that **"The diffusion constant does not exist in 2D because of hydrodynamic effects"**?
 
       '
     hint_markdown: Substitute $d = 2$ into the long-time tail $C_{vv}(t) \propto t^{-d/2}$ and integrate $\int^\infty C_{vv}(t)\,dt$.
     options:
     - id: a
-      text: In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \propto t^{-2/2} = t^{-1}$, so the Green-Kubo
-        integral $D(t) = \frac{1}{2}\int_0^t C_{vv}(t')dt' \propto \ln(t)$ diverges logarithmically as $t \to \infty$.
+      text: In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \frac{1}{2}\int_0^t C_{vv}(t')dt' \propto \ln(t)$ diverges logarithmically as $t \to \infty$.
+      text_markdown: In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \frac{1}{2}\int_0^t C_{vv}(t')dt' \propto \ln(t)$ diverges logarithmically as $t \to \infty$.
     - id: b
       text: In 2D, particles cannot move at all, so $D = 0$ identically at all temperatures.
+      text_markdown: In 2D, particles cannot move at all, so $D = 0$ identically at all temperatures.
     - id: c
       text: In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$.
+      text_markdown: In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$.
     - id: d
       text: In 2D, velocities have no $x$ or $y$ components.
+      text_markdown: In 2D, velocities have no $x$ or $y$ components.
     correct: a
-    rationale_markdown: 'In $d = 2$ dimensions, the hydrodynamic vortex tail decays as $t^{-d/2} = t^{-1}$. Integrating $t^{-1}$
-      in the Green-Kubo formula yields $\int_{t_0}^t \frac{dt''}{t''} = \ln(t/t_0) \to \infty$ as $t \to \infty$ (**A**),
-      meaning the 2D running diffusivity grows logarithmically with time and system size!
+    rationale_markdown: 'In $d = 2$ dimensions, the hydrodynamic vortex tail decays as $t^{-d/2} = t^{-1}$. Integrating $t^{-1}$ in the Green-Kubo formula yields $\int_{t_0}^t \frac{dt''}{t''} = \ln(t/t_0) \to \infty$ as $t \to \infty$ (**A**), meaning the 2D running diffusivity grows logarithmically with time and system size!
 
       '
   - id: q33_alder_wainwright_3d_exponent_numeric
@@ -1231,15 +1011,12 @@ worksheet:
     - concept_alder_wainwright_explorer
     difficulty: easy
     question_type: numeric
-    prompt_markdown: 'In a **3D** fluid ($d = 3$), the Alder–Wainwright hydrodynamic long-time tail of the velocity autocorrelation
-      function decays as a power law: $C_{vv}(t) \propto t^{-\alpha} \qquad (t \to \infty)$. What is the numerical value of
-      the positive decay exponent $\alpha$ in 3D?'
+    prompt_markdown: 'In a **3D** fluid ($d = 3$), the Alder–Wainwright hydrodynamic long-time tail of the velocity autocorrelation function decays as a power law: $C_{vv}(t) \propto t^{-\alpha} \qquad (t \to \infty)$. What is the numerical value of the positive decay exponent $\alpha$ in 3D?'
     hint_markdown: Relate the hydrodynamic vortex recirculation decay exponent to the spatial dimensionality of the fluid.
     correct:
       value: 1.5
       tolerance: 0.01
-    rationale_markdown: 'In $d = 3$ dimensions, the hydrodynamic vortex tail scales as $t^{-d/2} = t^{-3/2} = t^{-1.5}$, so
-      $\alpha = 1.5$. Because $\alpha = 1.5 > 1$, the integral $\int^\infty t^{-1.5} dt$ converges to a finite value in 3D.
+    rationale_markdown: 'In $d = 3$ dimensions, the hydrodynamic vortex tail scales as $t^{-d/2} = t^{-3/2} = t^{-1.5}$, so $\alpha = 1.5$. Because $\alpha = 1.5 > 1$, the integral $\int^\infty t^{-1.5} dt$ converges to a finite value in 3D.
 
       '
   - id: q34_train_and_vortex_effect_physics
@@ -1247,77 +1024,56 @@ worksheet:
     taught_by: sec_green_kubo_transport_and_hydro_tails
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'How do the **train effect** and **vortex effect** (Slide 12) affect the sign of the velocity autocorrelation
-      function $C_{vv}(t)$ at long times ($t \gg \tau_E$) in a fluid of moderately low-to-intermediate density?
+    prompt_markdown: 'How do the **train effect** and **vortex effect** (Slide 12) affect the sign of the velocity autocorrelation function $C_{vv}(t)$ at long times ($t \gg \tau_E$) in a fluid of moderately low-to-intermediate density?
 
       '
-    hint_markdown: Does a circulating vortex wake push the tagged particle forward in the same direction as its initial velocity
-      $\mathbf{v}_i(0)$ or backward?
+    hint_markdown: Does a circulating vortex wake push the tagged particle forward in the same direction as its initial velocity $\mathbf{v}_i(0)$ or backward?
     options:
     - id: a
-      text: They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates
-        via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction.
+      text: They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction.
+      text_markdown: They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction.
     - id: b
       text: They make $C_{vv}(t)$ oscillate between $+1$ and $-1$ forever with undamped amplitude.
+      text_markdown: They make $C_{vv}(t)$ oscillate between $+1$ and $-1$ forever with undamped amplitude.
     - id: c
       text: They cause the particle to freeze into a crystal.
+      text_markdown: They cause the particle to freeze into a crystal.
     - id: d
       text: They only occur if particles interact via long-range gravitational attraction.
+      text_markdown: They only occur if particles interact via long-range gravitational attraction.
     correct: a
-    rationale_markdown: 'As a particle moves forward, it compresses the fluid ahead and leaves a rarefied wake behind. Momentum
-      conservation sets up a double-vortex recirculation pattern that feeds forward momentum into the wake behind the particle
-      (and drafts neighboring particles along behind it—the train effect), giving a **positive** algebraic tail $C_{vv}(t)
-      \propto +t^{-d/2} > 0$ (**A**).
+    rationale_markdown: 'As a particle moves forward, it compresses the fluid ahead and leaves a rarefied wake behind. Momentum conservation sets up a double-vortex recirculation pattern that feeds forward momentum into the wake behind the particle (and drafts neighboring particles along behind it—the train effect), giving a **positive** algebraic tail $C_{vv}(t) \propto +t^{-d/2} > 0$ (**A**).
 
       '
   - id: sec_synthesis_and_advanced_problems
     type: markdown_section
     title: '5. Synthesis: Connecting Microscopic Fluctuations, Scattering, and Transport'
-    body_markdown: "### Summary of Key Dynamical Identities\n1. **Static Susceptibility & Structure Factor:**\n   $$\\left.\\\
-      frac{\\partial \\langle B \\rangle_\\lambda}{\\partial \\lambda}\\right|_{\\lambda=0} = -\\beta \\langle \\delta B\\\
-      , \\delta A \\rangle_0, \\qquad \\left.\\frac{\\partial \\langle \\rho_{-\\mathbf{k}} \\rangle}{\\partial \\lambda_{\\\
-      mathbf{k}}}\\right|_{\\lambda=0} = -\\beta N S(\\mathbf{k})$$\n2. **Self-Part of Intermediate Scattering Function $F_s(\\\
-      mathbf{k}, t)$ in the Diffusive Limit:**\n   For a tagged diffusing particle whose displacement $\\Delta\\mathbf{r}(t)\
-      \ = \\mathbf{r}_i(t) - \\mathbf{r}_i(0)$ is Gaussian with $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle = 6Dt$ (in 3D),\
-      \ the self-intermediate scattering function is:\n   $$F_s(k, t) = \\left\\langle e^{i\\mathbf{k}\\cdot[\\mathbf{r}_i(t)\
-      \ - \\mathbf{r}_i(0)]} \\right\\rangle = \\exp\\!\\left(-\\frac{1}{6} k^2 \\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle\\\
-      right) = e^{-D k^2 t}$$\n   Taking the time Fourier transform gives a **Lorentzian quasielastic peak** in $S_s(k, \\\
-      omega)$ of half-width at half-maximum (HWHM) $\\Gamma(k) = D k^2$:\n   $$S_s(k, \\omega) = \\frac{1}{\\pi} \\frac{D\
-      \ k^2}{\\omega^2 + (D k^2)^2}$$\n3. **Einstein–Green-Kubo Equivalence & Nernst-Einstein Relation:**\n   - Self-diffusion\
-      \ (3D): $D = \\lim_{t\\to\\infty} \\frac{1}{6t}\\langle |\\mathbf{r}_i^{\\text{unwrap}}(t) - \\mathbf{r}_i(0)|^2 \\\
-      rangle = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$.\n   - If ion velocities\
-      \ in an electrolyte are uncorrelated between distinct ions ($i \\neq j$), the electrical conductivity Green-Kubo integral\
-      \ $\\sigma_{\\text{el}} = \\frac{1}{3\\Omega k_B T}\\int_0^\\infty \\langle \\mathbf{J}(t)\\cdot\\mathbf{J}(0)\\rangle\
-      \ dt$ simplifies to the **Nernst-Einstein relation** $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (equivalently,\
-      \ mobility $\\mu = D / (k_B T)$).\n"
+    body_markdown: "### Summary of Key Dynamical Identities\n1. **Static Susceptibility & Structure Factor:**\n   $$\\left.\\frac{\\partial \\langle B \\rangle_\\lambda}{\\partial \\lambda}\\right|_{\\lambda=0} = -\\beta \\langle \\delta B\\, \\delta A \\rangle_0, \\qquad \\left.\\frac{\\partial \\langle \\rho_{-\\mathbf{k}} \\rangle}{\\partial \\lambda_{\\mathbf{k}}}\\right|_{\\lambda=0} = -\\beta N S(\\mathbf{k})$$\n2. **Self-Part of Intermediate Scattering Function $F_s(\\mathbf{k}, t)$ in the Diffusive Limit:**\n   For a tagged diffusing particle whose displacement $\\Delta\\mathbf{r}(t) = \\mathbf{r}_i(t) - \\mathbf{r}_i(0)$ is Gaussian with $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle = 6Dt$ (in 3D), the self-intermediate scattering function is:\n   $$F_s(k, t) = \\left\\langle e^{i\\mathbf{k}\\cdot[\\mathbf{r}_i(t) - \\mathbf{r}_i(0)]} \\right\\rangle = \\exp\\!\\left(-\\frac{1}{6} k^2 \\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle\\right) = e^{-D k^2 t}$$\n   Taking the time Fourier\
+      \ transform gives a **Lorentzian quasielastic peak** in $S_s(k, \\omega)$ of half-width at half-maximum (HWHM) $\\Gamma(k) = D k^2$:\n   $$S_s(k, \\omega) = \\frac{1}{\\pi} \\frac{D k^2}{\\omega^2 + (D k^2)^2}$$\n3. **Einstein–Green-Kubo Equivalence & Nernst-Einstein Relation:**\n   - Self-diffusion (3D): $D = \\lim_{t\\to\\infty} \\frac{1}{6t}\\langle |\\mathbf{r}_i^{\\text{unwrap}}(t) - \\mathbf{r}_i(0)|^2 \\rangle = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt$.\n   - If ion velocities in an electrolyte are uncorrelated between distinct ions ($i \\neq j$), the electrical conductivity Green-Kubo integral $\\sigma_{\\text{el}} = \\frac{1}{3\\Omega k_B T}\\int_0^\\infty \\langle \\mathbf{J}(t)\\cdot\\mathbf{J}(0)\\rangle dt$ simplifies to the **Nernst-Einstein relation** $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (equivalently, mobility $\\mu = D / (k_B T)$).\n"
   - id: q35_self_isf_gaussian_diffusion
     type: problem
     taught_by: sec_synthesis_and_advanced_problems
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'In the hydrodynamic diffusive regime ($k \to 0, t \gg \tau_c$), a diffusing particle''s displacement
-      $\Delta\mathbf{r}(t)$ obeys Fick''s Gaussian solution with $F_s(k, t) = \langle e^{i\mathbf{k}\cdot\Delta\mathbf{r}(t)}
-      \rangle = e^{-D k^2 t}$. What is the shape and half-width at half-maximum (HWHM) $\Gamma(k)$ of the corresponding self-dynamical
-      structure factor $S_s(k, \omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} F_s(k, t)$?
+    prompt_markdown: 'In the hydrodynamic diffusive regime ($k \to 0, t \gg \tau_c$), a diffusing particle''s displacement $\Delta\mathbf{r}(t)$ obeys Fick''s Gaussian solution with $F_s(k, t) = \langle e^{i\mathbf{k}\cdot\Delta\mathbf{r}(t)} \rangle = e^{-D k^2 t}$. What is the shape and half-width at half-maximum (HWHM) $\Gamma(k)$ of the corresponding self-dynamical structure factor $S_s(k, \omega) = \int_{-\infty}^\infty \frac{dt}{2\pi} e^{i\omega t} F_s(k, t)$?
 
       '
-    hint_markdown: The Fourier transform of a two-sided exponential $e^{-D k^2 |t|}$ is a Lorentzian $\frac{1}{\pi}\frac{D
-      k^2}{\omega^2 + (D k^2)^2}$.
+    hint_markdown: The Fourier transform of a two-sided exponential $e^{-D k^2 |t|}$ is a Lorentzian $\frac{1}{\pi}\frac{D k^2}{\omega^2 + (D k^2)^2}$.
     options:
     - id: a
-      text: A Lorentzian peak centered at $\omega = 0$ whose half-width at half-maximum scales quadratically with wavevector,
-        $\Gamma(k) = D k^2$.
+      text: A Lorentzian peak centered at $\omega = 0$ whose half-width at half-maximum scales quadratically with wavevector, $\Gamma(k) = D k^2$.
+      text_markdown: A Lorentzian peak centered at $\omega = 0$ whose half-width at half-maximum scales quadratically with wavevector, $\Gamma(k) = D k^2$.
     - id: b
       text: Two sharp delta functions at $\omega = \pm D k$.
+      text_markdown: Two sharp delta functions at $\omega = \pm D k$.
     - id: c
       text: A Gaussian whose width is independent of $k$.
+      text_markdown: A Gaussian whose width is independent of $k$.
     - id: d
       text: A step function that vanishes for all $|\omega| < D k^2$.
+      text_markdown: A step function that vanishes for all $|\omega| < D k^2$.
     correct: a
-    rationale_markdown: 'Because $F_s(k, t) = e^{-D k^2 |t|}$ decays exponentially with rate $\Gamma(k) = D k^2$, its temporal
-      Fourier transform is a Lorentzian quasielastic peak centered at $\omega = 0$ with HWHM $\Gamma(k) = D k^2$ (**A**).
-      Inelastic/quasielastic neutron scattering experiments measure $D$ directly by plotting the Lorentzian linewidth $\Gamma(k)$
-      vs. $k^2$.
+    rationale_markdown: 'Because $F_s(k, t) = e^{-D k^2 |t|}$ decays exponentially with rate $\Gamma(k) = D k^2$, its temporal Fourier transform is a Lorentzian quasielastic peak centered at $\omega = 0$ with HWHM $\Gamma(k) = D k^2$ (**A**). Inelastic/quasielastic neutron scattering experiments measure $D$ directly by plotting the Lorentzian linewidth $\Gamma(k)$ vs. $k^2$.
 
       '
   - id: q36_isf_decay_time_numeric
@@ -1325,11 +1081,8 @@ worksheet:
     taught_by: sec_synthesis_and_advanced_problems
     difficulty: medium
     question_type: numeric
-    prompt_markdown: A liquid has self-diffusion coefficient $D = 0.25\,\text{Å}^2/\text{ps}$. At wavevector $k = 0.40\,\text{Å}^{-1}$
-      in the diffusive regime where the self-intermediate scattering function follows $F_s(k, t) = \exp(-D k^2 t)$, what is
-      the relaxation time $\tau_k$ (in $\text{ps}$) required for $F_s(k, t)$ to decay to $1/e$ of its initial value?
-    hint_markdown: Determine the characteristic time constant for an exponential decay governed by the diffusive wavevector
-      decay rate.
+    prompt_markdown: A liquid has self-diffusion coefficient $D = 0.25\,\text{Å}^2/\text{ps}$. At wavevector $k = 0.40\,\text{Å}^{-1}$ in the diffusive regime where the self-intermediate scattering function follows $F_s(k, t) = \exp(-D k^2 t)$, what is the relaxation time $\tau_k$ (in $\text{ps}$) required for $F_s(k, t)$ to decay to $1/e$ of its initial value?
+    hint_markdown: Determine the characteristic time constant for an exponential decay governed by the diffusive wavevector decay rate.
     correct:
       value: 25.0
       tolerance: 0.2
@@ -1345,18 +1098,14 @@ worksheet:
     taught_by: sec_green_kubo_transport_and_hydro_tails
     difficulty: hard
     question_type: numeric
-    prompt_markdown: 'In an equilibrium MD simulation of a fluid in a periodic box of volume $\Omega = 1000\,\text{Å}^3$ at
-      thermal energy $k_B T = 0.80$ (in reduced energy units), you integrate the off-diagonal stress autocorrelation function
-      from $t = 0$ to $\infty$:
+    prompt_markdown: 'In an equilibrium MD simulation of a fluid in a periodic box of volume $\Omega = 1000\,\text{Å}^3$ at thermal energy $k_B T = 0.80$ (in reduced energy units), you integrate the off-diagonal stress autocorrelation function from $t = 0$ to $\infty$:
 
       $$\int_0^\infty dt\, \left\langle \sigma_{xy}(t)\, \sigma_{xy}(0) \right\rangle = 0.0024$$
 
-      (in reduced units of $\text{pressure}^2 \times \text{time}$). Using the Green-Kubo formula $\eta = \frac{\Omega}{k_B
-      T}\int_0^\infty dt\,\langle \sigma_{xy}(t)\sigma_{xy}(0)\rangle$, calculate the shear viscosity $\eta$ in reduced units.
+      (in reduced units of $\text{pressure}^2 \times \text{time}$). Using the Green-Kubo formula $\eta = \frac{\Omega}{k_B T}\int_0^\infty dt\,\langle \sigma_{xy}(t)\sigma_{xy}(0)\rangle$, calculate the shear viscosity $\eta$ in reduced units.
 
       '
-    hint_markdown: Evaluate the Green-Kubo expression for shear viscosity using the simulation volume, thermal energy, and
-      integrated stress correlation.
+    hint_markdown: Evaluate the Green-Kubo expression for shear viscosity using the simulation volume, thermal energy, and integrated stress correlation.
     correct:
       value: 3.0
       tolerance: 0.05
@@ -1372,8 +1121,7 @@ worksheet:
     - concept_vacf_msd_duality
     difficulty: hard
     question_type: numeric
-    prompt_markdown: 'In a 3D dense liquid, the velocity autocorrelation function $C_{vv}(t) = \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)
-      \rangle$ has a positive initial lobe over $0 \le t \le t_1$ with area:
+    prompt_markdown: 'In a 3D dense liquid, the velocity autocorrelation function $C_{vv}(t) = \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0) \rangle$ has a positive initial lobe over $0 \le t \le t_1$ with area:
 
       $$\int_0^{t_1} C_{vv}(t)\, dt = +1.80\,\text{Å}^2/\text{ps}$$
 
@@ -1381,22 +1129,18 @@ worksheet:
 
       $$\int_{t_1}^\infty C_{vv}(t)\, dt = -0.60\,\text{Å}^2/\text{ps}$$
 
-      Using the 3D Green-Kubo relation $D = \frac{1}{3}\int_0^\infty C_{vv}(t)\, dt$, what is the asymptotic self-diffusion
-      coefficient $D$ in $\text{Å}^2/\text{ps}$?
+      Using the 3D Green-Kubo relation $D = \frac{1}{3}\int_0^\infty C_{vv}(t)\, dt$, what is the asymptotic self-diffusion coefficient $D$ in $\text{Å}^2/\text{ps}$?
 
       '
-    hint_markdown: Combine the integrals over the two time intervals to find the total area under the velocity autocorrelation
-      curve before applying the Green-Kubo prefactor.
+    hint_markdown: Combine the integrals over the two time intervals to find the total area under the velocity autocorrelation curve before applying the Green-Kubo prefactor.
     correct:
       value: 0.4
       tolerance: 0.01
-    rationale_markdown: 'The net time integral of the 3D VACF is $+1.80 - 0.60 = 1.20\,\text{Å}^2/\text{ps}$. Dividing by
-      $3$ gives:
+    rationale_markdown: 'The net time integral of the 3D VACF is $+1.80 - 0.60 = 1.20\,\text{Å}^2/\text{ps}$. Dividing by $3$ gives:
 
       $$D = \frac{1}{3}(1.80 - 0.60) = \frac{1.20}{3} = 0.40\,\text{Å}^2/\text{ps}$$
 
-      Notice how cage backscattering reduces the final diffusivity from its peak running value $1.80/3 = 0.60\,\text{Å}^2/\text{ps}$
-      down to $0.40\,\text{Å}^2/\text{ps}$.
+      Notice how cage backscattering reduces the final diffusivity from its peak running value $1.80/3 = 0.60\,\text{Å}^2/\text{ps}$ down to $0.40\,\text{Å}^2/\text{ps}$.
 
       '
   - id: q39_nernst_einstein_electrical_conductivity
@@ -1406,36 +1150,29 @@ worksheet:
     - sec_synthesis_and_advanced_problems
     difficulty: hard
     question_type: single_select
-    prompt_markdown: 'The Green-Kubo formula for electrical conductivity substitutes the total electric current $\mathbf{J}(t)
-      = \sum_{i=1}^N q_i \mathbf{v}_i(t)$ into $\sigma_{\text{el}} = \frac{1}{3\Omega k_B T}\int_0^\infty dt\, \langle \mathbf{J}(t)\cdot\mathbf{J}(0)\rangle$.
-      Expanding the double sum over ions $i$ and $j$ gives:
+    prompt_markdown: 'The Green-Kubo formula for electrical conductivity substitutes the total electric current $\mathbf{J}(t) = \sum_{i=1}^N q_i \mathbf{v}_i(t)$ into $\sigma_{\text{el}} = \frac{1}{3\Omega k_B T}\int_0^\infty dt\, \langle \mathbf{J}(t)\cdot\mathbf{J}(0)\rangle$. Expanding the double sum over ions $i$ and $j$ gives:
 
-      $$\sigma_{\text{el}} = \frac{1}{3\Omega k_B T} \sum_{i=1}^N q_i^2 \int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle
-      dt + \frac{1}{3\Omega k_B T} \sum_{i \neq j} q_i q_j \int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_j(0)\rangle
-      dt$$
+      $$\sigma_{\text{el}} = \frac{1}{3\Omega k_B T} \sum_{i=1}^N q_i^2 \int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt + \frac{1}{3\Omega k_B T} \sum_{i \neq j} q_i q_j \int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_j(0)\rangle dt$$
 
-      If distinct ions move independently so that the cross-velocity correlations $\langle \mathbf{v}_i(t)\cdot\mathbf{v}_j(0)\rangle
-      = 0$ for $i \neq j$, and all $N$ ions carry charge magnitude $|q_i| = q$ and have self-diffusion coefficient $D$, what
-      does $\sigma_{\text{el}}$ simplify to?
+      If distinct ions move independently so that the cross-velocity correlations $\langle \mathbf{v}_i(t)\cdot\mathbf{v}_j(0)\rangle = 0$ for $i \neq j$, and all $N$ ions carry charge magnitude $|q_i| = q$ and have self-diffusion coefficient $D$, what does $\sigma_{\text{el}}$ simplify to?
 
       '
-    hint_markdown: Express the uncorrelated single-particle velocity integrals in terms of the self-diffusion coefficient
-      and the ion number density.
+    hint_markdown: Express the uncorrelated single-particle velocity integrals in terms of the self-diffusion coefficient and the ion number density.
     options:
     - id: a
       text: The Nernst-Einstein relation $\sigma_{\text{el}} = \frac{\rho q^2 D}{k_B T}$ (where $\rho = N/\Omega$).
+      text_markdown: The Nernst-Einstein relation $\sigma_{\text{el}} = \frac{\rho q^2 D}{k_B T}$ (where $\rho = N/\Omega$).
     - id: b
       text: $\sigma_{\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$.
+      text_markdown: $\sigma_{\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$.
     - id: c
       text: $\sigma_{\text{el}} = \frac{k_B T}{\rho q^2 D}$.
+      text_markdown: $\sigma_{\text{el}} = \frac{k_B T}{\rho q^2 D}$.
     - id: d
       text: $\sigma_{\text{el}} = N^2 q^2 D$.
+      text_markdown: $\sigma_{\text{el}} = N^2 q^2 D$.
     correct: a
-    rationale_markdown: 'Since $q_i^2 = (+q)^2 = (-q)^2 = q^2 > 0$ for both cations and anions, and $\frac{1}{3}\int_0^\infty
-      \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt = D$, the self-term sum gives $\frac{N q^2 D}{\Omega k_B T} =
-      \frac{\rho q^2 D}{k_B T}$, which is the celebrated **Nernst-Einstein equation** (**A**). Deviations from Nernst-Einstein
-      in concentrated electrolytes or ionic liquids arise directly from the cross-correlation terms ($i \neq j$, e.g., cation-anion
-      pair association).
+    rationale_markdown: 'Since $q_i^2 = (+q)^2 = (-q)^2 = q^2 > 0$ for both cations and anions, and $\frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt = D$, the self-term sum gives $\frac{N q^2 D}{\Omega k_B T} = \frac{\rho q^2 D}{k_B T}$, which is the celebrated **Nernst-Einstein equation** (**A**). Deviations from Nernst-Einstein in concentrated electrolytes or ionic liquids arise directly from the cross-correlation terms ($i \neq j$, e.g., cation-anion pair association).
 
       '
   - id: q40_finite_size_cutoff_hydro_tail
@@ -1445,28 +1182,25 @@ worksheet:
     - concept_alder_wainwright_explorer
     difficulty: hard
     question_type: single_select
-    prompt_markdown: 'In a finite periodic MD box of side length $L$ with sound speed $c_s$, up to what maximum time $t_{\max}$
-      can you observe the true infinite-system Alder–Wainwright hydrodynamic tail $C_{vv}(t) \propto t^{-d/2}$ before periodic
-      boundary artifacts corrupt the correlation function?
+    prompt_markdown: 'In a finite periodic MD box of side length $L$ with sound speed $c_s$, up to what maximum time $t_{\max}$ can you observe the true infinite-system Alder–Wainwright hydrodynamic tail $C_{vv}(t) \propto t^{-d/2}$ before periodic boundary artifacts corrupt the correlation function?
 
       '
-    hint_markdown: How long does it take an acoustic compression wave traveling at speed $c_s$ to cross the periodic box of
-      length $L$ and re-enter from the opposite side?
+    hint_markdown: How long does it take an acoustic compression wave traveling at speed $c_s$ to cross the periodic box of length $L$ and re-enter from the opposite side?
     options:
     - id: a
-      text: Up to the acoustic traversal time $t_{\max} \sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around
-        the periodic box and interferes with the particle.
+      text: Up to the acoustic traversal time $t_{\max} \sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle.
+      text_markdown: Up to the acoustic traversal time $t_{\max} \sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle.
     - id: b
       text: Only for $t < \Delta t$ (a single MD integration step).
+      text_markdown: Only for $t < \Delta t$ (a single MD integration step).
     - id: c
       text: Out to $t = \infty$ regardless of how small $L$ is.
+      text_markdown: Out to $t = \infty$ regardless of how small $L$ is.
     - id: d
       text: Only when $L = 0$.
+      text_markdown: Only when $L = 0$.
     correct: a
-    rationale_markdown: 'A moving particle launches an acoustic compression wave at speed $c_s$ and a shear vortex wave. Once
-      $t \gtrsim L / c_s$, the sound pulse crosses the periodic boundary of the box of side $L$ and strikes the particle artificially
-      from behind, corrupting $C_{vv}(t)$ for $t > L/c_s$ (**A**). This is why Alder and Wainwright needed large hard-sphere
-      systems to cleanly resolve the $t^{-d/2}$ regime.
+    rationale_markdown: 'A moving particle launches an acoustic compression wave at speed $c_s$ and a shear vortex wave. Once $t \gtrsim L / c_s$, the sound pulse crosses the periodic boundary of the box of side $L$ and strikes the particle artificially from behind, corrupting $C_{vv}(t)$ for $t > L/c_s$ (**A**). This is why Alder and Wainwright needed large hard-sphere systems to cleanly resolve the $t^{-d/2}$ regime.
 
       '
   - id: q41_time_correlation_symmetry_even
@@ -1474,30 +1208,25 @@ worksheet:
     taught_by: sec_static_perturbation_and_time_correlations
     difficulty: medium
     question_type: single_select
-    prompt_markdown: 'For a classical real observable $A$ whose microscopic value is invariant (or strictly reversed) under
-      time reversal, stationarity $\langle \delta A(0)\delta A(t)\rangle = \langle \delta A(-t)\delta A(0)\rangle = \langle
-      \delta A(0)\delta A(-t)\rangle$ implies that the autocorrelation function $C_{AA}(t)$ is an **even function of time**
-      ($C_{AA}(-t) = C_{AA}(t)$). What does $C_{AA}(-t) = C_{AA}(t)$ imply for its initial time derivative $\left.\frac{d
-      C_{AA}(t)}{dt}\right|_{t=0}$ (for smooth Hamiltonian trajectories) and its Fourier transform $C_{AA}(\omega)$?
+    prompt_markdown: 'For a classical real observable $A$ whose microscopic value is invariant (or strictly reversed) under time reversal, stationarity $\langle \delta A(0)\delta A(t)\rangle = \langle \delta A(-t)\delta A(0)\rangle = \langle \delta A(0)\delta A(-t)\rangle$ implies that the autocorrelation function $C_{AA}(t)$ is an **even function of time** ($C_{AA}(-t) = C_{AA}(t)$). What does $C_{AA}(-t) = C_{AA}(t)$ imply for its initial time derivative $\left.\frac{d C_{AA}(t)}{dt}\right|_{t=0}$ (for smooth Hamiltonian trajectories) and its Fourier transform $C_{AA}(\omega)$?
 
       '
-    hint_markdown: What is the slope at $t = 0$ of any smooth even function $f(-t) = f(t)$ (such as $\cos(\omega t)$ or $1
-      - a t^2$)?
+    hint_markdown: What is the slope at $t = 0$ of any smooth even function $f(-t) = f(t)$ (such as $\cos(\omega t)$ or $1 - a t^2$)?
     options:
     - id: a
-      text: The initial slope at $t = 0$ vanishes ($\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top
-        $C_{AA}(0) - \frac{1}{2}\langle \dot{A}^2\rangle t^2$), and $C_{AA}(\omega)$ is purely real and even in $\omega$.
+      text: The initial slope at $t = 0$ vanishes ($\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \frac{1}{2}\langle \dot{A}^2\rangle t^2$), and $C_{AA}(\omega)$ is purely real and even in $\omega$.
+      text_markdown: The initial slope at $t = 0$ vanishes ($\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \frac{1}{2}\langle \dot{A}^2\rangle t^2$), and $C_{AA}(\omega)$ is purely real and even in $\omega$.
     - id: b
       text: $C_{AA}(\omega)$ is purely imaginary and odd in $\omega$.
+      text_markdown: $C_{AA}(\omega)$ is purely imaginary and odd in $\omega$.
     - id: c
       text: The initial value $C_{AA}(0)$ must be zero.
+      text_markdown: The initial value $C_{AA}(0)$ must be zero.
     - id: d
       text: $C_{AA}(t)$ must increase linearly with $t$ near $t = 0$.
+      text_markdown: $C_{AA}(t)$ must increase linearly with $t$ near $t = 0$.
     correct: a
-    rationale_markdown: 'Under smooth Hamiltonian dynamics, any classical autocorrelation function $C_{AA}(t) = \langle \delta
-      A(0)\delta A(t)\rangle$ is an even function of $t$: $\dot{C}_{AA}(0) = \langle \delta A(0)\dot{A}(0)\rangle = \frac{1}{2}\frac{d}{dt}\langle
-      (\delta A)^2\rangle = 0$. Therefore, $C_{AA}(t)$ starts out flat at $t = 0$ ($C_{AA}(t) = C_{AA}(0) - \frac{1}{2}\langle
-      \dot{A}^2\rangle t^2 + \dots$) and its Fourier transform $C_{AA}(\omega)$ is real, even, and non-negative (**A**).
+    rationale_markdown: 'Under smooth Hamiltonian dynamics, any classical autocorrelation function $C_{AA}(t) = \langle \delta A(0)\delta A(t)\rangle$ is an even function of $t$: $\dot{C}_{AA}(0) = \langle \delta A(0)\dot{A}(0)\rangle = \frac{1}{2}\frac{d}{dt}\langle (\delta A)^2\rangle = 0$. Therefore, $C_{AA}(t)$ starts out flat at $t = 0$ ($C_{AA}(t) = C_{AA}(0) - \frac{1}{2}\langle \dot{A}^2\rangle t^2 + \dots$) and its Fourier transform $C_{AA}(\omega)$ is real, even, and non-negative (**A**).
 
       '
   - id: q42_dynamical_correlations_master_summary
@@ -1508,34 +1237,28 @@ worksheet:
     - sec_green_kubo_transport_and_hydro_tails
     difficulty: medium
     question_type: multi_select
-    prompt_markdown: 'Which of the following statements accurately summarize the core principles of dynamical correlations
-      and transport coefficients in atomic-scale simulations? (Select all that apply.)
+    prompt_markdown: 'Which of the following statements accurately summarize the core principles of dynamical correlations and transport coefficients in atomic-scale simulations? (Select all that apply.)
 
       '
-    hint_markdown: Verify each statement against the Fluctuation-Dissipation Theorem, Einstein/Green-Kubo relations, and Alder-Wainwright
-      tails.
+    hint_markdown: Verify each statement against the Fluctuation-Dissipation Theorem, Einstein/Green-Kubo relations, and Alder-Wainwright tails.
     options:
     - id: a
-      text: By the Fluctuation-Dissipation Theorem and Onsager's regression hypothesis, linear transport coefficients can
-        be computed purely from equilibrium time correlation functions without applying an external perturbation.
+      text: By the Fluctuation-Dissipation Theorem and Onsager's regression hypothesis, linear transport coefficients can be computed purely from equilibrium time correlation functions without applying an external perturbation.
+      text_markdown: By the Fluctuation-Dissipation Theorem and Onsager's regression hypothesis, linear transport coefficients can be computed purely from equilibrium time correlation functions without applying an external perturbation.
     - id: b
-      text: The Einstein MSD formula $D = \lim_{t\to\infty} \frac{1}{6t}\langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2\rangle$
-        and the 3D Green-Kubo VACF integral $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle
-        dt$ are mathematically identical provided continuous unwound coordinates are used.
+      text: The Einstein MSD formula $D = \lim_{t\to\infty} \frac{1}{6t}\langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2\rangle$ and the 3D Green-Kubo VACF integral $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt$ are mathematically identical provided continuous unwound coordinates are used.
+      text_markdown: The Einstein MSD formula $D = \lim_{t\to\infty} \frac{1}{6t}\langle |\mathbf{r}_i(t) - \mathbf{r}_i(0)|^2\rangle$ and the 3D Green-Kubo VACF integral $D = \frac{1}{3}\int_0^\infty \langle \mathbf{v}_i(t)\cdot\mathbf{v}_i(0)\rangle dt$ are mathematically identical provided continuous unwound coordinates are used.
     - id: c
-      text: Inelastic neutron scattering measures the dynamical structure factor $S(\mathbf{k}, \omega)$, whose Brillouin
-        peaks probe collective sound-wave dispersions and damping.
+      text: Inelastic neutron scattering measures the dynamical structure factor $S(\mathbf{k}, \omega)$, whose Brillouin peaks probe collective sound-wave dispersions and damping.
+      text_markdown: Inelastic neutron scattering measures the dynamical structure factor $S(\mathbf{k}, \omega)$, whose Brillouin peaks probe collective sound-wave dispersions and damping.
     - id: d
-      text: Because of Alder-Wainwright hydrodynamic vortex tails ($C_{vv}(t) \propto t^{-d/2}$), the 2D Green-Kubo integral
-        diverges logarithmically whereas the 3D integral converges.
+      text: Because of Alder-Wainwright hydrodynamic vortex tails ($C_{vv}(t) \propto t^{-d/2}$), the 2D Green-Kubo integral diverges logarithmically whereas the 3D integral converges.
+      text_markdown: Because of Alder-Wainwright hydrodynamic vortex tails ($C_{vv}(t) \propto t^{-d/2}$), the 2D Green-Kubo integral diverges logarithmically whereas the 3D integral converges.
     correct:
     - a
     - b
     - c
     - d
-    rationale_markdown: 'All four statements (**A**, **B**, **C**, and **D**) are foundational takeaways from Lesson 10: FDT/Onsager
-      regression links equilibrium fluctuations to non-equilibrium relaxation (**A**); Einstein unwrapped MSD and Green-Kubo
-      VACF are exact duals (**B**); $S(\mathbf{k}, \omega)$ probes collective dynamic excitations in inelastic scattering
-      (**C**); and hydrodynamic vortex tails scale as $t^{-d/2}$, diverging in 2D while converging in 3D (**D**).
+    rationale_markdown: 'All four statements (**A**, **B**, **C**, and **D**) are foundational takeaways from Lesson 10: FDT/Onsager regression links equilibrium fluctuations to non-equilibrium relaxation (**A**); Einstein unwrapped MSD and Green-Kubo VACF are exact duals (**B**); $S(\mathbf{k}, \omega)$ probes collective dynamic excitations in inelastic scattering (**C**); and hydrodynamic vortex tails scale as $t^{-d/2}$, diverging in 2D while converging in 3D (**D**).
 
       '

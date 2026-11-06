@@ -572,11 +572,11 @@ worksheet:
     prompt_markdown: Which of the following data structures can be used to achieve $\mathcal{O}(\log M)$ or $\mathcal{O}(1)$ event selection in KMC with $M$ possible transitions? (Select all that apply)
     options:
     - id: a
-      text_markdown: Binary search tree / cumulative sum tree ($\\mathcal{O}(\\log M)$ search and update)
-      text: Binary search tree / cumulative sum tree ($\\mathcal{O}(\\log M)$ search and update)
+      text_markdown: Binary search tree / cumulative sum tree ($\mathcal{O}(\log M)$ search and update)
+      text: Binary search tree / cumulative sum tree ($\mathcal{O}(\log M)$ search and update)
     - id: b
-      text_markdown: Walker's Alias Method ($\\mathcal{O}(1)$ event selection)
-      text: Walker's Alias Method ($\\mathcal{O}(1)$ event selection)
+      text_markdown: Walker's Alias Method ($\mathcal{O}(1)$ event selection)
+      text: Walker's Alias Method ($\mathcal{O}(1)$ event selection)
     - id: c
       text_markdown: Binned rate groups / 24-tree (constant time per rate class)
       text: Binned rate groups / 24-tree (constant time per rate class)
