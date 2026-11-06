@@ -98,13 +98,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = 0$, so the internal forces satisfy $\\sum_{i=1}^m \\mathbf{F}_i = 0$ (allowing one atom's force to be obtained for free from the negative sum of the others).",
-            "text_markdown": "$\\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = 0$, so the internal forces satisfy $\\sum_{i=1}^m \\mathbf{F}_i = 0$ (allowing one atom's force to be obtained for free from the negative sum of the others)."
+            "text": "$\\sum_{i=1}^m |\\nabla_{\\mathbf{r}_i} E|^2 = 0$, implying all individual atomic forces must be zero.",
+            "text_markdown": "$\\sum_{i=1}^m |\\nabla_{\\mathbf{r}_i} E|^2 = 0$, implying all individual atomic forces must be zero."
           },
           {
             "id": "b",
-            "text": "$\\sum_{i=1}^m |\\nabla_{\\mathbf{r}_i} E|^2 = 0$, implying all individual atomic forces must be zero.",
-            "text_markdown": "$\\sum_{i=1}^m |\\nabla_{\\mathbf{r}_i} E|^2 = 0$, implying all individual atomic forces must be zero."
+            "text": "$\\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = 0$, so the internal forces satisfy $\\sum_{i=1}^m \\mathbf{F}_i = 0$ (allowing one atom's force to be obtained for free from the negative sum of the others).",
+            "text_markdown": "$\\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = 0$, so the internal forces satisfy $\\sum_{i=1}^m \\mathbf{F}_i = 0$ (allowing one atom's force to be obtained for free from the negative sum of the others)."
           },
           {
             "id": "c",
@@ -117,7 +117,7 @@
             "text_markdown": "$\\sum_{i=1}^m \\mathbf{r}_i \\cdot \\mathbf{F}_i = 0$ for all interatomic distances."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "By the chain rule, $\\nabla_{\\mathbf{c}} E(\\mathbf{r}_1+\\mathbf{c}, \\dots, \\mathbf{r}_m+\\mathbf{c})|_{\\mathbf{c}=\\mathbf{0}} = \\sum_{i=1}^m \\nabla_{\\mathbf{r}_i} E = \\mathbf{0}$, which immediately yields $\\sum_{i=1}^m \\mathbf{F}_i = \\mathbf{0}$. This both guarantees conservation of total linear momentum and saves computation by giving the last atom's force as $-\\sum_{i \\ne m} \\mathbf{F}_i$."
       },
       {
@@ -129,7 +129,7 @@
         "prompt_markdown": "Suppose a simulation box contains $N = 500$ atoms in 3D space. If you tried to compute the full $3N$-component force vector at a single MD timestep using **central finite differences** $F_{i,\\alpha} \\approx -\\frac{E(\\mathbf{r}_i + \\delta\\hat{\\mathbf{e}}_\\alpha) - E(\\mathbf{r}_i - \\delta\\hat{\\mathbf{e}}_\\alpha)}{2\\delta}$ via full-system energy evaluations, how many total evaluations of $E_{\\text{total}}$ would be required at **each** timestep?",
         "hint_markdown": "Each of the N = 500 atoms has 3 Cartesian coordinates (x, y, z), and central differencing requires 2 energy evaluations (+delta and -delta) per coordinate.",
         "correct": {
-          "value": 3000,
+          "value": 3000.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "In 3D, $N = 500$ atoms have $3N = 1500$ scalar degrees of freedom. Central finite differencing evaluates $E(\\mathbf{r}_i + \\delta\\hat{\\mathbf{e}}_\\alpha)$ and $E(\\mathbf{r}_i - \\delta\\hat{\\mathbf{e}}_\\alpha)$ for each coordinate, requiring $2 \\times 3N = 6N = 6 \\times 500 = 3000$ energy evaluations per timestep!"
@@ -145,8 +145,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Zero net internal torque: $\\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i) = 0$, ensuring exact conservation of total angular momentum for an isolated cluster.",
-            "text_markdown": "Zero net internal torque: $\\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i) = 0$, ensuring exact conservation of total angular momentum for an isolated cluster."
+            "text": "Each individual force vector $\\mathbf{F}_i$ must point radially toward the coordinate origin.",
+            "text_markdown": "Each individual force vector $\\mathbf{F}_i$ must point radially toward the coordinate origin."
           },
           {
             "id": "b",
@@ -155,8 +155,8 @@
           },
           {
             "id": "c",
-            "text": "Each individual force vector $\\mathbf{F}_i$ must point radially toward the coordinate origin.",
-            "text_markdown": "Each individual force vector $\\mathbf{F}_i$ must point radially toward the coordinate origin."
+            "text": "Zero net internal torque: $\\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i) = 0$, ensuring exact conservation of total angular momentum for an isolated cluster.",
+            "text_markdown": "Zero net internal torque: $\\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i) = 0$, ensuring exact conservation of total angular momentum for an isolated cluster."
           },
           {
             "id": "d",
@@ -164,14 +164,14 @@
             "text_markdown": "The Hessian matrix of second derivatives must be diagonal."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Under an infinitesimal rigid rotation $\\delta\\mathbf{r}_i = \\delta\\boldsymbol{\\omega}\\times\\mathbf{r}_i$, invariance of the energy requires $0 = \\delta E = -\\sum_i \\mathbf{F}_i \\cdot (\\delta\\boldsymbol{\\omega}\\times\\mathbf{r}_i) = -\\delta\\boldsymbol{\\omega} \\cdot \\sum_i (\\mathbf{r}_i \\times \\mathbf{F}_i)$ for all $\\delta\\boldsymbol{\\omega}$. Hence the net internal torque $\\sum_i \\mathbf{r}_i \\times \\mathbf{F}_i = \\mathbf{0}$."
       },
       {
         "id": "sec_two_body_bond_stretching",
         "type": "markdown_section",
         "title": "2. Two-Body Radial Potentials & Bond-Stretching Derivatives",
-        "body_markdown": "Both the covalent **bond-stretching** energy $E_{\\text{bond}}(r) = K_r(r - r_{\\text{eq}})^2$ and the **non-bonded** pair interactions (Coulomb + Lennard-Jones) depend exclusively on the scalar distance $r = r_{12} = |\\mathbf{r}_1 - \\mathbf{r}_2|$ between two atoms at positions $\\mathbf{r}_1$ and $\\mathbf{r}_2$.\n\n### Step 1: Relative Vectors and Sign Conventions\nFollowing the lecture notes (`Interatomic-Derivatives.pdf`, p. 1), define the relative displacement vectors:\n$$\\mathbf{r}_{12} = \\mathbf{r}_1 - \\mathbf{r}_2 \\quad (\\text{points from atom } 2 \\to \\text{atom } 1), \\qquad \\mathbf{r}_{21} = \\mathbf{r}_2 - \\mathbf{r}_1 = -\\mathbf{r}_{12} \\quad (\\text{points from atom } 1 \\to \\text{atom } 2)$$\nwith scalar distance:\n$$r = r_{12} = r_{21} = |\\mathbf{r}_1 - \\mathbf{r}_2| = \\sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2 + (z_1 - z_2)^2}$$\nand corresponding unit vectors:\n$$\\hat{\\mathbf{r}}_{12} = \\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}}, \\qquad \\hat{\\mathbf{r}}_{21} = \\frac{\\mathbf{r}_2 - \\mathbf{r}_1}{|\\mathbf{r}_2 - \\mathbf{r}_1|} = \\frac{\\mathbf{r}_{21}}{r_{21}} = -\\hat{\\mathbf{r}}_{12}$$\n\n### Step 2: Gradient of the Interatomic Distance\nDifferentiating $r_{12} = \\bigl[(\\mathbf{r}_1 - \\mathbf{r}_2)\\cdot(\\mathbf{r}_1 - \\mathbf{r}_2)\\bigr]^{1/2}$ with respect to $\\mathbf{r}_1$ gives:\n$$\\frac{\\partial r_{12}}{\\partial x_1} = \\frac{1}{2 r_{12}} \\cdot 2(x_1 - x_2) = \\frac{x_1 - x_2}{r_{12}} \\implies \\nabla_{\\mathbf{r}_1} |\\mathbf{r}_1 - \\mathbf{r}_2| = \\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12} = -\\hat{\\mathbf{r}}_{21}$$\n*(Note on p. 1 of the handout: the handout writes $\\nabla_{\\mathbf{r}_1}$ and $\\nabla_{\\mathbf{r}_2}$ with opposite sign definitions when identifying the unit vector pointing from $1\\to 2$ vs. $2\\to 1$; always verify the physical direction! Increasing $\\mathbf{r}_1$ in the direction away from $\\mathbf{r}_2$, i.e. Along $+\\hat{\\mathbf{r}}_{12}$, increases the distance $r_{12}$, so $\\nabla_{\\mathbf{r}_1} r_{12} = +\\hat{\\mathbf{r}}_{12}$ and $\\nabla_{\\mathbf{r}_2} r_{12} = -\\hat{\\mathbf{r}}_{12} = +\\hat{\\mathbf{r}}_{21}$.)*\n\n### Step 3: Chain Rule for Any Pair Potential $v(r)$\nFor any pair potential $v(r)$, the force on atom $1$ is:\n$$\\mathbf{F}_1 = -\\nabla_{\\mathbf{r}_1} v(r) = -\\left.\\frac{dv}{dr}\\right|_{r=r_{12}} \\nabla_{\\mathbf{r}_1}|\\mathbf{r}_1 - \\mathbf{r}_2| = -\\frac{dv}{dr}\\,\\hat{\\mathbf{r}}_{12} = -\\frac{1}{r_{12}}\\frac{dv}{dr}(\\mathbf{r}_1 - \\mathbf{r}_2)$$\nand by Newton's Third Law (antisymmetry $\\hat{\\mathbf{r}}_{21} = -\\hat{\\mathbf{r}}_{12}$):\n$$\\mathbf{F}_2 = -\\nabla_{\\mathbf{r}_2} v(r) = -\\frac{dv}{dr}\\,\\hat{\\mathbf{r}}_{21} = +\\frac{dv}{dr}\\,\\hat{\\mathbf{r}}_{12} = -\\mathbf{F}_1$$\n\n- **Harmonic Bond Stretch** $v(r) = K_r(r - r_{\\text{eq}})^2$:\n $$\\frac{dv}{dr} = 2K_r(r_{12} - r_{\\text{eq}}) \\implies \\mathbf{F}_1 = -2K_r(r_{12} - r_{\\text{eq}})\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{r_{12}}, \\quad \\mathbf{F}_2 = -\\mathbf{F}_1$$\n- **Lennard-Jones + Coulomb Non-Bonded Pair**:\n $$\\frac{dv_{\\text{nb}}}{dr} = -\\frac{q_i q_j e^2}{r_{ij}^2} + \\frac{4\\epsilon_{ij}}{r_{ij}}\\left[-12\\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^{12} + 6\\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^6\\right]$$"
+        "body_markdown": "Both the covalent **bond-stretching** energy $E_{\\text{bond}}(r) = K_r(r - r_{\\text{eq}})^2$ and the **non-bonded** pair interactions (Coulomb + Lennard-Jones) depend exclusively on the scalar distance $r = r_{12} = |\\mathbf{r}_1 - \\mathbf{r}_2|$ between two atoms at positions $\\mathbf{r}_1$ and $\\mathbf{r}_2$.\n\n### Step 1: Relative Vectors and Sign Conventions\nDefine the relative displacement vectors:\n$$\\mathbf{r}_{12} = \\mathbf{r}_1 - \\mathbf{r}_2 \\quad (\\text{points from atom } 2 \\to \\text{atom } 1), \\qquad \\mathbf{r}_{21} = \\mathbf{r}_2 - \\mathbf{r}_1 = -\\mathbf{r}_{12} \\quad (\\text{points from atom } 1 \\to \\text{atom } 2)$$\nwith scalar distance:\n$$r = r_{12} = r_{21} = |\\mathbf{r}_1 - \\mathbf{r}_2| = \\sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2 + (z_1 - z_2)^2}$$\nand corresponding unit vectors:\n$$\\hat{\\mathbf{r}}_{12} = \\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}}, \\qquad \\hat{\\mathbf{r}}_{21} = \\frac{\\mathbf{r}_2 - \\mathbf{r}_1}{|\\mathbf{r}_2 - \\mathbf{r}_1|} = \\frac{\\mathbf{r}_{21}}{r_{21}} = -\\hat{\\mathbf{r}}_{12}$$\n\n### Step 2: Gradient of the Interatomic Distance\nDifferentiating $r_{12} = \\bigl[(\\mathbf{r}_1 - \\mathbf{r}_2)\\cdot(\\mathbf{r}_1 - \\mathbf{r}_2)\\bigr]^{1/2}$ with respect to $\\mathbf{r}_1$ gives:\n$$\\frac{\\partial r_{12}}{\\partial x_1} = \\frac{1}{2 r_{12}} \\cdot 2(x_1 - x_2) = \\frac{x_1 - x_2}{r_{12}} \\implies \\nabla_{\\mathbf{r}_1} |\\mathbf{r}_1 - \\mathbf{r}_2| = \\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12} = -\\hat{\\mathbf{r}}_{21}$$\n*(Note on conventions: be careful with sign definitions when identifying the unit vector pointing from $1\\to 2$ vs. $2\\to 1$; always verify the physical direction! Increasing $\\mathbf{r}_1$ in the direction away from $\\mathbf{r}_2$, i.e. Along $+\\hat{\\mathbf{r}}_{12}$, increases the distance $r_{12}$, so $\\nabla_{\\mathbf{r}_1} r_{12} = +\\hat{\\mathbf{r}}_{12}$ and $\\nabla_{\\mathbf{r}_2} r_{12} = -\\hat{\\mathbf{r}}_{12} = +\\hat{\\mathbf{r}}_{21}$.)*\n\n### Step 3: Chain Rule for Any Pair Potential $v(r)$\nFor any pair potential $v(r)$, the force on atom $1$ is:\n$$\\mathbf{F}_1 = -\\nabla_{\\mathbf{r}_1} v(r) = -\\left.\\frac{dv}{dr}\\right|_{r=r_{12}} \\nabla_{\\mathbf{r}_1}|\\mathbf{r}_1 - \\mathbf{r}_2| = -\\frac{dv}{dr}\\,\\hat{\\mathbf{r}}_{12} = -\\frac{1}{r_{12}}\\frac{dv}{dr}(\\mathbf{r}_1 - \\mathbf{r}_2)$$\nand by Newton's Third Law (antisymmetry $\\hat{\\mathbf{r}}_{21} = -\\hat{\\mathbf{r}}_{12}$):\n$$\\mathbf{F}_2 = -\\nabla_{\\mathbf{r}_2} v(r) = -\\frac{dv}{dr}\\,\\hat{\\mathbf{r}}_{21} = +\\frac{dv}{dr}\\,\\hat{\\mathbf{r}}_{12} = -\\mathbf{F}_1$$\n\n- **Harmonic Bond Stretch** $v(r) = K_r(r - r_{\\text{eq}})^2$:\n $$\\frac{dv}{dr} = 2K_r(r_{12} - r_{\\text{eq}}) \\implies \\mathbf{F}_1 = -2K_r(r_{12} - r_{\\text{eq}})\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{r_{12}}, \\quad \\mathbf{F}_2 = -\\mathbf{F}_1$$\n- **Lennard-Jones + Coulomb Non-Bonded Pair**:\n $$\\frac{dv_{\\text{nb}}}{dr} = -\\frac{q_i q_j e^2}{r_{ij}^2} + \\frac{4\\epsilon_{ij}}{r_{ij}}\\left[-12\\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^{12} + 6\\left(\\frac{\\sigma_{ij}}{r_{ij}}\\right)^6\\right]$$"
       },
       {
         "id": "concept_bond_stretch_explorer",
@@ -238,13 +238,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12}$ (the unit vector pointing from atom 2 to atom 1)",
-            "text_markdown": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12}$ (the unit vector pointing from atom 2 to atom 1)"
+            "text": "$\\frac{1}{|\\mathbf{r}_1 - \\mathbf{r}_2|}$ (a scalar rather than a vector)",
+            "text_markdown": "$\\frac{1}{|\\mathbf{r}_1 - \\mathbf{r}_2|}$ (a scalar rather than a vector)"
           },
           {
             "id": "b",
-            "text": "$2(\\mathbf{r}_1 - \\mathbf{r}_2)$",
-            "text_markdown": "$2(\\mathbf{r}_1 - \\mathbf{r}_2)$"
+            "text": "$2(\\mathbf{r}_1 - \\mathbf{r}_2)$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "$2(\\mathbf{r}_1 - \\mathbf{r}_2)$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "c",
@@ -253,11 +253,11 @@
           },
           {
             "id": "d",
-            "text": "$\\frac{1}{|\\mathbf{r}_1 - \\mathbf{r}_2|}$ (a scalar rather than a vector)",
-            "text_markdown": "$\\frac{1}{|\\mathbf{r}_1 - \\mathbf{r}_2|}$ (a scalar rather than a vector)"
+            "text": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12}$ (the unit vector pointing from atom 2 to atom 1)",
+            "text_markdown": "$\\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{|\\mathbf{r}_1 - \\mathbf{r}_2|} = \\frac{\\mathbf{r}_{12}}{r_{12}} = \\hat{\\mathbf{r}}_{12}$ (the unit vector pointing from atom 2 to atom 1)"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Differentiating $r_{12} = \\sqrt{\\sum_\\alpha (r_{1,\\alpha} - r_{2,\\alpha})^2}$ with respect to $r_{1,\\alpha}$ gives $\\frac{\\partial r_{12}}{\\partial r_{1,\\alpha}} = \\frac{r_{1,\\alpha} - r_{2,\\alpha}}{r_{12}}$. Assembling the three components yields the unit vector $\\nabla_{\\mathbf{r}_1} r_{12} = \\frac{\\mathbf{r}_1 - \\mathbf{r}_2}{r_{12}} = \\hat{\\mathbf{r}}_{12}$."
       },
       {
@@ -306,7 +306,7 @@
           "concept_bond_stretch_explorer"
         ],
         "prompt_markdown": "Two atoms lie on the $x$-axis with atom $1$ at $\\mathbf{r}_1 = (2.1, 0, 0)\\text{ \u00c5}$ and atom $2$ at $\\mathbf{r}_2 = (0.5, 0, 0)\\text{ \u00c5}$. They interact via the OPLS harmonic bond potential $E_{\\text{bond}}(r) = K_r(r - r_{\\text{eq}})^2$ with $K_r = 12.5\\text{ eV/\u00c5}^2$ and $r_{\\text{eq}} = 1.2\\text{ \u00c5}$. What is the $x$-component of the force on atom $1$, $F_{1,x}$ (in $\\text{eV/\u00c5}$)? *(Include the correct algebraic sign.)*",
-        "hint_markdown": "First compute r_12 = 2.1 - 0.5 = 1.6 A. Then evaluate F_{1,x} = -2 * K_r * (r_12 - r_eq) * (x_1 - x_2) / r_12.",
+        "hint_markdown": "Calculate the bond separation $r_{12} = |\\mathbf{r}_1 - \\mathbf{r}_2|$ and evaluate the component $F_{1,x} = -2 K_r (r_{12} - r_{\\text{eq}}) \\frac{x_1 - x_2}{r_{12}}$.",
         "correct": {
           "value": -10.0,
           "tolerance": 0.05
@@ -320,7 +320,7 @@
         "difficulty": "medium",
         "taught_by": "sec_two_body_bond_stretching",
         "prompt_markdown": "In 3D space, atom $1$ is at $\\mathbf{r}_1 = (3.0, 4.0, 0.0)\\text{ \u00c5}$ and atom $2$ is at the origin $\\mathbf{r}_2 = (0.0, 0.0, 0.0)\\text{ \u00c5}$, so $r_{12} = 5.0\\text{ \u00c5}$. If $E_{\\text{bond}}(r) = K_r(r - r_{\\text{eq}})^2$ with $K_r = 10.0\\text{ eV/\u00c5}^2$ and $r_{\\text{eq}} = 4.0\\text{ \u00c5}$, what is the $y$-component of the force on atom $2$, $F_{2,y}$ (in $\\text{eV/\u00c5}$)?",
-        "hint_markdown": "First find dE/dr = 2 * 10.0 * (5.0 - 4.0) = 20.0 eV/\u00c5. Since F_2 = -F_1 = +(dE/dr) * (r_1 - r_2)/r_12, multiply 20.0 by (y_1 - y_2)/r_12 = 4.0/5.0.",
+        "hint_markdown": "Compute the radial force magnitude $dE/dr = 2 K_r (r_{12} - r_{\\text{eq}})$, project along the unit vector component $(y_1 - y_2)/r_{12}$, and recall $\\mathbf{F}_2 = -\\mathbf{F}_1$.",
         "correct": {
           "value": 16.0,
           "tolerance": 0.05
@@ -338,13 +338,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $-\\frac{1}{r}\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r^2} \\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]$ depends only on even powers of $r$ (i.e. $r^2 = |\\mathbf{r}_{12}|^2$), completely avoiding expensive square-root calls!",
-            "text_markdown": "Because $-\\frac{1}{r}\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r^2} \\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]$ depends only on even powers of $r$ (i.e. $r^2 = |\\mathbf{r}_{12}|^2$), completely avoiding expensive square-root calls!"
+            "text": "Because the Lennard-Jones potential has no repulsive core when divided by $r_{12}$.",
+            "text_markdown": "Because the Lennard-Jones potential has no repulsive core when divided by $r_{12}$."
           },
           {
             "id": "b",
-            "text": "Because the Lennard-Jones potential has no repulsive core when divided by $r_{12}$.",
-            "text_markdown": "Because the Lennard-Jones potential has no repulsive core when divided by $r_{12}$."
+            "text": "Because $-\\frac{1}{r}\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r^2} \\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]$ depends only on even powers of $r$ (i.e. $r^2 = |\\mathbf{r}_{12}|^2$), completely avoiding expensive square-root calls!",
+            "text_markdown": "Because $-\\frac{1}{r}\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r^2} \\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]$ depends only on even powers of $r$ (i.e. $r^2 = |\\mathbf{r}_{12}|^2$), completely avoiding expensive square-root calls!"
           },
           {
             "id": "c",
@@ -357,7 +357,7 @@
             "text_markdown": "Because $dv_{\\text{LJ}}/dr$ is constant for all $r_{12}$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Differentiating $v_{\\text{LJ}}(r)$ gives $-\\frac{dv_{\\text{LJ}}}{dr} = \\frac{24\\epsilon}{r}\\left[2\\left(\\frac{\\sigma}{r}\\right)^{12} - \\left(\\frac{\\sigma}{r}\\right)^6\\right]$. Combining with the $\\frac{1}{r}$ from $\\hat{\\mathbf{r}}_{12} = \\frac{\\mathbf{r}_{12}}{r}$ yields $\\mathbf{F}_1 = \\frac{24\\epsilon}{r^2}\\left[2\\left(\\frac{\\sigma^2}{r^2}\\right)^6 - \\left(\\frac{\\sigma^2}{r^2}\\right)^3\\right]\\mathbf{r}_{12}$, which requires only $r^2 = \\mathbf{r}_{12}\\cdot\\mathbf{r}_{12}$ and zero `sqrt` evaluations."
       },
       {
@@ -371,8 +371,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$",
-            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$"
+            "text": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^2}(\\mathbf{r}_i - \\mathbf{r}_j)$",
+            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^2}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           },
           {
             "id": "b",
@@ -381,8 +381,8 @@
           },
           {
             "id": "c",
-            "text": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^2}(\\mathbf{r}_i - \\mathbf{r}_j)$",
-            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^2}(\\mathbf{r}_i - \\mathbf{r}_j)$"
+            "text": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$",
+            "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           },
           {
             "id": "d",
@@ -390,7 +390,7 @@
             "text_markdown": "$\\mathbf{F}_i^{\\text{Coul}} = -\\frac{q_i q_j e^2}{r_{ij}}(\\mathbf{r}_i - \\mathbf{r}_j)$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Since $\\frac{dv_{\\text{Coul}}}{dr_{ij}} = -\\frac{q_i q_j e^2}{r_{ij}^2}$, the chain rule gives $\\mathbf{F}_i^{\\text{Coul}} = -\\frac{dv_{\\text{Coul}}}{dr_{ij}}\\frac{\\mathbf{r}_i - \\mathbf{r}_j}{r_{ij}} = +\\frac{q_i q_j e^2}{r_{ij}^3}(\\mathbf{r}_i - \\mathbf{r}_j)$. Note that when $q_i$ and $q_j$ have the same sign ($q_i q_j > 0$), $\\mathbf{F}_i^{\\text{Coul}}$ points along $+(\\mathbf{r}_i - \\mathbf{r}_j)$, repelling atom $i$ away from atom $j$ as physically required."
       },
       {
@@ -411,7 +411,7 @@
         "id": "sec_three_body_bond_bending",
         "type": "markdown_section",
         "title": "3. Three-Body Bond-Bending (Angle) Derivatives",
-        "body_markdown": "Consider three bonded atoms $1\\text{\u2013}2\\text{\u2013}3$ where **atom $2$ is the central vertex** bonded to terminal atoms $1$ and $3$. Following `Interatomic-Derivatives.pdf` (p. 2), define the two bond vectors pointing away from the central atom $2$:\n$$\\mathbf{r}_{12} = \\mathbf{r}_1 - \\mathbf{r}_2, \\qquad \\mathbf{r}_{32} = \\mathbf{r}_3 - \\mathbf{r}_2$$\nwith bond lengths $r_{12} = |\\mathbf{r}_{12}|$, $r_{32} = |\\mathbf{r}_{32}|$ and unit vectors $\\hat{\\mathbf{r}}_{12} = \\frac{\\mathbf{r}_{12}}{r_{12}}$, $\\hat{\\mathbf{r}}_{32} = \\frac{\\mathbf{r}_{32}}{r_{32}}$. The interior bond angle $\\theta_{123} \\in (0, \\pi)$ satisfies:\n$$\\cos\\theta_{123} = \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12} r_{32}} = \\hat{\\mathbf{r}}_{12}\\cdot\\hat{\\mathbf{r}}_{32}$$\n\n### Step 1: Differentiating $\\arccos(x)$\nLet $x = \\cos\\theta_{123}$. From single-variable calculus, the derivative of $\\theta = \\arccos(x)$ is:\n$$\\frac{d}{dx}\\arccos(x) = -\\frac{1}{\\sqrt{1 - x^2}} = -\\frac{1}{\\sin\\theta_{123}}$$\nTherefore, for each atom $i \\in \\{1, 2, 3\\}$, the multivariable chain rule gives:\n$$\\nabla_{\\mathbf{r}_i}\\theta_{123} = \\nabla_{\\mathbf{r}_i}\\arccos\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right) = -\\frac{1}{\\sin\\theta_{123}}\\nabla_{\\mathbf{r}_i}\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right)$$\n\n### Step 2: Quotient Rule for Terminal Atom $1$\nWhen differentiating with respect to $\\mathbf{r}_1$, notice that $\\mathbf{r}_{32} = \\mathbf{r}_3 - \\mathbf{r}_2$ and $r_{32} = |\\mathbf{r}_{32}|$ are **constant** with respect to $\\mathbf{r}_1$! Using $\\nabla_{\\mathbf{r}_1}(\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}) = \\mathbf{r}_{32}$ and $\\nabla_{\\mathbf{r}_1}\\left(\\frac{1}{r_{12}}\\right) = -\\frac{1}{r_{12}^2}\\nabla_{\\mathbf{r}_1}r_{12} = -\\frac{\\mathbf{r}_{12}}{r_{12}^3}$, the product/quotient rule yields:\n$$\\nabla_{\\mathbf{r}_1}\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right) = \\frac{1}{r_{12}}\\frac{\\mathbf{r}_{32}}{r_{32}} - \\frac{1}{r_{12}}\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right)\\frac{\\mathbf{r}_{12}}{r_{12}} = \\frac{1}{r_{12}}\\bigl(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12}\\bigr)$$\nMultiplying by $-\\frac{1}{\\sin\\theta_{123}}$ gives the exact gradient of $\\theta_{123}$ with respect to $\\mathbf{r}_1$:\n$$\\boxed{\\nabla_{\\mathbf{r}_1}\\theta_{123} = -\\frac{1}{r_{12}\\sin\\theta_{123}}\\bigl(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12}\\bigr)}$$\n\n### Step 3: Symmetry for Atom $3$ and Translational Invariance for Vertex Atom $2$\nBy interchanging indices $1 \\leftrightarrow 3$:\n$$\\boxed{\\nabla_{\\mathbf{r}_3}\\theta_{123} = -\\frac{1}{r_{32}\\sin\\theta_{123}}\\bigl(\\hat{\\mathbf{r}}_{12} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{32}\\bigr)}$$\nAnd because $\\theta_{123}$ is translationally invariant ($\\sum_{i=1}^3 \\nabla_{\\mathbf{r}_i}\\theta_{123} = \\mathbf{0}$), the central vertex gradient is obtained immediately without further differentiation:\n$$\\boxed{\\nabla_{\\mathbf{r}_2}\\theta_{123} = -\\nabla_{\\mathbf{r}_1}\\theta_{123} - \\nabla_{\\mathbf{r}_3}\\theta_{123}}$$\nFinally, for $E_{\\text{angle}}(\\theta_{123}) = K_\\theta(\\theta_{123} - \\theta_{\\text{eq}})^2$, the atomic forces are $\\mathbf{F}_i = -\\frac{dE_{\\text{angle}}}{d\\theta_{123}}\\nabla_{\\mathbf{r}_i}\\theta_{123} = -2K_\\theta(\\theta_{123} - \\theta_{\\text{eq}})\\nabla_{\\mathbf{r}_i}\\theta_{123}$.\n\n### Crucial Geometric Insight: Gram\u2013Schmidt Orthogonality\nLook closely at the vector $\\mathbf{u}_1 = \\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12} = \\hat{\\mathbf{r}}_{32} - (\\hat{\\mathbf{r}}_{32}\\cdot\\hat{\\mathbf{r}}_{12})\\hat{\\mathbf{r}}_{12}$.\n- It is the **Gram\u2013Schmidt projection** of $\\hat{\\mathbf{r}}_{32}$ perpendicular to $\\hat{\\mathbf{r}}_{12}$ in the $(1\\text{\u2013}2\\text{\u2013}3)$ plane:\n $$\\mathbf{u}_1 \\cdot \\hat{\\mathbf{r}}_{12} = \\hat{\\mathbf{r}}_{32}\\cdot\\hat{\\mathbf{r}}_{12} - \\cos\\theta_{123}(\\hat{\\mathbf{r}}_{12}\\cdot\\hat{\\mathbf{r}}_{12}) = \\cos\\theta_{123} - \\cos\\theta_{123} = 0$$\n- Its magnitude is $|\\mathbf{u}_1| = \\sqrt{|\\hat{\\mathbf{r}}_{32}|^2 - 2\\cos^2\\theta_{123} + \\cos^2\\theta_{123}} = \\sqrt{1 - \\cos^2\\theta_{123}} = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$ (just as $d\\theta = ds / r$!).\n- Consequently, **$\\mathbf{F}_1$ is strictly perpendicular to bond $\\mathbf{r}_{12}$**, and **$\\mathbf{F}_3$ is strictly perpendicular to bond $\\mathbf{r}_{32}$**! Pure angle bending never stretches or compresses the bonds at first order."
+        "body_markdown": "Consider three bonded atoms $1\\text{\u2013}2\\text{\u2013}3$ where **atom $2$ is the central vertex** bonded to terminal atoms $1$ and $3$. Define the two bond vectors pointing away from the central atom $2$:\n$$\\mathbf{r}_{12} = \\mathbf{r}_1 - \\mathbf{r}_2, \\qquad \\mathbf{r}_{32} = \\mathbf{r}_3 - \\mathbf{r}_2$$\nwith bond lengths $r_{12} = |\\mathbf{r}_{12}|$, $r_{32} = |\\mathbf{r}_{32}|$ and unit vectors $\\hat{\\mathbf{r}}_{12} = \\frac{\\mathbf{r}_{12}}{r_{12}}$, $\\hat{\\mathbf{r}}_{32} = \\frac{\\mathbf{r}_{32}}{r_{32}}$. The interior bond angle $\\theta_{123} \\in (0, \\pi)$ satisfies:\n$$\\cos\\theta_{123} = \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12} r_{32}} = \\hat{\\mathbf{r}}_{12}\\cdot\\hat{\\mathbf{r}}_{32}$$\n\n### Step 1: Differentiating $\\arccos(x)$\nLet $x = \\cos\\theta_{123}$. From single-variable calculus, the derivative of $\\theta = \\arccos(x)$ is:\n$$\\frac{d}{dx}\\arccos(x) = -\\frac{1}{\\sqrt{1 - x^2}} = -\\frac{1}{\\sin\\theta_{123}}$$\nTherefore, for each atom $i \\in \\{1, 2, 3\\}$, the multivariable chain rule gives:\n$$\\nabla_{\\mathbf{r}_i}\\theta_{123} = \\nabla_{\\mathbf{r}_i}\\arccos\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right) = -\\frac{1}{\\sin\\theta_{123}}\\nabla_{\\mathbf{r}_i}\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right)$$\n\n### Step 2: Quotient Rule for Terminal Atom $1$\nWhen differentiating with respect to $\\mathbf{r}_1$, notice that $\\mathbf{r}_{32} = \\mathbf{r}_3 - \\mathbf{r}_2$ and $r_{32} = |\\mathbf{r}_{32}|$ are **constant** with respect to $\\mathbf{r}_1$! Using $\\nabla_{\\mathbf{r}_1}(\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}) = \\mathbf{r}_{32}$ and $\\nabla_{\\mathbf{r}_1}\\left(\\frac{1}{r_{12}}\\right) = -\\frac{1}{r_{12}^2}\\nabla_{\\mathbf{r}_1}r_{12} = -\\frac{\\mathbf{r}_{12}}{r_{12}^3}$, the product/quotient rule yields:\n$$\\nabla_{\\mathbf{r}_1}\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right) = \\frac{1}{r_{12}}\\frac{\\mathbf{r}_{32}}{r_{32}} - \\frac{1}{r_{12}}\\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{r_{12}r_{32}}\\right)\\frac{\\mathbf{r}_{12}}{r_{12}} = \\frac{1}{r_{12}}\\bigl(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12}\\bigr)$$\nMultiplying by $-\\frac{1}{\\sin\\theta_{123}}$ gives the exact gradient of $\\theta_{123}$ with respect to $\\mathbf{r}_1$:\n$$\\boxed{\\nabla_{\\mathbf{r}_1}\\theta_{123} = -\\frac{1}{r_{12}\\sin\\theta_{123}}\\bigl(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12}\\bigr)}$$\n\n### Step 3: Symmetry for Atom $3$ and Translational Invariance for Vertex Atom $2$\nBy interchanging indices $1 \\leftrightarrow 3$:\n$$\\boxed{\\nabla_{\\mathbf{r}_3}\\theta_{123} = -\\frac{1}{r_{32}\\sin\\theta_{123}}\\bigl(\\hat{\\mathbf{r}}_{12} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{32}\\bigr)}$$\nAnd because $\\theta_{123}$ is translationally invariant ($\\sum_{i=1}^3 \\nabla_{\\mathbf{r}_i}\\theta_{123} = \\mathbf{0}$), the central vertex gradient is obtained immediately without further differentiation:\n$$\\boxed{\\nabla_{\\mathbf{r}_2}\\theta_{123} = -\\nabla_{\\mathbf{r}_1}\\theta_{123} - \\nabla_{\\mathbf{r}_3}\\theta_{123}}$$\nFinally, for $E_{\\text{angle}}(\\theta_{123}) = K_\\theta(\\theta_{123} - \\theta_{\\text{eq}})^2$, the atomic forces are $\\mathbf{F}_i = -\\frac{dE_{\\text{angle}}}{d\\theta_{123}}\\nabla_{\\mathbf{r}_i}\\theta_{123} = -2K_\\theta(\\theta_{123} - \\theta_{\\text{eq}})\\nabla_{\\mathbf{r}_i}\\theta_{123}$.\n\n### Crucial Geometric Insight: Gram\u2013Schmidt Orthogonality\nLook closely at the vector $\\mathbf{u}_1 = \\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12} = \\hat{\\mathbf{r}}_{32} - (\\hat{\\mathbf{r}}_{32}\\cdot\\hat{\\mathbf{r}}_{12})\\hat{\\mathbf{r}}_{12}$.\n- It is the **Gram\u2013Schmidt projection** of $\\hat{\\mathbf{r}}_{32}$ perpendicular to $\\hat{\\mathbf{r}}_{12}$ in the $(1\\text{\u2013}2\\text{\u2013}3)$ plane:\n $$\\mathbf{u}_1 \\cdot \\hat{\\mathbf{r}}_{12} = \\hat{\\mathbf{r}}_{32}\\cdot\\hat{\\mathbf{r}}_{12} - \\cos\\theta_{123}(\\hat{\\mathbf{r}}_{12}\\cdot\\hat{\\mathbf{r}}_{12}) = \\cos\\theta_{123} - \\cos\\theta_{123} = 0$$\n- Its magnitude is $|\\mathbf{u}_1| = \\sqrt{|\\hat{\\mathbf{r}}_{32}|^2 - 2\\cos^2\\theta_{123} + \\cos^2\\theta_{123}} = \\sqrt{1 - \\cos^2\\theta_{123}} = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$ (just as $d\\theta = ds / r$!).\n- Consequently, **$\\mathbf{F}_1$ is strictly perpendicular to bond $\\mathbf{r}_{12}$**, and **$\\mathbf{F}_3$ is strictly perpendicular to bond $\\mathbf{r}_{32}$**! Pure angle bending never stretches or compresses the bonds at first order."
       },
       {
         "id": "concept_three_body_angle_forces",
@@ -467,12 +467,12 @@
         "difficulty": "easy",
         "taught_by": "sec_three_body_bond_bending",
         "prompt_markdown": "When deriving $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ from $\\theta_{123} = \\arccos(\\cos\\theta_{123})$ for $\\theta_{123} \\in (0, \\pi)$, what is the derivative $\\frac{d}{dx}\\arccos(x)$ evaluated at $x = \\cos\\theta_{123}$?",
-        "hint_markdown": "Recall d/dx arccos(x) = -1 / sqrt(1 - x^2) and substitute x = cos(theta_123).",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "options": [
           {
             "id": "a",
-            "text": "$-\\frac{1}{\\sin\\theta_{123}}$",
-            "text_markdown": "$-\\frac{1}{\\sin\\theta_{123}}$"
+            "text": "$-\\frac{1}{\\cos\\theta_{123}}$",
+            "text_markdown": "$-\\frac{1}{\\cos\\theta_{123}}$"
           },
           {
             "id": "b",
@@ -486,11 +486,11 @@
           },
           {
             "id": "d",
-            "text": "$-\\frac{1}{\\cos\\theta_{123}}$",
-            "text_markdown": "$-\\frac{1}{\\cos\\theta_{123}}$"
+            "text": "$-\\frac{1}{\\sin\\theta_{123}}$",
+            "text_markdown": "$-\\frac{1}{\\sin\\theta_{123}}$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Since $\\frac{d}{dx}\\arccos(x) = -\\frac{1}{\\sqrt{1-x^2}}$ and $\\sin\\theta_{123} = +\\sqrt{1 - \\cos^2\\theta_{123}} > 0$ on $(0, \\pi)$, we have $\\frac{d\\theta_{123}}{d(\\cos\\theta_{123})} = -\\frac{1}{\\sin\\theta_{123}}$."
       },
       {
@@ -554,13 +554,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$|\\mathbf{u}_1| = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$.",
-            "text_markdown": "$|\\mathbf{u}_1| = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$."
+            "text": "$|\\mathbf{u}_1| = \\cos\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{\\cot\\theta_{123}}{r_{12}}$.",
+            "text_markdown": "$|\\mathbf{u}_1| = \\cos\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{\\cot\\theta_{123}}{r_{12}}$."
           },
           {
             "id": "b",
-            "text": "$|\\mathbf{u}_1| = \\cos\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{\\cot\\theta_{123}}{r_{12}}$.",
-            "text_markdown": "$|\\mathbf{u}_1| = \\cos\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{\\cot\\theta_{123}}{r_{12}}$."
+            "text": "$|\\mathbf{u}_1| = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$.",
+            "text_markdown": "$|\\mathbf{u}_1| = \\sin\\theta_{123}$, which cancels the $\\sin\\theta_{123}$ in the denominator so that $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$."
           },
           {
             "id": "c",
@@ -573,7 +573,7 @@
             "text_markdown": "$|\\mathbf{u}_1| = r_{12}\\sin\\theta_{123}$, so $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = 1$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Expanding $|\\mathbf{u}_1|^2 = |\\hat{\\mathbf{r}}_{32}|^2 - 2\\cos\\theta_{123}(\\hat{\\mathbf{r}}_{32}\\cdot\\hat{\\mathbf{r}}_{12}) + \\cos^2\\theta_{123}|\\hat{\\mathbf{r}}_{12}|^2 = 1 - 2\\cos^2\\theta_{123} + \\cos^2\\theta_{123} = 1 - \\cos^2\\theta_{123} = \\sin^2\\theta_{123}$, so $|\\mathbf{u}_1| = \\sin\\theta_{123}$. Dividing by $r_{12}\\sin\\theta_{123}$ leaves $|\\nabla_{\\mathbf{r}_1}\\theta_{123}| = \\frac{1}{r_{12}}$."
       },
       {
@@ -590,8 +590,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ points inward toward bond $\\mathbf{r}_{32}$ (which decreases $\\theta_{123}$), so multiplying by $-1$ makes $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ point outward away from bond $\\mathbf{r}_{32}$ (the direction that increases $\\theta_{123}$).",
-            "text_markdown": "Because $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ points inward toward bond $\\mathbf{r}_{32}$ (which decreases $\\theta_{123}$), so multiplying by $-1$ makes $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ point outward away from bond $\\mathbf{r}_{32}$ (the direction that increases $\\theta_{123}$)."
+            "text": "Because $\\sin\\theta_{123}$ is negative for all acute and obtuse bond angles.",
+            "text_markdown": "Because $\\sin\\theta_{123}$ is negative for all acute and obtuse bond angles."
           },
           {
             "id": "b",
@@ -600,8 +600,8 @@
           },
           {
             "id": "c",
-            "text": "Because $\\sin\\theta_{123}$ is negative for all acute and obtuse bond angles.",
-            "text_markdown": "Because $\\sin\\theta_{123}$ is negative for all acute and obtuse bond angles."
+            "text": "Because $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ points inward toward bond $\\mathbf{r}_{32}$ (which decreases $\\theta_{123}$), so multiplying by $-1$ makes $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ point outward away from bond $\\mathbf{r}_{32}$ (the direction that increases $\\theta_{123}$).",
+            "text_markdown": "Because $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ points inward toward bond $\\mathbf{r}_{32}$ (which decreases $\\theta_{123}$), so multiplying by $-1$ makes $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ point outward away from bond $\\mathbf{r}_{32}$ (the direction that increases $\\theta_{123}$)."
           },
           {
             "id": "d",
@@ -609,7 +609,7 @@
             "text_markdown": "Because the vector points perpendicular to the (1-2-3) plane."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "The vector $\\mathbf{u}_1 = \\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12}$ has a positive dot product with $\\hat{\\mathbf{r}}_{32}$ ($\\mathbf{u}_1\\cdot\\hat{\\mathbf{r}}_{32} = \\sin^2\\theta_{123} > 0$), meaning $\\mathbf{u}_1$ points *inward* toward atom $3$ (closing the angle). Since the gradient $\\nabla_{\\mathbf{r}_1}\\theta_{123}$ must point in the direction of steepest *increase* of $\\theta_{123}$ (opening the angle away from atom $3$), the minus sign from $\\frac{d}{dx}\\arccos(x) = -\\frac{1}{\\sin\\theta}$ flips $\\mathbf{u}_1$ outward."
       },
       {
@@ -674,8 +674,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Both the numerator vector $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ and the denominator $\\sin\\theta_{123}$ vanish simultaneously ($0/0$ indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet.",
-            "text_markdown": "Both the numerator vector $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ and the denominator $\\sin\\theta_{123}$ vanish simultaneously ($0/0$ indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet."
+            "text": "The bond lengths $r_{12}$ and $r_{32}$ vanish at $\\theta = 180^\\circ$.",
+            "text_markdown": "The bond lengths $r_{12}$ and $r_{32}$ vanish at $\\theta = 180^\\circ$."
           },
           {
             "id": "b",
@@ -689,18 +689,18 @@
           },
           {
             "id": "d",
-            "text": "The bond lengths $r_{12}$ and $r_{32}$ vanish at $\\theta = 180^\\circ$.",
-            "text_markdown": "The bond lengths $r_{12}$ and $r_{32}$ vanish at $\\theta = 180^\\circ$."
+            "text": "Both the numerator vector $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ and the denominator $\\sin\\theta_{123}$ vanish simultaneously ($0/0$ indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet.",
+            "text_markdown": "Both the numerator vector $(\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\,\\hat{\\mathbf{r}}_{12})$ and the denominator $\\sin\\theta_{123}$ vanish simultaneously ($0/0$ indeterminacy) because the bending plane is no longer uniquely defined for a collinear triplet."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "At $\\theta_{123} = \\pi$, $\\hat{\\mathbf{r}}_{32} = -\\hat{\\mathbf{r}}_{12}$ and $\\cos\\theta_{123} = -1$, so $\\hat{\\mathbf{r}}_{32} - \\cos\\theta_{123}\\hat{\\mathbf{r}}_{12} = \\mathbf{0}$ while $\\sin\\theta_{123} = 0$, creating a $0/0$ numerical division in floating-point arithmetic. Geometrically, a collinear molecule can bend in *any* plane containing the molecular axis, so $\\theta_{123}$ has a conical cusp unless regularized (or parameterized in $\\cos\\theta$)."
       },
       {
         "id": "sec_four_body_torsion_blondel_karplus",
         "type": "markdown_section",
         "title": "4. Four-Body Torsion (Dihedral) Potentials & The Blondel\u2013Karplus Formula",
-        "body_markdown": "A **torsion (dihedral) angle** $\\phi$ requires a chain of four bonded atoms $1\\text{\u2013}2\\text{\u2013}3\\text{\u2013}4$ at positions $\\mathbf{r}_1, \\mathbf{r}_2, \\mathbf{r}_3, \\mathbf{r}_4$. In OPLS-AA (`Interatomic-Derivatives.pdf`, p. 1), the torsion potential is expanded as a truncated Fourier series:\n$$E(\\phi) = \\sum_{n=1}^{3} \\frac{V_n}{2}\\bigl(1 + \\cos(n\\phi + f_n)\\bigr)$$\n(often written with phase offsets $f_1=0, f_2=\\pi, f_3=0$ so that $E(\\phi) = \\frac{V_1}{2}(1+\\cos\\phi) + \\frac{V_2}{2}(1-\\cos 2\\phi) + \\frac{V_3}{2}(1+\\cos 3\\phi)$). Differentiating with respect to $\\phi$ yields the scalar torsional torque:\n$$\\frac{dE}{d\\phi} = -\\sum_{n=1}^{3} \\frac{n V_n}{2}\\sin(n\\phi + f_n)$$\n\n### Step 1: Plane Normal Vectors $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$\nThe torsion angle $\\phi$ is defined as the angle between the **$(1\\text{\u2013}2\\text{\u2013}3)$ plane** and the **$(2\\text{\u2013}3\\text{\u2013}4)$ plane**, which intersect along the central bond connecting atoms $2$ and $3$. Using the relative bond vectors $\\mathbf{r}_{ij} = \\mathbf{r}_i - \\mathbf{r}_j$ (`Interatomic-Derivatives.pdf`, p. 2), the (unnormalized) normal vectors to the two planes are:\n$$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}, \\qquad \\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$$\nwith magnitudes $n_{123} = |\\mathbf{n}_{123}| = r_{12}r_{32}\\sin\\theta_{123}$ and $n_{432} = |\\mathbf{n}_{432}| = r_{43}r_{23}\\sin\\theta_{432}$, where $r_{23} = |\\mathbf{r}_{23}| = |\\mathbf{r}_{32}|$. The torsion angle satisfies:\n$$\\cos\\phi = -\\frac{\\mathbf{n}_{123}\\cdot\\mathbf{n}_{432}}{|\\mathbf{n}_{123}|\\,|\\mathbf{n}_{432}|}$$\n\n### Step 2: Why Naive $\\arccos(\\cos\\phi)$ Differentiation Fails Catastrophically\nUnlike a 3-body bond angle $\\theta_{123}$ (which stays near $\\theta_{\\text{eq}} \\approx 109.5^\\circ$ and never crosses $0^\\circ$ or $180^\\circ$ in normal covalent bonds), a dihedral angle $\\phi$ **routinely rotates through $\\phi = 0^\\circ$ (*cis*/eclipsed) and $\\phi = \\pm 180^\\circ$ (*trans*/anti)**!\n- If you naively apply $\\nabla_{\\mathbf{r}_i}\\phi = -\\frac{1}{\\sin\\phi}\\nabla_{\\mathbf{r}_i}(\\cos\\phi)$, the factor $\\frac{1}{\\sin\\phi}$ **blows up to $\\pm\\infty$** at $\\phi = 0^\\circ$ and $\\phi = 180^\\circ$ (where all four atoms are coplanar and $\\sin\\phi = 0$), even though the physical force at a planar configuration is completely smooth and finite!\n\n### Step 3: The Singularity-Free Blondel\u2013Karplus Equations (1996)\nBlondel and Karplus (*J. Comp. Chem.* **17**, 1132, 1996; Eq. 27 on p. 3 of `Interatomic-Derivatives.pdf`) proved that by expressing $\\nabla_{\\mathbf{r}_i}\\phi$ directly in terms of the plane normals $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$, the $1/\\sin\\phi$ singularity cancels analytically! In our handout's notation:\n$$\\boxed{\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}}, \\qquad \\boxed{\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}}$$\n$$\\boxed{\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi + \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} - \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}}$$\n$$\\boxed{\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi - \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} + \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}}$$\n\n### Physical & Geometric Properties of the Blondel\u2013Karplus Gradients\n1. **No $1/\\sin\\phi$ singularity:** $\\nabla_{\\mathbf{r}_1}\\phi$ depends *only* on $r_{23}$ and $\\mathbf{n}_{123}$, which remain non-zero for all $\\phi \\in [-\\pi, \\pi]$ as long as the 3-body bond angle $\\theta_{123} \\notin \\{0, \\pi\\}$.\n2. **Pure out-of-plane terminal forces:** $\\nabla_{\\mathbf{r}_1}\\phi$ is parallel to $\\mathbf{n}_{123}$ (perpendicular to the $1\\text{\u2013}2\\text{\u2013}3$ plane), with magnitude:\n $$|\\nabla_{\\mathbf{r}_1}\\phi| = \\frac{r_{23}}{n_{123}} = \\frac{r_{23}}{r_{12}r_{23}\\sin\\theta_{123}} = \\frac{1}{r_{12}\\sin\\theta_{123}} = \\frac{1}{d_1}$$\n where $d_1 = r_{12}\\sin\\theta_{123}$ is the perpendicular lever-arm distance of atom $1$ from the central rotation axis $\\mathbf{r}_{23}$!\n3. **Exact Translational Invariance:** Adding the four equations together, the $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ and $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ projection terms cancel in pairs:\n $$\\nabla_{\\mathbf{r}_1}\\phi + \\nabla_{\\mathbf{r}_2}\\phi + \\nabla_{\\mathbf{r}_3}\\phi + \\nabla_{\\mathbf{r}_4}\\phi = \\mathbf{0} \\implies \\mathbf{F}_1 + \\mathbf{F}_2 + \\mathbf{F}_3 + \\mathbf{F}_4 = \\mathbf{0}$$"
+        "body_markdown": "A **torsion (dihedral) angle** $\\phi$ requires a chain of four bonded atoms $1\\text{\u2013}2\\text{\u2013}3\\text{\u2013}4$ at positions $\\mathbf{r}_1, \\mathbf{r}_2, \\mathbf{r}_3, \\mathbf{r}_4$. In standard molecular mechanics force fields (such as OPLS-AA), the torsion potential is expanded as a truncated Fourier series:\n$$E(\\phi) = \\sum_{n=1}^{3} \\frac{V_n}{2}\\bigl(1 + \\cos(n\\phi + f_n)\\bigr)$$\n(often written with phase offsets $f_1=0, f_2=\\pi, f_3=0$ so that $E(\\phi) = \\frac{V_1}{2}(1+\\cos\\phi) + \\frac{V_2}{2}(1-\\cos 2\\phi) + \\frac{V_3}{2}(1+\\cos 3\\phi)$). Differentiating with respect to $\\phi$ yields the scalar torsional torque:\n$$\\frac{dE}{d\\phi} = -\\sum_{n=1}^{3} \\frac{n V_n}{2}\\sin(n\\phi + f_n)$$\n\n### Step 1: Plane Normal Vectors $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$\nThe torsion angle $\\phi$ is defined as the angle between the **$(1\\text{\u2013}2\\text{\u2013}3)$ plane** and the **$(2\\text{\u2013}3\\text{\u2013}4)$ plane**, which intersect along the central bond connecting atoms $2$ and $3$. Using the relative bond vectors $\\mathbf{r}_{ij} = \\mathbf{r}_i - \\mathbf{r}_j$, the (unnormalized) normal vectors to the two planes are:\n$$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}, \\qquad \\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$$\nwith magnitudes $n_{123} = |\\mathbf{n}_{123}| = r_{12}r_{32}\\sin\\theta_{123}$ and $n_{432} = |\\mathbf{n}_{432}| = r_{43}r_{23}\\sin\\theta_{432}$, where $r_{23} = |\\mathbf{r}_{23}| = |\\mathbf{r}_{32}|$. The torsion angle satisfies:\n$$\\cos\\phi = -\\frac{\\mathbf{n}_{123}\\cdot\\mathbf{n}_{432}}{|\\mathbf{n}_{123}|\\,|\\mathbf{n}_{432}|}$$\n\n### Step 2: Why Naive $\\arccos(\\cos\\phi)$ Differentiation Fails Catastrophically\nUnlike a 3-body bond angle $\\theta_{123}$ (which stays near $\\theta_{\\text{eq}} \\approx 109.5^\\circ$ and never crosses $0^\\circ$ or $180^\\circ$ in normal covalent bonds), a dihedral angle $\\phi$ **routinely rotates through $\\phi = 0^\\circ$ (*cis*/eclipsed) and $\\phi = \\pm 180^\\circ$ (*trans*/anti)**!\n- If you naively apply $\\nabla_{\\mathbf{r}_i}\\phi = -\\frac{1}{\\sin\\phi}\\nabla_{\\mathbf{r}_i}(\\cos\\phi)$, the factor $\\frac{1}{\\sin\\phi}$ **blows up to $\\pm\\infty$** at $\\phi = 0^\\circ$ and $\\phi = 180^\\circ$ (where all four atoms are coplanar and $\\sin\\phi = 0$), even though the physical force at a planar configuration is completely smooth and finite!\n\n### Step 3: The Singularity-Free Blondel\u2013Karplus Equations (1996)\nBlondel and Karplus (*J. Comp. Chem.* **17**, 1132, 1996) proved that by expressing $\\nabla_{\\mathbf{r}_i}\\phi$ directly in terms of the plane normals $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$, the $1/\\sin\\phi$ singularity cancels analytically! In standard notation:\n$$\\boxed{\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}}, \\qquad \\boxed{\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}}$$\n$$\\boxed{\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi + \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} - \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}}$$\n$$\\boxed{\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi - \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} + \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}}$$\n\n### Physical & Geometric Properties of the Blondel\u2013Karplus Gradients\n1. **No $1/\\sin\\phi$ singularity:** $\\nabla_{\\mathbf{r}_1}\\phi$ depends *only* on $r_{23}$ and $\\mathbf{n}_{123}$, which remain non-zero for all $\\phi \\in [-\\pi, \\pi]$ as long as the 3-body bond angle $\\theta_{123} \\notin \\{0, \\pi\\}$.\n2. **Pure out-of-plane terminal forces:** $\\nabla_{\\mathbf{r}_1}\\phi$ is parallel to $\\mathbf{n}_{123}$ (perpendicular to the $1\\text{\u2013}2\\text{\u2013}3$ plane), with magnitude:\n $$|\\nabla_{\\mathbf{r}_1}\\phi| = \\frac{r_{23}}{n_{123}} = \\frac{r_{23}}{r_{12}r_{23}\\sin\\theta_{123}} = \\frac{1}{r_{12}\\sin\\theta_{123}} = \\frac{1}{d_1}$$\n where $d_1 = r_{12}\\sin\\theta_{123}$ is the perpendicular lever-arm distance of atom $1$ from the central rotation axis $\\mathbf{r}_{23}$!\n3. **Exact Translational Invariance:** Adding the four equations together, the $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ and $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ projection terms cancel in pairs:\n $$\\nabla_{\\mathbf{r}_1}\\phi + \\nabla_{\\mathbf{r}_2}\\phi + \\nabla_{\\mathbf{r}_3}\\phi + \\nabla_{\\mathbf{r}_4}\\phi = \\mathbf{0} \\implies \\mathbf{F}_1 + \\mathbf{F}_2 + \\mathbf{F}_3 + \\mathbf{F}_4 = \\mathbf{0}$$"
       },
       {
         "id": "concept_opls_dihedral_torsion",
@@ -808,18 +808,18 @@
         "question_type": "single_select",
         "difficulty": "easy",
         "taught_by": "sec_four_body_torsion_blondel_karplus",
-        "prompt_markdown": "In the 4-atom chain $1\\text{\u2013}2\\text{\u2013}3\\text{\u2013}4$ (`Interatomic-Derivatives.pdf`, p. 2), how are the unnormalized plane normal vectors $\\mathbf{n}_{123}$ (for the $1\\text{\u2013}2\\text{\u2013}3$ plane) and $\\mathbf{n}_{432}$ (for the $4\\text{\u2013}3\\text{\u2013}2$ plane) defined in terms of relative bond vectors $\\mathbf{r}_{ij} = \\mathbf{r}_i - \\mathbf{r}_j$?",
-        "hint_markdown": "Check the cross products of the two bond vectors sharing vertex 2 (for 1-2-3) and sharing vertex 3 (for 4-3-2) on page 2 of the handout.",
+        "prompt_markdown": "In the 4-atom chain $1\\text{\u2013}2\\text{\u2013}3\\text{\u2013}4$, how are the unnormalized plane normal vectors $\\mathbf{n}_{123}$ (for the $1\\text{\u2013}2\\text{\u2013}3$ plane) and $\\mathbf{n}_{432}$ (for the $4\\text{\u2013}3\\text{\u2013}2$ plane) defined in terms of relative bond vectors $\\mathbf{r}_{ij} = \\mathbf{r}_i - \\mathbf{r}_j$?",
+        "hint_markdown": "Check the cross products of the two bond vectors sharing vertex 2 (for 1-2-3) and sharing vertex 3 (for 4-3-2).",
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$",
-            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$"
+            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\cdot \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\cdot \\mathbf{r}_{23}$",
+            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\cdot \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\cdot \\mathbf{r}_{23}$"
           },
           {
             "id": "b",
-            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\cdot \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\cdot \\mathbf{r}_{23}$",
-            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\cdot \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\cdot \\mathbf{r}_{23}$"
+            "text": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$",
+            "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$"
           },
           {
             "id": "c",
@@ -832,7 +832,7 @@
             "text_markdown": "$\\mathbf{n}_{123} = \\mathbf{r}_{14} \\times \\mathbf{r}_{23}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{12} \\times \\mathbf{r}_{43}$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "A vector normal to the plane containing three atoms is given by the cross product of two bond vectors lying in that plane: $\\mathbf{n}_{123} = \\mathbf{r}_{12} \\times \\mathbf{r}_{32}$ for the $(1\\text{\u2013}2\\text{\u2013}3)$ plane and $\\mathbf{n}_{432} = \\mathbf{r}_{43} \\times \\mathbf{r}_{23}$ for the $(4\\text{\u2013}3\\text{\u2013}2)$ plane."
       },
       {
@@ -849,8 +849,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Dihedral angles frequently pass through planar cis ($\\phi = 0$) and trans ($\\phi = \\pi$) conformations where $\\sin\\phi = 0$, causing $-1/\\sin\\phi$ to divide by zero; Blondel-Karplus cancels $\\sin\\phi$ analytically by expressing gradients directly via $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$.",
-            "text_markdown": "Dihedral angles frequently pass through planar cis ($\\phi = 0$) and trans ($\\phi = \\pi$) conformations where $\\sin\\phi = 0$, causing $-1/\\sin\\phi$ to divide by zero; Blondel-Karplus cancels $\\sin\\phi$ analytically by expressing gradients directly via $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$."
+            "text": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives.",
+            "text_markdown": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives."
           },
           {
             "id": "b",
@@ -859,8 +859,8 @@
           },
           {
             "id": "c",
-            "text": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives.",
-            "text_markdown": "Blondel-Karplus approximates the torsion force using finite differences instead of exact derivatives."
+            "text": "Dihedral angles frequently pass through planar cis ($\\phi = 0$) and trans ($\\phi = \\pi$) conformations where $\\sin\\phi = 0$, causing $-1/\\sin\\phi$ to divide by zero; Blondel-Karplus cancels $\\sin\\phi$ analytically by expressing gradients directly via $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$.",
+            "text_markdown": "Dihedral angles frequently pass through planar cis ($\\phi = 0$) and trans ($\\phi = \\pi$) conformations where $\\sin\\phi = 0$, causing $-1/\\sin\\phi$ to divide by zero; Blondel-Karplus cancels $\\sin\\phi$ analytically by expressing gradients directly via $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$."
           },
           {
             "id": "d",
@@ -868,7 +868,7 @@
             "text_markdown": "The plane normals $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ vanish at $\\phi = 0$ and $\\phi = \\pi$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "At $\\phi = 0$ (*cis*) and $\\phi = \\pi$ (*trans*), the two planes $(1\\text{\u2013}2\\text{\u2013}3)$ and $(2\\text{\u2013}3\\text{\u2013}4)$ are coplanar: the normals $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ are still well-defined and non-zero, but $\\sin\\phi = 0$. Naive $\\arccos$ differentiation divides by $\\sin\\phi = 0$, whereas the Blondel\u2013Karplus expressions $\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ contain only $n_{123}^2$ and $n_{432}^2$ in the denominator."
       },
       {
@@ -877,13 +877,13 @@
         "question_type": "single_select",
         "difficulty": "medium",
         "taught_by": "sec_four_body_torsion_blondel_karplus",
-        "prompt_markdown": "According to Equation 27 of Blondel and Karplus (`Interatomic-Derivatives.pdf`, p. 3), what are the exact analytical torsion gradients $\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_4}\\phi$ on the two terminal atoms $1$ and $4$?",
-        "hint_markdown": "Look at the first two lines on page 3 of Interatomic-Derivatives.pdf.",
+        "prompt_markdown": "According to Equation 27 of Blondel and Karplus, p. 3), what are the exact analytical torsion gradients $\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_4}\\phi$ on the two terminal atoms $1$ and $4$?",
+        "hint_markdown": "Recall that the gradient with respect to terminal atom $\\mathbf{r}_1$ is normal to the $1-2-3$ plane and scaled inversely by bond length and bond angle sine.",
         "options": [
           {
             "id": "a",
-            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$",
-            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$"
+            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{432}$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{432}$"
           },
           {
             "id": "b",
@@ -897,12 +897,12 @@
           },
           {
             "id": "d",
-            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{432}$",
-            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = -\\frac{1}{\\sin\\phi}\\mathbf{n}_{432}$"
+            "text": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$"
           }
         ],
-        "correct": "a",
-        "rationale_markdown": "Directly from page 3 of the handout, $\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$."
+        "correct": "d",
+        "rationale_markdown": "By direct differentiation of the dihedral formula, $\\nabla_{\\mathbf{r}_1}\\phi = \\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}$ and $\\nabla_{\\mathbf{r}_4}\\phi = \\frac{r_{23}}{n_{432}^2}\\mathbf{n}_{432}$."
       },
       {
         "id": "q27_terminal_torsion_force_lever_arm",
@@ -911,7 +911,7 @@
         "difficulty": "medium",
         "taught_by": "sec_four_body_torsion_blondel_karplus",
         "prompt_markdown": "Since $n_{123} = |\\mathbf{r}_{12} \\times \\mathbf{r}_{32}| = r_{12}r_{23}\\sin\\theta_{123}$, what does the Euclidean magnitude $|\\nabla_{\\mathbf{r}_1}\\phi| = \\left|\\frac{r_{23}}{n_{123}^2}\\mathbf{n}_{123}\\right| = \\frac{r_{23}}{n_{123}}$ simplify to, and what is its physical meaning?",
-        "hint_markdown": "Substitute n_123 = r_12 * r_23 * sin(theta_123) into r_23 / n_123 and cancel r_23.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "options": [
           {
             "id": "a",
@@ -957,18 +957,18 @@
         "question_type": "single_select",
         "difficulty": "medium",
         "taught_by": "sec_four_body_torsion_blondel_karplus",
-        "prompt_markdown": "Inspect the Blondel\u2013Karplus expressions for the two central atoms $2$ and $3$ (`Interatomic-Derivatives.pdf`, p. 3):\n$$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi + \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} - \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$$\n$$\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi - \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} + \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$$\nWhich vector space do all four gradients $\\nabla_{\\mathbf{r}_1}\\phi, \\nabla_{\\mathbf{r}_2}\\phi, \\nabla_{\\mathbf{r}_3}\\phi, \\nabla_{\\mathbf{r}_4}\\phi$ lie in, and what is their vector sum $\\sum_{i=1}^4 \\nabla_{\\mathbf{r}_i}\\phi$?",
+        "prompt_markdown": "Inspect the Blondel\u2013Karplus expressions for the two central atoms $2$ and $3$:\n$$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi + \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} - \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$$\n$$\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi - \\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} + \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$$\nWhich vector space do all four gradients $\\nabla_{\\mathbf{r}_1}\\phi, \\nabla_{\\mathbf{r}_2}\\phi, \\nabla_{\\mathbf{r}_3}\\phi, \\nabla_{\\mathbf{r}_4}\\phi$ lie in, and what is their vector sum $\\sum_{i=1}^4 \\nabla_{\\mathbf{r}_i}\\phi$?",
         "hint_markdown": "Notice which vectors appear on the right-hand side of all four Blondel-Karplus formulas (only n_123 and n_432!), and add the four equations together.",
         "options": [
           {
             "id": "a",
-            "text": "Every gradient is a linear combination solely of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ (hence strictly perpendicular to the central bond vector $\\mathbf{r}_{23}$!), and their sum is identically $0$.",
-            "text_markdown": "Every gradient is a linear combination solely of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ (hence strictly perpendicular to the central bond vector $\\mathbf{r}_{23}$!), and their sum is identically $0$."
+            "text": "The central atom gradients lie parallel to the central bond $\\mathbf{r}_{23}$, and their sum equals $\\mathbf{r}_{23}$.",
+            "text_markdown": "The central atom gradients lie parallel to the central bond $\\mathbf{r}_{23}$, and their sum equals $\\mathbf{r}_{23}$."
           },
           {
             "id": "b",
-            "text": "The central atom gradients lie parallel to the central bond $\\mathbf{r}_{23}$, and their sum equals $\\mathbf{r}_{23}$.",
-            "text_markdown": "The central atom gradients lie parallel to the central bond $\\mathbf{r}_{23}$, and their sum equals $\\mathbf{r}_{23}$."
+            "text": "Every gradient is a linear combination solely of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ (hence strictly perpendicular to the central bond vector $\\mathbf{r}_{23}$!), and their sum is identically $0$.",
+            "text_markdown": "Every gradient is a linear combination solely of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$ (hence strictly perpendicular to the central bond vector $\\mathbf{r}_{23}$!), and their sum is identically $0$."
           },
           {
             "id": "c",
@@ -981,7 +981,7 @@
             "text_markdown": "The sum of the four gradients equals $\\frac{\\mathbf{n}_{123} + \\mathbf{n}_{432}}{r_{23}}$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Because both $\\mathbf{n}_{123} = \\mathbf{r}_{12}\\times\\mathbf{r}_{32}$ and $\\mathbf{n}_{432} = \\mathbf{r}_{43}\\times\\mathbf{r}_{23}$ are cross products with $\\mathbf{r}_{23} = -\\mathbf{r}_{32}$, both normals are strictly orthogonal to the central bond $\\mathbf{r}_{23}$. Since all four gradients are linear combinations of $\\mathbf{n}_{123}$ and $\\mathbf{n}_{432}$, **none** of the four dihedral forces has any component along the central bond $\\mathbf{r}_{23}$, and adding the four equations cancels all terms to give $\\sum_{i=1}^4 \\nabla_{\\mathbf{r}_i}\\phi = \\mathbf{0}$."
       },
       {
@@ -995,8 +995,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ (so $\\mathbf{F}_2 = -\\mathbf{F}_1$ and $\\mathbf{F}_3 = -\\mathbf{F}_4$)",
-            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ (so $\\mathbf{F}_2 = -\\mathbf{F}_1$ and $\\mathbf{F}_3 = -\\mathbf{F}_4$)"
+            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = +\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = +\\nabla_{\\mathbf{r}_4}\\phi$",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = +\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = +\\nabla_{\\mathbf{r}_4}\\phi$"
           },
           {
             "id": "b",
@@ -1005,8 +1005,8 @@
           },
           {
             "id": "c",
-            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = +\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = +\\nabla_{\\mathbf{r}_4}\\phi$",
-            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = +\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = +\\nabla_{\\mathbf{r}_4}\\phi$"
+            "text": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ (so $\\mathbf{F}_2 = -\\mathbf{F}_1$ and $\\mathbf{F}_3 = -\\mathbf{F}_4$)",
+            "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ (so $\\mathbf{F}_2 = -\\mathbf{F}_1$ and $\\mathbf{F}_3 = -\\mathbf{F}_4$)"
           },
           {
             "id": "d",
@@ -1014,7 +1014,7 @@
             "text_markdown": "$\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "When $\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32} = 0$ and $\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23} = 0$, the second and third projection terms in $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$ vanish identically, leaving $\\nabla_{\\mathbf{r}_2}\\phi = -\\nabla_{\\mathbf{r}_1}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi = -\\nabla_{\\mathbf{r}_4}\\phi$. Physically, when $\\mathbf{r}_{12} \\perp \\mathbf{r}_{23}$, the pair $(1, 2)$ forms a pure force couple perpendicular to the $(1\\text{\u2013}2\\text{\u2013}3)$ plane without needing any lever-arm transfer to atom $3$."
       },
       {
@@ -1066,8 +1066,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The even-order Taylor terms ($\\delta^2 \\frac{d^2E}{dx^2}$) cancel out upon subtraction, leaving a leading truncation error of $\\mathcal{O}(\\delta^2)$ instead of $\\mathcal{O}(\\delta)$.",
-            "text_markdown": "The even-order Taylor terms ($\\delta^2 \\frac{d^2E}{dx^2}$) cancel out upon subtraction, leaving a leading truncation error of $\\mathcal{O}(\\delta^2)$ instead of $\\mathcal{O}(\\delta)$."
+            "text": "The third derivative $d^3E/dx^3$ is identically zero for all interatomic potentials.",
+            "text_markdown": "The third derivative $d^3E/dx^3$ is identically zero for all interatomic potentials."
           },
           {
             "id": "b",
@@ -1081,11 +1081,11 @@
           },
           {
             "id": "d",
-            "text": "The third derivative $d^3E/dx^3$ is identically zero for all interatomic potentials.",
-            "text_markdown": "The third derivative $d^3E/dx^3$ is identically zero for all interatomic potentials."
+            "text": "The even-order Taylor terms ($\\delta^2 \\frac{d^2E}{dx^2}$) cancel out upon subtraction, leaving a leading truncation error of $\\mathcal{O}(\\delta^2)$ instead of $\\mathcal{O}(\\delta)$.",
+            "text_markdown": "The even-order Taylor terms ($\\delta^2 \\frac{d^2E}{dx^2}$) cancel out upon subtraction, leaving a leading truncation error of $\\mathcal{O}(\\delta^2)$ instead of $\\mathcal{O}(\\delta)$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In $E(x+\\delta) - E(x-\\delta) = 2\\delta E'(x) + \\frac{2\\delta^3}{3!}E'''(x) + \\mathcal{O}(\\delta^5)$, all even powers of $\\delta$ (in particular $\\frac{\\delta^2}{2}E''(x)$) cancel identically. Dividing by $2\\delta$ gives an $\\mathcal{O}(\\delta^2)$ truncation error."
       },
       {
@@ -1148,17 +1148,17 @@
           "concept_finite_difference_verification"
         ],
         "prompt_markdown": "You implement the Blondel\u2013Karplus dihedral force routine and run a central finite-difference gradient check across $\\delta \\in [10^{-8}, 10^{-2}]\\text{ \u00c5}$. For atoms $1$ and $4$, the relative error drops to $10^{-10}$ at $\\delta = 10^{-5}\\text{ \u00c5}$, but for atoms $2$ and $3$, the relative error stays flat at $0.38$ across all $\\delta \\in [10^{-7}, 10^{-3}]\\text{ \u00c5}$. What is the most likely diagnosis?",
-        "hint_markdown": "Compare which terms appear in nabla_{r_2} phi and nabla_{r_3} phi on page 3 of the handout that do NOT appear in nabla_{r_1} phi and nabla_{r_4} phi.",
+        "hint_markdown": "Compare which terms appear in nabla_{r_2} phi and nabla_{r_3} phi that do NOT appear in nabla_{r_1} phi and nabla_{r_4} phi.",
         "options": [
           {
             "id": "a",
-            "text": "There is an algebraic or sign error in the internal-atom projection terms $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ or $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ that only enter $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$.",
-            "text_markdown": "There is an algebraic or sign error in the internal-atom projection terms $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ or $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ that only enter $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$."
+            "text": "The step size $\\delta = 10^{-5}\\text{ \u00c5}$ is too small for internal atoms.",
+            "text_markdown": "The step size $\\delta = 10^{-5}\\text{ \u00c5}$ is too small for internal atoms."
           },
           {
             "id": "b",
-            "text": "The step size $\\delta = 10^{-5}\\text{ \u00c5}$ is too small for internal atoms.",
-            "text_markdown": "The step size $\\delta = 10^{-5}\\text{ \u00c5}$ is too small for internal atoms."
+            "text": "There is an algebraic or sign error in the internal-atom projection terms $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ or $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ that only enter $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$.",
+            "text_markdown": "There is an algebraic or sign error in the internal-atom projection terms $\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123}$ or $\\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}$ that only enter $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$."
           },
           {
             "id": "c",
@@ -1171,7 +1171,7 @@
             "text_markdown": "Central finite differencing cannot be applied to internal atoms of a dihedral."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "If $\\frac{dE}{d\\phi}$, $\\mathbf{n}_{123}$, or $\\mathbf{n}_{432}$ were wrong, the forces on terminal atoms $1$ and $4$ would also fail the finite-difference test. Passing to $10^{-10}$ on atoms $1$ and $4$ while plateauing at $\\mathcal{O}(1)$ on atoms $2$ and $3$ pinpoints the bug to the projection terms $\\pm \\left(\\frac{\\mathbf{r}_{12}\\cdot\\mathbf{r}_{32}}{n_{123}^2 r_{23}}\\mathbf{n}_{123} - \\frac{\\mathbf{r}_{43}\\cdot\\mathbf{r}_{23}}{n_{432}^2 r_{23}}\\mathbf{n}_{432}\\right)$ unique to $\\nabla_{\\mathbf{r}_2}\\phi$ and $\\nabla_{\\mathbf{r}_3}\\phi$."
       },
       {
@@ -1198,7 +1198,7 @@
           "sec_three_body_bond_bending",
           "sec_four_body_torsion_blondel_karplus"
         ],
-        "prompt_markdown": "Synthesizing all three covalent bonded derivative derivations from `Interatomic-Derivatives.pdf`, which of the following geometric statements about the analytical forces are **exact identities** for every non-degenerate atomic configuration? *(Select all that apply.)*",
+        "prompt_markdown": "Synthesizing all three covalent bonded derivative derivations for bonded angle and dihedral geometry, which of the following geometric statements about the analytical forces are **exact identities** for every non-degenerate atomic configuration? *(Select all that apply.)*",
         "hint_markdown": "Check the direction of 2-body bond forces, 3-body terminal angle forces, 4-body terminal dihedral forces, and the sum of forces for each interaction.",
         "options": [
           {
@@ -1238,13 +1238,13 @@
           "sec_intro_why_analytical_forces",
           "sec_two_body_bond_stretching"
         ],
-        "prompt_markdown": "In the OPLS-AA energy expression on page 1 of `Interatomic-Derivatives.pdf`, why are non-bonded Coulomb and Lennard-Jones interactions excluded between directly bonded ($1\\text{\u2013}2$) and angle-sharing ($1\\text{\u2013}3$) atom pairs (and scaled by $0.5$ for $1\\text{\u2013}4$ dihedral pairs)?",
+        "prompt_markdown": "In standard molecular mechanics force fields like OPLS-AA, why are non-bonded Coulomb and Lennard-Jones interactions excluded between directly bonded ($1\\text{\u2013}2$) and angle-sharing ($1\\text{\u2013}3$) atom pairs (and scaled by $0.5$ for $1\\text{\u2013}4$ dihedral pairs)?",
         "hint_markdown": "Consider what would happen at r_12 ~ 1.5 A if a stiff (sigma/r)^12 Lennard-Jones core repulsion were added on top of the covalent harmonic bond E_bond = K_r(r - r_eq)^2.",
         "options": [
           {
             "id": "a",
-            "text": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by $E_{\\text{bond}}$ and $E_{\\text{angle}}$; evaluating unscaled $(\\sigma/r)^{12}$ Lennard-Jones repulsion at covalent bond lengths ($\\sim 1.5\\text{ \u00c5} \\ll \\sigma \\sim 3.5\\text{ \u00c5}$) would produce enormous spurious repulsive forces.",
-            "text_markdown": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by $E_{\\text{bond}}$ and $E_{\\text{angle}}$; evaluating unscaled $(\\sigma/r)^{12}$ Lennard-Jones repulsion at covalent bond lengths ($\\sim 1.5\\text{ \u00c5} \\ll \\sigma \\sim 3.5\\text{ \u00c5}$) would produce enormous spurious repulsive forces."
+            "text": "Because covalently bonded atoms carry zero mass in MD.",
+            "text_markdown": "Because covalently bonded atoms carry zero mass in MD."
           },
           {
             "id": "b",
@@ -1253,8 +1253,8 @@
           },
           {
             "id": "c",
-            "text": "Because covalently bonded atoms carry zero mass in MD.",
-            "text_markdown": "Because covalently bonded atoms carry zero mass in MD."
+            "text": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by $E_{\\text{bond}}$ and $E_{\\text{angle}}$; evaluating unscaled $(\\sigma/r)^{12}$ Lennard-Jones repulsion at covalent bond lengths ($\\sim 1.5\\text{ \u00c5} \\ll \\sigma \\sim 3.5\\text{ \u00c5}$) would produce enormous spurious repulsive forces.",
+            "text_markdown": "Because covalent interactions at short 1-2 and 1-3 distances are already explicitly modeled by $E_{\\text{bond}}$ and $E_{\\text{angle}}$; evaluating unscaled $(\\sigma/r)^{12}$ Lennard-Jones repulsion at covalent bond lengths ($\\sim 1.5\\text{ \u00c5} \\ll \\sigma \\sim 3.5\\text{ \u00c5}$) would produce enormous spurious repulsive forces."
           },
           {
             "id": "d",
@@ -1262,7 +1262,7 @@
             "text_markdown": "Because Lennard-Jones forces violate Newton's third law for bonded pairs."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Typical van der Waals contact diameters are $\\sigma \\approx 3.0\\text{\u2013}3.5\\text{ \u00c5}$, whereas covalent bond lengths are $r_{\\text{eq}} \\approx 1.0\\text{\u2013}1.5\\text{ \u00c5}$. Evaluating $(\\sigma/r)^{12}$ at $r = 1.5\\text{ \u00c5}$ would give $\\sim 2^{12} = 4096$ times the well depth and double-count the short-range Pauli repulsion already captured by $E_{\\text{bond}}$ and $E_{\\text{angle}}$."
       },
       {
@@ -1280,8 +1280,8 @@
         "options": [
           {
             "id": "a",
-            "text": "By linearity of the gradient operator, $\\mathbf{F}_i$ is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom $i$ participates.",
-            "text_markdown": "By linearity of the gradient operator, $\\mathbf{F}_i$ is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom $i$ participates."
+            "text": "Each atom can only receive a force from at most one internal coordinate per timestep.",
+            "text_markdown": "Each atom can only receive a force from at most one internal coordinate per timestep."
           },
           {
             "id": "b",
@@ -1295,11 +1295,11 @@
           },
           {
             "id": "d",
-            "text": "Each atom can only receive a force from at most one internal coordinate per timestep.",
-            "text_markdown": "Each atom can only receive a force from at most one internal coordinate per timestep."
+            "text": "By linearity of the gradient operator, $\\mathbf{F}_i$ is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom $i$ participates.",
+            "text_markdown": "By linearity of the gradient operator, $\\mathbf{F}_i$ is the vector sum of the negative gradients accumulated from every bond, angle, torsion, and non-bonded pair in which atom $i$ participates."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because differentiation is a linear operator, $-\\nabla_{\\mathbf{r}_i} E_{\\text{total}} = -\\sum_{\\text{terms } \\alpha} \\nabla_{\\mathbf{r}_i} E_\\alpha$. In an MD engine, the force array `F[1..N]` is zeroed at the start of the timestep, and each bond, angle, dihedral, and non-bonded pair adds its analytical force contributions `F[i] +=...` to the participating atoms."
       }
     ]

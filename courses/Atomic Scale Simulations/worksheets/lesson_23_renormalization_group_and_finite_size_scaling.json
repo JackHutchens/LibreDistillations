@@ -77,8 +77,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume.",
-            "text_markdown": "$\\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume."
+            "text": "$\\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\\tau \\propto L^z$ sweeps are needed per independent sample.",
+            "text_markdown": "$\\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\\tau \\propto L^z$ sweeps are needed per independent sample."
           },
           {
             "id": "b",
@@ -87,8 +87,8 @@
           },
           {
             "id": "c",
-            "text": "$\\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\\tau \\propto L^z$ sweeps are needed per independent sample.",
-            "text_markdown": "$\\propto L^{d+z}$, because each sweep over the lattice costs $O(L^d)$ operations and $\\tau \\propto L^z$ sweeps are needed per independent sample."
+            "text": "$\\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume.",
+            "text_markdown": "$\\propto L^z$, because each sweep requires $O(1)$ operations regardless of lattice volume."
           },
           {
             "id": "d",
@@ -96,7 +96,7 @@
             "text_markdown": "$\\propto L^{d-z}$, because larger boxes average out spatial fluctuations faster."
           }
         ],
-        "correct": "c",
+        "correct": "a",
         "rationale_markdown": "At $T_c$, the correlation length saturates at $\\xi \\sim L$, so the autocorrelation time measured in Monte Carlo sweeps scales as $\\tau(L) \\propto L^z$. Since a single sweep visits all $N = L^d$ sites, the total CPU effort per independent configuration scales as $N \\cdot \\tau(L) \\propto L^{d+z}$."
       },
       {
@@ -125,7 +125,7 @@
         "prompt_markdown": "Using a local single-spin Metropolis algorithm in $d = 3$ dimensions with dynamical exponent $z = 2.0$, by what factor does the **total CPU time per independent sample** increase at $T_c$ when the linear box size $L$ is doubled ($L \\to 2L$)? *(Enter an exact integer.)*",
         "hint_markdown": "Relate the total computational effort to both the volume cost of sweeping the degrees of freedom and the critical slowing down exponent upon scaling the linear dimension.",
         "correct": {
-          "value": 32,
+          "value": 32.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "Total CPU effort per independent sample scales as $L^{d+z}$. For $d = 3$ and $z = 2.0$, doubling $L$ multiplies the CPU cost by $2^{3 + 2} = 2^5 = 32$."
@@ -188,8 +188,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Swendsen\u2013Wang partitions the entire lattice into connected FK clusters (via Hoshen\u2013Kopelman) and flips each cluster with probability $1/2$, whereas Wolff grows a single connected cluster from a randomly chosen seed spin and flips it with probability $1$.",
-            "text_markdown": "Swendsen\u2013Wang partitions the entire lattice into connected FK clusters (via Hoshen\u2013Kopelman) and flips each cluster with probability $1/2$, whereas Wolff grows a single connected cluster from a randomly chosen seed spin and flips it with probability $1$."
+            "text": "Swendsen\u2013Wang requires a Metropolis rejection step, whereas Wolff is rejection-free.",
+            "text_markdown": "Swendsen\u2013Wang requires a Metropolis rejection step, whereas Wolff is rejection-free."
           },
           {
             "id": "b",
@@ -198,8 +198,8 @@
           },
           {
             "id": "c",
-            "text": "Swendsen\u2013Wang requires a Metropolis rejection step, whereas Wolff is rejection-free.",
-            "text_markdown": "Swendsen\u2013Wang requires a Metropolis rejection step, whereas Wolff is rejection-free."
+            "text": "Swendsen\u2013Wang partitions the entire lattice into connected FK clusters (via Hoshen\u2013Kopelman) and flips each cluster with probability $1/2$, whereas Wolff grows a single connected cluster from a randomly chosen seed spin and flips it with probability $1$.",
+            "text_markdown": "Swendsen\u2013Wang partitions the entire lattice into connected FK clusters (via Hoshen\u2013Kopelman) and flips each cluster with probability $1/2$, whereas Wolff grows a single connected cluster from a randomly chosen seed spin and flips it with probability $1$."
           },
           {
             "id": "d",
@@ -207,7 +207,7 @@
             "text_markdown": "Wolff updates only single isolated spins, whereas Swendsen\u2013Wang updates $2\\times 2$ Kadanoff blocks."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Both algorithms use the exact same FK bond probability $p = 1 - e^{-2\\beta J}$ between aligned spins and both are rejection-free. Swendsen\u2013Wang decomposes the full lattice into clusters and flips each with probability $1/2$, while Wolff grows a single cluster recursively from a random seed site (preferentially sampling larger clusters by a factor proportional to cluster size) and flips it with probability $1$."
       },
       {
@@ -258,8 +258,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\zeta = \\left[\\text{var}(O)\\\\,\\tau_0\\\\,(\\text{CPU time per step})\\right]^{-1}$",
-            "text_markdown": "$\\zeta = \\left[\\text{var}(O)\\\\,\\tau_0\\\\,(\\text{CPU time per step})\\right]^{-1}$"
+            "text": "$\\zeta = L^z / \\tau_0$",
+            "text_markdown": "$\\zeta = L^z / \\tau_0$"
           },
           {
             "id": "b",
@@ -273,18 +273,18 @@
           },
           {
             "id": "d",
-            "text": "$\\zeta = L^z / \\tau_0$",
-            "text_markdown": "$\\zeta = L^z / \\tau_0$"
+            "text": "$\\zeta = \\left[\\text{var}(O)\\\\,\\tau_0\\\\,(\\text{CPU time per step})\\right]^{-1}$",
+            "text_markdown": "$\\zeta = \\left[\\text{var}(O)\\\\,\\tau_0\\\\,(\\text{CPU time per step})\\right]^{-1}$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Since $v = \\text{var}(O) / N_{\\text{eff}}$ and $T_{\\text{CPU}} = N_{\\text{steps}}(\\text{time/step}) = N_{\\text{eff}} \\tau_0 (\\text{time/step})$, their product is $v T_{\\text{CPU}} = \\text{var}(O)\\\\,\\tau_0\\\\,(\\text{time/step})$, giving $\\zeta = (v T_{\\text{CPU}})^{-1} = [\\text{var}(O)\\\\,\\tau_0\\\\,(\\text{time/step})]^{-1}$."
       },
       {
         "id": "sec_critical_exponents_universality",
         "type": "markdown_section",
         "title": "2. Static Critical Exponents, Scaling Laws & Universality Classes",
-        "body_markdown": "### Definitions of the Six Static Critical Exponents\nIn the vicinity of a continuous critical point $T_c$, thermodynamic observables and correlation functions exhibit singular power-law behavior in the **reduced temperature** $t \\equiv \\frac{T - T_c}{T_c}$ and external field $h$:\n\n1. **Order Parameter (Magnetization $M$ or density difference $\\rho_L - \\rho_G$):**\n $$M(t, h=0) \\propto (-t)^\\beta \\qquad (T < T_c)$$\n2. **Zero-Field Susceptibility ($\\chi = \\left.\\frac{\\partial M}{\\partial h}\\right|_{h=0}$) / Compressibility:**\n $$\\chi(t, h=0) \\propto |t|^{-\\gamma}$$\n3. **Zero-Field Specific Heat ($C_V = -T \\frac{\\partial^2 F}{\\partial T^2}$):**\n $$C_V(t, h=0) \\propto |t|^{-\\alpha}$$\n4. **Critical Isotherm ($T = T_c$, i.e. $t = 0$):**\n $$M(t=0, h) \\propto |h|^{1/\\delta} \\;\\implies\\; h \\propto |M|^\\delta$$\n5. **Correlation Length ($\\xi$, characterizing spatial decay $G(r) \\sim e^{-r/\\xi}$ off criticality):**\n $$\\xi(t, h=0) \\propto |t|^{-\\nu}$$\n6. **Anomalous Dimension ($\\eta$, governing power-law decay of spin\u2013spin correlation at $T = T_c$):**\n $$G(r) = \\langle s_0 s_r \\rangle - \\langle s \\rangle^2 \\propto \\frac{1}{r^{d - 2 + \\eta}} \\qquad (\\text{at } T = T_c, \\; \\xi = \\infty)$$\n\n---\n\n### Comparison of Critical Exponents Across Universality Classes\nFrom Table 3.1 of the lecture slides:\n\n| Exponent | Physical Quantity | Mean Field (Landau, $d \\ge 4$) | 2D Ising ($d=2, n=1$) | 3D Ising ($d=3, n=1$) | Experiment (Fluids / 3D Magnets) |\n|:---: |:--- |:---: |:---: |:---: |:---: |\n| **$\\alpha$** | Specific heat $C_V \\propto \\|t\\|^{-\\alpha}$ | $0$ (discontinuity) | $0$ (logarithmic) | $0.110(5)$ | $0.110 - 0.116$ |\n| **$\\beta$** | Order parameter $M \\propto (-t)^\\beta$ | $1/2 = 0.5$ | $1/8 = 0.125$ | $0.325 \\pm 0.0015$ | $0.316 - 0.327$ |\n| **$\\gamma$** | Susceptibility $\\chi \\propto \\|t\\|^{-\\gamma}$ | $1$ | $7/4 = 1.75$ | $1.2405 \\pm 0.0015$ | $1.23 - 1.25$ |\n| **$\\delta$** | Critical isotherm $M \\propto h^{1/\\delta}$ | $3$ | $15$ | $4.82(4)$ | $4.6 - 4.9$ |\n| **$\\nu$** | Correlation length $\\xi \\propto \\|t\\|^{-\\nu}$ | $1/2 = 0.5$ | $1$ | $0.630(2)$ | $0.625 \\pm 0.010$ |\n| **$\\eta$** | Critical correlation $G(r) \\propto r^{-(d-2+\\eta)}$ | $0$ | $1/4 = 0.25$ | $0.032 \\pm 0.003$ | $0.016 - 0.06$ |\n\n---\n\n### Homogeneous Functions and Static Scaling Identities\nA function $f(r)$ is **homogeneous** of degree $p$ if rescaling its argument by $\\lambda$ satisfies $f(\\lambda r) = \\lambda^p f(r)$. More generally, the **static scaling hypothesis** asserts that the singular part of the free energy density $f_s(t, h)$ is a **generalized homogeneous function**:\n$$\\lambda f_s(t, h) = f_s\\!\\left(\\lambda^{a_t} t, \\, \\lambda^{a_h} h\\right)$$\nBecause all thermodynamic observables ($M = -\\partial f_s / \\partial h$, $\\chi = -\\partial^2 f_s / \\partial h^2$, $C_V \\propto -\\partial^2 f_s / \\partial t^2$) derive from just **two** independent scaling exponents ($a_t$ and $a_h$, or equivalently $\\nu$ and $\\eta$), the six critical exponents $\\alpha, \\beta, \\gamma, \\delta, \\nu, \\eta$ are linked by **four exact scaling laws**:\n\n1. **Rushbrooke's Identity:**\n $$\\alpha + 2\\beta + \\gamma = 2$$\n2. **Widom's Identity:**\n $$\\gamma = \\beta(\\delta - 1) \\quad\\Longleftrightarrow\\quad \\delta = 1 + \\frac{\\gamma}{\\beta}$$\n3. **Fisher's Identity:**\n $$\\gamma = \\nu(2 - \\eta) \\quad\\Longleftrightarrow\\quad \\frac{\\gamma}{\\nu} = 2 - \\eta$$\n4. **Josephson's Hyperscaling Identity** (involves spatial dimension $d$; holds for $d \\le d_u = 4$):\n $$d\\nu = 2 - \\alpha$$\n\n---\n\n### Universality: Why Microscopic Details Vanish at $T_c$\nBecause $\\xi \\to \\infty$ at $T_c$, cooperative fluctuations average over millions of lattice constants and **forget microscopic details** (such as lattice geometry\u2014square vs. Triangular, or simple cubic vs. BCC\u2014and bond strength $J$).\n- **Universal quantities** (depend *only* on spatial dimensionality $d$, order-parameter symmetry/dimensionality $n$, and interaction range): **critical exponents ($\\alpha, \\beta, \\gamma, \\delta, \\nu, \\eta$)** and **dimensionless scaling functions** (including the critical Binder cumulant $U_4^*$).\n- **Non-universal quantities** (depend on lattice coordination number $z_{\\text{coord}}$, microscopic coupling $J$, and next-nearest-neighbor interactions): **$T_c$, $P_c$, $\\rho_c$**, and dimensionful critical amplitudes!\n- Thus, a **3D uniaxial magnet ($n=1$)**, a **3D classical liquid\u2013vapor critical point** (order parameter $\\rho_L - \\rho_G$, scalar $n=1$), and a **3D binary alloy unmixing transition** all belong to the **3D Ising ($d=3, n=1$) universality class** and share the exact same exponents ($\\beta \\approx 0.325, \\gamma \\approx 1.24, \\nu \\approx 0.63$)!"
+        "body_markdown": "### Definitions of the Six Static Critical Exponents\nIn the vicinity of a continuous critical point $T_c$, thermodynamic observables and correlation functions exhibit singular power-law behavior in the **reduced temperature** $t \\equiv \\frac{T - T_c}{T_c}$ and external field $h$:\n\n1. **Order Parameter (Magnetization $M$ or density difference $\\rho_L - \\rho_G$):**\n $$M(t, h=0) \\propto (-t)^\\beta \\qquad (T < T_c)$$\n2. **Zero-Field Susceptibility ($\\chi = \\left.\\frac{\\partial M}{\\partial h}\\right|_{h=0}$) / Compressibility:**\n $$\\chi(t, h=0) \\propto |t|^{-\\gamma}$$\n3. **Zero-Field Specific Heat ($C_V = -T \\frac{\\partial^2 F}{\\partial T^2}$):**\n $$C_V(t, h=0) \\propto |t|^{-\\alpha}$$\n4. **Critical Isotherm ($T = T_c$, i.e. $t = 0$):**\n $$M(t=0, h) \\propto |h|^{1/\\delta} \\;\\implies\\; h \\propto |M|^\\delta$$\n5. **Correlation Length ($\\xi$, characterizing spatial decay $G(r) \\sim e^{-r/\\xi}$ off criticality):**\n $$\\xi(t, h=0) \\propto |t|^{-\\nu}$$\n6. **Anomalous Dimension ($\\eta$, governing power-law decay of spin\u2013spin correlation at $T = T_c$):**\n $$G(r) = \\langle s_0 s_r \\rangle - \\langle s \\rangle^2 \\propto \\frac{1}{r^{d - 2 + \\eta}} \\qquad (\\text{at } T = T_c, \\; \\xi = \\infty)$$\n\n---\n\n### Comparison of Critical Exponents Across Universality Classes\nThe standard universality classes exhibit the following critical exponent values:\n\n| Exponent | Physical Quantity | Mean Field (Landau, $d \\ge 4$) | 2D Ising ($d=2, n=1$) | 3D Ising ($d=3, n=1$) | Experiment (Fluids / 3D Magnets) |\n|:---: |:--- |:---: |:---: |:---: |:---: |\n| **$\\alpha$** | Specific heat $C_V \\propto \\|t\\|^{-\\alpha}$ | $0$ (discontinuity) | $0$ (logarithmic) | $0.110(5)$ | $0.110 - 0.116$ |\n| **$\\beta$** | Order parameter $M \\propto (-t)^\\beta$ | $1/2 = 0.5$ | $1/8 = 0.125$ | $0.325 \\pm 0.0015$ | $0.316 - 0.327$ |\n| **$\\gamma$** | Susceptibility $\\chi \\propto \\|t\\|^{-\\gamma}$ | $1$ | $7/4 = 1.75$ | $1.2405 \\pm 0.0015$ | $1.23 - 1.25$ |\n| **$\\delta$** | Critical isotherm $M \\propto h^{1/\\delta}$ | $3$ | $15$ | $4.82(4)$ | $4.6 - 4.9$ |\n| **$\\nu$** | Correlation length $\\xi \\propto \\|t\\|^{-\\nu}$ | $1/2 = 0.5$ | $1$ | $0.630(2)$ | $0.625 \\pm 0.010$ |\n| **$\\eta$** | Critical correlation $G(r) \\propto r^{-(d-2+\\eta)}$ | $0$ | $1/4 = 0.25$ | $0.032 \\pm 0.003$ | $0.016 - 0.06$ |\n\n---\n\n### Homogeneous Functions and Static Scaling Identities\nA function $f(r)$ is **homogeneous** of degree $p$ if rescaling its argument by $\\lambda$ satisfies $f(\\lambda r) = \\lambda^p f(r)$. More generally, the **static scaling hypothesis** asserts that the singular part of the free energy density $f_s(t, h)$ is a **generalized homogeneous function**:\n$$\\lambda f_s(t, h) = f_s\\!\\left(\\lambda^{a_t} t, \\, \\lambda^{a_h} h\\right)$$\nBecause all thermodynamic observables ($M = -\\partial f_s / \\partial h$, $\\chi = -\\partial^2 f_s / \\partial h^2$, $C_V \\propto -\\partial^2 f_s / \\partial t^2$) derive from just **two** independent scaling exponents ($a_t$ and $a_h$, or equivalently $\\nu$ and $\\eta$), the six critical exponents $\\alpha, \\beta, \\gamma, \\delta, \\nu, \\eta$ are linked by **four exact scaling laws**:\n\n1. **Rushbrooke's Identity:**\n $$\\alpha + 2\\beta + \\gamma = 2$$\n2. **Widom's Identity:**\n $$\\gamma = \\beta(\\delta - 1) \\quad\\Longleftrightarrow\\quad \\delta = 1 + \\frac{\\gamma}{\\beta}$$\n3. **Fisher's Identity:**\n $$\\gamma = \\nu(2 - \\eta) \\quad\\Longleftrightarrow\\quad \\frac{\\gamma}{\\nu} = 2 - \\eta$$\n4. **Josephson's Hyperscaling Identity** (involves spatial dimension $d$; holds for $d \\le d_u = 4$):\n $$d\\nu = 2 - \\alpha$$\n\n---\n\n### Universality: Why Microscopic Details Vanish at $T_c$\nBecause $\\xi \\to \\infty$ at $T_c$, cooperative fluctuations average over millions of lattice constants and **forget microscopic details** (such as lattice geometry\u2014square vs. Triangular, or simple cubic vs. BCC\u2014and bond strength $J$).\n- **Universal quantities** (depend *only* on spatial dimensionality $d$, order-parameter symmetry/dimensionality $n$, and interaction range): **critical exponents ($\\alpha, \\beta, \\gamma, \\delta, \\nu, \\eta$)** and **dimensionless scaling functions** (including the critical Binder cumulant $U_4^*$).\n- **Non-universal quantities** (depend on lattice coordination number $z_{\\text{coord}}$, microscopic coupling $J$, and next-nearest-neighbor interactions): **$T_c$, $P_c$, $\\rho_c$**, and dimensionful critical amplitudes!\n- Thus, a **3D uniaxial magnet ($n=1$)**, a **3D classical liquid\u2013vapor critical point** (order parameter $\\rho_L - \\rho_G$, scalar $n=1$), and a **3D binary alloy unmixing transition** all belong to the **3D Ising ($d=3, n=1$) universality class** and share the exact same exponents ($\\beta \\approx 0.325, \\gamma \\approx 1.24, \\nu \\approx 0.63$)!"
       },
       {
         "id": "q23_09",
@@ -297,13 +297,13 @@
         "options": [
           {
             "id": "a",
-            "text": "The lattice coordination number $z_{\\text{coord}}$ and the magnitude of the exchange coupling $J$.",
-            "text_markdown": "The lattice coordination number $z_{\\text{coord}}$ and the magnitude of the exchange coupling $J$."
+            "text": "The spatial dimensionality $d$ and the symmetry (number of components $n$) of the order parameter.",
+            "text_markdown": "The spatial dimensionality $d$ and the symmetry (number of components $n$) of the order parameter."
           },
           {
             "id": "b",
-            "text": "The spatial dimensionality $d$ and the symmetry (number of components $n$) of the order parameter.",
-            "text_markdown": "The spatial dimensionality $d$ and the symmetry (number of components $n$) of the order parameter."
+            "text": "The lattice coordination number $z_{\\text{coord}}$ and the magnitude of the exchange coupling $J$.",
+            "text_markdown": "The lattice coordination number $z_{\\text{coord}}$ and the magnitude of the exchange coupling $J$."
           },
           {
             "id": "c",
@@ -316,7 +316,7 @@
             "text_markdown": "The particle mass $m$ and the choice of Kadanoff block-spin size $b$."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "rationale_markdown": "As $\\xi \\to \\infty$, the system forgets lattice structure and coupling strength $J$; only the spatial dimensionality $d$ and the symmetry/dimensionality $n$ of the order parameter (along with interaction range) determine the universality class."
       },
       {
@@ -365,7 +365,7 @@
         "prompt_markdown": "For the 2D Ising universality class, the exact order-parameter exponent is $\\beta = 1/8 = 0.125$ and the susceptibility exponent is $\\gamma = 7/4 = 1.75$. Using **Widom's scaling hypothesis**, calculate the exact critical isotherm exponent $\\delta$ governing the field dependence of the magnetization ($M \\propto h^{1/\\delta}$ at $T = T_c$). *(Enter an exact integer.)*",
         "hint_markdown": "Relate the critical isotherm exponent to the order parameter and magnetic susceptibility exponents via Widom scaling.",
         "correct": {
-          "value": 15,
+          "value": 15.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "By Widom's identity, $\\delta = 1 + \\frac{\\gamma}{\\beta} = 1 + \\frac{7/4}{1/8} = 1 + 14 = 15$."
@@ -421,7 +421,7 @@
         "prompt_markdown": "In Mean-Field (Landau) theory, the critical exponents are $\\alpha = 0, \\beta = 1/2, \\gamma = 1, \\delta = 3, \\nu = 1/2, \\eta = 0$ regardless of dimension. At what **upper critical spatial dimension** $d_u$ does Josephson hyperscaling become consistent with these Mean-Field values? *(Enter an exact integer.)*",
         "hint_markdown": "Determine the spatial dimension at which the singular free energy density volume scaling matches the mean-field specific-heat behavior.",
         "correct": {
-          "value": 4,
+          "value": 4.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "Setting $d_u (1/2) = 2 - 0 = 2$ gives $d_u = 4$. For $d \\ge 4$, thermal fluctuations are weak enough that Mean-Field theory gives the exact critical exponents, whereas for $d < 4$ fluctuations shift the exponents away from their Mean-Field values."
@@ -437,13 +437,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\beta = \\frac{1 - a_h}{a_t}$",
-            "text_markdown": "$\\beta = \\frac{1 - a_h}{a_t}$"
+            "text": "$\\beta = \\frac{a_t}{a_h}$",
+            "text_markdown": "$\\beta = \\frac{a_t}{a_h}$"
           },
           {
             "id": "b",
-            "text": "$\\beta = \\frac{a_t}{a_h}$",
-            "text_markdown": "$\\beta = \\frac{a_t}{a_h}$"
+            "text": "$\\beta = \\frac{1 - a_h}{a_t}$",
+            "text_markdown": "$\\beta = \\frac{1 - a_h}{a_t}$"
           },
           {
             "id": "c",
@@ -456,7 +456,7 @@
             "text_markdown": "$\\beta = \\frac{2a_h - 1}{a_t}$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "From $M(t, 0) = \\lambda^{a_h - 1} M(\\lambda^{a_t} t, 0)$, choosing $\\lambda = (-t)^{-1/a_t}$ sets $\\lambda^{a_t} t = -1$, leaving $M(t, 0) = (-t)^{(1 - a_h)/a_t} M(-1, 0) \\propto (-t)^\\beta$. Thus $\\beta = \\frac{1 - a_h}{a_t}$."
       },
       {
@@ -523,13 +523,13 @@
           },
           {
             "id": "b",
-            "text": "$\\xi' = \\xi / 2$",
-            "text_markdown": "$\\xi' = \\xi / 2$"
+            "text": "$\\xi' = \\xi^2$",
+            "text_markdown": "$\\xi' = \\xi^2$"
           },
           {
             "id": "c",
-            "text": "$\\xi' = \\xi^2$",
-            "text_markdown": "$\\xi' = \\xi^2$"
+            "text": "$\\xi' = \\xi / 2$",
+            "text_markdown": "$\\xi' = \\xi / 2$"
           },
           {
             "id": "d",
@@ -537,7 +537,7 @@
             "text_markdown": "$\\xi' = \\xi - 2$"
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "rationale_markdown": "Grouping $b \\times b$ spins into a single superspin increases the unit lattice spacing by a factor of $b = 2$, so in units of the renormalized lattice spacing both the box size and correlation length divide by $b$: $L' = L/2$ and $\\xi' = \\xi/2$."
       },
       {
@@ -551,8 +551,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because at $K' = K^*$, the relation $\\xi(K^*) = \\xi(K^*) / b$ for $b > 1$ is only satisfied if $\\xi(K^*) = 0$ (trivial fixed points at $T=0, \\infty$) or $\\xi(K^*) = \\infty$ (critical fixed point at $T = T_c$).",
-            "text_markdown": "Because at $K' = K^*$, the relation $\\xi(K^*) = \\xi(K^*) / b$ for $b > 1$ is only satisfied if $\\xi(K^*) = 0$ (trivial fixed points at $T=0, \\infty$) or $\\xi(K^*) = \\infty$ (critical fixed point at $T = T_c$)."
+            "text": "Because the Ising model only exists at $T = 0$ and $T = \\infty$.",
+            "text_markdown": "Because the Ising model only exists at $T = 0$ and $T = \\infty$."
           },
           {
             "id": "b",
@@ -566,11 +566,11 @@
           },
           {
             "id": "d",
-            "text": "Because the Ising model only exists at $T = 0$ and $T = \\infty$.",
-            "text_markdown": "Because the Ising model only exists at $T = 0$ and $T = \\infty$."
+            "text": "Because at $K' = K^*$, the relation $\\xi(K^*) = \\xi(K^*) / b$ for $b > 1$ is only satisfied if $\\xi(K^*) = 0$ (trivial fixed points at $T=0, \\infty$) or $\\xi(K^*) = \\infty$ (critical fixed point at $T = T_c$).",
+            "text_markdown": "Because at $K' = K^*$, the relation $\\xi(K^*) = \\xi(K^*) / b$ for $b > 1$ is only satisfied if $\\xi(K^*) = 0$ (trivial fixed points at $T=0, \\infty$) or $\\xi(K^*) = \\infty$ (critical fixed point at $T = T_c$)."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Under a blocking transformation of scale factor $b > 1$, $\\xi(R(K)) = \\xi(K)/b$. At a fixed point $R(K^*) = K^*$, this requires $\\xi(K^*) = \\xi(K^*)/b$, whose only non-negative solutions are $\\xi = 0$ and $\\xi = \\infty$."
       },
       {
@@ -632,7 +632,7 @@
         "prompt_markdown": "Conversely, if an exact Renormalization Group transformation with spatial rescaling factor $b = 3$ is applied to the 2D Ising model (where the exact correlation-length exponent is $\\nu = 1.0$), what must the thermal eigenvalue $\\lambda_T$ equal at the critical fixed point? *(Enter an exact integer.)*",
         "hint_markdown": "Invert the connection between the linearized RG eigenvalue, the spatial scaling factor, and the critical exponent $\\nu$.",
         "correct": {
-          "value": 3,
+          "value": 3.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "Since $\\lambda_T = b^{y_T} = b^{1/\\nu}$, substituting $b = 3$ and $\\nu = 1.0$ gives $\\lambda_T = 3^{1/1} = 3$."
@@ -681,8 +681,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\\lambda_T > 1$ and critical exponents!",
-            "text_markdown": "Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\\lambda_T > 1$ and critical exponents!"
+            "text": "Every point on the $(K_1, K_2)$ plane is a fixed point with $\\xi = \\infty$.",
+            "text_markdown": "Every point on the $(K_1, K_2)$ plane is a fixed point with $\\xi = \\infty$."
           },
           {
             "id": "b",
@@ -691,8 +691,8 @@
           },
           {
             "id": "c",
-            "text": "Every point on the $(K_1, K_2)$ plane is a fixed point with $\\xi = \\infty$.",
-            "text_markdown": "Every point on the $(K_1, K_2)$ plane is a fixed point with $\\xi = \\infty$."
+            "text": "Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\\lambda_T > 1$ and critical exponents!",
+            "text_markdown": "Along the critical surface, trajectories from models with different microscopic ratios $K_2 / K_1$ all flow *into* the same Critical FP (irrelevant eigenvalue $\\lambda_2 < 1$), so they share the exact same linearized unstable eigenvalue $\\lambda_T > 1$ and critical exponents!"
           },
           {
             "id": "d",
@@ -700,7 +700,7 @@
             "text_markdown": "Trajectories on the critical surface flow directly to $(K_1, K_2) = (0, 0)$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "The critical fixed point is a **saddle point**: it has one unstable (relevant) direction ($\\lambda_T = b^{y_T} > 1$) driving the system off criticality when $T \\neq T_c$, and attractive (irrelevant) directions ($\\lambda_{\\text{irrel}} < 1$) along the critical manifold. Any critical Hamiltonian on the critical surface flows into the same fixed point $\\mathbf{K}^*$, erasing microscopic differences ($K_2/K_1$) and yielding universal critical exponents."
       },
       {
@@ -714,8 +714,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Find the temperature $T$ at which correlation functions of configurations blocked $n$ times and $n+1$ times (at matching renormalized lattice size) are identical.",
-            "text_markdown": "Find the temperature $T$ at which correlation functions of configurations blocked $n$ times and $n+1$ times (at matching renormalized lattice size) are identical."
+            "text": "Run at $T = 0$ and count how many blocking steps are needed to reach $L = 1$.",
+            "text_markdown": "Run at $T = 0$ and count how many blocking steps are needed to reach $L = 1$."
           },
           {
             "id": "b",
@@ -729,11 +729,11 @@
           },
           {
             "id": "d",
-            "text": "Run at $T = 0$ and count how many blocking steps are needed to reach $L = 1$.",
-            "text_markdown": "Run at $T = 0$ and count how many blocking steps are needed to reach $L = 1$."
+            "text": "Find the temperature $T$ at which correlation functions of configurations blocked $n$ times and $n+1$ times (at matching renormalized lattice size) are identical.",
+            "text_markdown": "Find the temperature $T$ at which correlation functions of configurations blocked $n$ times and $n+1$ times (at matching renormalized lattice size) are identical."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "'MCRG: Find temperature such that correlation functions, blocked $n$ and $n+1$ times are the same. This will determine $T_c$ and exponents.' Because $T_c$ corresponds to the scale-invariant fixed point $R(H^*) = H^*$, blocked observables match across successive RG levels."
       },
       {
@@ -873,13 +873,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Because for $T < T_c$ and $x \\gg 1$, $\\tilde{m}_-(x) \\propto x^{\\beta} = x^{1/8}$ cancels the $L^{\\beta/\\nu}$ factor to recover the $L$-independent bulk magnetization $M \\propto (-t)^{1/8}$; whereas for $T > T_c$, $\\langle |M| \\rangle \\propto L^{-1} |t|^{-\\gamma/2} = L^{-1/8} x^{-7/8}$.",
-            "text_markdown": "Because for $T < T_c$ and $x \\gg 1$, $\\tilde{m}_-(x) \\propto x^{\\beta} = x^{1/8}$ cancels the $L^{\\beta/\\nu}$ factor to recover the $L$-independent bulk magnetization $M \\propto (-t)^{1/8}$; whereas for $T > T_c$, $\\langle |M| \\rangle \\propto L^{-1} |t|^{-\\gamma/2} = L^{-1/8} x^{-7/8}$."
+            "text": "Because the critical exponent $\\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system.",
+            "text_markdown": "Because the critical exponent $\\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system."
           },
           {
             "id": "b",
-            "text": "Because the critical exponent $\\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system.",
-            "text_markdown": "Because the critical exponent $\\beta$ is $+1/8$ below $T_c$ and $-7/8$ above $T_c$ in an infinite system."
+            "text": "Because for $T < T_c$ and $x \\gg 1$, $\\tilde{m}_-(x) \\propto x^{\\beta} = x^{1/8}$ cancels the $L^{\\beta/\\nu}$ factor to recover the $L$-independent bulk magnetization $M \\propto (-t)^{1/8}$; whereas for $T > T_c$, $\\langle |M| \\rangle \\propto L^{-1} |t|^{-\\gamma/2} = L^{-1/8} x^{-7/8}$.",
+            "text_markdown": "Because for $T < T_c$ and $x \\gg 1$, $\\tilde{m}_-(x) \\propto x^{\\beta} = x^{1/8}$ cancels the $L^{\\beta/\\nu}$ factor to recover the $L$-independent bulk magnetization $M \\propto (-t)^{1/8}$; whereas for $T > T_c$, $\\langle |M| \\rangle \\propto L^{-1} |t|^{-\\gamma/2} = L^{-1/8} x^{-7/8}$."
           },
           {
             "id": "c",
@@ -892,7 +892,7 @@
             "text_markdown": "Because periodic boundary conditions break translational invariance above $T_c$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "For $x = L^{1/\\nu}|t| \\gg 1$, the system is much larger than $\\xi$. Below $T_c$, $M(t, L)$ must become independent of $L$: $M L^{\\beta/\\nu} \\propto x^\\beta = (L^{1/\\nu}|t|)^\\beta \\implies M \\propto |t|^\\beta$ with slope $\\beta = 1/8$. Above $T_c$, the spontaneous magnetization is zero in the bulk and finite-size RMS fluctuations scale as $\\sqrt{\\chi / L^d} \\propto L^{-d/2} |t|^{-\\gamma/2}$; in 2D ($\\beta/\\nu = 1/8, \\gamma/2 = 7/8, \\nu=1$), $M L^{1/8} \\propto L^{1/8 - 1} |t|^{-7/8} = (L|t|)^{-7/8} = x^{-7/8}$, giving slope $-7/8$!"
       },
       {
@@ -906,8 +906,8 @@
         "options": [
           {
             "id": "a",
-            "text": "For $K < K^*$ ($T > T_c$), $L/\\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\\xi(K^*, L) \\propto L$; and for $K > K^*$, the curves fan out in the opposite order.",
-            "text_markdown": "For $K < K^*$ ($T > T_c$), $L/\\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\\xi(K^*, L) \\propto L$; and for $K > K^*$, the curves fan out in the opposite order."
+            "text": "The curves intersect at $K = 0$ ($T = \\infty$) rather than $K^*$.",
+            "text_markdown": "The curves intersect at $K = 0$ ($T = \\infty$) rather than $K^*$."
           },
           {
             "id": "b",
@@ -916,8 +916,8 @@
           },
           {
             "id": "c",
-            "text": "The curves intersect at $K = 0$ ($T = \\infty$) rather than $K^*$.",
-            "text_markdown": "The curves intersect at $K = 0$ ($T = \\infty$) rather than $K^*$."
+            "text": "For $K < K^*$ ($T > T_c$), $L/\\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\\xi(K^*, L) \\propto L$; and for $K > K^*$, the curves fan out in the opposite order.",
+            "text_markdown": "For $K < K^*$ ($T > T_c$), $L/\\xi$ increases with $L$; at $K = K^*$ ($T = T_c$), all three curves cross at a single universal point because $\\xi(K^*, L) \\propto L$; and for $K > K^*$, the curves fan out in the opposite order."
           },
           {
             "id": "d",
@@ -925,7 +925,7 @@
             "text_markdown": "For $K < K^*$, $L/\\xi$ decreases to zero as $L \\to \\infty$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In the disordered phase ($K < K^*$), $\\xi(K, L) \\to \\xi_\\infty(K) < \\infty$, so $L / \\xi(K, L)$ grows linearly with $L$ ($L_3$ curve sits above $L_1$). Right at the critical point $K = K^*$, scale invariance dictates $\\xi(K^*, L) \\propto L$, so $L/\\xi(K^*, L)$ is independent of $L$ and all curves intersect at $K^*$!"
       },
       {
@@ -939,8 +939,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$C_{\\max}(L) \\propto \\ln L$",
-            "text_markdown": "$C_{\\max}(L) \\propto \\ln L$"
+            "text": "$C_{\\max}(L)$ decreases exponentially with $L$.",
+            "text_markdown": "$C_{\\max}(L)$ decreases exponentially with $L$."
           },
           {
             "id": "b",
@@ -954,11 +954,11 @@
           },
           {
             "id": "d",
-            "text": "$C_{\\max}(L)$ decreases exponentially with $L$.",
-            "text_markdown": "$C_{\\max}(L)$ decreases exponentially with $L$."
+            "text": "$C_{\\max}(L) \\propto \\ln L$",
+            "text_markdown": "$C_{\\max}(L) \\propto \\ln L$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Replacing the correlation length cutoff $|t| \\sim L^{-1/\\nu} = L^{-1}$ inside the bulk logarithmic singularity $C_V(t) \\sim -\\ln|t|$ yields $C_{\\max}(L) \\sim \\ln(L^{1/\\nu}) \\propto \\ln L$."
       },
       {
@@ -1013,7 +1013,7 @@
         "prompt_markdown": "In the high-temperature disordered phase ($T > T_c$) as $L \\to \\infty$, the Central Limit Theorem ensures that the magnetization distribution $P_L(M)$ approaches a zero-mean Gaussian over independent spatial correlation volumes. What is the asymptotic value of **Binder's fourth-order cumulant** $U_4 = 1 - \\frac{\\langle M^4 \\rangle}{3\\langle M^2 \\rangle^2}$ in this disordered thermodynamic limit? *(Enter an exact integer.)*",
         "hint_markdown": "Recall the relationship between the second and fourth moments for any Gaussian distributed random variable with zero mean.",
         "correct": {
-          "value": 0,
+          "value": 0.0,
           "tolerance": 0.001
         },
         "rationale_markdown": "For a Gaussian distribution, $\\langle M^4 \\rangle = 3\\langle M^2 \\rangle^2$, so $U_4 = 1 - \\frac{3\\langle M^2 \\rangle^2}{3\\langle M^2 \\rangle^2} = 1 - 1 = 0$."
@@ -1107,13 +1107,13 @@
         "options": [
           {
             "id": "a",
-            "text": "From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\\propto L^{-\\beta/\\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\\pm M_{\\text{spont}}$ ($T < T_c$).",
-            "text_markdown": "From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\\propto L^{-\\beta/\\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\\pm M_{\\text{spont}}$ ($T < T_c$)."
+            "text": "From a bimodal distribution at $T > T_c$ to a single delta function at $M = 0$ at $T < T_c$.",
+            "text_markdown": "From a bimodal distribution at $T > T_c$ to a single delta function at $M = 0$ at $T < T_c$."
           },
           {
             "id": "b",
-            "text": "From a bimodal distribution at $T > T_c$ to a single delta function at $M = 0$ at $T < T_c$.",
-            "text_markdown": "From a bimodal distribution at $T > T_c$ to a single delta function at $M = 0$ at $T < T_c$."
+            "text": "From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\\propto L^{-\\beta/\\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\\pm M_{\\text{spont}}$ ($T < T_c$).",
+            "text_markdown": "From a single narrow Gaussian peak centered at $M = 0$ ($T > T_c$), to a broad non-Gaussian critical distribution of width $\\propto L^{-\\beta/\\nu}$ ($T = T_c$), to a symmetric bimodal distribution with two sharp peaks at $\\pm M_{\\text{spont}}$ ($T < T_c$)."
           },
           {
             "id": "c",
@@ -1126,7 +1126,7 @@
             "text_markdown": "It is uniform on $[-1, 1]$ for all $T > T_c$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Above $T_c$, independent correlation volumes of size $\\xi \\ll L$ obey the Central Limit Theorem, producing a single Gaussian peak at $M=0$ of width $\\sqrt{k_B T \\chi / L^d}$. At $T = T_c$, $\\xi \\sim L$ produces a broad non-Gaussian scaling distribution of width $\\propto L^{-\\beta/\\nu}$. Below $T_c$, spontaneous magnetization produces two symmetric peaks at $\\pm M_{\\text{spont}}$."
       },
       {
@@ -1154,8 +1154,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \\to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\\langle M \\rangle$ is identically zero for any finite $L$.",
-            "text_markdown": "Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \\to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\\langle M \\rangle$ is identically zero for any finite $L$."
+            "text": "Because $|M|$ is an analytic function in the thermodynamic limit.",
+            "text_markdown": "Because $|M|$ is an analytic function in the thermodynamic limit."
           },
           {
             "id": "b",
@@ -1164,8 +1164,8 @@
           },
           {
             "id": "c",
-            "text": "Because $|M|$ is an analytic function in the thermodynamic limit.",
-            "text_markdown": "Because $|M|$ is an analytic function in the thermodynamic limit."
+            "text": "Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \\to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\\langle M \\rangle$ is identically zero for any finite $L$.",
+            "text_markdown": "Because at $h = 0$, the Hamiltonian is invariant under global spin inversion ($s_i \\to -s_i$), so $P_L(M) = P_L(-M)$ is strictly symmetric and the true ensemble average $\\langle M \\rangle$ is identically zero for any finite $L$."
           },
           {
             "id": "d",
@@ -1173,7 +1173,7 @@
             "text_markdown": "Because $\\langle M^2 \\rangle$ is always negative below $T_c$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In any finite system at $h = 0$, $P_L(M) = P_L(-M)$ by spin-flip symmetry, so an ergodic simulation visits both $+M_0$ and $-M_0$ basins equally and gives $\\langle M \\rangle = 0$. Taking $\\langle |M| \\rangle$folds the two symmetric peaks together so that $\\langle |M| \\rangle \\to M_0(T)$ as $L \\to \\infty$."
       },
       {
@@ -1187,8 +1187,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\\text{obs}}$, giving a linear shift $K_c(L) = K_c(\\infty) + a_{\\text{obs}}\\\\,L^{-1/\\nu}$ with observable-dependent slope $a_{\\text{obs}}$, but in the thermodynamic limit ($L^{-1/\\nu} \\to 0$) all observables must converge to the unique bulk critical point $K_c(\\infty)$.",
-            "text_markdown": "Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\\text{obs}}$, giving a linear shift $K_c(L) = K_c(\\infty) + a_{\\text{obs}}\\\\,L^{-1/\\nu}$ with observable-dependent slope $a_{\\text{obs}}$, but in the thermodynamic limit ($L^{-1/\\nu} \\to 0$) all observables must converge to the unique bulk critical point $K_c(\\infty)$."
+            "text": "Because $K_c(\\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions.",
+            "text_markdown": "Because $K_c(\\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions."
           },
           {
             "id": "b",
@@ -1202,11 +1202,11 @@
           },
           {
             "id": "d",
-            "text": "Because $K_c(\\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions.",
-            "text_markdown": "Because $K_c(\\infty)$ is a universal constant equal to $0.22165$ for all lattices in all dimensions."
+            "text": "Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\\text{obs}}$, giving a linear shift $K_c(L) = K_c(\\infty) + a_{\\text{obs}}\\\\,L^{-1/\\nu}$ with observable-dependent slope $a_{\\text{obs}}$, but in the thermodynamic limit ($L^{-1/\\nu} \\to 0$) all observables must converge to the unique bulk critical point $K_c(\\infty)$.",
+            "text_markdown": "Each finite-size observable peaks or crosses at its own scaling coordinate $x_{\\text{obs}}$, giving a linear shift $K_c(L) = K_c(\\infty) + a_{\\text{obs}}\\\\,L^{-1/\\nu}$ with observable-dependent slope $a_{\\text{obs}}$, but in the thermodynamic limit ($L^{-1/\\nu} \\to 0$) all observables must converge to the unique bulk critical point $K_c(\\infty)$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Different observables ($\\chi$, $U_L$, $\\partial \\ln|M|/\\partial K$, etc.) reach their finite-size extrema at different values $x_{\\text{obs}}$ of the scaling variable $x = (K - K_c)L^{1/\\nu}$, producing straight lines against $L^{-1/\\nu}$ with different slopes $x_{\\text{obs}}$ that all extrapolate to the same bulk critical coupling $K_c(\\infty) \\approx 0.22165$ at $L^{-1/\\nu} = 0$."
       },
       {
@@ -1218,7 +1218,7 @@
         "prompt_markdown": "Combining the four fundamental static scaling laws (Rushbrooke, Widom, Fisher, and Josephson hyperscaling), express the critical isotherm exponent $\\delta$ as a function of the spatial dimensionality $d$ and the anomalous dimension $\\eta$. Evaluate the resulting value of $\\delta$ for the 2D Ising model where $d = 2$ and $\\eta = 1/4 = 0.25$. *(Enter an exact integer.)*",
         "hint_markdown": "Eliminate $\\alpha, \\beta, \\gamma,$ and $\\nu$ from the scaling relations to express $\\delta$ in terms of $d$ and $\\eta$, then evaluate for the 2D critical parameters.",
         "correct": {
-          "value": 15,
+          "value": 15.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "Substituting $d = 2$ and $\\eta = 0.25$ into $\\delta = \\frac{d + 2 - \\eta}{d - 2 + \\eta}$ gives $\\delta = \\frac{4 - 0.25}{0 + 0.25} = \\frac{3.75}{0.25} = 15$, confirming that all six static critical exponents are fixed once $(d, \\nu, \\eta)$ are known!"

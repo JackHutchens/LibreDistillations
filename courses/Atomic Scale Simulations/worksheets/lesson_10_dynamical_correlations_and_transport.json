@@ -60,13 +60,13 @@
         "options": [
           {
             "id": "a",
-            "text": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation.",
-            "text_markdown": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation."
+            "text": "It is always strictly positive ($\\Delta F^{(2)} > 0$).",
+            "text_markdown": "It is always strictly positive ($\\Delta F^{(2)} > 0$)."
           },
           {
             "id": "b",
-            "text": "It is always strictly positive ($\\Delta F^{(2)} > 0$).",
-            "text_markdown": "It is always strictly positive ($\\Delta F^{(2)} > 0$)."
+            "text": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation.",
+            "text_markdown": "It is always negative or zero ($\\Delta F^{(2)} \\le 0$), meaning thermal fluctuations allow the system to relax into states that lower its free energy in response to the perturbation."
           },
           {
             "id": "c",
@@ -79,7 +79,7 @@
             "text_markdown": "It is identically zero at all temperatures."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Because $\\beta > 0$, $\\lambda^2 \\ge 0$, and the variance $\\langle (\\delta A)^2\\rangle_0 \\ge 0$, the second-order correction $-\\frac{1}{2}\\beta\\lambda^2 \\langle (\\delta A)^2\\rangle_0$ is always $\\le 0$ (**A**), making $F(\\lambda)$ a concave function of the field $\\lambda$."
       },
       {
@@ -107,8 +107,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$.",
-            "text_markdown": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$."
+            "text": "Because energy is not conserved in Molecular Dynamics.",
+            "text_markdown": "Because energy is not conserved in Molecular Dynamics."
           },
           {
             "id": "b",
@@ -117,8 +117,8 @@
           },
           {
             "id": "c",
-            "text": "Because energy is not conserved in Molecular Dynamics.",
-            "text_markdown": "Because energy is not conserved in Molecular Dynamics."
+            "text": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$.",
+            "text_markdown": "Because an equilibrium system is stationary (time-translation invariant) and ergodic, so $\\langle \\delta A(t_0)\\delta B(t_0 + t)\\rangle$ depends only on the lag time $t$ and not on the time origin $t_0$."
           },
           {
             "id": "d",
@@ -126,7 +126,7 @@
             "text_markdown": "Because $t_0$ must always be set to $+\\infty$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In thermal equilibrium, the Liouville distribution is stationary under time translation, so $\\langle \\delta A(t_0)\\delta B(t_0+t)\\rangle = \\langle \\delta A(0)\\delta B(t)\\rangle$. By ergodicity, averaging over thousands of time origins $t_0$ along an equilibrium trajectory converges to the ensemble average (**A**)."
       },
       {
@@ -183,8 +183,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium.",
-            "text_markdown": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium."
+            "text": "Transport coefficients can only be measured at infinite temperature.",
+            "text_markdown": "Transport coefficients can only be measured at infinite temperature."
           },
           {
             "id": "b",
@@ -198,11 +198,11 @@
           },
           {
             "id": "d",
-            "text": "Transport coefficients can only be measured at infinite temperature.",
-            "text_markdown": "Transport coefficients can only be measured at infinite temperature."
+            "text": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium.",
+            "text_markdown": "The relaxation of a macroscopic system from a weak non-equilibrium perturbation follows the exact same time-decay law as the regression of spontaneous microscopic fluctuations in thermal equilibrium."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Onsager's regression hypothesis states that a system cannot tell whether a small deviation $\\delta A$ from the mean arose from a weak external perturbation just turned off or from a spontaneous thermal fluctuation; therefore, macroscopic non-equilibrium relaxation obeys the same time correlation decay as equilibrium fluctuations (**A**)."
       },
       {
@@ -249,13 +249,13 @@
         "options": [
           {
             "id": "a",
-            "text": "The imaginary (out-of-phase) part $\\chi''(\\omega)$.",
-            "text_markdown": "The imaginary (out-of-phase) part $\\chi''(\\omega)$."
+            "text": "The real (in-phase) part $\\chi'(\\omega)$.",
+            "text_markdown": "The real (in-phase) part $\\chi'(\\omega)$."
           },
           {
             "id": "b",
-            "text": "The real (in-phase) part $\\chi'(\\omega)$.",
-            "text_markdown": "The real (in-phase) part $\\chi'(\\omega)$."
+            "text": "The imaginary (out-of-phase) part $\\chi''(\\omega)$.",
+            "text_markdown": "The imaginary (out-of-phase) part $\\chi''(\\omega)$."
           },
           {
             "id": "c",
@@ -268,7 +268,7 @@
             "text_markdown": "Neither; linear response never dissipates energy."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "The in-phase response $\\chi'(\\omega)$ represents reversible reactive energy storage over a cycle, whereas the out-of-phase imaginary part $\\chi''(\\omega)$ governs irreversible energy absorption (dissipation) $\\text{Power} = \\frac{\\omega}{2}\\chi''(\\omega)A^2(\\omega)$ (**A**)."
       },
       {
@@ -310,8 +310,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$",
-            "text_markdown": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$"
+            "text": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$",
+            "text_markdown": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$"
           },
           {
             "id": "b",
@@ -320,8 +320,8 @@
           },
           {
             "id": "c",
-            "text": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$",
-            "text_markdown": "$S(\\mathbf{k}) = \\frac{d}{dt} F(\\mathbf{k}, t)\\big|_{t=0}$"
+            "text": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$",
+            "text_markdown": "$S(\\mathbf{k}) = F(\\mathbf{k}, t=0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$"
           },
           {
             "id": "d",
@@ -329,7 +329,7 @@
             "text_markdown": "$S(\\mathbf{k})$ and $S(\\mathbf{k}, \\omega)$ are completely unrelated."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "By the inverse Fourier transform $F(\\mathbf{k}, t) = \\int_{-\\infty}^\\infty d\\omega\\, e^{-i\\omega t} S(\\mathbf{k}, \\omega)$, setting $t = 0$ gives the zeroth-moment sum rule $S(\\mathbf{k}) = F(\\mathbf{k}, 0) = \\int_{-\\infty}^\\infty d\\omega\\, S(\\mathbf{k}, \\omega)$ (**A**). That is why conventional X-ray diffraction (which integrates over all scattered photon energies $\\hbar\\omega$) measures $S(\\mathbf{k})$."
       },
       {
@@ -343,8 +343,8 @@
         "options": [
           {
             "id": "a",
-            "text": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$.",
-            "text_markdown": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$."
+            "text": "As negative spikes where $S(q, \\omega) < 0$.",
+            "text_markdown": "As negative spikes where $S(q, \\omega) < 0$."
           },
           {
             "id": "b",
@@ -358,11 +358,11 @@
           },
           {
             "id": "d",
-            "text": "As negative spikes where $S(q, \\omega) < 0$.",
-            "text_markdown": "As negative spikes where $S(q, \\omega) < 0$."
+            "text": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$.",
+            "text_markdown": "As a pair of broadened peaks (Brillouin doublets) centered at $\\omega = \\pm c_s q$, whose frequency width increases with the sound damping rate $\\Gamma_s$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "A propagating density wave at frequency $\\omega_s = c_s q$ produces symmetric side-peaks at $\\omega = \\pm c_s q$ in $S(q, \\omega)$, and damping of the sound wave broadens these peaks (**A**). This is clearly visible in the hard-sphere $S(k, \\omega)$ curves (panels a and c at low $kd$) and the experimental neutron scattering data."
       },
       {
@@ -514,13 +514,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$).",
-            "text_markdown": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$)."
+            "text": "Newton's third law and the ideal gas equation of state.",
+            "text_markdown": "Newton's third law and the ideal gas equation of state."
           },
           {
             "id": "b",
-            "text": "Newton's third law and the ideal gas equation of state.",
-            "text_markdown": "Newton's third law and the ideal gas equation of state."
+            "text": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$).",
+            "text_markdown": "Fick's First Law of linear response ($\\mathbf{j} = -D\\nabla\\rho$) and local conservation of mass (the continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$)."
           },
           {
             "id": "c",
@@ -533,7 +533,7 @@
             "text_markdown": "Quantum detailed balance and the virial pressure theorem."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Substituting the linear constitutive relation $\\mathbf{j}(\\mathbf{r}, t) = -D\\nabla\\rho(\\mathbf{r}, t)$ (Fick's 1st law) into the mass continuity equation $\\frac{\\partial \\rho}{\\partial t} = -\\nabla\\cdot\\mathbf{j}$ yields $\\frac{\\partial \\rho}{\\partial t} = D\\nabla^2\\rho$ (**A**)."
       },
       {
@@ -547,8 +547,8 @@
         "options": [
           {
             "id": "a",
-            "text": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$.",
-            "text_markdown": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$."
+            "text": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$.",
+            "text_markdown": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$."
           },
           {
             "id": "b",
@@ -557,8 +557,8 @@
           },
           {
             "id": "c",
-            "text": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$.",
-            "text_markdown": "In 2D: $\\text{MSD} = 2 D t$; in 3D: $\\text{MSD} = 3 D t$."
+            "text": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$.",
+            "text_markdown": "In 2D: $\\text{MSD} = 4 D t$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$; in 3D: $\\text{MSD} = 6 D t$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$."
           },
           {
             "id": "d",
@@ -566,7 +566,7 @@
             "text_markdown": "In 2D: $\\text{MSD} = 4 D t^2$; in 3D: $\\text{MSD} = 6 D t^2$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Each independent Cartesian coordinate ($x, y, \\dots$) contributes $2Dt$ to the mean-squared displacement and $D$ to the velocity integral $\\int_0^\\infty \\langle v_\\alpha(t)v_\\alpha(0)\\rangle dt$. Hence in $d=2$, $\\text{MSD} = 4Dt$ and $D = \\frac{1}{2}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$, whereas in $d=3$, $\\text{MSD} = 6Dt$ and $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$ (**A**)."
       },
       {
@@ -583,8 +583,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$.",
-            "text_markdown": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$."
+            "text": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$.",
+            "text_markdown": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$."
           },
           {
             "id": "b",
@@ -598,11 +598,11 @@
           },
           {
             "id": "d",
-            "text": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$.",
-            "text_markdown": "Inversely with time: $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\propto t^{-3/2}$."
+            "text": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$.",
+            "text_markdown": "Ballistically (quadratically in time): $\\langle |\\Delta\\mathbf{r}(t)|^2 \\rangle \\approx \\langle v^2 \\rangle t^2 = \\left(\\frac{3 k_B T}{m}\\right) t^2$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "For $t \\ll \\tau_c$, velocity hasn't changed yet ($\\mathbf{v}_i(t) \\approx \\mathbf{v}_i(0)$), so $\\Delta\\mathbf{r}_i(t) \\approx \\mathbf{v}_i(0) t$. Squaring and averaging with classical equipartition $\\frac{1}{2}m\\langle v^2\\rangle = \\frac{3}{2}k_B T$ gives the ballistic law $\\langle |\\Delta\\mathbf{r}(t)|^2\\rangle = \\frac{3k_B T}{m} t^2$ (**A**)."
       },
       {
@@ -723,13 +723,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector.",
-            "text_markdown": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector."
+            "text": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$.",
+            "text_markdown": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$."
           },
           {
             "id": "b",
-            "text": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$.",
-            "text_markdown": "Because the kinetic temperature $T$ becomes negative at $t = 0.4\\,\\text{ps}$."
+            "text": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector.",
+            "text_markdown": "Cage backscattering (rebound): at high liquid density, a moving particle collides with its tightly packed shell of nearest neighbors and rebounds in the opposite direction, reversing its velocity vector."
           },
           {
             "id": "c",
@@ -742,7 +742,7 @@
             "text_markdown": "Because periodic boundary conditions invert the velocity vector when an atom crosses $L/2$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In a dense liquid near its triple point, each atom is transiently surrounded by a tight cage of $\\sim 12$ nearest neighbors. After moving a short distance, the atom collides with this cage wall and bounces backward ($\\mathbf{v}(t)\\cdot\\mathbf{v}(0) < 0$), creating the characteristic negative backscattering dip in $C_{vv}(t)$ (**A**)."
       },
       {
@@ -759,8 +759,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages.",
-            "text_markdown": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages."
+            "text": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid.",
+            "text_markdown": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid."
           },
           {
             "id": "b",
@@ -769,8 +769,8 @@
           },
           {
             "id": "c",
-            "text": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid.",
-            "text_markdown": "Both $\\hat{c}_{vv}(0)$ and the peak height are identically zero in a liquid."
+            "text": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages.",
+            "text_markdown": "The zero-frequency intercept $\\hat{c}_{vv}(0)$ is directly proportional to the self-diffusion constant $D$, while the finite-frequency peak reflects oscillatory rattling of atoms inside their transient neighbor cages."
           },
           {
             "id": "d",
@@ -778,7 +778,7 @@
             "text_markdown": "$\\hat{c}_{vv}(0)$ measures the crystal lattice constant."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "By the Green-Kubo relation, $D = \\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}(t)\\cdot\\mathbf{v}(0)\\rangle dt$, so the zero-frequency value $\\hat{c}_{vv}(\\omega = 0)$ of the velocity power spectrum (vibrational density of states) is directly proportional to $D$, while the peak at finite $\\omega > 0$ arises from damped oscillatory rattling in local liquid cages (**A**)."
       },
       {
@@ -809,8 +809,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance.",
-            "text_markdown": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance."
+            "text": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$.",
+            "text_markdown": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$."
           },
           {
             "id": "b",
@@ -824,11 +824,11 @@
           },
           {
             "id": "d",
-            "text": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$.",
-            "text_markdown": "Because $\\text{CS}_2$ is a crystalline solid at $294\\,\\text{K}$."
+            "text": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance.",
+            "text_markdown": "Moving broadside ($\\perp$) encounters a much larger steric cross-section and strong cage rebounding from neighboring molecules, whereas sliding end-on ($\\parallel$) along the molecular axis experiences less steric hindrance."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "A rod-like $\\text{S=C=S}$ molecule experiences anisotropic steric caging: motion perpendicular to the molecular axis ($\\perp$) quickly hits neighboring molecules broadside and rebounds strongly ($c_{vv}^\\perp(t) < 0$), whereas motion parallel to the axis ($\\parallel$) slips through the cage more easily (**A**)."
       },
       {
@@ -930,13 +930,13 @@
         "options": [
           {
             "id": "a",
-            "text": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$.",
-            "text_markdown": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$."
+            "text": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$.",
+            "text_markdown": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$."
           },
           {
             "id": "b",
-            "text": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$.",
-            "text_markdown": "The total electric current $\\mathbf{J}^e(t) = \\sum_i q_i \\mathbf{v}_i(t)$."
+            "text": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$.",
+            "text_markdown": "The off-diagonal component of the microscopic stress (pressure) tensor $\\sigma_{xy}(t)$."
           },
           {
             "id": "c",
@@ -949,7 +949,7 @@
             "text_markdown": "The static radial distribution function $g(r)$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Shear viscosity $\\eta$ measures momentum flux perpendicular to the flow direction, so its Green-Kubo integral autocorrelates the off-diagonal stress tensor $\\sigma_{xy}(t)$: $\\eta = \\frac{\\Omega}{k_B T}\\int_0^\\infty \\langle \\sigma_{xy}(t)\\sigma_{xy}(0)\\rangle dt$ (**A**)."
       },
       {
@@ -963,8 +963,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$.",
-            "text_markdown": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$."
+            "text": "Total potential energy $V(t)$ for both.",
+            "text_markdown": "Total potential energy $V(t)$ for both."
           },
           {
             "id": "b",
@@ -973,8 +973,8 @@
           },
           {
             "id": "c",
-            "text": "Total potential energy $V(t)$ for both.",
-            "text_markdown": "Total potential energy $V(t)$ for both."
+            "text": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$.",
+            "text_markdown": "Microscopic energy (heat) current $\\mathbf{J}^Q(t)$ for $\\lambda_T$, and total electrical current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ for $\\sigma_{\\text{el}}$."
           },
           {
             "id": "d",
@@ -982,7 +982,7 @@
             "text_markdown": "Single-particle position $\\mathbf{r}_1(t)$ for both."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Thermal conductivity autocorrelates the microscopic energy current $\\mathbf{J}^Q(t)$, while electrical conductivity autocorrelates the total charge current $\\mathbf{J}(t) = \\sum_i q_i \\mathbf{v}_i(t)$ (**A**)."
       },
       {
@@ -996,8 +996,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin).",
-            "text_markdown": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin)."
+            "text": "Because viscosity cannot be computed in 3D.",
+            "text_markdown": "Because viscosity cannot be computed in 3D."
           },
           {
             "id": "b",
@@ -1011,11 +1011,11 @@
           },
           {
             "id": "d",
-            "text": "Because viscosity cannot be computed in 3D.",
-            "text_markdown": "Because viscosity cannot be computed in 3D."
+            "text": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin).",
+            "text_markdown": "Because self-diffusion is a single-particle property (allowing averaging over all $N$ atoms), whereas $\\sigma_{xy}(t)$, $\\mathbf{J}^Q(t)$, and $\\mathbf{J}^e(t)$ are collective global observables of the entire box (providing only $1$ sample per time origin)."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Self-diffusion tracks individual tagged particles $\\mathbf{v}_i(t)$, so a single simulation of $N$ atoms gives $N$ nearly independent velocity autocorrelation trajectories. In contrast, the stress tensor $\\sigma_{xy}(t)$ and heat current $\\mathbf{J}^Q(t)$ are collective sums over the entire box, providing only a single scalar time series and therefore requiring roughly $N\\times$ longer trajectories for comparable relative error (**A**)."
       },
       {
@@ -1065,13 +1065,13 @@
         "options": [
           {
             "id": "a",
-            "text": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation.",
-            "text_markdown": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation."
+            "text": "They discovered that hard spheres never collide in 2D or 3D.",
+            "text_markdown": "They discovered that hard spheres never collide in 2D or 3D."
           },
           {
             "id": "b",
-            "text": "They discovered that hard spheres never collide in 2D or 3D.",
-            "text_markdown": "They discovered that hard spheres never collide in 2D or 3D."
+            "text": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation.",
+            "text_markdown": "They discovered that the velocity autocorrelation function $C_{vv}(t)$ does not decay exponentially at long times, but instead exhibits a positive hydrodynamic power-law tail $C_{vv}(t) \\propto t^{-d/2}$ caused by vortex recirculation."
           },
           {
             "id": "c",
@@ -1084,7 +1084,7 @@
             "text_markdown": "They showed that attractive Lennard-Jones tails are required to produce hydrodynamic vortices."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Alder and Wainwright discovered that momentum conservation in the fluid creates a circulating vortex wake around a moving particle, producing an algebraic long-time tail $C_{vv}(t) \\propto t^{-d/2}$ even in purely repulsive hard-sphere fluids (**A**)."
       },
       {
@@ -1097,12 +1097,12 @@
         "difficulty": "medium",
         "question_type": "single_select",
         "prompt_markdown": "Why does state that **\"The diffusion constant does not exist in 2D because of hydrodynamic effects\"**?",
-        "hint_markdown": "Substitute $d = 2$ into the long-time tail $C_{vv}(t) \\propto t^{-d/2}$ and integrate $\\int^\\infty C_{vv}(t)\\,dt$.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "options": [
           {
             "id": "a",
-            "text": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$.",
-            "text_markdown": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$."
+            "text": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$.",
+            "text_markdown": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$."
           },
           {
             "id": "b",
@@ -1111,8 +1111,8 @@
           },
           {
             "id": "c",
-            "text": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$.",
-            "text_markdown": "In 2D, $C_{vv}(t)$ grows exponentially as $e^{+t}$."
+            "text": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$.",
+            "text_markdown": "In 2D ($d = 2$), the hydrodynamic long-time tail decays as $C_{vv}(t) \\propto t^{-2/2} = t^{-1}$, so the Green-Kubo integral $D(t) = \\frac{1}{2}\\int_0^t C_{vv}(t')dt' \\propto \\ln(t)$ diverges logarithmically as $t \\to \\infty$."
           },
           {
             "id": "d",
@@ -1120,7 +1120,7 @@
             "text_markdown": "In 2D, velocities have no $x$ or $y$ components."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In $d = 2$ dimensions, the hydrodynamic vortex tail decays as $t^{-d/2} = t^{-1}$. Integrating $t^{-1}$ in the Green-Kubo formula yields $\\int_{t_0}^t \\frac{dt'}{t'} = \\ln(t/t_0) \\to \\infty$ as $t \\to \\infty$ (**A**), meaning the 2D running diffusivity grows logarithmically with time and system size!"
       },
       {
@@ -1151,8 +1151,8 @@
         "options": [
           {
             "id": "a",
-            "text": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction.",
-            "text_markdown": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction."
+            "text": "They only occur if particles interact via long-range gravitational attraction.",
+            "text_markdown": "They only occur if particles interact via long-range gravitational attraction."
           },
           {
             "id": "b",
@@ -1166,11 +1166,11 @@
           },
           {
             "id": "d",
-            "text": "They only occur if particles interact via long-range gravitational attraction.",
-            "text_markdown": "They only occur if particles interact via long-range gravitational attraction."
+            "text": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction.",
+            "text_markdown": "They produce a positive tail ($C_{vv}(t) > 0$) because the momentum pushed forward by the particle recirculates via a vortex ring into the low-pressure wake behind it, continuing to push the particle in its original direction."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "As a particle moves forward, it compresses the fluid ahead and leaves a rarefied wake behind. Momentum conservation sets up a double-vortex recirculation pattern that feeds forward momentum into the wake behind the particle (and drafts neighboring particles along behind it\u2014the train effect), giving a **positive** algebraic tail $C_{vv}(t) \\propto +t^{-d/2} > 0$ (**A**)."
       },
       {
@@ -1271,13 +1271,13 @@
         "options": [
           {
             "id": "a",
-            "text": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$).",
-            "text_markdown": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$)."
+            "text": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$.",
+            "text_markdown": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$."
           },
           {
             "id": "b",
-            "text": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$.",
-            "text_markdown": "$\\sigma_{\\text{el}} = 0$ because positive and negative charges cancel in $q_i^2$."
+            "text": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$).",
+            "text_markdown": "The Nernst-Einstein relation $\\sigma_{\\text{el}} = \\frac{\\rho q^2 D}{k_B T}$ (where $\\rho = N/\\Omega$)."
           },
           {
             "id": "c",
@@ -1290,7 +1290,7 @@
             "text_markdown": "$\\sigma_{\\text{el}} = N^2 q^2 D$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Since $q_i^2 = (+q)^2 = (-q)^2 = q^2 > 0$ for both cations and anions, and $\\frac{1}{3}\\int_0^\\infty \\langle \\mathbf{v}_i(t)\\cdot\\mathbf{v}_i(0)\\rangle dt = D$, the self-term sum gives $\\frac{N q^2 D}{\\Omega k_B T} = \\frac{\\rho q^2 D}{k_B T}$, which is the celebrated **Nernst-Einstein equation** (**A**). Deviations from Nernst-Einstein in concentrated electrolytes or ionic liquids arise directly from the cross-correlation terms ($i \\neq j$, e.g., cation-anion pair association)."
       },
       {
@@ -1307,8 +1307,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle.",
-            "text_markdown": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle."
+            "text": "Out to $t = \\infty$ regardless of how small $L$ is.",
+            "text_markdown": "Out to $t = \\infty$ regardless of how small $L$ is."
           },
           {
             "id": "b",
@@ -1317,8 +1317,8 @@
           },
           {
             "id": "c",
-            "text": "Out to $t = \\infty$ regardless of how small $L$ is.",
-            "text_markdown": "Out to $t = \\infty$ regardless of how small $L$ is."
+            "text": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle.",
+            "text_markdown": "Up to the acoustic traversal time $t_{\\max} \\sim L / c_s$, when the hydrodynamic sound/vortex wave wraps around the periodic box and interferes with the particle."
           },
           {
             "id": "d",
@@ -1326,7 +1326,7 @@
             "text_markdown": "Only when $L = 0$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "A moving particle launches an acoustic compression wave at speed $c_s$ and a shear vortex wave. Once $t \\gtrsim L / c_s$, the sound pulse crosses the periodic boundary of the box of side $L$ and strikes the particle artificially from behind, corrupting $C_{vv}(t)$ for $t > L/c_s$ (**A**). This is why Alder and Wainwright needed large hard-sphere systems to cleanly resolve the $t^{-d/2}$ regime."
       },
       {
@@ -1340,8 +1340,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$.",
-            "text_markdown": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$."
+            "text": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$.",
+            "text_markdown": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$."
           },
           {
             "id": "b",
@@ -1355,11 +1355,11 @@
           },
           {
             "id": "d",
-            "text": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$.",
-            "text_markdown": "$C_{AA}(t)$ must increase linearly with $t$ near $t = 0$."
+            "text": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$.",
+            "text_markdown": "The initial slope at $t = 0$ vanishes ($\\dot{C}_{AA}(0) = 0$, so $C_{AA}(t)$ starts with a flat parabolic top $C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2$), and $C_{AA}(\\omega)$ is purely real and even in $\\omega$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Under smooth Hamiltonian dynamics, any classical autocorrelation function $C_{AA}(t) = \\langle \\delta A(0)\\delta A(t)\\rangle$ is an even function of $t$: $\\dot{C}_{AA}(0) = \\langle \\delta A(0)\\dot{A}(0)\\rangle = \\frac{1}{2}\\frac{d}{dt}\\langle (\\delta A)^2\\rangle = 0$. Therefore, $C_{AA}(t)$ starts out flat at $t = 0$ ($C_{AA}(t) = C_{AA}(0) - \\frac{1}{2}\\langle \\dot{A}^2\\rangle t^2 + \\dots$) and its Fourier transform $C_{AA}(\\omega)$ is real, even, and non-negative (**A**)."
       },
       {

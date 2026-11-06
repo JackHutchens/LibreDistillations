@@ -152,13 +152,13 @@
         "options": [
           {
             "id": "a",
-            "text": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space.",
-            "text_markdown": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space."
+            "text": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance.",
+            "text_markdown": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance."
           },
           {
             "id": "b",
-            "text": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance.",
-            "text_markdown": "It sacrifices determinism, using quantum hardware interrupts to eliminate variance."
+            "text": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space.",
+            "text_markdown": "It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each new point sequentially fills the largest remaining 'holes' in space."
           },
           {
             "id": "c",
@@ -171,7 +171,7 @@
             "text_markdown": "It uses a modulus $m = 16$ so that the sequence repeats every 16 evaluations."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "A QRNG is \"halfway between a random sequence and a uniform grid.\" By giving up **serial independence** (correlation $= 0$), it places each subsequent point at maximum distance from existing points to fill spatial voids sequentially, reducing discrepancy and accelerating low-$D$ quadrature from $\\mathcal{O}(N^{-1/2})$ to $\\mathcal{O}((\\ln N)^D / N)$."
       },
       {
@@ -185,8 +185,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$.",
-            "text_markdown": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$."
+            "text": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform.",
+            "text_markdown": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform."
           },
           {
             "id": "b",
@@ -195,8 +195,8 @@
           },
           {
             "id": "c",
-            "text": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform.",
-            "text_markdown": "$S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform."
+            "text": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$.",
+            "text_markdown": "$S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$."
           },
           {
             "id": "d",
@@ -204,7 +204,7 @@
             "text_markdown": "$S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive constant."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Every PRNG stores an internal state $S_n$ (seeded at $S_0$), advances that state deterministically via an iteration operator $T: S_{n-1} \\to S_n$, and projects the internal state onto an observable integer $I_n$ or floating-point real $U_n \\in [0, 1)$ via the output mapping $F$."
       },
       {
@@ -214,9 +214,9 @@
         "difficulty": "easy",
         "taught_by": "sec_rng_taxonomy_and_automata",
         "prompt_markdown": "Suppose a PRNG maintains an internal state $S$ consisting of $M = 12$ bits. If the iteration mapping $T$ is one-to-one (bijective) and breaks the state space into $4$ disjoint cycles of equal length, what is the period (cycle length) $L$ of each cycle?",
-        "hint_markdown": "Total state space size is $2^M$. Divide $2^{12}$ by the number of equal-length cycles.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "correct": {
-          "value": 1024,
+          "value": 1024.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "An $M = 12$-bit internal state has $2^{12} = 4096$ distinct states. If the 1-to-1 transition function divides the state space into $4$ equal disjoint cycles, each cycle has length:\n$$L = \\frac{2^M}{4} = \\frac{4096}{4} = 1024$$"
@@ -230,7 +230,7 @@
         "prompt_markdown": "The classic UNIX generator `drand48` is a 48-bit Linear Congruential Generator with maximum period $L = 2^{48} \\approx 2.815 \\times 10^{14}$. If you run a parallel Monte Carlo simulation across $P = 100$ processor cores, each consuming $10^9$ random numbers per second, how many **minutes** does it take for the entire simulation to exhaust $2^{48}$ random numbers? (Round to the nearest minute.)",
         "hint_markdown": "Divide $2^{48} \\approx 2.81475 \\times 10^{14}$ by the total consumption rate $(100 \\times 10^9\\text{ RN/s})$, then convert seconds to minutes.",
         "correct": {
-          "value": 47,
+          "value": 47.0,
           "tolerance": 2.5
         },
         "rationale_markdown": "Total generation rate across $100$ processors is $R = 100 \\times 10^9 = 10^{11}\\text{ RN/s}$. The exhaustion time is:\n$$t = \\frac{2^{48}}{10^{11}\\text{ s}^{-1}} = \\frac{2.81475 \\times 10^{14}}{10^{11}}\\text{ s} \\approx 2814.75\\text{ s} \\approx 46.9\\text{ minutes}$$\n(Quoted as $\\sim 45\\text{ minutes}$ in the lecture table!)"
@@ -244,7 +244,7 @@
         "prompt_markdown": "Consider a 2D Ising Monte Carlo simulation on a $1024 \\times 1024$ spin lattice ($\\approx 10^6$ sites). To collect well-converged thermodynamic averages, you perform $10^7$ Monte Carlo sweeps (where $1$ sweep tests every spin once, consuming $1$ random number per spin). What is the base-10 logarithm $\\log_{10}(N_{\\text{total}})$ of the total number of random numbers required, and why does a 32-bit generator ($2^{32} \\approx 4.29 \\times 10^9$) fail? Enter $\\log_{10}(N_{\\text{total}})$.",
         "hint_markdown": "Multiply $10^6$ sites per sweep by $10^7$ sweeps, then take $\\log_{10}$.",
         "correct": {
-          "value": 13,
+          "value": 13.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "The simulation requires $N_{\\text{total}} \\approx 10^6\\text{ sites/sweep} \\times 10^7\\text{ sweeps} = 10^{13}$ random numbers ($\\log_{10} N_{\\text{total}} = 13$). Because a 32-bit RNG has a maximum period of only $2^{32} \\approx 4.3 \\times 10^9$, the simulation would recycle through the exact same sequence over $2{,}300$ times!"
@@ -272,7 +272,7 @@
         "prompt_markdown": "You generate $N = 10{,}000$ uniform random numbers $x \\in [0, 1)$ and count how many fall inside the sub-interval $(a, b) = (0.20, 0.45)$. According to the lecture's quick Poisson uniformity rule $N(b-a) \\pm [N(b-a)]^{1/2}$, what is the magnitude of the $1\\sigma$ expected fluctuation $[N(b-a)]^{1/2}$ around the expected count of $2500$?",
         "hint_markdown": "Compute $\\sqrt{N(b-a)}$ where $N = 10000$ and $b - a = 0.25$.",
         "correct": {
-          "value": 50,
+          "value": 50.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "The expected count in $(0.20, 0.45)$ is $n = N(b - a) = 10{,}000 \\times 0.25 = 2500$. The standard Poisson fluctuation scale is:\n$$\\sqrt{N(b - a)} = \\sqrt{2500} = 50$$"
@@ -288,8 +288,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$.",
-            "text_markdown": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$."
+            "text": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes.",
+            "text_markdown": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes."
           },
           {
             "id": "b",
@@ -303,11 +303,11 @@
           },
           {
             "id": "d",
-            "text": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes.",
-            "text_markdown": "$\\langle x_{i+1}^2 \\rangle = \\langle x_{i+1} \\rangle^2$ so that the 1D variance vanishes."
+            "text": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$.",
+            "text_markdown": "$\\langle f_1(x_{i+1}) f_2(x_{i+2}) \\cdots f_k(x_{i+k}) \\rangle = \\langle f_1(x_{i+1}) \\rangle \\langle f_2(x_{i+2}) \\rangle \\cdots \\langle f_k(x_{i+k}) \\rangle$ for arbitrary test functions $f_1, \\dots, f_k$ and lags $k$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Statistical independence of $k$-tuples requires the joint expectation of any product of functions of consecutive draws to factorize into the product of their individual expectations:\n$$\\langle f_1(x_{i+1})\\cdots f_k(x_{i+k})\\rangle = \\langle f_1(x_{i+1})\\rangle\\cdots\\langle f_k(x_{i+k})\\rangle$$\nEven when 1D uniformity holds ($k=1$), hidden correlations at lag $k$ (such as $k = 512$ or $1024$ in an $N$-atom MC pass) can systematically bias thermodynamic averages."
       },
       {
@@ -386,7 +386,7 @@
         "prompt_markdown": "In the lecture's worked example $\\text{LCG}(a=5, c=1, m=16)$ starting from seed $I_0 = 0$, the first four generated integers are $1, 6, 15, 12$. Following the recurrence $I_{n+1} = (5 I_n + 1) \\bmod 16$, what is the **6th** generated integer (i.e., the integer immediately after $13$)?",
         "hint_markdown": "Compute $(5 \\times 13 + 1) \\bmod 16 = 66 - 4 \\times 16$.",
         "correct": {
-          "value": 2,
+          "value": 2.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "Given the 5th integer $I = 13$:\n$$I_{\\text{next}} = (5 \\times 13 + 1) \\bmod 16 = 66 \\bmod 16 = 66 - 4 \\times 16 = 2$$\nwhich maps to the 4-bit binary `0010` and uniform real $R = 2/16 = 0.1250$."
@@ -398,7 +398,7 @@
         "difficulty": "easy",
         "taught_by": "sec_lcg_marsaglia_and_lfg",
         "prompt_markdown": "An LCG produces integers $I_n \\in \\{0, 1, 2, \\dots, m-1\\}$. How do the two standard floating-point mappings $R_n = I_n / \\text{float}(m)$ and $R_n' = I_n / \\text{float}(m - 1)$ differ in their output range?",
-        "hint_markdown": "Substitute the minimum ($I_n = 0$) and maximum ($I_n = m - 1$) integer values into both expressions.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "options": [
           {
             "id": "a",
@@ -438,13 +438,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step.",
-            "text_markdown": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step."
+            "text": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity.",
+            "text_markdown": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity."
           },
           {
             "id": "b",
-            "text": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity.",
-            "text_markdown": "Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity."
+            "text": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step.",
+            "text_markdown": "Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \\equiv (1 \\cdot I_n + 1) \\bmod 2$, which flips parity every step."
           },
           {
             "id": "c",
@@ -457,7 +457,7 @@
             "text_markdown": "Because the modulus $m = 2^M$ is a prime number."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In a power-of-2 LCG ($m = 2^M$), achieving full period requires $\\gcd(c, 2^M) = 1$ (so $c$ is odd) and $a - 1$ divisible by $4$ (so $a$ is odd). Taking $I_{n+1} = (a I_n + c) \\bmod 2^M$ modulo $2$ gives:\n$$I_{n+1} \\bmod 2 = (1 \\cdot I_n + 1) \\bmod 2$$\nwhich simply toggles between even ($0$) and odd ($1$) on every single call! More generally, the $k$-th lowest bit has a period no longer than $2^k$."
       },
       {
@@ -472,7 +472,7 @@
         "prompt_markdown": "Suppose you modify $\\text{LCG}(5, 1, 16)$ by changing the additive constant from $c = 1$ to $c = 2$, giving $I_{n+1} = (5 I_n + 2) \\bmod 16$. If you initialize with seed $I_0 = 0$, what is the cycle period $L$ of the resulting sequence? (Check with the interactive LCG preset `\"LCG(5, 2, 16)\"` if needed!)",
         "hint_markdown": "When $I_0 = 0$, $a = 5$, and $c = 2$, can $I_n$ ever become an odd integer?",
         "correct": {
-          "value": 8,
+          "value": 8.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "Because $I_0 = 0$ is even and $c = 2$ is even, $5 I_n + 2$ is **always even**! The generator is trapped on the $8$ even residues $\\{0, 2, 12, 14, 8, 10, 4, 6\\}$ and can never visit any odd integer, cutting the period in half to $L = 8$ (and if seeded with an odd $I_0$, it is trapped on the $8$ odd residues). This violates the Hull\u2013Dobell requirement $\\gcd(c, m) = 1$."
@@ -486,7 +486,7 @@
         "prompt_markdown": "According to **Marsaglia's Theorem**, consecutive $d$-tuples $(u_n, u_{n+1}, \\dots, u_{n+d-1})$ from an LCG with modulus $m$ fall on at most $N_{\\text{planes}} \\le (d!\\,m)^{1/d}$ parallel hyperplanes. For a 24-bit LCG ($m = 2^{24} = 16{,}777{,}216$) used to generate 3D coordinates ($d = 3$), what is the theoretical maximum number of parallel 2D planes $(3!\\,m)^{1/3}$ that can contain all generated 3D triplets? (Round to the nearest integer.)",
         "hint_markdown": "Compute $(6 \\times 2^{24})^{1/3} = 6^{1/3} \\times 2^8 = 256 \\times 6^{1/3}$.",
         "correct": {
-          "value": 465,
+          "value": 465.0,
           "tolerance": 2.0
         },
         "rationale_markdown": "Substituting $d = 3$ ($d! = 6$) and $m = 2^{24}$ into Marsaglia's bound:\n$$N_{\\text{planes}} \\le (3!\\,m)^{1/3} = \\left(6 \\times 2^{24}\\right)^{1/3} = 6^{1/3} \\times 2^8 \\approx 1.81712 \\times 256 \\approx 465.2 \\implies 465\\text{ planes}$$"
@@ -498,9 +498,9 @@
         "difficulty": "easy",
         "taught_by": "sec_lcg_marsaglia_and_lfg",
         "prompt_markdown": "Based on the lecture's rule of thumb for avoiding severe Marsaglia hyperplane correlations (*\"For a $k$-bit generator, do not use them more than $k/2$ together\"*), what is the maximum dimension $d_{\\max}$ of a vector that should ever be constructed from consecutive draws of a **48-bit LCG** (such as `drand48`)?",
-        "hint_markdown": "Substitute $k = 48$ into $k / 2$.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "correct": {
-          "value": 24,
+          "value": 24.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "For a $k = 48$-bit LCG, the lecture rule of thumb restricts grouping consecutive outputs to at most:\n$$d_{\\max} = \\frac{k}{2} = \\frac{48}{2} = 24$$"
@@ -516,8 +516,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$.",
-            "text_markdown": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$."
+            "text": "It divides each integer by zero to create an infinite floating-point mantissa.",
+            "text_markdown": "It divides each integer by zero to create an infinite floating-point mantissa."
           },
           {
             "id": "b",
@@ -526,8 +526,8 @@
           },
           {
             "id": "c",
-            "text": "It divides each integer by zero to create an infinite floating-point mantissa.",
-            "text_markdown": "It divides each integer by zero to create an infinite floating-point mantissa."
+            "text": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$.",
+            "text_markdown": "Its internal state stores a ring buffer of the last $k$ integers ($M = k \\times m$ total state bits), expanding the state space to $2^{km}$ configurations instead of $2^m$."
           },
           {
             "id": "d",
@@ -535,7 +535,7 @@
             "text_markdown": "It evaluates a transcendental cosine function $\\cos(z_{n-1})$ at 1024-bit quadruple precision."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Unlike a simple LCG whose state $S_n$ is a single $m$-bit word ($M = m$), an LFG with lags $(k, l)$ ($k > l$) requires the last $k$ words $(z_{n-1}, \\dots, z_{n-k})$ to determine $z_n$. Its internal state therefore has $M = k \\times m$ bits, allowing periods up to $(2^k - 1)2^{m-1}$."
       },
       {
@@ -547,7 +547,7 @@
         "prompt_markdown": "Consider a toy additive Lagged Fibonacci Generator $z_n = (z_{n-3} + z_{n-1}) \\bmod 16$ ($k=3, l=1, m=4$). If the initial 3-word ring buffer is seeded with $(z_0, z_1, z_2) = (3, 7, 11)$, what is the value of $z_4$ (the **second** newly generated integer after $z_3$)?",
         "hint_markdown": "First compute $z_3 = (z_0 + z_2) \\bmod 16 = (3 + 11) \\bmod 16 = 14$. Then compute $z_4 = (z_1 + z_3) \\bmod 16$.",
         "correct": {
-          "value": 5,
+          "value": 5.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "Step 1 ($n = 3$):\n$$z_3 = (z_0 + z_2) \\bmod 16 = (3 + 11) \\bmod 16 = 14$$\nStep 2 ($n = 4$):\n$$z_4 = (z_1 + z_3) \\bmod 16 = (7 + 14) \\bmod 16 = 21 \\bmod 16 = 5$$"
@@ -563,8 +563,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs).",
-            "text_markdown": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs)."
+            "text": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent.",
+            "text_markdown": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent."
           },
           {
             "id": "b",
@@ -578,11 +578,11 @@
           },
           {
             "id": "d",
-            "text": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent.",
-            "text_markdown": "Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent."
+            "text": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs).",
+            "text_markdown": "Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs)."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "explicitly lists the SPRNG parallelization mechanisms:\n- **Multiplicative / Modified Lagged Fibonacci:** *vary initialization* (placing each stream onto a different disjoint cycle of the huge state space).\n- **48-bit & 64-bit LCG ($z_n = a z_{n-1} + p \\bmod m$):** *vary $p$* (distinct prime additive constants).\n- **Prime Modulus LCG:** *vary $a$* (distinct multipliers).\n- **Combined Multiple Recursive:** *vary LCG* component."
       },
       {
@@ -691,7 +691,7 @@
         "prompt_markdown": "If $y = \\sum_{k=1}^{50} x_k^2$ is the sum of squares of $\\nu = 50$ independent standard normal variables $x_k \\sim \\mathcal{N}(0, 1)$, its distribution is $\\chi^2_\\nu$ with mean $\\langle y \\rangle = \\nu = 50$. What is the **standard deviation** $\\sigma_y = \\sqrt{\\text{Var}(y)}$ of $y$?",
         "hint_markdown": "Recall $\\text{Var}(y) = 2\\nu$, so $\\sigma_y = \\sqrt{2\\nu}$.",
         "correct": {
-          "value": 10,
+          "value": 10.0,
           "tolerance": 0.05
         },
         "rationale_markdown": "For a chi-squared distribution with $\\nu = 50$ degrees of freedom, the variance is $\\text{Var}(y) = 2\\nu = 100$, so the standard deviation is:\n$$\\sigma_y = \\sqrt{2\\nu} = \\sqrt{100} = 10$$\nThus we expect $\\chi^2$ to fall roughly within $\\nu \\pm \\sqrt{2\\nu} = 50 \\pm 10$."
@@ -707,13 +707,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined.",
-            "text_markdown": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined."
+            "text": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded.",
+            "text_markdown": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded."
           },
           {
             "id": "b",
-            "text": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded.",
-            "text_markdown": "Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded."
+            "text": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined.",
+            "text_markdown": "Because of the sum rule $\\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final bin is completely determined."
           },
           {
             "id": "c",
@@ -726,7 +726,7 @@
             "text_markdown": "Because the incomplete gamma function is undefined for even integers."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "The total number of samples $P$ is fixed, enforcing the linear constraint (\"sum rule\"):\n$$\\sum_{i=1}^N N_i = P = \\sum_{i=1}^N n_i$$\nThis removes one independent fluctuation mode, leaving $\\nu = N - 1$ degrees of freedom."
       },
       {
@@ -757,8 +757,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random).",
-            "text_markdown": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random)."
+            "text": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$.",
+            "text_markdown": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$."
           },
           {
             "id": "b",
@@ -767,8 +767,8 @@
           },
           {
             "id": "c",
-            "text": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$.",
-            "text_markdown": "A value of $\\chi^2 = 42.0$ is much larger than the expected mean $\\nu = 100$."
+            "text": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random).",
+            "text_markdown": "$Q > 99\\%$ means $\\chi^2$ is impossibly small ($\\chi^2 \\ll \\nu$): genuine independent random numbers must fluctuate by $\\sim \\pm\\sqrt{n_i}$ per bin, so $Q > 99\\%$ rejects the generator as artificially flat or negatively correlated (e.g., quasi-random)."
           },
           {
             "id": "d",
@@ -776,7 +776,7 @@
             "text_markdown": "The chi-squared statistic can never be smaller than $\\nu = 100$ for any sequence of numbers."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "$Q(\\chi^2|\\nu) = \\text{Prob}(y > \\chi^2)$. When $Q > 99\\%$, there is less than a $1\\%$ chance that genuinely independent uniform draws would ever land so close to the flat expected line $n_i$. Such an unnaturally low $\\chi^2$ indicates strong negative serial correlations (like a quasi-random generator or cycling an LCG through its exact full period) and must be **rejected**."
       },
       {
@@ -790,8 +790,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)",
-            "text_markdown": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)"
+            "text": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)",
+            "text_markdown": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)"
           },
           {
             "id": "b",
@@ -805,11 +805,11 @@
           },
           {
             "id": "d",
-            "text": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)",
-            "text_markdown": "$1\\% \\le Q \\le 5\\%$ ($0.01 \\le Q \\le 0.05$)"
+            "text": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)",
+            "text_markdown": "$10\\% \\le Q \\le 90\\%$ ($0.10 \\le Q \\le 0.90$)"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In the lecture's table:\n- $<1\\%$ and $>99\\%$: **reject**\n- $1\\text{\u2013}5\\%$ and $95\\text{\u2013}99\\%$: **suspect**\n- $5\\text{\u2013}10\\%$ and $90\\text{\u2013}95\\%$: **almost suspect**\n- **$10\\text{\u2013}90\\%$**: **pass**"
       },
       {
@@ -913,13 +913,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor.",
-            "text_markdown": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor."
+            "text": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one.",
+            "text_markdown": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one."
           },
           {
             "id": "b",
-            "text": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one.",
-            "text_markdown": "Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses a central processor to deal random numbers one by one."
+            "text": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor.",
+            "text_markdown": "Cloning runs the same physical system parameters on multiple processors with different random number streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each processor."
           },
           {
             "id": "c",
@@ -932,7 +932,7 @@
             "text_markdown": "Cloning partitions space-time domains, whereas Scanning forks new child particles."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In parallel MC:\n- **Cloning:** Multiple independent replicas of the *same* serial simulation run with *different* random number streams to gather $P$ times as many samples in a fixed wall-clock time.\n- **Scanning:** Each processor simulates a *different* physical parameter value (e.g., scanning across temperatures or densities)."
       },
       {
@@ -960,8 +960,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates.",
-            "text_markdown": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates."
+            "text": "The cycle length of each processor is reduced by a factor of $2^{32}$.",
+            "text_markdown": "The cycle length of each processor is reduced by a factor of $2^{32}$."
           },
           {
             "id": "b",
@@ -970,8 +970,8 @@
           },
           {
             "id": "c",
-            "text": "The cycle length of each processor is reduced by a factor of $2^{32}$.",
-            "text_markdown": "The cycle length of each processor is reduced by a factor of $2^{32}$."
+            "text": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates.",
+            "text_markdown": "The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise across the curve), invalidating independent-point curve fitting and error estimates."
           },
           {
             "id": "d",
@@ -979,7 +979,7 @@
             "text_markdown": "The compiler refuses to compile MPI programs when two ranks share a seed."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "If scanned parameter runs stay in phase using the identical random number sequence, they experience the same random kicks at the same steps. While correlated sampling can be exploited deliberately when taking differences, treating in-phase scanned points as *statistically independent* data points underestimates collective curve-fitting uncertainty and can create fake smooth features."
       },
       {
@@ -991,7 +991,7 @@
         "prompt_markdown": "Suppose you parallelize our toy generator $\\text{LCG}(a=5, c=1, m=16)$ across $P = 2$ processors using the **Leapfrog** (Cycle Division) method, so Processor $0$ takes $I_0, I_2, I_4, \\dots$ and Processor $1$ takes $I_1, I_3, I_5, \\dots$. Since stepping twice in $\\text{LCG}(a, c, m)$ obeys $I_{n+2} = (A I_n + C) \\bmod 16$ with effective multiplier $A = a^2 \\bmod 16$, what is the effective multiplier $A$ for each processor's leapfrogged stream?",
         "hint_markdown": "Compute $A = 5^2 \\bmod 16 = 25 \\bmod 16$.",
         "correct": {
-          "value": 9,
+          "value": 9.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "Advancing two steps at a time multiplies by $a$ twice:\n$$I_{n+2} = a(a I_n + c) + c = a^2 I_n + c(a + 1) \\pmod{16}$$\nThus the effective leapfrog multiplier is:\n$$A = a^2 \\bmod 16 = 25 \\bmod 16 = 9$$\n(and the effective additive increment is $C = 1(5 + 1) \\bmod 16 = 6$)."
@@ -1007,8 +1007,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream.",
-            "text_markdown": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream."
+            "text": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables.",
+            "text_markdown": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables."
           },
           {
             "id": "b",
@@ -1022,11 +1022,11 @@
           },
           {
             "id": "d",
-            "text": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables.",
-            "text_markdown": "Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization uses $\\chi^2$ tables."
+            "text": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream.",
+            "text_markdown": "Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "The three strategies are: 1. **Cycle Division:** Leapfrog or Partition of a single cycle (prone to long-range correlation problems in LCGs).\n2. **Cycle Parameterization:** When a PRNG state space partitions into many disjoint cycles, assign a different cycle to each stream.\n3. **Iteration Parameterization:** Assign a different iteration function $T^{(p)}$ (such as distinct prime addends or multipliers) to each stream."
       },
       {
@@ -1073,13 +1073,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks.",
-            "text_markdown": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks."
+            "text": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences.",
+            "text_markdown": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences."
           },
           {
             "id": "b",
-            "text": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences.",
-            "text_markdown": "Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences."
+            "text": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks.",
+            "text_markdown": "Pass the unique MPI rank $p \\in \\{0, 1, \\dots, P-1\\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks."
           },
           {
             "id": "c",
@@ -1092,7 +1092,7 @@
             "text_markdown": "Call `free_sprng` before calling `init_sprng`."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In SPRNG, `streamnum` identifies which of the `nstreams` disjoint parallel streams belongs to the calling processor (typically its MPI rank $0, \\dots, P-1$), while the shared global `seed` ensures the entire parallel run can be deterministically reproduced."
       },
       {
@@ -1101,13 +1101,13 @@
         "question_type": "single_select",
         "difficulty": "medium",
         "taught_by": "sec_parallel_prng_and_sprng",
-        "prompt_markdown": "highlights evaluating thousands of Feynman diagram integrals in parallel, each to an accuracy of $\\epsilon = 10^{-6}$. Why is **cycle length exhaustion** a primary hazard in this calculation?",
+        "prompt_markdown": "Statistical evaluation highlights testing thousands of Feynman diagram integrals in parallel, each to an accuracy of $\\epsilon = 10^{-6}$. Why is **cycle length exhaustion** a primary hazard in this calculation?",
         "hint_markdown": "How many Monte Carlo samples $N$ are required to reach a relative statistical error $\\epsilon \\sim N^{-1/2} = 10^{-6}$ for just ONE integral?",
         "options": [
           {
             "id": "a",
-            "text": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!",
-            "text_markdown": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!"
+            "text": "Feynman diagrams can only be integrated using physical Geiger counters.",
+            "text_markdown": "Feynman diagrams can only be integrated using physical Geiger counters."
           },
           {
             "id": "b",
@@ -1116,8 +1116,8 @@
           },
           {
             "id": "c",
-            "text": "Feynman diagrams can only be integrated using physical Geiger counters.",
-            "text_markdown": "Feynman diagrams can only be integrated using physical Geiger counters."
+            "text": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!",
+            "text_markdown": "Reaching $\\epsilon \\sim N^{-1/2} = 10^{-6}$ requires $N \\sim 10^{12}$ samples per integral, so evaluating thousands of multi-dimensional integrals consumes $10^{15}\\text{\u2013}10^{16}$ random numbers\u2014completely exhausting 32-bit and even 48-bit (`drand48`) generators!"
           },
           {
             "id": "d",
@@ -1125,7 +1125,7 @@
             "text_markdown": "Cycle exhaustion only occurs when $N < 16$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Because Monte Carlo error scales as $N^{-1/2}$, achieving $10^{-6}$ accuracy requires $N \\sim (10^6)^2 = 10^{12}$ evaluations per diagram! Across thousands of diagrams (each requiring multiple random coordinates per sample), the total demand easily exceeds $2^{48} \\approx 2.8 \\times 10^{14}$, exhausting 32-bit and 48-bit generators."
       },
       {
@@ -1139,8 +1139,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces.",
-            "text_markdown": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces."
+            "text": "Each processor only calls its PRNG once at $t = 0$.",
+            "text_markdown": "Each processor only calls its PRNG once at $t = 0$."
           },
           {
             "id": "b",
@@ -1154,11 +1154,11 @@
           },
           {
             "id": "d",
-            "text": "Each processor only calls its PRNG once at $t = 0$.",
-            "text_markdown": "Each processor only calls its PRNG once at $t = 0$."
+            "text": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces.",
+            "text_markdown": "Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In spatial domain decomposition, degrees of freedom in neighboring processors interact directly across domain boundaries at every step. Any cross-correlation between Stream $p$ and Stream $p+1$ translates directly into a physical spatial correlation artifact along the subdomain boundaries."
       },
       {
@@ -1168,7 +1168,7 @@
         "difficulty": "medium",
         "taught_by": "sec_lcg_marsaglia_and_lfg",
         "prompt_markdown": "For our full-period generator $\\text{LCG}(5, 1, 16, 0)$, the 16 generated integers over one complete cycle are $\\{0, 1, 2, \\dots, 15\\}$, mapped to $R_n = I_n / 16 \\in [0, 1)$. What is the exact discrete cycle average $\\langle R \\rangle_{\\text{cycle}} = \\frac{1}{16}\\sum_{n=0}^{15} \\frac{I_n}{16}$? (Enter as a decimal to 4 decimal places.)",
-        "hint_markdown": "Use $\\sum_{k=0}^{15} k = \\frac{15 \\times 16}{2} = 120$, then divide by $16 \\times 16 = 256$.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "correct": {
           "value": 0.46875,
           "tolerance": 0.001

@@ -275,13 +275,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$",
-            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$"
+            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$",
+            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$"
           },
           {
             "id": "b",
-            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$",
-            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-\\alpha/D}$"
+            "text": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$",
+            "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-D/\\alpha}$"
           },
           {
             "id": "c",
@@ -294,7 +294,7 @@
             "text_markdown": "$T_{\\text{int}} \\sim \\varepsilon^{-D \\alpha}$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "From $\\varepsilon \\sim h^\\alpha$, we have $h \\sim \\varepsilon^{1/\\alpha}$. Because the number of grid points in $D$ dimensions is $N = h^{-D}$, the CPU time scales as:\n$$T_{\\text{int}} \\sim N = h^{-D} \\sim \\left(\\varepsilon^{1/\\alpha}\\right)^{-D} = \\varepsilon^{-D/\\alpha}$$"
       },
       {
@@ -328,8 +328,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$.",
-            "text_markdown": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$."
+            "text": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$.",
+            "text_markdown": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$."
           },
           {
             "id": "b",
@@ -338,8 +338,8 @@
           },
           {
             "id": "c",
-            "text": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$.",
-            "text_markdown": "Because the Trapezoidal rule is exact for all functions in $2\\text{D}$."
+            "text": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$.",
+            "text_markdown": "Because $\\log T_{\\text{quad}} = -(D/2)\\log\\varepsilon + \\text{const}$ has slope $-D/2$, which equals the Monte Carlo slope $-2$ at $D = 4$ and becomes steeper ($-3$ and $-4$) for $D = 6$ and $8$."
           },
           {
             "id": "d",
@@ -347,7 +347,7 @@
             "text_markdown": "Because random number generators run faster in $4\\text{D}$ than in $2\\text{D}$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Taking logarithms of $T_{\\text{quad}} \\propto \\varepsilon^{-D/2}$ gives $\\log T_{\\text{quad}} = -\\frac{D}{2}\\log\\varepsilon + C$, while $\\log T_{\\text{MC}} = -2\\log\\varepsilon + C'$. At $D = 4$, the quadrature slope is $-4/2 = -2$, exactly parallel to the MC slope! For $D = 6$ and $8$, the slopes are $-3$ and $-4$, so CPU cost explodes much faster than MC as error decreases toward the \"Good\" (left) side of the plot."
       },
       {
@@ -431,8 +431,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$.",
-            "text_markdown": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$."
+            "text": "$C(y)$ can decrease whenever $P(y)$ decreases.",
+            "text_markdown": "$C(y)$ can decrease whenever $P(y)$ decreases."
           },
           {
             "id": "b",
@@ -446,11 +446,11 @@
           },
           {
             "id": "d",
-            "text": "$C(y)$ can decrease whenever $P(y)$ decreases.",
-            "text_markdown": "$C(y)$ can decrease whenever $P(y)$ decreases."
+            "text": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$.",
+            "text_markdown": "$C(y)$ is monotonically non-decreasing with $0 \\le C(y) \\le 1$, $C(-\\infty) = 0$, $C(+\\infty) = 1$, and $\\frac{dC(y)}{dy} = P(y)$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because the integrand $P(x) \\ge 0$ is non-negative everywhere, accumulating area from $-\\infty$ to $y$ produces a monotonically non-decreasing function bounded by $0 \\le C(y) \\le 1$, with fundamental theorem of calculus derivative $dC(y)/dy = P(y)$."
       },
       {
@@ -511,13 +511,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$.",
-            "text_markdown": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$."
+            "text": "$p_y(y) = 0$, because the positive and negative branches cancel out.",
+            "text_markdown": "$p_y(y) = 0$, because the positive and negative branches cancel out."
           },
           {
             "id": "b",
-            "text": "$p_y(y) = 0$, because the positive and negative branches cancel out.",
-            "text_markdown": "$p_y(y) = 0$, because the positive and negative branches cancel out."
+            "text": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$.",
+            "text_markdown": "$p_y(y) = \\frac{1}{2\\sqrt{y}}$, because the two branches $x = +\\sqrt{y}$ and $x = -\\sqrt{y}$ each contribute $\\frac{1}{2} \\cdot \\frac{1}{2\\sqrt{y}} = \\frac{1}{4\\sqrt{y}}$."
           },
           {
             "id": "c",
@@ -530,7 +530,7 @@
             "text_markdown": "$p_y(y) = 2\\sqrt{y}$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "When $g(x)$ is not monotonic, probability conservation sums the absolute Jacobian contributions from all pre-image roots $g(x^{(k)}) = y$:\n$$p_y(y) = p_x(+\\sqrt{y})\\left|\\frac{1}{2\\sqrt{y}}\\right| + p_x(-\\sqrt{y})\\left|\\frac{1}{-2\\sqrt{y}}\\right| = \\frac{1}{2}\\frac{1}{2\\sqrt{y}} + \\frac{1}{2}\\frac{1}{2\\sqrt{y}} = \\frac{1}{2\\sqrt{y}}$$\nwhich properly integrates to $\\int_0^1 \\frac{dy}{2\\sqrt{y}} = [\\sqrt{y}]_0^1 = 1$."
       },
       {
@@ -596,8 +596,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible.",
-            "text_markdown": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible."
+            "text": "The target distribution $p(y)$ must be a constant function.",
+            "text_markdown": "The target distribution $p(y)$ must be a constant function."
           },
           {
             "id": "b",
@@ -606,8 +606,8 @@
           },
           {
             "id": "c",
-            "text": "The target distribution $p(y)$ must be a constant function.",
-            "text_markdown": "The target distribution $p(y)$ must be a constant function."
+            "text": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible.",
+            "text_markdown": "The definite/indefinite integral $C(y) = \\int_{-\\infty}^y du\\,p(u)$ must be known and analytically (or efficiently numerically) invertible."
           },
           {
             "id": "d",
@@ -615,7 +615,7 @@
             "text_markdown": "The second derivative $p''(y)$ must be zero everywhere."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Direct 1D Inverse Transform Sampling sets $x = C(y) = \\int_{-\\infty}^y p(u)\\,du$ and solves for $y = C^{-1}(x)$, which requires that the cumulative distribution function $C(y)$ be known and invertible."
       },
       {
@@ -632,8 +632,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$.",
-            "text_markdown": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$."
+            "text": "$y$ is the point where the slope $dp/dy = 0.25$.",
+            "text_markdown": "$y$ is the point where the slope $dp/dy = 0.25$."
           },
           {
             "id": "b",
@@ -647,11 +647,11 @@
           },
           {
             "id": "d",
-            "text": "$y$ is the point where the slope $dp/dy = 0.25$.",
-            "text_markdown": "$y$ is the point where the slope $dp/dy = 0.25$."
+            "text": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$.",
+            "text_markdown": "$y$ is the value (first quartile) such that exactly fraction $x = 0.25$ ($25\\%$) of the total area under $p(y)$ lies to the left of $y$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "As explained, $C(y)$ is the cumulative area under $p(y)$ to the left of $y$. Solving $C(y) = x = 0.25$ returns the exact quantile $y$ that has $25\\%$ of the probability distribution's area to its left."
       },
       {
@@ -715,13 +715,13 @@
         "options": [
           {
             "id": "a",
-            "text": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$.",
-            "text_markdown": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$."
+            "text": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$.",
+            "text_markdown": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$."
           },
           {
             "id": "b",
-            "text": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$.",
-            "text_markdown": "Because $\\ln(1 - x) = \\ln(x)$ for all real numbers $x$."
+            "text": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$.",
+            "text_markdown": "If $x$ is uniform on $(0, 1)$, then $x' = 1 - x$ has the exact same $\\text{Uniform}(0, 1)$ distribution; furthermore, $x = 0$ must be excluded so $\\ln(x)$ does not diverge to $-\\infty$."
           },
           {
             "id": "c",
@@ -734,7 +734,7 @@
             "text_markdown": "Replacing $1 - x$ with $x$ changes the mean of $y$ from $1/\\lambda$ to $2/\\lambda$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "For $x \\sim \\text{Uniform}(0, 1)$, the reflected variable $x' = 1 - x$ is identically distributed as $\\text{Uniform}(0, 1)$, saving one subtraction per sample. Excluding $0$ (using $x' \\in (0, 1]$ as noted ) prevents `log(0)` floating-point overflow."
       },
       {
@@ -748,8 +748,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$y = u^{1/4}$",
-            "text_markdown": "$y = u^{1/4}$"
+            "text": "$y = \\frac{1}{4}u^{1/3}$",
+            "text_markdown": "$y = \\frac{1}{4}u^{1/3}$"
           },
           {
             "id": "b",
@@ -758,8 +758,8 @@
           },
           {
             "id": "c",
-            "text": "$y = \\frac{1}{4}u^{1/3}$",
-            "text_markdown": "$y = \\frac{1}{4}u^{1/3}$"
+            "text": "$y = u^{1/4}$",
+            "text_markdown": "$y = u^{1/4}$"
           },
           {
             "id": "d",
@@ -767,7 +767,7 @@
             "text_markdown": "$y = -\\frac{1}{4}\\ln u$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Integrating the PDF gives the cumulative distribution function:\n$$C(y) = \\int_0^y 4t^3\\,dt = y^4$$\nSetting $C(y) = u$ and inverting on $y \\in [0, 1]$ yields:\n$$y = u^{1/4}$$"
       },
       {
@@ -812,8 +812,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$",
-            "text_markdown": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$"
+            "text": "$y = \\sin(2\\pi u)$",
+            "text_markdown": "$y = \\sin(2\\pi u)$"
           },
           {
             "id": "b",
@@ -827,11 +827,11 @@
           },
           {
             "id": "d",
-            "text": "$y = \\sin(2\\pi u)$",
-            "text_markdown": "$y = \\sin(2\\pi u)$"
+            "text": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$",
+            "text_markdown": "$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Rearranging $u = \\frac{1}{2} + \\frac{1}{\\pi}\\arctan(y)$ gives $\\arctan(y) = \\pi\\left(u - \\frac{1}{2}\\right)$, and taking the tangent of both sides yields:\n$$y = \\tan\\!\\left[\\pi\\left(u - \\frac{1}{2}\\right)\\right]$$"
       },
       {
@@ -895,13 +895,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$",
-            "text_markdown": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$"
+            "text": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$",
+            "text_markdown": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$"
           },
           {
             "id": "b",
-            "text": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$",
-            "text_markdown": "$y_1 = -\\ln(x_1)\\cos(x_2)$ and $y_2 = -\\ln(x_1)\\sin(x_2)$"
+            "text": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$",
+            "text_markdown": "$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2)$ and $y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$"
           },
           {
             "id": "c",
@@ -914,7 +914,7 @@
             "text_markdown": "$y_1 = \\sqrt{x_1 + x_2}$ and $y_2 = \\sqrt{x_1 - x_2}$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In Box\u2013Muller, $r = \\sqrt{-2\\ln x_1}$ generates the Rayleigh radial distribution and $\\theta = 2\\pi x_2$ generates a uniform polar angle on $[0, 2\\pi)$, giving:\n$$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2), \\qquad y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$$"
       },
       {
@@ -941,7 +941,7 @@
         "difficulty": "medium",
         "taught_by": "sec_inverse_transform_and_box_muller",
         "prompt_markdown": "Using the inverse Box\u2013Muller relation, $$x_1 = \\exp\\!\\left(-\\frac{1}{2}\\left[y_1^2 + y_2^2\\right]\\right)$$\nif a generated Gaussian pair happens to fall on the circle of radius $\\sqrt{y_1^2 + y_2^2} = \\sqrt{2\\ln 4}$ (so $y_1^2 + y_2^2 = 2\\ln 4$), what was the value of the input uniform deviate $x_1$?",
-        "hint_markdown": "Substitute the squared radius into the radial CDF mapping and simplify the exponential of the logarithm.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "correct": {
           "value": 0.25,
           "tolerance": 0.005
@@ -959,8 +959,8 @@
         "options": [
           {
             "id": "a",
-            "text": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation.",
-            "text_markdown": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation."
+            "text": "It proves that $y_1 + y_2 = 0$.",
+            "text_markdown": "It proves that $y_1 + y_2 = 0$."
           },
           {
             "id": "b",
@@ -969,8 +969,8 @@
           },
           {
             "id": "c",
-            "text": "It proves that $y_1 + y_2 = 0$.",
-            "text_markdown": "It proves that $y_1 + y_2 = 0$."
+            "text": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation.",
+            "text_markdown": "It proves that $y_1$ and $y_2$ are statistically independent Normal Gaussian variables, so both can be used as independent draws in a simulation."
           },
           {
             "id": "d",
@@ -978,7 +978,7 @@
             "text_markdown": "It shows that one of the two variables must be discarded."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Two random variables are **statistically independent** if and only if their joint PDF factors into the product of their marginal PDFs: $p(y_1, y_2) = p_1(y_1)p_2(y_2)$. Thus every Box\u2013Muller evaluation produces **two** independent standard normal deviates!"
       },
       {
@@ -992,8 +992,8 @@
         "options": [
           {
             "id": "a",
-            "text": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair.",
-            "text_markdown": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair."
+            "text": "It works without a random number generator.",
+            "text_markdown": "It works without a random number generator."
           },
           {
             "id": "b",
@@ -1007,11 +1007,11 @@
           },
           {
             "id": "d",
-            "text": "It works without a random number generator.",
-            "text_markdown": "It works without a random number generator."
+            "text": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair.",
+            "text_markdown": "It avoids evaluating slow trigonometric functions ($\\sin$ and $\\cos$) by replacing $\\cos(2\\pi x_2)$ and $\\sin(2\\pi x_2)$ with the algebraic ratios $v_1/\\sqrt{R^2}$ and $v_2/\\sqrt{R^2}$, while still yielding two independent Gaussian numbers per accepted pair."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "By sampling $(v_1, v_2)$ uniformly inside the unit circle ($R^2 = v_1^2 + v_2^2 \\le 1$), the directional cosines are given algebraically by $\\cos\\theta = v_1/\\sqrt{R^2}$ and $\\sin\\theta = v_2/\\sqrt{R^2}$, completely bypassing transcendental $\\cos$ and $\\sin$ calls while still delivering two Gaussian deviates (\"1 for now, 2 for next time\")."
       },
       {

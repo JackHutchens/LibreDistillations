@@ -65,13 +65,13 @@
         "options": [
           {
             "id": "a",
-            "text": "No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface $E_{\\text{BO}}(\\mathbf{R}_I)$ in the nuclear Schr\u00f6dinger equation\u2014treating nuclei classically is a separate approximation made in classical MD",
-            "text_markdown": "No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface $E_{\\text{BO}}(\\mathbf{R}_I)$ in the nuclear Schr\u00f6dinger equation\u2014treating nuclei classically is a separate approximation made in classical MD"
+            "text": "Yes; factoring $\\Psi(\\mathbf{r}_i, \\mathbf{R}_I) = \\psi(\\mathbf{r}_i | \\mathbf{R}_I)\\phi(\\mathbf{R}_I)$ mathematically forces $\\phi(\\mathbf{R}_I)$ to be a classical Dirac delta function",
+            "text_markdown": "Yes; factoring $\\Psi(\\mathbf{r}_i, \\mathbf{R}_I) = \\psi(\\mathbf{r}_i | \\mathbf{R}_I)\\phi(\\mathbf{R}_I)$ mathematically forces $\\phi(\\mathbf{R}_I)$ to be a classical Dirac delta function"
           },
           {
             "id": "b",
-            "text": "Yes; factoring $\\Psi(\\mathbf{r}_i, \\mathbf{R}_I) = \\psi(\\mathbf{r}_i | \\mathbf{R}_I)\\phi(\\mathbf{R}_I)$ mathematically forces $\\phi(\\mathbf{R}_I)$ to be a classical Dirac delta function",
-            "text_markdown": "Yes; factoring $\\Psi(\\mathbf{r}_i, \\mathbf{R}_I) = \\psi(\\mathbf{r}_i | \\mathbf{R}_I)\\phi(\\mathbf{R}_I)$ mathematically forces $\\phi(\\mathbf{R}_I)$ to be a classical Dirac delta function"
+            "text": "No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface $E_{\\text{BO}}(\\mathbf{R}_I)$ in the nuclear Schr\u00f6dinger equation\u2014treating nuclei classically is a separate approximation made in classical MD",
+            "text_markdown": "No; Born-Oppenheimer only replaces the electronic degrees of freedom with an effective potential energy surface $E_{\\text{BO}}(\\mathbf{R}_I)$ in the nuclear Schr\u00f6dinger equation\u2014treating nuclei classically is a separate approximation made in classical MD"
           },
           {
             "id": "c",
@@ -84,7 +84,7 @@
             "text_markdown": "Only for hydrogen and helium; heavier nuclei become strictly classical under the Born-Oppenheimer approximation"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "The Born-Oppenheimer approximation eliminates explicit electrons and yields an effective nuclear Hamiltonian $H_{\\text{nuc}} = H_I + E_{\\text{BO}}(\\mathbf{R}_I)$ acting on the quantum nuclear wavefunction $\\phi(\\mathbf{R}_I)$. Classical MD makes a *second*, distinct approximation (the classical limit $\\hbar \\to 0$ for nuclei)."
       },
       {
@@ -111,13 +111,13 @@
         "taught_by": [
           "sec_bo_and_atomic_units"
         ],
-        "prompt_markdown": "According to of the reference notes, why is solving the electronic-structure problem directly to predict room-temperature phase stability ($\\sim 100\\text{\u2013}300\\text{ K}$) so computationally demanding?",
+        "prompt_markdown": "According to the principles of simulation methodology,, why is solving the electronic-structure problem directly to predict room-temperature phase stability ($\\sim 100\\text{\u2013}300\\text{ K}$) so computationally demanding?",
         "hint_markdown": "Compare $100\\text{ K}$ in eV and Hartrees against the total electronic energy of an atom.",
         "options": [
           {
             "id": "a",
-            "text": "$100\\text{ K}$ corresponds to only $\\approx 0.3\\text{ mHa}$ ($0.01\\text{ eV}$), whereas total electronic energies are tens to thousands of Hartrees ($1\\text{ Ha} \\approx 316,000\\text{ K}$), requiring extreme relative precision across many decimal places",
-            "text_markdown": "$100\\text{ K}$ corresponds to only $\\approx 0.3\\text{ mHa}$ ($0.01\\text{ eV}$), whereas total electronic energies are tens to thousands of Hartrees ($1\\text{ Ha} \\approx 316,000\\text{ K}$), requiring extreme relative precision across many decimal places"
+            "text": "The Bohr radius $a_0 = 0.529\\text{ \u00c5}$ is larger than macroscopic simulation boxes",
+            "text_markdown": "The Bohr radius $a_0 = 0.529\\text{ \u00c5}$ is larger than macroscopic simulation boxes"
           },
           {
             "id": "b",
@@ -126,8 +126,8 @@
           },
           {
             "id": "c",
-            "text": "The Bohr radius $a_0 = 0.529\\text{ \u00c5}$ is larger than macroscopic simulation boxes",
-            "text_markdown": "The Bohr radius $a_0 = 0.529\\text{ \u00c5}$ is larger than macroscopic simulation boxes"
+            "text": "$100\\text{ K}$ corresponds to only $\\approx 0.3\\text{ mHa}$ ($0.01\\text{ eV}$), whereas total electronic energies are tens to thousands of Hartrees ($1\\text{ Ha} \\approx 316,000\\text{ K}$), requiring extreme relative precision across many decimal places",
+            "text_markdown": "$100\\text{ K}$ corresponds to only $\\approx 0.3\\text{ mHa}$ ($0.01\\text{ eV}$), whereas total electronic energies are tens to thousands of Hartrees ($1\\text{ Ha} \\approx 316,000\\text{ K}$), requiring extreme relative precision across many decimal places"
           },
           {
             "id": "d",
@@ -135,7 +135,7 @@
             "text_markdown": "The Coulomb interaction between nuclei vanishes at $T = 100\\text{ K}$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Since $1\\text{ Ha} \\approx 316,000\\text{ K}$, an energy resolution of $100\\text{ K}$ is just $0.0003\\text{ Ha} = 0.3\\text{ mHa} \\approx 0.01\\text{ eV}$. Resolving such tiny energy differences on top of huge total electronic energies requires many significant digits."
       },
       {
@@ -151,8 +151,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Ab initio Molecular Dynamics (e.g., Born-Oppenheimer / Car-Parrinello MD)",
-            "text_markdown": "Ab initio Molecular Dynamics (e.g., Born-Oppenheimer / Car-Parrinello MD)"
+            "text": "Hard-sphere Monte Carlo",
+            "text_markdown": "Hard-sphere Monte Carlo"
           },
           {
             "id": "b",
@@ -166,11 +166,11 @@
           },
           {
             "id": "d",
-            "text": "Hard-sphere Monte Carlo",
-            "text_markdown": "Hard-sphere Monte Carlo"
+            "text": "Ab initio Molecular Dynamics (e.g., Born-Oppenheimer / Car-Parrinello MD)",
+            "text_markdown": "Ab initio Molecular Dynamics (e.g., Born-Oppenheimer / Car-Parrinello MD)"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In the ab initio approach, electronic structure calculations (such as Kohn-Sham DFT) are performed 'on the fly' at each nuclear configuration along the trajectory, coupling quantum electrons with classical nuclei without needing an analytic form for $V(\\mathbf{R})$."
       },
       {
@@ -221,13 +221,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Statistical error is governed by finite sampling (the number of time steps $N_{\\text{steps}}$), whereas systematic error is governed by inaccuracies in the interatomic potential $V(\\mathbf{R})$",
-            "text_markdown": "Statistical error is governed by finite sampling (the number of time steps $N_{\\text{steps}}$), whereas systematic error is governed by inaccuracies in the interatomic potential $V(\\mathbf{R})$"
+            "text": "Statistical error is caused by the Born-Oppenheimer approximation, whereas systematic error vanishes as $N_{\\text{steps}}^{-1/2}$",
+            "text_markdown": "Statistical error is caused by the Born-Oppenheimer approximation, whereas systematic error vanishes as $N_{\\text{steps}}^{-1/2}$"
           },
           {
             "id": "b",
-            "text": "Statistical error is caused by the Born-Oppenheimer approximation, whereas systematic error vanishes as $N_{\\text{steps}}^{-1/2}$",
-            "text_markdown": "Statistical error is caused by the Born-Oppenheimer approximation, whereas systematic error vanishes as $N_{\\text{steps}}^{-1/2}$"
+            "text": "Statistical error is governed by finite sampling (the number of time steps $N_{\\text{steps}}$), whereas systematic error is governed by inaccuracies in the interatomic potential $V(\\mathbf{R})$",
+            "text_markdown": "Statistical error is governed by finite sampling (the number of time steps $N_{\\text{steps}}$), whereas systematic error is governed by inaccuracies in the interatomic potential $V(\\mathbf{R})$"
           },
           {
             "id": "c",
@@ -240,7 +240,7 @@
             "text_markdown": "Ab initio MD has zero statistical error even for a 10-femtosecond trajectory"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Longer runs ($N_{\\text{steps}} \\to \\infty$) reduce **statistical (sampling) error** as $N_{\\text{steps}}^{-1/2}$, but cannot reduce **systematic (model) error** arising from an imperfect potential $V(\\mathbf{R})$. Conversely, ab initio DFT has lower systematic error but often suffers from larger statistical error due to short affordable trajectories."
       },
       {
@@ -296,8 +296,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole\u2013induced-dipole) forces; the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential $\\exp(-r/c)$",
-            "text_markdown": "The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole\u2013induced-dipole) forces; the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential $\\exp(-r/c)$"
+            "text": "The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational repulsion",
+            "text_markdown": "The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational repulsion"
           },
           {
             "id": "b",
@@ -306,8 +306,8 @@
           },
           {
             "id": "c",
-            "text": "The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational repulsion",
-            "text_markdown": "The $-r^{-6}$ term represents permanent monopole-monopole Coulomb attraction, and $+r^{-12}$ represents gravitational repulsion"
+            "text": "The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole\u2013induced-dipole) forces; the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential $\\exp(-r/c)$",
+            "text_markdown": "The $-r^{-6}$ attraction arises physically from London dispersion (fluctuating dipole\u2013induced-dipole) forces; the $+r^{-12}$ Pauli core repulsion is chosen for computational speed because $(r^{-6})^2$ avoids evaluating an exponential $\\exp(-r/c)$"
           },
           {
             "id": "d",
@@ -315,7 +315,7 @@
             "text_markdown": "The $+r^{-12}$ term is physically softer than $\\exp(-r/c)$ at very small $r$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Quantum perturbation theory shows that instantaneous dipole fluctuations on one closed-shell atom induce a dipole on a neighbor, producing a $-C_6/r^6$ dispersion attraction. True core overlap repulsion is exponential $\\exp(-r/c)$, but Lennard-Jones chose $r^{-12} = (r^{-6})^2$ so it can be computed by a single multiplication after finding $r^{-6}$."
       },
       {
@@ -359,13 +359,13 @@
         "taught_by": [
           "sec_pair_potentials_lj_morse"
         ],
-        "prompt_markdown": "of the reference notes states: **\"There is only 1 LJ system!\"** and compares reduced critical and triple-point parameters ($T_c^*, P_c^*, \\rho_c^*, T_t^*, P_t^*$) across Neon, Argon, Krypton, and Xenon. What does this principle imply?",
+        "prompt_markdown": "In the formulation of Lennard-Jones reduced units, the reference notes emphasize that **\"There is only 1 LJ system!\"** and compares reduced critical and triple-point parameters ($T_c^*, P_c^*, \\rho_c^*, T_t^*, P_t^*$) across Neon, Argon, Krypton, and Xenon. What does this principle imply?",
         "hint_markdown": "Think about what happens when lengths, energies, and temperatures are scaled by $\\sigma$ and $\\varepsilon$.",
         "options": [
           {
             "id": "a",
-            "text": "When expressed in reduced units ($T^* = k_B T/\\varepsilon$, $\\rho^* = \\rho\\sigma^3$, $P^* = P\\sigma^3/\\varepsilon$), all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram",
-            "text_markdown": "When expressed in reduced units ($T^* = k_B T/\\varepsilon$, $\\rho^* = \\rho\\sigma^3$, $P^* = P\\sigma^3/\\varepsilon$), all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram"
+            "text": "Quantum zero-point effects are identical in Helium-4 and Xenon",
+            "text_markdown": "Quantum zero-point effects are identical in Helium-4 and Xenon"
           },
           {
             "id": "b",
@@ -379,11 +379,11 @@
           },
           {
             "id": "d",
-            "text": "Quantum zero-point effects are identical in Helium-4 and Xenon",
-            "text_markdown": "Quantum zero-point effects are identical in Helium-4 and Xenon"
+            "text": "When expressed in reduced units ($T^* = k_B T/\\varepsilon$, $\\rho^* = \\rho\\sigma^3$, $P^* = P\\sigma^3/\\varepsilon$), all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram",
+            "text_markdown": "When expressed in reduced units ($T^* = k_B T/\\varepsilon$, $\\rho^* = \\rho\\sigma^3$, $P^* = P\\sigma^3/\\varepsilon$), all classical Lennard-Jones substances obey the exact same universal equation of state and phase diagram"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In reduced units ($r^* = r/\\sigma, E^* = E/\\varepsilon$), the parameters $\\sigma$ and $\\varepsilon$ scale out of the classical partition function and equations of motion. Consequently, all heavy noble gases collapse onto a single universal phase diagram ($T_c^* \\approx 1.31$, $T_t^* \\approx 0.70$)."
       },
       {
@@ -502,23 +502,23 @@
         "taught_by": [
           "sec_pair_potentials_lj_morse"
         ],
-        "prompt_markdown": "of the reference notes (\"Various Other Empirical Potentials\"), the **Hard Sphere** potential ($v(r) = \\infty$ for $r < \\sigma$, $0$ for $r \\ge \\sigma$, used by Alder & Wainwright in 1957) is described as having **\"no integration error\"**. Why?",
+        "prompt_markdown": "In the discussion of Various Other Empirical Potentials, the **Hard Sphere** potential ($v(r) = \\infty$ for $r < \\sigma$, $0$ for $r \\ge \\sigma$, used by Alder & Wainwright in 1957) is described as having **\"no integration error\"**. Why?",
         "hint_markdown": "How do hard spheres move between instantaneous elastic collisions?",
         "options": [
           {
             "id": "a",
-            "text": "Between collisions, hard spheres experience zero force and travel in exact straight lines ($\\mathbf{r}(t) = \\mathbf{r}_0 + \\mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep truncation error",
-            "text_markdown": "Between collisions, hard spheres experience zero force and travel in exact straight lines ($\\mathbf{r}(t) = \\mathbf{r}_0 + \\mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep truncation error"
-          },
-          {
-            "id": "b",
             "text": "The hard-sphere potential is infinitely differentiable ($C^\\infty$) at $r = \\sigma$",
             "text_markdown": "The hard-sphere potential is infinitely differentiable ($C^\\infty$) at $r = \\sigma$"
           },
           {
+            "id": "b",
+            "text": "Between collisions, hard spheres experience zero force and travel in exact straight lines ($\\mathbf{r}(t) = \\mathbf{r}_0 + \\mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep truncation error",
+            "text_markdown": "Between collisions, hard spheres experience zero force and travel in exact straight lines ($\\mathbf{r}(t) = \\mathbf{r}_0 + \\mathbf{v}t$), allowing event-driven MD to solve collision times analytically without finite-difference timestep truncation error"
+          },
+          {
             "id": "c",
-            "text": "Hard spheres do not exchange momentum during collisions",
-            "text_markdown": "Hard spheres do not exchange momentum during collisions"
+            "text": "Hard spheres do not exchange momentum during collisions, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Hard spheres do not exchange momentum during collisions, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
@@ -526,7 +526,7 @@
             "text_markdown": "The Verlet algorithm has $\\mathcal{O}(\\Delta t^{12})$ accuracy for discontinuous step potentials"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Because $v(r) = 0$ for $r > \\sigma$, particles move in exact ballistic straight lines between collisions. Event-driven MD advances directly from one exact quadratic collision time to the next with only floating-point roundoff error (no $\\Delta t$ discretization error)."
       },
       {
@@ -537,23 +537,23 @@
         "taught_by": [
           "sec_pair_potentials_lj_morse"
         ],
-        "prompt_markdown": "of the reference notes (\"Fit for a Born potential\"), the parameters $A$ and $n$ in $v(r) = \\frac{Z_i Z_j e^2}{r} + \\frac{A}{r^n}$ for NaCl are determined by fitting the $T=0$ cohesive energy and lattice constant $a_0$ (yielding $n = 8.87$). When this fitted potential is used to predict the bulk modulus $B$, it gives $4.35 \\times 10^{11}\\text{ dyn/cm}^2$ compared to the experimental value of $2.52 \\times 10^{11}\\text{ dyn/cm}^2$. What lesson does this illustrate?",
+        "prompt_markdown": "In the discussion of Fit for a Born potential, the parameters $A$ and $n$ in $v(r) = \\frac{Z_i Z_j e^2}{r} + \\frac{A}{r^n}$ for NaCl are determined by fitting the $T=0$ cohesive energy and lattice constant $a_0$ (yielding $n = 8.87$). When this fitted potential is used to predict the bulk modulus $B$, it gives $4.35 \\times 10^{11}\\text{ dyn/cm}^2$ compared to the experimental value of $2.52 \\times 10^{11}\\text{ dyn/cm}^2$. What lesson does this illustrate?",
         "hint_markdown": "Read the highlighted takeaway at the bottom of.",
         "options": [
           {
             "id": "a",
-            "text": "\"You get what you fit for!\" \u2014 fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$) does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)",
-            "text_markdown": "\"You get what you fit for!\" \u2014 fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$) does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)"
+            "text": "The Madelung constant for a simple cubic alternating lattice is zero",
+            "text_markdown": "The Madelung constant for a simple cubic alternating lattice is zero"
           },
           {
             "id": "b",
-            "text": "NaCl is a covalent metal that has zero Coulomb interaction",
-            "text_markdown": "NaCl is a covalent metal that has zero Coulomb interaction"
+            "text": "NaCl is a covalent metal that has zero Coulomb interaction, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "NaCl is a covalent metal that has zero Coulomb interaction, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "c",
-            "text": "The Madelung constant for a simple cubic alternating lattice is zero",
-            "text_markdown": "The Madelung constant for a simple cubic alternating lattice is zero"
+            "text": "\"You get what you fit for!\" \u2014 fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$) does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)",
+            "text_markdown": "\"You get what you fit for!\" \u2014 fitting a two-parameter form to energy and lattice constant ($E$ and $dE/da_0$) does not guarantee accuracy for un-fitted second derivatives like the bulk modulus ($d^2E/da_0^2$)"
           },
           {
             "id": "d",
@@ -561,7 +561,7 @@
             "text_markdown": "A power-law core $A/r^n$ always underestimates the bulk modulus by a factor of 10"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Because the repulsive term had only two adjustable parameters ($A$ and $n$) that were consumed by fitting $E_{\\text{bind}}(a_0)$ and $dE_{\\text{bind}}/da_0 = 0$, the curvature $d^2E/da_0^2$ (bulk modulus) was constrained by the rigid $1/r^n$ functional form and overestimated experiment by $\\sim 73\\%$."
       },
       {
@@ -577,8 +577,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental functions; Disadvantage: memory fetch latency and potential CPU cache misses",
-            "text_markdown": "Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental functions; Disadvantage: memory fetch latency and potential CPU cache misses"
+            "text": "Advantage: zero memory usage; Disadvantage: forces become discontinuous at every grid point",
+            "text_markdown": "Advantage: zero memory usage; Disadvantage: forces become discontinuous at every grid point"
           },
           {
             "id": "b",
@@ -592,11 +592,11 @@
           },
           {
             "id": "d",
-            "text": "Advantage: zero memory usage; Disadvantage: forces become discontinuous at every grid point",
-            "text_markdown": "Advantage: zero memory usage; Disadvantage: forces become discontinuous at every grid point"
+            "text": "Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental functions; Disadvantage: memory fetch latency and potential CPU cache misses",
+            "text_markdown": "Advantage: completely general code that evaluates any potential in a few FLOPs per distance without transcendental functions; Disadvantage: memory fetch latency and potential CPU cache misses"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Mapping $r_{ij}$ to a table index and evaluating a 4-term cubic polynomial takes only a memory fetch plus a few multiply-adds regardless of how complex the underlying analytic or DFT-tabulated potential is; the primary drawback is memory bandwidth/cache-miss overhead."
       },
       {
@@ -762,13 +762,13 @@
         "options": [
           {
             "id": "a",
-            "text": "In a metal, losing neighbors at the surface lowers the local electron density $\\rho_i$; because $F(\\rho)$ is concave ($E \\propto -\\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface layer inward",
-            "text_markdown": "In a metal, losing neighbors at the surface lowers the local electron density $\\rho_i$; because $F(\\rho)$ is concave ($E \\propto -\\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface layer inward"
+            "text": "In a metal, atmospheric pressure pushes the surface atoms inward",
+            "text_markdown": "In a metal, atmospheric pressure pushes the surface atoms inward"
           },
           {
             "id": "b",
-            "text": "In a metal, atmospheric pressure pushes the surface atoms inward",
-            "text_markdown": "In a metal, atmospheric pressure pushes the surface atoms inward"
+            "text": "In a metal, losing neighbors at the surface lowers the local electron density $\\rho_i$; because $F(\\rho)$ is concave ($E \\propto -\\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface layer inward",
+            "text_markdown": "In a metal, losing neighbors at the surface lowers the local electron density $\\rho_i$; because $F(\\rho)$ is concave ($E \\propto -\\sqrt{Z}$), the remaining bonds to the subsurface layer become stronger and shorter, pulling the surface layer inward"
           },
           {
             "id": "c",
@@ -781,7 +781,7 @@
             "text_markdown": "Surface atoms in metals have higher coordination number ($Z = 18$) than bulk atoms ($Z = 12$)"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "At a free surface, atoms have fewer neighbors ($Z_{\\text{surf}} < Z_{\\text{bulk}}$) and thus lower local background electron density $\\rho_i$. To approach the optimal embedding density (equivalently, because fewer shared electrons suffer less Pauli repulsion per bond), the back-bonds to the second layer strengthen and contract inward."
       },
       {
@@ -797,8 +797,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\\rho_i)$ is the non-linear embedding energy to place atom $i$ into host electron density $\\rho_i$; and $\\phi(R_{ij})$ is a short-range electrostatic core-core pair repulsion",
-            "text_markdown": "$f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\\rho_i)$ is the non-linear embedding energy to place atom $i$ into host electron density $\\rho_i$; and $\\phi(R_{ij})$ is a short-range electrostatic core-core pair repulsion"
+            "text": "$f(R_{ij})$ is a 3-body bond angle cosine; $F(\\rho_i)$ is a linear function $F(\\rho) = c\\rho$; and $\\phi(R_{ij}) = 0$",
+            "text_markdown": "$f(R_{ij})$ is a 3-body bond angle cosine; $F(\\rho_i)$ is a linear function $F(\\rho) = c\\rho$; and $\\phi(R_{ij}) = 0$"
           },
           {
             "id": "b",
@@ -807,8 +807,8 @@
           },
           {
             "id": "c",
-            "text": "$f(R_{ij})$ is a 3-body bond angle cosine; $F(\\rho_i)$ is a linear function $F(\\rho) = c\\rho$; and $\\phi(R_{ij}) = 0$",
-            "text_markdown": "$f(R_{ij})$ is a 3-body bond angle cosine; $F(\\rho_i)$ is a linear function $F(\\rho) = c\\rho$; and $\\phi(R_{ij}) = 0$"
+            "text": "$f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\\rho_i)$ is the non-linear embedding energy to place atom $i$ into host electron density $\\rho_i$; and $\\phi(R_{ij})$ is a short-range electrostatic core-core pair repulsion",
+            "text_markdown": "$f(R_{ij})$ is the spherically averaged electron density contributed by neighbor $j$ at site $i$; $F(\\rho_i)$ is the non-linear embedding energy to place atom $i$ into host electron density $\\rho_i$; and $\\phi(R_{ij})$ is a short-range electrostatic core-core pair repulsion"
           },
           {
             "id": "d",
@@ -816,7 +816,7 @@
             "text_markdown": "$f(R_{ij})$ is the Fermi-Dirac distribution; $F(\\rho_i)$ is the Helmholtz free energy; and $\\phi(R_{ij})$ is the Madelung constant"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In EAM, $\\rho_i = \\sum_{j \\ne i} f(R_{ij})$ superposes the atomic electron density tails of surrounding atoms at site $i$, $F(\\rho_i)$ is the many-body cohesive embedding energy in that electron gas, and $\\phi(R_{ij})$ represents short-range core-core electrostatic repulsion."
       },
       {
@@ -829,30 +829,30 @@
           "concept_eam_metals"
         ],
         "prompt_markdown": "Suppose someone chooses a **linear** embedding function $F(\\rho_i) = c \\rho_i$ (where $c$ is a constant) in the EAM energy expression $E_{\\text{tot}} = \\sum_i F\\!\\left(\\sum_{j\\ne i} f(R_{ij})\\right) + \\frac{1}{2}\\sum_{i\\ne j}\\phi(R_{ij})$. What happens to the EAM model in this case?",
-        "hint_markdown": "Substitute $F(\\rho_i) = c \\sum_{j \\ne i} f(R_{ij})$ into $\\sum_i F(\\rho_i)$ and combine with the pair sum.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "options": [
           {
             "id": "a",
-            "text": "It collapses mathematically into an ordinary two-body pair potential $\\frac{1}{2}\\sum_{i\\ne j} \\phi_{\\text{eff}}(R_{ij})$ with $\\phi_{\\text{eff}}(r) = \\phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and $E_v = E_c$ again!)",
-            "text_markdown": "It collapses mathematically into an ordinary two-body pair potential $\\frac{1}{2}\\sum_{i\\ne j} \\phi_{\\text{eff}}(R_{ij})$ with $\\phi_{\\text{eff}}(r) = \\phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and $E_v = E_c$ again!)"
+            "text": "It violates translational invariance, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "It violates translational invariance, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
-            "text": "It becomes a 4-body dihedral potential",
-            "text_markdown": "It becomes a 4-body dihedral potential"
+            "text": "It becomes a 4-body dihedral potential, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "It becomes a 4-body dihedral potential, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "c",
-            "text": "It predicts $E(Z) \\propto -\\sqrt{Z}$",
-            "text_markdown": "It predicts $E(Z) \\propto -\\sqrt{Z}$"
+            "text": "It predicts $E(Z) \\propto -\\sqrt{Z}$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "It predicts $E(Z) \\propto -\\sqrt{Z}$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
-            "text": "It violates translational invariance",
-            "text_markdown": "It violates translational invariance"
+            "text": "It collapses mathematically into an ordinary two-body pair potential $\\frac{1}{2}\\sum_{i\\ne j} \\phi_{\\text{eff}}(R_{ij})$ with $\\phi_{\\text{eff}}(r) = \\phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and $E_v = E_c$ again!)",
+            "text_markdown": "It collapses mathematically into an ordinary two-body pair potential $\\frac{1}{2}\\sum_{i\\ne j} \\phi_{\\text{eff}}(R_{ij})$ with $\\phi_{\\text{eff}}(r) = \\phi(r) + 2c f(r)$, losing all many-body metallic properties (so $C_{12} = C_{44}$ and $E_v = E_c$ again!)"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "If $F(\\rho_i) = c\\rho_i$, then $\\sum_i F(\\rho_i) = \\sum_i \\sum_{j\\ne i} c f(R_{ij}) = \\frac{1}{2}\\sum_{i\\ne j} [2c f(R_{ij}) + \\phi(R_{ij})]$, which is purely a sum of two-body pair functions! The **non-linearity** of $F(\\rho)$ ($F''(\\rho) \\ne 0$) is essential for EAM's many-body physics."
       },
       {
@@ -903,13 +903,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled $d$-band FCC metals, whereas early transition metals, $\\text{Al}$ under shear, and covalent $\\text{Si}$ have strong directional ($d$ or $sp^3$) bonding requiring angular forces",
-            "text_markdown": "Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled $d$-band FCC metals, whereas early transition metals, $\\text{Al}$ under shear, and covalent $\\text{Si}$ have strong directional ($d$ or $sp^3$) bonding requiring angular forces"
+            "text": "Standard EAM can only be formulated for lattices with 4 atoms per unit cell",
+            "text_markdown": "Standard EAM can only be formulated for lattices with 4 atoms per unit cell"
           },
           {
             "id": "b",
-            "text": "Standard EAM can only be formulated for lattices with 4 atoms per unit cell",
-            "text_markdown": "Standard EAM can only be formulated for lattices with 4 atoms per unit cell"
+            "text": "Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled $d$-band FCC metals, whereas early transition metals, $\\text{Al}$ under shear, and covalent $\\text{Si}$ have strong directional ($d$ or $sp^3$) bonding requiring angular forces",
+            "text_markdown": "Standard EAM assumes spherically symmetric atomic electron densities $f(R_{ij})$, which is accurate for nearly-filled $d$-band FCC metals, whereas early transition metals, $\\text{Al}$ under shear, and covalent $\\text{Si}$ have strong directional ($d$ or $sp^3$) bonding requiring angular forces"
           },
           {
             "id": "c",
@@ -922,7 +922,7 @@
             "text_markdown": "MEAM removes the embedding function $F(\\rho)$ and uses only Coulomb terms"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "explain that standard EAM assumes spherical electron density contributions $f(R_{ij})$, working best for spherically symmetric late transition metals (Cu, Ag, Au, Ni, Pd, Pt). Partially filled $d$-bands (Ti, Mo, W) and covalent $sp^3$ bonds (Si) exhibit strong bond-angle dependence captured by MEAM's $f(R_{ij})f(R_{ik})g(\\cos\\theta_{ijk})$ term."
       },
       {
@@ -933,13 +933,13 @@
         "taught_by": [
           "sec_metals_and_eam"
         ],
-        "prompt_markdown": "of the reference notes, phonon dispersion curves $\\omega(\\mathbf{k})$ for FCC Nickel computed with two EAM potentials (NRL vs. Voter & Chen) are compared against PW91 DFT and room-temperature neutron diffraction data. What general principle of potential validation does this comparison illustrate?",
+        "prompt_markdown": "In empirical potential modeling, phonon dispersion curves $\\omega(\\mathbf{k})$ for FCC Nickel computed with two EAM potentials (NRL vs. Voter & Chen) are compared against PW91 DFT and room-temperature neutron diffraction data. What general principle of potential validation does this comparison illustrate?",
         "hint_markdown": "Two EAM potentials with the same functional form can have very different accuracy away from $k \\to 0$!",
         "options": [
           {
             "id": "a",
-            "text": "Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons), showing why potentials must be tested against independent experiments",
-            "text_markdown": "Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons), showing why potentials must be tested against independent experiments"
+            "text": "Neutron diffraction can only measure the cohesive energy at $T = 0\\text{ K}$",
+            "text_markdown": "Neutron diffraction can only measure the cohesive energy at $T = 0\\text{ K}$"
           },
           {
             "id": "b",
@@ -948,8 +948,8 @@
           },
           {
             "id": "c",
-            "text": "Neutron diffraction can only measure the cohesive energy at $T = 0\\text{ K}$",
-            "text_markdown": "Neutron diffraction can only measure the cohesive energy at $T = 0\\text{ K}$"
+            "text": "Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons), showing why potentials must be tested against independent experiments",
+            "text_markdown": "Even with the same EAM functional form, different parameterizations vary widely in accuracy across the Brillouin zone (NRL matches neutron diffraction and DFT closely, whereas Voter & Chen overestimates high-frequency phonons), showing why potentials must be tested against independent experiments"
           },
           {
             "id": "d",
@@ -957,7 +957,7 @@
             "text_markdown": "DFT always underestimates phonon frequencies by a factor of 5"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Both NRL and Voter-Chen match long-wavelength elastic slopes ($\\mathbf{k} \\to \\Gamma$), but Voter-Chen significantly overestimates short-wavelength zone-boundary phonon frequencies, demonstrating the necessity of validating potentials against independent dynamical data like phonon dispersions."
       },
       {
@@ -1034,8 +1034,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Without directional 3-body angular penalties enforcing the $109.47^\\circ$ tetrahedral angle of $sp^3$ bonds, a radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the attractive well",
-            "text_markdown": "Without directional 3-body angular penalties enforcing the $109.47^\\circ$ tetrahedral angle of $sp^3$ bonds, a radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the attractive well"
+            "text": "Silicon atoms have zero mass in atomic units, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Silicon atoms have zero mass in atomic units, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
@@ -1044,16 +1044,16 @@
           },
           {
             "id": "c",
-            "text": "Pair potentials cannot be evaluated when $Z = 4$",
-            "text_markdown": "Pair potentials cannot be evaluated when $Z = 4$"
+            "text": "Pair potentials cannot be evaluated when $Z = 4$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Pair potentials cannot be evaluated when $Z = 4$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
-            "text": "Silicon atoms have zero mass in atomic units",
-            "text_markdown": "Silicon atoms have zero mass in atomic units"
+            "text": "Without directional 3-body angular penalties enforcing the $109.47^\\circ$ tetrahedral angle of $sp^3$ bonds, a radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the attractive well",
+            "text_markdown": "Without directional 3-body angular penalties enforcing the $109.47^\\circ$ tetrahedral angle of $sp^3$ bonds, a radial pair potential always lowers its energy by packing more neighbors ($Z = 12$ close-packed FCC/HCP) into the attractive well"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "A purely radial pair potential $v(r)$ has no angular stiffness and lowers energy by maximizing coordination $Z$, collapsing the open diamond cubic lattice ($Z=4$) into a dense close-packed structure ($Z=12$)."
       },
       {
@@ -1075,13 +1075,13 @@
           },
           {
             "id": "b",
-            "text": "Because Silicon has 3 valence electrons per atom",
-            "text_markdown": "Because Silicon has 3 valence electrons per atom"
+            "text": "Because Silicon has 3 valence electrons per atom, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Because Silicon has 3 valence electrons per atom, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "c",
-            "text": "Because $\\cos(60^\\circ) = -1/3$ in an FCC lattice",
-            "text_markdown": "Because $\\cos(60^\\circ) = -1/3$ in an FCC lattice"
+            "text": "Because $\\cos(60^\\circ) = -1/3$ in an FCC lattice, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Because $\\cos(60^\\circ) = -1/3$ in an FCC lattice, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
@@ -1122,13 +1122,13 @@
         "options": [
           {
             "id": "a",
-            "text": "As $r \\to a^-$, $\\exp(\\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \\dots$) approach zero smoothly ($C^\\infty$), completely avoiding force or derivative discontinuities at the cutoff $r = a$",
-            "text_markdown": "As $r \\to a^-$, $\\exp(\\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \\dots$) approach zero smoothly ($C^\\infty$), completely avoiding force or derivative discontinuities at the cutoff $r = a$"
+            "text": "It makes the potential diverge to $+\\infty$ at $r = a$ to trap neighbors inside a hard shell",
+            "text_markdown": "It makes the potential diverge to $+\\infty$ at $r = a$ to trap neighbors inside a hard shell"
           },
           {
             "id": "b",
-            "text": "It makes the potential diverge to $+\\infty$ at $r = a$ to trap neighbors inside a hard shell",
-            "text_markdown": "It makes the potential diverge to $+\\infty$ at $r = a$ to trap neighbors inside a hard shell"
+            "text": "As $r \\to a^-$, $\\exp(\\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \\dots$) approach zero smoothly ($C^\\infty$), completely avoiding force or derivative discontinuities at the cutoff $r = a$",
+            "text_markdown": "As $r \\to a^-$, $\\exp(\\gamma/(r-a))$ and all of its derivatives ($V, V', V'', \\dots$) approach zero smoothly ($C^\\infty$), completely avoiding force or derivative discontinuities at the cutoff $r = a$"
           },
           {
             "id": "c",
@@ -1137,11 +1137,11 @@
           },
           {
             "id": "d",
-            "text": "It avoids calling the `exp` function in computer code",
-            "text_markdown": "It avoids calling the `exp` function in computer code"
+            "text": "It avoids calling the `exp` function in computer code, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "It avoids calling the `exp` function in computer code, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Because $\\lim_{r \\to a^-} (r-a)^{-n} \\exp(\\gamma/(r-a)) = 0$ for every derivative order $n$, the potential, force, and all higher derivatives vanish smoothly at $r = a$ without needing any external shift."
       },
       {
@@ -1152,13 +1152,13 @@
         "taught_by": [
           "sec_covalent_organic_water_ionic"
         ],
-        "prompt_markdown": "According to of the reference notes, what set of physical properties did Stillinger and Weber (1985) use to fit their Silicon potential?",
+        "prompt_markdown": "According to the principles of simulation methodology,, what set of physical properties did Stillinger and Weber (1985) use to fit their Silicon potential?",
         "hint_markdown": "Read the orange bullet point.",
         "options": [
           {
             "id": "a",
-            "text": "Lattice constant, cohesive energy, melting point, and the structure of liquid Silicon",
-            "text_markdown": "Lattice constant, cohesive energy, melting point, and the structure of liquid Silicon"
+            "text": "The Cauchy elastic ratio $C_{12}/C_{44}$ of FCC Copper",
+            "text_markdown": "The Cauchy elastic ratio $C_{12}/C_{44}$ of FCC Copper"
           },
           {
             "id": "b",
@@ -1167,8 +1167,8 @@
           },
           {
             "id": "c",
-            "text": "The Cauchy elastic ratio $C_{12}/C_{44}$ of FCC Copper",
-            "text_markdown": "The Cauchy elastic ratio $C_{12}/C_{44}$ of FCC Copper"
+            "text": "Lattice constant, cohesive energy, melting point, and the structure of liquid Silicon",
+            "text_markdown": "Lattice constant, cohesive energy, melting point, and the structure of liquid Silicon"
           },
           {
             "id": "d",
@@ -1176,7 +1176,7 @@
             "text_markdown": "Ab initio Hartree-Fock forces of $\\text{SiH}_4$ in vacuum only"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "explicitly notes that the Stillinger-Weber potential was fitted to the **lattice constant, cohesive energy, melting point, and structure of liquid Si**, enabling it to describe both tetrahedral crystalline Si and higher-coordinated liquid Si."
       },
       {
@@ -1193,8 +1193,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\\theta - \\theta_0)^2$, and periodic dihedral torsion $v_n[1 - \\cos(n\\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction",
-            "text_markdown": "Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\\theta - \\theta_0)^2$, and periodic dihedral torsion $v_n[1 - \\cos(n\\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction"
+            "text": "Bonded: Born-Mayer exponential repulsion only; Non-bonded: zero",
+            "text_markdown": "Bonded: Born-Mayer exponential repulsion only; Non-bonded: zero"
           },
           {
             "id": "b",
@@ -1208,11 +1208,11 @@
           },
           {
             "id": "d",
-            "text": "Bonded: Born-Mayer exponential repulsion only; Non-bonded: zero",
-            "text_markdown": "Bonded: Born-Mayer exponential repulsion only; Non-bonded: zero"
+            "text": "Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\\theta - \\theta_0)^2$, and periodic dihedral torsion $v_n[1 - \\cos(n\\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction",
+            "text_markdown": "Bonded: harmonic bond stretch $k_r(r_i - r_j)^2$, harmonic bond angle $k_a(\\theta - \\theta_0)^2$, and periodic dihedral torsion $v_n[1 - \\cos(n\\phi)]$; Non-bonded: 2-body Lennard-Jones 12-6 + point-charge Coulomb interaction"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Class-I organic force fields like AMBER and CHARMM model covalent connectivity with harmonic bond stretches $k_r(r - r_0)^2$, harmonic angle bends $k_a(\\theta - \\theta_0)^2$, and sinusoidal 4-body dihedrals $v_n[1 - \\cos(n\\phi)]$, while non-bonded steric and electrostatic interactions use LJ 12-6 plus Coulomb point charges."
       },
       {
@@ -1234,8 +1234,8 @@
           },
           {
             "id": "b",
-            "text": "Ethane contains exactly 4 atoms in total",
-            "text_markdown": "Ethane contains exactly 4 atoms in total"
+            "text": "Ethane contains exactly 4 atoms in total, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Ethane contains exactly 4 atoms in total, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "c",
@@ -1259,18 +1259,18 @@
         "taught_by": [
           "sec_covalent_organic_water_ionic"
         ],
-        "prompt_markdown": "According to of the reference notes, why can't a single fixed-parameter carbon potential in AMBER or CHARMM simultaneously describe both Ethane ($\\text{H}_3\\text{C\u2013CH}_3$, single bond) and Ethene ($\\text{H}_2\\text{C=CH}_2$, double bond) without changing atom types or switching to a cluster functional?",
+        "prompt_markdown": "According to the principles of simulation methodology,, why can't a single fixed-parameter carbon potential in AMBER or CHARMM simultaneously describe both Ethane ($\\text{H}_3\\text{C\u2013CH}_3$, single bond) and Ethene ($\\text{H}_2\\text{C=CH}_2$, double bond) without changing atom types or switching to a cluster functional?",
         "hint_markdown": "Compare the hybridization and bond strength of $sp^3$ vs. $sp^2$ carbon.",
         "options": [
           {
             "id": "a",
-            "text": "The $\\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\\circ$ vs. $109.5^\\circ$) than the $\\text{C\u2013C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional",
-            "text_markdown": "The $\\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\\circ$ vs. $109.5^\\circ$) than the $\\text{C\u2013C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional"
+            "text": "Ethene is a metal with delocalized $d$-electrons, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Ethene is a metal with delocalized $d$-electrons, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
-            "text": "Ethene is a metal with delocalized $d$-electrons",
-            "text_markdown": "Ethene is a metal with delocalized $d$-electrons"
+            "text": "The $\\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\\circ$ vs. $109.5^\\circ$) than the $\\text{C\u2013C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional",
+            "text_markdown": "The $\\text{C=C}$ double bond ($sp^2$) is much stiffer, shorter, and has different equilibrium angles ($120^\\circ$ vs. $109.5^\\circ$) than the $\\text{C\u2013C}$ single bond ($sp^3$), requiring either distinct predefined potentials/atom types for $sp, sp^2, sp^3$ carbon or a bond-order cluster functional"
           },
           {
             "id": "c",
@@ -1279,11 +1279,11 @@
           },
           {
             "id": "d",
-            "text": "AMBER does not include bond angle potentials",
-            "text_markdown": "AMBER does not include bond angle potentials"
+            "text": "AMBER does not include bond angle potentials, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "AMBER does not include bond angle potentials, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In non-reactive force fields (AMBER, CHARMM, MM3), bond topology and hybridization ($sp, sp^2, sp^3$) are hard-coded via separate atom types and rules; simulating coordination/bond-order changes dynamically requires a reactive cluster functional (such as Brenner/Tersoff)."
       },
       {
@@ -1299,8 +1299,8 @@
         "options": [
           {
             "id": "a",
-            "text": "A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded by 4 point charges ($q = \\pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)",
-            "text_markdown": "A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded by 4 point charges ($q = \\pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)"
+            "text": "5 separate Lennard-Jones spheres with zero electrostatic charges",
+            "text_markdown": "5 separate Lennard-Jones spheres with zero electrostatic charges"
           },
           {
             "id": "b",
@@ -1309,8 +1309,8 @@
           },
           {
             "id": "c",
-            "text": "5 separate Lennard-Jones spheres with zero electrostatic charges",
-            "text_markdown": "5 separate Lennard-Jones spheres with zero electrostatic charges"
+            "text": "A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded by 4 point charges ($q = \\pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)",
+            "text_markdown": "A rigid 5-site molecule: a central Oxygen site that interacts with other Oxygens via Lennard-Jones 12-6, surrounded by 4 point charges ($q = \\pm 0.24e$, two positive on H sites and two negative on tetrahedral lone-pair sites)"
           },
           {
             "id": "d",
@@ -1318,7 +1318,7 @@
             "text_markdown": "A 5-body Stillinger-Weber potential without Coulomb interactions"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "details TIP5P: a rigid molecule with 5 sites\u2014the central Oxygen carries the LJ 12-6 interaction, while 4 surrounding point charges ($e = \\pm 0.24$) on the two hydrogens ($104.52^\\circ$) and two lone-pair dummy sites ($109.47^\\circ$, $0.70\\text{ \u00c5}$ from O) reproduce water's dipole and tetrahedral H-bonding geometry."
       },
       {
@@ -1329,13 +1329,13 @@
         "taught_by": [
           "sec_covalent_organic_water_ionic"
         ],
-        "prompt_markdown": "of the reference notes (\"Potentials for Charged Systems\"), the **Buckingham + Coulomb** potential is written as:\n$$V(r) = A\\exp\\!\\left(-\\frac{r}{B}\\right) - \\frac{C}{r^6} + \\frac{q_1 q_2}{r}$$\nHow does the Buckingham short-range part differ from a Lennard-Jones 12-6 potential?",
+        "prompt_markdown": "In the discussion of Potentials for Charged Systems, the **Buckingham + Coulomb** potential is written as:\n$$V(r) = A\\exp\\!\\left(-\\frac{r}{B}\\right) - \\frac{C}{r^6} + \\frac{q_1 q_2}{r}$$\nHow does the Buckingham short-range part differ from a Lennard-Jones 12-6 potential?",
         "hint_markdown": "Compare the repulsive term of Buckingham with the $(\\sigma/r)^{12}$ term of LJ.",
         "options": [
           {
             "id": "a",
-            "text": "It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core repulsion $A\\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction",
-            "text_markdown": "It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core repulsion $A\\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction"
+            "text": "It is a 4-body dihedral potential, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "It is a 4-body dihedral potential, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
@@ -1344,16 +1344,16 @@
           },
           {
             "id": "c",
-            "text": "It omits Pauli repulsion entirely",
-            "text_markdown": "It omits Pauli repulsion entirely"
+            "text": "It omits Pauli repulsion entirely, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "It omits Pauli repulsion entirely, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
-            "text": "It is a 4-body dihedral potential",
-            "text_markdown": "It is a 4-body dihedral potential"
+            "text": "It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core repulsion $A\\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction",
+            "text_markdown": "It replaces the artificial $r^{-12}$ power-law repulsion with a physically realistic Born-Mayer exponential core repulsion $A\\exp(-r/B)$ while retaining the $-C/r^6$ dispersion attraction"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "The Buckingham potential $A\\exp(-r/B) - C/r^6$ uses the quantum-mechanically motivated exponential Pauli repulsion $A\\exp(-r/B)$ in place of the stiffer $r^{-12}$ term, combined with $-C/r^6$ van der Waals attraction and $q_1 q_2 / r$ electrostatics."
       },
       {
@@ -1379,8 +1379,8 @@
           },
           {
             "id": "c",
-            "text": "The ionic charge $q_i$ is multiplied by the temperature $T$",
-            "text_markdown": "The ionic charge $q_i$ is multiplied by the temperature $T$"
+            "text": "The ionic charge $q_i$ is multiplied by the temperature $T$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "The ionic charge $q_i$ is multiplied by the temperature $T$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
@@ -1415,7 +1415,7 @@
         "taught_by": [
           "sec_covalent_organic_water_ionic"
         ],
-        "prompt_markdown": "According to of the reference notes (\"Problems with potentials\"), select **all** true guidelines and caveats when developing or applying empirical potentials:",
+        "prompt_markdown": "According to the principles of simulation methodology, (\"Problems with potentials\"), select **all** true guidelines and caveats when developing or applying empirical potentials:",
         "hint_markdown": "Review on fitting data, testing, inhomogeneous environments, and universality.",
         "options": [
           {
@@ -1459,13 +1459,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Lennard-Jones $\\to$ Noble Gases; EAM $\\to$ Metals; Stillinger-Weber $\\to$ Semiconductors; AMBER/CHARMM/MM3 $\\to$ Polymers, Bio- & Organic materials; Buckingham+Coulomb / Shell $\\to$ Ionic materials",
-            "text_markdown": "Lennard-Jones $\\to$ Noble Gases; EAM $\\to$ Metals; Stillinger-Weber $\\to$ Semiconductors; AMBER/CHARMM/MM3 $\\to$ Polymers, Bio- & Organic materials; Buckingham+Coulomb / Shell $\\to$ Ionic materials"
+            "text": "Lennard-Jones $\\to$ Semiconductors; Stillinger-Weber $\\to$ Noble Gases; EAM $\\to$ Polymers; AMBER $\\to$ Metals",
+            "text_markdown": "Lennard-Jones $\\to$ Semiconductors; Stillinger-Weber $\\to$ Noble Gases; EAM $\\to$ Polymers; AMBER $\\to$ Metals"
           },
           {
             "id": "b",
-            "text": "Lennard-Jones $\\to$ Semiconductors; Stillinger-Weber $\\to$ Noble Gases; EAM $\\to$ Polymers; AMBER $\\to$ Metals",
-            "text_markdown": "Lennard-Jones $\\to$ Semiconductors; Stillinger-Weber $\\to$ Noble Gases; EAM $\\to$ Polymers; AMBER $\\to$ Metals"
+            "text": "Lennard-Jones $\\to$ Noble Gases; EAM $\\to$ Metals; Stillinger-Weber $\\to$ Semiconductors; AMBER/CHARMM/MM3 $\\to$ Polymers, Bio- & Organic materials; Buckingham+Coulomb / Shell $\\to$ Ionic materials",
+            "text_markdown": "Lennard-Jones $\\to$ Noble Gases; EAM $\\to$ Metals; Stillinger-Weber $\\to$ Semiconductors; AMBER/CHARMM/MM3 $\\to$ Polymers, Bio- & Organic materials; Buckingham+Coulomb / Shell $\\to$ Ionic materials"
           },
           {
             "id": "c",
@@ -1478,7 +1478,7 @@
             "text_markdown": "Buckingham+Coulomb $\\to$ Pure FCC Metals; EAM $\\to$ Dimers in vacuum"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "The blue matrix maps: LJ/Buckingham to Noble Gases; Morse to Dimers; EAM to Metals; MEAM to Metals & Semiconductors; Stillinger-Weber to Semiconductors; AMBER/CHARMM/MM3 to Polymers, Biomaterials & Organic materials; and Buckingham+Coulomb & Shell potentials to Ionic materials."
       },
       {
@@ -1492,7 +1492,7 @@
         "prompt_markdown": "Examine the sample LAMMPS input script of the reference notes:\n```text\nunits lj\nboundary p p p\natom_style atomic\nlattice fcc 1.0\nregion box block 0 6 0 6 0 6 units lattice\ncreate_box 1 box\ncreate_atoms 1 box\n```\nSince a conventional FCC unit cell contains $4$ atoms and `region box block 0 6 0 6 0 6 units lattice` creates a $6 \\times 6 \\times 6$ supercell of FCC unit cells under 3D periodic boundary conditions (`p p p`), how many total atoms $N$ are created by `create_atoms 1 box`?",
         "hint_markdown": "Determine the total number of unit cells defined by the bounding box block along the three coordinate axes and multiply by the atom count per conventional FCC unit cell.",
         "correct": {
-          "value": 864,
+          "value": 864.0,
           "tolerance": 0.5
         },
         "rationale_markdown": "A $6 \\times 6 \\times 6$ FCC supercell contains $6^3 = 216$ conventional unit cells. With $4$ atoms per FCC unit cell, `create_atoms` generates $4 \\times 216 = 864$ atoms."
@@ -1545,13 +1545,13 @@
         "taught_by": [
           "sec_metals_and_eam"
         ],
-        "prompt_markdown": "of the reference notes (\"Many-Body Potentials\"), the general cluster expansion of the potential energy for unrestricted sums over particle indices $i, j, k \\in \\{1, \\dots, N\\}$ is written as:\n$$E = \\frac{1}{2!}\\sum_{i,j=1}^N V_2(\\mathbf{R}_i, \\mathbf{R}_j) + \\frac{1}{3!}\\sum_{i,j,k=1}^N V_3(\\mathbf{R}_i, \\mathbf{R}_j, \\mathbf{R}_k) + \\cdots$$\nWhy do the factorial denominators $\\frac{1}{2!}$ and $\\frac{1}{3!}$ appear in front of the unrestricted sums?",
+        "prompt_markdown": "In the discussion of Many-Body Potentials, the general cluster expansion of the potential energy for unrestricted sums over particle indices $i, j, k \\in \\{1, \\dots, N\\}$ is written as:\n$$E = \\frac{1}{2!}\\sum_{i,j=1}^N V_2(\\mathbf{R}_i, \\mathbf{R}_j) + \\frac{1}{3!}\\sum_{i,j,k=1}^N V_3(\\mathbf{R}_i, \\mathbf{R}_j, \\mathbf{R}_k) + \\cdots$$\nWhy do the factorial denominators $\\frac{1}{2!}$ and $\\frac{1}{3!}$ appear in front of the unrestricted sums?",
         "hint_markdown": "How many permutations of $(i, j)$ or $(i, j, k)$ refer to the exact same pair or triplet of atoms when $i, j, k$ each run from $1$ to $N$?",
         "options": [
           {
             "id": "a",
-            "text": "To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\\{i,j\\}$) and triplets ($3! = 6$ orderings of $\\{i,j,k\\}$) in the unrestricted sums",
-            "text_markdown": "To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\\{i,j\\}$) and triplets ($3! = 6$ orderings of $\\{i,j,k\\}$) in the unrestricted sums"
+            "text": "To convert from Hartrees to electron-volts, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "To convert from Hartrees to electron-volts, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
@@ -1560,16 +1560,16 @@
           },
           {
             "id": "c",
-            "text": "To convert from Hartrees to electron-volts",
-            "text_markdown": "To convert from Hartrees to electron-volts"
+            "text": "To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\\{i,j\\}$) and triplets ($3! = 6$ orderings of $\\{i,j,k\\}$) in the unrestricted sums",
+            "text_markdown": "To correct for overcounting permutations of identical pairs ($2! = 2$ orderings of $\\{i,j\\}$) and triplets ($3! = 6$ orderings of $\\{i,j,k\\}$) in the unrestricted sums"
           },
           {
             "id": "d",
-            "text": "Because 3-body forces only act on every sixth timestep",
-            "text_markdown": "Because 3-body forces only act on every sixth timestep"
+            "text": "Because 3-body forces only act on every sixth timestep, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Because 3-body forces only act on every sixth timestep, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "When summing unrestrictedly over all $i, j, k = 1 \\dots N$, each distinct pair of atoms is visited $2! = 2$ times and each distinct triplet of atoms is visited $3! = 6$ times; dividing by $n!$ ensures each physical $n$-body cluster is counted exactly once."
       },
       {
@@ -1586,8 +1586,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\\mathcal{O}(N)$ scaling and accurate metallic vacancy/stacking-fault/elastic properties)",
-            "text_markdown": "Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\\mathcal{O}(N)$ scaling and accurate metallic vacancy/stacking-fault/elastic properties)"
+            "text": "Stillinger-Weber tetrahedral diamond-cubic silicon potential ($Z=4$)",
+            "text_markdown": "Stillinger-Weber tetrahedral diamond-cubic silicon potential ($Z=4$)"
           },
           {
             "id": "b",
@@ -1601,11 +1601,11 @@
           },
           {
             "id": "d",
-            "text": "Stillinger-Weber tetrahedral diamond-cubic silicon potential ($Z=4$)",
-            "text_markdown": "Stillinger-Weber tetrahedral diamond-cubic silicon potential ($Z=4$)"
+            "text": "Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\\mathcal{O}(N)$ scaling and accurate metallic vacancy/stacking-fault/elastic properties)",
+            "text_markdown": "Embedded Atom Method (EAM) with hybrid Cell + Verlet neighbor lists ($\\mathcal{O}(N)$ scaling and accurate metallic vacancy/stacking-fault/elastic properties)"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Ab initio MD is many orders of magnitude too slow for $10^7$ atoms over $10\\text{ ns}$, and LJ fails to capture metallic bonding ($C_{12} \\ne C_{44}$, low $E_v/E_c$, stacking fault energies). EAM with $\\mathcal{O}(N)$ neighbor lists accurately models FCC Cu at million-atom scales."
       }
     ]

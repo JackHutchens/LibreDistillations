@@ -27,7 +27,7 @@
         "prompt_markdown": "A Kinetic Monte Carlo site has $K = 4$ possible hopping events with normalized probabilities $p_1 = 0.15$, $p_2 = 0.35$, $p_3 = 0.30$, and $p_4 = 0.20$. You construct the cumulative table $c_k = \\sum_{i=1}^k p_i$ ($c_1 = 0.15, c_2 = 0.50, c_3 = 0.80, c_4 = 1.00$) and draw a uniform random number $u = 0.62$. Which event index $k \\in \\{1, 2, 3, 4\\}$ is selected by the rule $c_{k-1} < u \\le c_k$?",
         "hint_markdown": "Find the interval $(c_{k-1}, c_k]$ that brackets $u = 0.62$.",
         "correct": {
-          "value": 3,
+          "value": 3.0,
           "tolerance": 0.01
         },
         "rationale_markdown": "The cumulative table boundaries are $c_0 = 0.00$, $c_1 = 0.15$, $c_2 = 0.50$, $c_3 = 0.80$, $c_4 = 1.00$. Since $c_2 = 0.50 < 0.62 \\le 0.80 = c_3$, the search selects event **$k = 3$**."
@@ -41,7 +41,7 @@
         "prompt_markdown": "In a large lattice Kinetic Monte Carlo simulation, your cumulative probability table has $N = 1024$ possible discrete events. How many comparison steps are required to locate the selected event $c_{k-1} < u \\le c_k$ using **bisection (binary search)**, compared to $1024$ worst-case steps for a naive linear scan?",
         "hint_markdown": "Consider how the search interval is halved at each step of a binary search until a single element remains.",
         "correct": {
-          "value": 10,
+          "value": 10.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "Bisection halves the search interval at every comparison, requiring exactly:\n$$\\log_2(N) = \\log_2(1024) = 10\\text{ steps}$$\nwhich is over $100\\times$ faster than a linear scan!"
@@ -132,13 +132,13 @@
         "options": [
           {
             "id": "a",
-            "text": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional.",
-            "text_markdown": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional."
+            "text": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$).",
+            "text_markdown": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$)."
           },
           {
             "id": "b",
-            "text": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$).",
-            "text_markdown": "Whenever the probability density $p(x)$ is positive ($p(x) > 0$)."
+            "text": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional.",
+            "text_markdown": "When the cumulative integral $C(y)$ or its inverse $C^{-1}(u)$ has no closed-form analytic expression (or is too slow to evaluate numerically) and the problem is multi-dimensional."
           },
           {
             "id": "c",
@@ -151,14 +151,14 @@
             "text_markdown": "Whenever the integral of $p(x)$ over all space equals $1$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Analytic inverse mapping requires integrating $p(x)$ to obtain $C(y)$ and algebraically solving $C(x) = u$ for $x = C^{-1}(u)$. For many common distributions (even a 1D Gaussian, where $C(y)$ involves $\\text{erf}(y)$) and for coupled multi-dimensional densities $p(x_1, \\dots, x_D)$, direct inversion is difficult or slow, motivating rejection, composition, and Markov chain methods."
       },
       {
         "id": "sec_rejection_composition_and_normals",
         "type": "markdown_section",
         "title": "2. Von Neumann Rejection, Composition Tricks, Box\u2013Muller & Cholesky Gaussians",
-        "body_markdown": "### The von Neumann Rejection Technique\nSuppose we want to sample from a normalized target density $p(x)\\,dx$, and we have a simpler **proposal (comparison) distribution** $q(x)\\,dx$ that we already know how to sample.\n1. Choose an envelope constant $a \\ge 1$ large enough that $a\\,q(x) \\ge p(x)$ everywhere, so the **acceptance probability** $c(x)$ satisfies:\n $$c(x) = \\frac{p(x)}{a\\,q(x)} \\le 1 \\quad \\forall x \\qquad \\left(\\text{i.e., } a \\ge \\max_x \\frac{p(x)}{q(x)}\\right)$$\n *(Note: of the lecture writes $c(x) = a\\,p(x)/q(x) \\le 1$ with $a \\le \\min[q/p]$ and then denotes the acceptance efficiency by $1/a$; both conventions express the exact same condition: the proposal envelope must bound $p(x)$ from above, and the overall fraction of accepted proposals is the ratio of the area under $p(x)$ to the area under the envelope!)*\n2. **Algorithm Loop:**\n - Draw a candidate $x \\sim q(x)\\,dx$.\n - Draw a uniform random number $u \\sim U(0, 1)$.\n - If $u \\le c(x)$, **accept** $x$; otherwise **reject** $x$ and repeat.\n3. **Proof & Efficiency:** The probability that a proposed $x$ lies in $[x, x+dx]$ *and* is accepted is $q(x)\\,dx \\cdot c(x) = \\frac{1}{a}p(x)\\,dx$. Integrating over all $x$ shows that the **overall acceptance probability (efficiency)** is:\n $$\\text{Efficiency} = \\int_{-\\infty}^{\\infty} q(x) c(x)\\,dx = \\frac{1}{a}\\int_{-\\infty}^{\\infty} p(x)\\,dx = \\frac{1}{a}$$\n - **Rule:** Choose $q(x)$ to match the shape of $p(x)$ as closely as possible so $a$ is close to $1$. In $D$ dimensions, rejection efficiency scales as $(1/a)^D$, collapsing exponentially for large $D$!\n\n### Composition Methods (Combining Uniform Draws)\n1. **Adding Uniforms (Central Limit Theorem Trick):** A single uniform $u_i \\in [0, 1]$ has mean $1/2$ and variance $1/12$. By the Central Limit Theorem, summing $12$ independent uniforms and subtracting $6$:\n $$\\zeta = \\sum_{i=1}^{12} u_i - 6$$\n gives a fast, approximate **standard Gaussian** ($\\langle \\zeta \\rangle = 0$, $\\text{Var}(\\zeta) = 12 \\times \\frac{1}{12} = 1$) supported on $(-6, 6)$! *(Warning: Because it is strictly bounded on $[-6, 6]$, never use the 12-udrn trick when rare $>4\\sigma$ tail events matter!)*\n2. **Maximum of $k$ Uniforms:** Let $x = \\max(u_1, u_2, \\dots, u_k)$ where $u_i \\sim U(0, 1)$ are independent. The probability that all $k$ numbers are $\\le x$ is the CDF $C(x) = \\prod_{i=1}^k \\text{Prob}(u_i \\le x) = x^k$. Differentiating gives the exact PDF:\n $$P(x) = \\frac{d}{dx}\\left(x^k\\right) = k\\,x^{k-1} \\quad (0 \\le x \\le 1)$$\n\n### Exact 1D Normal Distribution: Box\u2013Muller & Polar Rejection\nInstead of inverting $\\text{erf}(y)$ for a single Gaussian $p(y) = (2\\pi)^{-1/2}e^{-y^2/2}$, we generate **two** independent standard normals $(y_1, y_2)$ at once in 2D polar coordinates $(r, \\theta)$:\n$$p(y_1, y_2)\\,dy_1\\,dy_2 = \\frac{1}{2\\pi}e^{-(y_1^2 + y_2^2)/2}\\,dy_1\\,dy_2 = \\left(\\frac{d\\theta}{2\\pi}\\right)\\left(\\frac{1}{2}e^{-v/2}\\,dv\\right), \\quad v = r^2$$\nSince $\\theta$ is uniform on $[0, 2\\pi)$ and $v = r^2$ is exponentially distributed with rate $a = 1/2$ ($v = -2\\ln x_1$), drawing $x_1, x_2 \\sim U(0, 1)$ yields the **Box\u2013Muller transform**:\n$$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2), \\qquad y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$$\n- **Polar Rejection Box\u2013Muller (No Trig Functions!):** As shown in the lecture's Python code, we eliminate slow $\\sin/\\cos$ calls by sampling $(x, y) = (\\text{udrn}-0.5, \\text{udrn}-0.5)$ inside the unit square $[-0.5, 0.5]^2$ and **rejecting** until $r^2 = x^2 + y^2 \\le 0.25$ (inscribed circle of radius $1/2$, area $\\pi/4$ inside square of area $1$). Then $x/\\sqrt{r^2} = \\cos\\theta$ and $y/\\sqrt{r^2} = \\sin\\theta$, so setting `radius = sigma * sqrt(-2 * ln(udrn) / r2)` produces two exact normal variates `x0 + x * radius` and `y0 + y * radius`!\n\n### Multivariate Correlated Gaussians via Cholesky Decomposition\nHow do we sample a $D$-component Gaussian vector $\\mathbf{x} = (x_1, \\dots, x_D)^T$ with mean $\\mathbf{0}$ and target symmetric positive-definite covariance matrix $\\langle x_\\alpha x_\\beta \\rangle = T_{\\alpha\\beta}$?\n1. Compute the **Cholesky (\"square-root\") decomposition** of $\\mathbf{T}$:\n $$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$$\n where $\\mathbf{S}$ is a **lower-triangular matrix** ($S_{\\alpha i} = 0$ for all entries above the diagonal, $i > \\alpha$).\n2. Generate $D$ independent standard normal variates $\\mathbf{y} = (y_1, \\dots, y_D)^T$ with $\\langle y_i y_j \\rangle = \\delta_{ij}$.\n3. Apply the linear transformation $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ (or $\\mathbf{x} = \\boldsymbol{\\mu} + \\mathbf{S}\\mathbf{y}$ for nonzero mean):\n $$x_\\alpha = \\sum_{i=1}^\\alpha S_{\\alpha i} y_i \\implies \\langle x_\\alpha x_\\beta \\rangle = \\sum_{i,j} S_{\\alpha i} S_{\\beta j} \\underbrace{\\langle y_i y_j \\rangle}_{\\delta_{ij}} = \\sum_i S_{\\alpha i} S_{\\beta i} = (\\mathbf{S}\\mathbf{S}^T)_{\\alpha\\beta} = T_{\\alpha\\beta}$$"
+        "body_markdown": "### The von Neumann Rejection Technique\nSuppose we want to sample from a normalized target density $p(x)\\,dx$, and we have a simpler **proposal (comparison) distribution** $q(x)\\,dx$ that we already know how to sample.\n1. Choose an envelope constant $a \\ge 1$ large enough that $a\\,q(x) \\ge p(x)$ everywhere, so the **acceptance probability** $c(x)$ satisfies:\n $$c(x) = \\frac{p(x)}{a\\,q(x)} \\le 1 \\quad \\forall x \\qquad \\left(\\text{i.e., } a \\ge \\max_x \\frac{p(x)}{q(x)}\\right)$$\n *(Note on conventions: some texts write $c(x) = a\\,p(x)/q(x) \\le 1$ with $a \\le \\min[q/p]$ and denote acceptance efficiency by $1/a$; both conventions express the exact same condition: the proposal envelope must bound $p(x)$ from above, and the overall fraction of accepted proposals is the ratio of the area under $p(x)$ to the area under the envelope.)*\n2. **Algorithm Loop:**\n - Draw a candidate $x \\sim q(x)\\,dx$.\n - Draw a uniform random number $u \\sim U(0, 1)$.\n - If $u \\le c(x)$, **accept** $x$; otherwise **reject** $x$ and repeat.\n3. **Proof & Efficiency:** The probability that a proposed $x$ lies in $[x, x+dx]$ *and* is accepted is $q(x)\\,dx \\cdot c(x) = \\frac{1}{a}p(x)\\,dx$. Integrating over all $x$ shows that the **overall acceptance probability (efficiency)** is:\n $$\\text{Efficiency} = \\int_{-\\infty}^{\\infty} q(x) c(x)\\,dx = \\frac{1}{a}\\int_{-\\infty}^{\\infty} p(x)\\,dx = \\frac{1}{a}$$\n - **Rule:** Choose $q(x)$ to match the shape of $p(x)$ as closely as possible so $a$ is close to $1$. In $D$ dimensions, rejection efficiency scales as $(1/a)^D$, collapsing exponentially for large $D$!\n\n### Composition Methods (Combining Uniform Draws)\n1. **Adding Uniforms (Central Limit Theorem Trick):** A single uniform $u_i \\in [0, 1]$ has mean $1/2$ and variance $1/12$. By the Central Limit Theorem, summing $12$ independent uniforms and subtracting $6$:\n $$\\zeta = \\sum_{i=1}^{12} u_i - 6$$\n gives a fast, approximate **standard Gaussian** ($\\langle \\zeta \\rangle = 0$, $\\text{Var}(\\zeta) = 12 \\times \\frac{1}{12} = 1$) supported on $(-6, 6)$! *(Warning: Because it is strictly bounded on $[-6, 6]$, never use the 12-udrn trick when rare $>4\\sigma$ tail events matter!)*\n2. **Maximum of $k$ Uniforms:** Let $x = \\max(u_1, u_2, \\dots, u_k)$ where $u_i \\sim U(0, 1)$ are independent. The probability that all $k$ numbers are $\\le x$ is the CDF $C(x) = \\prod_{i=1}^k \\text{Prob}(u_i \\le x) = x^k$. Differentiating gives the exact PDF:\n $$P(x) = \\frac{d}{dx}\\left(x^k\\right) = k\\,x^{k-1} \\quad (0 \\le x \\le 1)$$\n\n### Exact 1D Normal Distribution: Box\u2013Muller & Polar Rejection\nInstead of inverting $\\text{erf}(y)$ for a single Gaussian $p(y) = (2\\pi)^{-1/2}e^{-y^2/2}$, we generate **two** independent standard normals $(y_1, y_2)$ at once in 2D polar coordinates $(r, \\theta)$:\n$$p(y_1, y_2)\\,dy_1\\,dy_2 = \\frac{1}{2\\pi}e^{-(y_1^2 + y_2^2)/2}\\,dy_1\\,dy_2 = \\left(\\frac{d\\theta}{2\\pi}\\right)\\left(\\frac{1}{2}e^{-v/2}\\,dv\\right), \\quad v = r^2$$\nSince $\\theta$ is uniform on $[0, 2\\pi)$ and $v = r^2$ is exponentially distributed with rate $a = 1/2$ ($v = -2\\ln x_1$), drawing $x_1, x_2 \\sim U(0, 1)$ yields the **Box\u2013Muller transform**:\n$$y_1 = \\sqrt{-2\\ln x_1}\\cos(2\\pi x_2), \\qquad y_2 = \\sqrt{-2\\ln x_1}\\sin(2\\pi x_2)$$\n- **Polar Rejection Box\u2013Muller (No Trig Functions!):** As shown in the lecture's Python code, we eliminate slow $\\sin/\\cos$ calls by sampling $(x, y) = (\\text{udrn}-0.5, \\text{udrn}-0.5)$ inside the unit square $[-0.5, 0.5]^2$ and **rejecting** until $r^2 = x^2 + y^2 \\le 0.25$ (inscribed circle of radius $1/2$, area $\\pi/4$ inside square of area $1$). Then $x/\\sqrt{r^2} = \\cos\\theta$ and $y/\\sqrt{r^2} = \\sin\\theta$, so setting `radius = sigma * sqrt(-2 * ln(udrn) / r2)` produces two exact normal variates `x0 + x * radius` and `y0 + y * radius`!\n\n### Multivariate Correlated Gaussians via Cholesky Decomposition\nHow do we sample a $D$-component Gaussian vector $\\mathbf{x} = (x_1, \\dots, x_D)^T$ with mean $\\mathbf{0}$ and target symmetric positive-definite covariance matrix $\\langle x_\\alpha x_\\beta \\rangle = T_{\\alpha\\beta}$?\n1. Compute the **Cholesky (\"square-root\") decomposition** of $\\mathbf{T}$:\n $$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$$\n where $\\mathbf{S}$ is a **lower-triangular matrix** ($S_{\\alpha i} = 0$ for all entries above the diagonal, $i > \\alpha$).\n2. Generate $D$ independent standard normal variates $\\mathbf{y} = (y_1, \\dots, y_D)^T$ with $\\langle y_i y_j \\rangle = \\delta_{ij}$.\n3. Apply the linear transformation $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ (or $\\mathbf{x} = \\boldsymbol{\\mu} + \\mathbf{S}\\mathbf{y}$ for nonzero mean):\n $$x_\\alpha = \\sum_{i=1}^\\alpha S_{\\alpha i} y_i \\implies \\langle x_\\alpha x_\\beta \\rangle = \\sum_{i,j} S_{\\alpha i} S_{\\beta j} \\underbrace{\\langle y_i y_j \\rangle}_{\\delta_{ij}} = \\sum_i S_{\\alpha i} S_{\\beta i} = (\\mathbf{S}\\mathbf{S}^T)_{\\alpha\\beta} = T_{\\alpha\\beta}$$"
       },
       {
         "id": "concept_rejection_sampling",
@@ -323,8 +323,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling.",
-            "text_markdown": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling."
+            "text": "Because a 12-bit LCG has a period of $6$.",
+            "text_markdown": "Because a 12-bit LCG has a period of $6$."
           },
           {
             "id": "b",
@@ -333,8 +333,8 @@
           },
           {
             "id": "c",
-            "text": "Because a 12-bit LCG has a period of $6$.",
-            "text_markdown": "Because a 12-bit LCG has a period of $6$."
+            "text": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling.",
+            "text_markdown": "Because each $u_i$ has mean $1/2$ and variance $1/12$, so summing $12$ independent uniforms produces mean $12 \\times (1/2) = 6$ (shifted to $0$ by subtracting $6$) and unit variance $12 \\times (1/12) = 1$ without requiring a square-root scaling."
           },
           {
             "id": "d",
@@ -342,7 +342,7 @@
             "text_markdown": "Because $\\sum_{i=1}^{12} u_i - 6$ reproduces the exact Box\u2013Muller cosine transform."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "For $u_i \\sim U(0, 1)$, $\\langle u_i \\rangle = 1/2$ and $\\text{Var}(u_i) = 1/12$. By choosing $K = 12$, the sum $\\sum_{i=1}^{12} u_i$ automatically has variance $12 \\times (1/12) = 1.0$ and mean $12 \\times (1/2) = 6.0$. Subtracting $6$ yields a fast, multiplication-free Central Limit Theorem approximation to $\\mathcal{N}(0, 1)$ supported on $[-6, 6]$."
       },
       {
@@ -356,8 +356,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$P(x) = k\\,x^{k-1}$",
-            "text_markdown": "$P(x) = k\\,x^{k-1}$"
+            "text": "$P(x) = -\\ln(x) / k$",
+            "text_markdown": "$P(x) = -\\ln(x) / k$"
           },
           {
             "id": "b",
@@ -371,11 +371,11 @@
           },
           {
             "id": "d",
-            "text": "$P(x) = -\\ln(x) / k$",
-            "text_markdown": "$P(x) = -\\ln(x) / k$"
+            "text": "$P(x) = k\\,x^{k-1}$",
+            "text_markdown": "$P(x) = k\\,x^{k-1}$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because the $k$ draws are independent and $\\text{Prob}(u_i \\le x) = x$ on $[0, 1]$:\n$$C(x) = \\text{Prob}\\big(\\max(u_1, \\dots, u_k) \\le x\\big) = \\prod_{i=1}^k \\text{Prob}(u_i \\le x) = x^k$$\nDifferentiating the CDF yields the exact power-law PDF:\n$$P(x) = \\frac{dC(x)}{dx} = k\\,x^{k-1}$$\nNotice that this gives a square-root/power-law sampler without calling `pow` or `sqrt`!"
       },
       {
@@ -431,7 +431,7 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_rejection_composition_and_normals",
-        "prompt_markdown": "In the lecture's **Polar Box\u2013Muller code** - 0.5, sprng - 0.5\n r2 = x*x + y*y\n```\npoints $(x, y)$ are sampled uniformly inside the $1 \\times 1$ square $[-0.5, 0.5]^2$ and accepted if they fall inside the circle of radius $R = 0.5$ ($r^2 \\le 0.25$). What is the probability $p_{\\text{accept}}$ that a single $(x, y)$ pair is accepted on any given iteration of the `while` loop? (Enter as a decimal to 3 decimal places.)",
+        "prompt_markdown": "In the **Polar Box\u2013Muller** rejection algorithm, pairs $(x, y)$ are drawn uniformly from the square $[-0.5, 0.5]^2$ until they lie within the unit disk:\n```python\nr2 = 1.0\nwhile r2 > 0.25 or r2 == 0.0:\n    x = sprng() - 0.5\n    y = sprng() - 0.5\n    r2 = x * x + y * y\n```\nPoints $(x, y)$ are accepted if they fall inside the circle of radius $R = 0.5$ ($r^2 \\le 0.25$). What is the probability $p_{\\text{accept}}$ that a single $(x, y)$ pair is accepted on any given iteration of the `while` loop? (Enter as a decimal to 3 decimal places.)",
         "hint_markdown": "Compute the ratio of the area of the circular acceptance disk to the area of the bounding square domain.",
         "correct": {
           "value": 0.785,
@@ -445,7 +445,7 @@
         "question_type": "multi_select",
         "difficulty": "easy",
         "taught_by": "sec_rejection_composition_and_normals",
-        "prompt_markdown": "According to of the reference notes, what are the computational and statistical advantages of the rejection-based **Polar Box\u2013Muller** algorithm? Select **all** true statements:",
+        "prompt_markdown": "According to the principles of simulation methodology,, what are the computational and statistical advantages of the rejection-based **Polar Box\u2013Muller** algorithm? Select **all** true statements:",
         "hint_markdown": "Check the bullet points at the bottom of.",
         "options": [
           {
@@ -486,17 +486,17 @@
           "concept_cholesky_gaussian"
         ],
         "prompt_markdown": "To generate a $D$-dimensional correlated Gaussian vector $\\mathbf{x}$ with target covariance matrix $T_{\\alpha\\beta} = \\langle x_\\alpha x_\\beta \\rangle$ from an independent standard normal vector $\\mathbf{y}$ ($\\langle y_i y_j \\rangle = \\delta_{ij}$) via $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$, which matrix equation must the lower-triangular Cholesky matrix $\\mathbf{S}$ satisfy?",
-        "hint_markdown": "Substitute $x_\\alpha = \\sum_i S_{\\alpha i} y_i$ into $\\langle x_\\alpha x_\\beta \\rangle = T_{\\alpha\\beta}$.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$",
-            "text_markdown": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$"
+            "text": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$",
+            "text_markdown": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$"
           },
           {
             "id": "b",
-            "text": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$",
-            "text_markdown": "$\\mathbf{S} + \\mathbf{S}^T = \\mathbf{T}^{-1}$"
+            "text": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$",
+            "text_markdown": "$\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$"
           },
           {
             "id": "c",
@@ -509,7 +509,7 @@
             "text_markdown": "$\\det(\\mathbf{S}) = 0$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "$$\\langle x_\\alpha x_\\beta \\rangle = \\sum_{i,j} S_{\\alpha i} S_{\\beta j} \\langle y_i y_j \\rangle = \\sum_{i,j} S_{\\alpha i} S_{\\beta j} \\delta_{ij} = \\sum_i S_{\\alpha i} S_{\\beta i} = (\\mathbf{S}\\mathbf{S}^T)_{\\alpha\\beta} = T_{\\alpha\\beta}$$"
       },
       {
@@ -540,8 +540,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$.",
-            "text_markdown": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$."
+            "text": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$).",
+            "text_markdown": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$)."
           },
           {
             "id": "b",
@@ -550,8 +550,8 @@
           },
           {
             "id": "c",
-            "text": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$).",
-            "text_markdown": "$\\mathbf{T}$ must have negative diagonal entries ($T_{ii} < 0$)."
+            "text": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$.",
+            "text_markdown": "$\\mathbf{T}$ must be positive-definite (all eigenvalues $> 0$, or $|\rho| < 1$ with $\\sigma_i > 0$), so that $\\mathbf{c}^T \\mathbf{T} \\mathbf{c} > 0$ for all non-zero vectors $\\mathbf{c}$."
           },
           {
             "id": "d",
@@ -559,14 +559,14 @@
             "text_markdown": "$\\mathbf{T}$ must be an orthogonal permutation matrix."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Because the variance of any non-trivial linear combination $\\sum_\\alpha c_\\alpha x_\\alpha$ must be strictly positive, $\\langle (\\mathbf{c}^T\\mathbf{x})^2 \\rangle = \\mathbf{c}^T\\mathbf{T}\\mathbf{c} > 0$. This is the definition of a **symmetric positive-definite** matrix, which is the exact necessary and sufficient condition for a real Cholesky factor $\\mathbf{S}$ with positive diagonal entries to exist."
       },
       {
         "id": "sec_importance_sampling_and_variance_trap",
         "type": "markdown_section",
         "title": "3. Monte Carlo Efficiency, Importance Sampling & The Infinite-Variance Tail Trap",
-        "body_markdown": "### The Figure of Merit: Simulation Efficiency $\\zeta$\nBecause the statistical error of a Monte Carlo mean decays as $\\text{error} = \\sqrt{\\text{variance} / N} \\propto (\\text{computer time})^{-1/2}$, the product of the **squared error of the mean** $v = \\text{error}^2 = \\sigma^2 / N$ and the **total CPU time** $T = N \\tau_{\\text{step}}$ is independent of run length $N$! We therefore define the fundamental **Efficiency (Figure of Merit)** of a Monte Carlo algorithm as:\n$$\\text{Efficiency} = \\zeta = \\frac{1}{v\\,T}$$\nTo maximize $\\zeta$, we can write a faster code (smaller $\\tau_{\\text{step}}$), buy a faster computer, or **reduce the per-sample variance $\\sigma^2$** via **Importance Sampling** and **Correlated Sampling**.\n\n### Importance Sampling & The Zero-Variance Principle\nSuppose we want to evaluate the multidimensional integral $I = \\int dx\\,f(x)$. Instead of sampling $x$ uniformly, we introduce a normalized **importance sampling probability density** $p(x) > 0$ ($\\int dx\\,p(x) = 1$):\n$$I = \\int dx\\,p(x)\\left(\\frac{f(x)}{p(x)}\\right) = \\left\\langle \\frac{f(x)}{p(x)} \\right\\rangle_p$$\nDrawing $N$ samples $x_i \\sim p(x)\\,dx$, our unbiased **estimator** is $g(x) = f(x)/p(x)$. Its **mean** is always $I$ (independent of $p(x)$!), but its **variance** depends strongly on $p(x)$:\n$$v \\approx \\sigma^2 = \\left\\langle \\left(\\frac{f(x)}{p(x)} - I\\right)^2 \\right\\rangle_p = \\int dx\\,p(x)\\left(\\frac{f(x)}{p(x)}\\right)^2 - I^2 = \\int dx\\,\\frac{f(x)^2}{p(x)} - I^2$$\nMinimizing $\\sigma^2$ with respect to $p(x)$ subject to the normalization constraint $\\int dx\\,p(x) = 1$ (e.g., via Lagrange multipliers or parameterizing $p(x) = [q(x)]^2 / \\int [q]^2$) yields the **Optimal Importance Function**:\n$$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}, \\qquad \\text{Estimator: } \\frac{f(x)}{p^*(x)} = \\text{sign}\\big(f(x)\\big)\\int dx'\\,|f(x')|$$\n1. **Zero-Variance Principle:** If $f(x)$ does not change sign ($f(x) \\ge 0$ everywhere), the estimator $f(x)/p^*(x) = I$ is a **constant**, so its variance is **identically zero** ($\\sigma^2 = 0$)!\n2. **Practical Guide:** Of course, we cannot normalize $p^*(x)$ directly without already knowing $I = \\int |f(x)|dx$\u2014if we could, we would have solved the problem analytically! Instead, we choose a solvable trial function $p_a(x)$ whose shape mimics $|f(x)|$ where $|f(x)|$ is large.\n3. **The Sign Problem:** If $f(x)$ oscillates between positive and negative values, $\\text{sign}(f(x))$ jumps between $+1$ and $-1$, so **zero variance is impossible** even with $p^*(x)$! As the lecture notes: *\"Monte Carlo can add, but not subtract.\"*\n\n### Lecture Case Study: Gaussian Importance Sampling & The Infinite-Variance Trap\nConsider the lecture's classic 1D integral = \\frac{e^{-x^2/2}}{1 + x^2}, \\qquad \\text{sampled with trial Gaussian } p_a(x) = \\frac{e^{-x^2/(2a)}}{\\sqrt{2\\pi a}} \\quad (a > 0)$$\n- **Unbiased Mean:** For any $a > 0$, $\\langle f(x)/p_a(x) \\rangle_{p_a} = \\int dx\\,f(x) = I \\approx 1.6436$ is independent of $a$.\n- **Variance Integral:** Substituting $f(x)$ and $p_a(x)$ into $\\sigma^2(a) = \\int dx\\,\\frac{f(x)^2}{p_a(x)} - I^2$ gives:\n $$\\sigma^2(a) = \\int_{-\\infty}^{\\infty} dx\\,\\frac{\\sqrt{2\\pi a}}{(1 + x^2)^2}\\,\\exp\\!\\left[-x^2\\left(1 - \\frac{1}{2a}\\right)\\right] - I^2$$\n- **Condition for Finite Variance ($a > 1/2$):** Look at the Gaussian exponent $-x^2\\left(1 - \\frac{1}{2a}\\right)$ as $|x| \\to \\infty$:\n - If **$a \\le 1/2$** ($1 - \\frac{1}{2a} \\le 0$), the exponential **blows up** as $|x| \\to \\infty$! The variance integral diverges ($\\sigma^2(a) = \\infty$). In a simulation, drawing a rare point in the tail $|x| \\gg 1$ where $p_a(x) \\ll f(x)$ produces gigantic **Pareto spikes** ($f(x_i)/p_a(x_i) \\gg 1$) and long power-law tails that ruin convergence!\n - If **$a = 1$** (the \"obvious\" choice matching the numerator $e^{-x^2/2}$), variance is finite ($\\sigma^2(1) \\approx 0.17$).\n - **Optimal Value ($a^* \\approx 0.6$):** Because the denominator $1 + x^2$ makes $f(x)$ narrower than $e^{-x^2/2}$ near the origin, narrowing the Gaussian slightly to **$a \\approx 0.6$** minimizes $\\sigma^2(a)$ and cuts CPU time by more than a factor of $6$ compared to $a = 1$!\n -*(Note: If the integrand were a pure Gaussian $f(x) = e^{-x^2/2}$ without the $1/(1+x^2)$ factor, the exact same exponent $1 - 1/(2a) > 0$ requires $a > 1/2$ for finite variance, while $a = 1$ would give zero variance! And if one tried to evaluate the unweighted average $\\langle 1/p_a(x) \\rangle$, the integral would diverge unless $p_a$ were wider still; notes the three regimes: $a > 0$ for $p(x)$ to exist, $a > 0.5$ for finite variance, $a = 0.6$ optimal, and $a = 1$ obvious!)*\n\n> [!CAUTION]\n> **Golden Rule of Importance Sampling:** **Never under-sample the tails!** Over-sampling the tails ($a > 0.6$, broader $p(x)$) causes only a mild, smooth loss of efficiency, whereas under-sampling the tails ($a \\le 0.5$, narrower $p(x)$ than $\\sqrt{|f(x)|}$) causes **infinite variance** and catastrophic spikes!"
+        "body_markdown": "### The Figure of Merit: Simulation Efficiency $\\zeta$\nBecause the statistical error of a Monte Carlo mean decays as $\\text{error} = \\sqrt{\\text{variance} / N} \\propto (\\text{computer time})^{-1/2}$, the product of the **squared error of the mean** $v = \\text{error}^2 = \\sigma^2 / N$ and the **total CPU time** $T = N \\tau_{\\text{step}}$ is independent of run length $N$! We therefore define the fundamental **Efficiency (Figure of Merit)** of a Monte Carlo algorithm as:\n$$\\text{Efficiency} = \\zeta = \\frac{1}{v\\,T}$$\nTo maximize $\\zeta$, we can write a faster code (smaller $\\tau_{\\text{step}}$), buy a faster computer, or **reduce the per-sample variance $\\sigma^2$** via **Importance Sampling** and **Correlated Sampling**.\n\n### Importance Sampling & The Zero-Variance Principle\nSuppose we want to evaluate the multidimensional integral $I = \\int dx\\,f(x)$. Instead of sampling $x$ uniformly, we introduce a normalized **importance sampling probability density** $p(x) > 0$ ($\\int dx\\,p(x) = 1$):\n$$I = \\int dx\\,p(x)\\left(\\frac{f(x)}{p(x)}\\right) = \\left\\langle \\frac{f(x)}{p(x)} \\right\\rangle_p$$\nDrawing $N$ samples $x_i \\sim p(x)\\,dx$, our unbiased **estimator** is $g(x) = f(x)/p(x)$. Its **mean** is always $I$ (independent of $p(x)$!), but its **variance** depends strongly on $p(x)$:\n$$v \\approx \\sigma^2 = \\left\\langle \\left(\\frac{f(x)}{p(x)} - I\\right)^2 \\right\\rangle_p = \\int dx\\,p(x)\\left(\\frac{f(x)}{p(x)}\\right)^2 - I^2 = \\int dx\\,\\frac{f(x)^2}{p(x)} - I^2$$\nMinimizing $\\sigma^2$ with respect to $p(x)$ subject to the normalization constraint $\\int dx\\,p(x) = 1$ (e.g., via Lagrange multipliers or parameterizing $p(x) = [q(x)]^2 / \\int [q]^2$) yields the **Optimal Importance Function**:\n$$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}, \\qquad \\text{Estimator: } \\frac{f(x)}{p^*(x)} = \\text{sign}\\big(f(x)\\big)\\int dx'\\,|f(x')|$$\n1. **Zero-Variance Principle:** If $f(x)$ does not change sign ($f(x) \\ge 0$ everywhere), the estimator $f(x)/p^*(x) = I$ is a **constant**, so its variance is **identically zero** ($\\sigma^2 = 0$)!\n2. **Practical Guide:** Of course, we cannot normalize $p^*(x)$ directly without already knowing $I = \\int |f(x)|dx$\u2014if we could, we would have solved the problem analytically! Instead, we choose a solvable trial function $p_a(x)$ whose shape mimics $|f(x)|$ where $|f(x)|$ is large.\n3. **The Sign Problem:** If $f(x)$ oscillates between positive and negative values, $\\text{sign}(f(x))$ jumps between $+1$ and $-1$, so **zero variance is impossible** even with $p^*(x)$! In the famous adage: *\"Monte Carlo can add, but not subtract.\"*\n\n### Case Study: Gaussian Importance Sampling & The Infinite-Variance Trap\nConsider the classic 1D integral $I = \\int_{-\\infty}^{\\infty} dx\\, \\frac{e^{-x^2/2}}{1 + x^2}$, sampled with trial Gaussian $p_a(x) = \\frac{e^{-x^2/(2a)}}{\\sqrt{2\\pi a}}$ ($a > 0$):$$\n- **Unbiased Mean:** For any $a > 0$, $\\langle f(x)/p_a(x) \\rangle_{p_a} = \\int dx\\,f(x) = I \\approx 1.6436$ is independent of $a$.\n- **Variance Integral:** Substituting $f(x)$ and $p_a(x)$ into $\\sigma^2(a) = \\int dx\\,\\frac{f(x)^2}{p_a(x)} - I^2$ gives:\n $$\\sigma^2(a) = \\int_{-\\infty}^{\\infty} dx\\,\\frac{\\sqrt{2\\pi a}}{(1 + x^2)^2}\\,\\exp\\!\\left[-x^2\\left(1 - \\frac{1}{2a}\\right)\\right] - I^2$$\n- **Condition for Finite Variance ($a > 1/2$):** Look at the Gaussian exponent $-x^2\\left(1 - \\frac{1}{2a}\\right)$ as $|x| \\to \\infty$:\n - If **$a \\le 1/2$** ($1 - \\frac{1}{2a} \\le 0$), the exponential **blows up** as $|x| \\to \\infty$! The variance integral diverges ($\\sigma^2(a) = \\infty$). In a simulation, drawing a rare point in the tail $|x| \\gg 1$ where $p_a(x) \\ll f(x)$ produces gigantic **Pareto spikes** ($f(x_i)/p_a(x_i) \\gg 1$) and long power-law tails that ruin convergence!\n - If **$a = 1$** (the \"obvious\" choice matching the numerator $e^{-x^2/2}$), variance is finite ($\\sigma^2(1) \\approx 0.17$).\n - **Optimal Value ($a^* \\approx 0.6$):** Because the denominator $1 + x^2$ makes $f(x)$ narrower than $e^{-x^2/2}$ near the origin, narrowing the Gaussian slightly to **$a \\approx 0.6$** minimizes $\\sigma^2(a)$ and cuts CPU time by more than a factor of $6$ compared to $a = 1$!\n -*(Note: If the integrand were a pure Gaussian $f(x) = e^{-x^2/2}$ without the $1/(1+x^2)$ factor, the exact same exponent $1 - 1/(2a) > 0$ requires $a > 1/2$ for finite variance, while $a = 1$ would give zero variance! And if one tried to evaluate the unweighted average $\\langle 1/p_a(x) \\rangle$, the integral would diverge unless $p_a$ were wider still; notes the three regimes: $a > 0$ for $p(x)$ to exist, $a > 0.5$ for finite variance, $a = 0.6$ optimal, and $a = 1$ obvious!)*\n\n> [!CAUTION]\n> **Golden Rule of Importance Sampling:** **Never under-sample the tails!** Over-sampling the tails ($a > 0.6$, broader $p(x)$) causes only a mild, smooth loss of efficiency, whereas under-sampling the tails ($a \\le 0.5$, narrower $p(x)$ than $\\sqrt{|f(x)|}$) causes **infinite variance** and catastrophic spikes!"
       },
       {
         "id": "concept_importance_sampling_trap",
@@ -634,8 +634,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$.",
-            "text_markdown": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$."
+            "text": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$.",
+            "text_markdown": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$."
           },
           {
             "id": "b",
@@ -649,11 +649,11 @@
           },
           {
             "id": "d",
-            "text": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$.",
-            "text_markdown": "$\\zeta = \\sqrt{v / T}$; which grows as $N^2$."
+            "text": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$.",
+            "text_markdown": "$\\zeta = \\frac{1}{v T}$; because $v = \\sigma^2 / N \\propto N^{-1}$ and CPU time $T = N \\tau_{\\text{step}} \\propto N$, the factors of $N$ cancel out in $v T = \\sigma^2 \\tau_{\\text{step}}$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Since the statistical error of the mean scales as $\\text{error} = \\sigma / \\sqrt{N}$, its square is $v = \\text{error}^2 = \\sigma^2 / N$, while total CPU time is $T = N \\tau_{\\text{step}}$. Their product $v T = \\sigma^2 \\tau_{\\text{step}}$ is an intrinsic property of the algorithm and hardware, making $\\zeta = \\frac{1}{v T}$ the universal figure of merit."
       },
       {
@@ -665,7 +665,7 @@
         "prompt_markdown": "Suppose introducing an importance sampling function $p(x)$ reduces the per-sample estimator variance $\\sigma^2$ by a factor of $10$ (from $\\sigma_0^2$ to $\\sigma_0^2 / 10$), while evaluating $p(x)$ increases the CPU time per step $\\tau_{\\text{step}}$ by a factor of $2$. By what factor $\\zeta_{\\text{new}} / \\zeta_{\\text{old}}$ does the overall simulation **efficiency** $\\zeta = 1/(v T)$ improve?",
         "hint_markdown": "Evaluate the ratio of the efficiency figures of merit using the variance reduction factor and the per-step CPU time increase.",
         "correct": {
-          "value": 5,
+          "value": 5.0,
           "tolerance": 0.05
         },
         "rationale_markdown": "Using $\\zeta = \\frac{1}{v T} = \\frac{1}{\\sigma^2 \\tau_{\\text{step}}}$:\n$$\\frac{\\zeta_{\\text{new}}}{\\zeta_{\\text{old}}} = \\frac{\\sigma_{\\text{old}}^2}{\\sigma_{\\text{new}}^2} \\cdot \\frac{\\tau_{\\text{old}}}{\\tau_{\\text{new}}} = 10 \\times \\frac{1}{2} = 5.0$$\nThe simulation reaches any target error bar in $1/5$ of the total wall-clock CPU time!"
@@ -714,13 +714,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!",
-            "text_markdown": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!"
+            "text": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative.",
+            "text_markdown": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative."
           },
           {
             "id": "b",
-            "text": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative.",
-            "text_markdown": "$p^*(x) = \\frac{1}{f(x)^2}$; we cannot use it because $f(x)^2$ is always negative."
+            "text": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!",
+            "text_markdown": "$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$; we cannot sample $p^*(x)$ directly in general because its normalization constant $\\int dx'\\,|f(x')|$ IS the very integral we are trying to compute!"
           },
           {
             "id": "c",
@@ -733,7 +733,7 @@
             "text_markdown": "$p^*(x) = 1$; we cannot use it because uniform distributions have infinite variance."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Minimizing $\\int [f(x)^2 / p(x)]\\,dx - \\lambda\\left(\\int p(x)\\,dx - 1\\right)$ gives $-f(x)^2 / p(x)^2 - \\lambda = 0 \\implies p^*(x) \\propto |f(x)|$:\n$$p^*(x) = \\frac{|f(x)|}{\\int dx'\\,|f(x')|}$$\nSampling or normalizing $p^*(x)$ exactly would require knowing $\\int |f(x)|\\,dx$ analytically. Instead, $p^*(x) \\propto |f(x)|$ serves as the mathematical guide for choosing an approximate, easily sampled distribution $p(x) \\approx |f(x)|/Z_p$."
       },
       {
@@ -747,8 +747,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible).",
-            "text_markdown": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible)."
+            "text": "$\\sigma^2 = \\infty$.",
+            "text_markdown": "$\\sigma^2 = \\infty$."
           },
           {
             "id": "b",
@@ -757,8 +757,8 @@
           },
           {
             "id": "c",
-            "text": "$\\sigma^2 = \\infty$.",
-            "text_markdown": "$\\sigma^2 = \\infty$."
+            "text": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible).",
+            "text_markdown": "$\\sigma^2 = 12^2 - 2^2 = 140$ (non-zero! Because $f(x)$ changes sign, the estimator jumps between $+12$ and $-12$, illustrating the 'Sign Problem' where zero variance is impossible)."
           },
           {
             "id": "d",
@@ -766,7 +766,7 @@
             "text_markdown": "$\\sigma^2 = 2$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "For $p^*(x) = |f(x)| / \\int |f|$, the estimator is:\n$$g(x) = \\frac{f(x)}{p^*(x)} = \\text{sign}\\big(f(x)\\big) \\int_{-1}^1 |f(x')|\\,dx' = \\pm 12$$\nThus $g(x)^2 = 12^2 = 144$ everywhere, giving a variance of:\n$$\\sigma^2 = \\langle g(x)^2 \\rangle_{p^*} - I^2 = \\left(\\int |f|\\,dx\\right)^2 - \\left(\\int f\\,dx\\right)^2 = 144 - 4 = 140 > 0$$\nZero variance ($\\sigma^2 = 0$) is possible **only** when $f(x)$ has a single sign ($|f(x)| = f(x)$ or $-f(x)$ everywhere). For oscillatory or fermionic integrands where $\\int |f| \\gg |\\int f|$, the variance explodes\u2014the infamous **Monte Carlo Sign Problem** (*\"Monte Carlo can add, but not subtract\"*)."
       },
       {
@@ -817,8 +817,8 @@
         "options": [
           {
             "id": "a",
-            "text": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band.",
-            "text_markdown": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band."
+            "text": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical.",
+            "text_markdown": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical."
           },
           {
             "id": "b",
@@ -832,11 +832,11 @@
           },
           {
             "id": "d",
-            "text": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical.",
-            "text_markdown": "The traces for $a = 0.2$ and $a = 0.6$ look visually identical."
+            "text": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band.",
+            "text_markdown": "For $a \\le 0.5$, the trace exhibits violent upward 'spikes' and heavily skewed long-tailed histograms whenever a rare draw lands in the tail where $p_a(x) \\ll f(x)$; for $a = 0.6$, the trace fluctuates symmetrically within a narrow, bounded band."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "When $a \\le 0.5$, $p_a(x)$ decays much faster than $f(x)$ at large $|x|$. Most samples are drawn near $x \\approx 0$ where $f(x)/p_a(x)$ is small, creating a deceptively quiet baseline\u2014until a rare sample lands out in the tail ($|x| \\gtrsim 2.5$), where dividing $f(x)$ by a vanishingly tiny $p_a(x)$ produces a gigantic **spike** (a heavy-tailed Pareto/L\u00e9vy distribution with infinite variance)."
       },
       {
@@ -903,13 +903,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest).",
-            "text_markdown": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest)."
+            "text": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$.",
+            "text_markdown": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$."
           },
           {
             "id": "b",
-            "text": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$.",
-            "text_markdown": "$p^*(x) \\propto f_1(x)^2 + f_2(x)^2$."
+            "text": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest).",
+            "text_markdown": "$p^*(x) \\propto |f_1(x) - f_2(x)|$ (sampling most heavily in regions where the difference between the two integrands is largest)."
           },
           {
             "id": "c",
@@ -922,7 +922,7 @@
             "text_markdown": "$p^*(x) \\propto |f_1(x) / f_2(x)|$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "For $G(F_1, F_2) = F_1 - F_2$, the partial derivatives are $\\frac{\\partial G}{\\partial F_1} = +1$ and $\\frac{\\partial G}{\\partial F_2} = -1$. Substituting into the formula gives:\n$$p^*(x) \\propto \\left| f_1(x)(+1) + f_2(x)(-1) \\right| = |f_1(x) - f_2(x)|$$\nwhich concentrates samples precisely where the perturbation $f_1(x) - f_2(x)$ is non-zero!"
       },
       {
@@ -936,8 +936,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$",
-            "text_markdown": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$"
+            "text": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)",
+            "text_markdown": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)"
           },
           {
             "id": "b",
@@ -946,8 +946,8 @@
           },
           {
             "id": "c",
-            "text": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)",
-            "text_markdown": "$p^*(r) \\propto \\left| A(r) + \\langle A \\rangle \\right|$ (independent of $V(r)$)"
+            "text": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$",
+            "text_markdown": "$p^*(r) \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$"
           },
           {
             "id": "d",
@@ -955,7 +955,7 @@
             "text_markdown": "$p^*(r) \\propto e^{-2\\beta V(r)}$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Substituting $f_1(r) = A(r)e^{-\\beta V(r)}$, $f_2(r) = e^{-\\beta V(r)}$, $\\frac{\\partial G}{\\partial F_1} = \\frac{1}{F_2}$, and $\\frac{\\partial G}{\\partial F_2} = -\\frac{\\langle A \\rangle}{F_2}$ into 's general formula directly derives 's equation:\n$$p^*(r) \\propto \\left| \\frac{A(r)e^{-\\beta V(r)}}{F_2} - \\frac{\\langle A \\rangle e^{-\\beta V(r)}}{F_2} \\right| \\propto \\left| e^{-\\beta V(r)}\\big(A(r) - \\langle A \\rangle\\big) \\right|$$"
       },
       {
@@ -969,8 +969,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$).",
-            "text_markdown": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$)."
+            "text": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts.",
+            "text_markdown": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts."
           },
           {
             "id": "b",
@@ -984,11 +984,11 @@
           },
           {
             "id": "d",
-            "text": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts.",
-            "text_markdown": "Because $\\langle A_i \\rangle$ is always known exactly before the simulation starts."
+            "text": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$).",
+            "text_markdown": "Because we want to measure a whole set of different physical averages $\\langle A_1 \\rangle, \\langle A_2 \\rangle, \\dots$ from the same trajectory, and $e^{-\\beta V(\\mathbf{R})}$ is the universal, overwhelmingly peaked factor independent of $A_i$ (and avoids zero-density nodes where $A_i = \\langle A_i \\rangle$)."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "As explained, $e^{-\\beta V(\\mathbf{R})}$ is **independent of $A_i$** and captures the extreme exponential peaking of the canonical ensemble across $3N$-dimensional space. Sampling $e^{-\\beta V(\\mathbf{R})}$ allows a single Markov chain trajectory to compute dozens of different observables $A_i$ simultaneously without under-sampling regions where one particular $A_i(\\mathbf{R})$ happens to cross $\\langle A_i \\rangle$."
       },
       {
@@ -1035,13 +1035,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$.",
-            "text_markdown": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$."
+            "text": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$.",
+            "text_markdown": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$."
           },
           {
             "id": "b",
-            "text": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$.",
-            "text_markdown": "Because the inverse temperature $\\beta = 1/(k_B T)$ is proportional to $N^3$."
+            "text": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$.",
+            "text_markdown": "Because the Helmholtz free energy $F(\\beta) = N f(\\beta)$ is an extensive quantity (proportional to $N$, with $F(\\beta) > F(2\\beta)$), so the exponent $\\beta[F(\\beta) - F(2\\beta)] \\propto N$ grows linearly with $N$."
           },
           {
             "id": "c",
@@ -1054,7 +1054,7 @@
             "text_markdown": "Because uniform random number generators stop working when $N > 12$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In thermodynamics, the Helmholtz free energy $F(T, V, N) = N f(T, \\rho)$ is **extensive** ($\\propto N$). Because $\\frac{\\partial (\\beta F)}{\\partial \\beta} = E$, the difference $\\beta[F(\\beta) - F(2\\beta)] = N \\Delta(\\beta f) > 0$ scales linearly with $N$. Consequently, $\\text{error}(\\beta F) \\sim e^{+c N}$ grows **exponentially** with particle count $N$, requiring an exponentially large number of uniform sample points just like a naive grid method!"
       },
       {
@@ -1066,7 +1066,7 @@
         "prompt_markdown": "In the lecture's intuitive hard-sphere explanation, suppose placing $N = 10$ atoms at random into a sub-box of area $A$ has a non-overlap probability of $q = 0.10$. If you scale the system at constant density to $m = 10$ such independent sub-boxes ($100$ atoms total), what is $\\log_{10}(1 / p)$, the base-10 logarithm of the average number of random configurations required to obtain a single non-overlapping state?",
         "hint_markdown": "Multiply the number of sub-boxes by the logarithm of the inverse success probability per sub-box.",
         "correct": {
-          "value": 10,
+          "value": 10.0,
           "tolerance": 0.05
         },
         "rationale_markdown": "For $m = 10$ independent sub-volumes each succeeding with probability $q = 0.10 = 10^{-1}$:\n$$p = q^m = (10^{-1})^{10} = 10^{-10} \\implies \\log_{10}\\left(\\frac{1}{p}\\right) = 10$$\nYou would need $10^{10}$ random throws just to find *one* non-overlapping 100-atom configuration (and $10^{100}$ throws for $1000$ atoms!), proving why Markov chain random walks are indispensable for condensed-matter simulations."
@@ -1080,7 +1080,7 @@
         "prompt_markdown": "Consider a system of $N = 50$ particles where the extensive free-energy difference per particle between $\\beta$ and $2\\beta$ is $\\beta[f(\\beta) - f(2\\beta)] = 0.20$. Using the formula $\\text{error}(\\beta F) = \\exp\\!\\big[\\beta(F(\\beta) - F(2\\beta))\\big]$ with $F = N f$, what is the natural logarithm $\\ln[\\text{error}(\\beta F)]$ of the single-sample statistical error of $\\beta F$ under independent uniform sampling?",
         "hint_markdown": "Evaluate the product of the total particle number and the per-particle free-energy difference parameter.",
         "correct": {
-          "value": 10,
+          "value": 10.0,
           "tolerance": 0.05
         },
         "rationale_markdown": "Since $F(\\beta) = N f(\\beta)$ is extensive:\n$$\\ln\\!\\big[\\text{error}(\\beta F)\\big] = \\beta\\big(F(\\beta) - F(2\\beta)\\big) = N \\cdot \\beta\\big(f(\\beta) - f(2\\beta)\\big) = 50 \\times 0.20 = 10.0$$\nmeaning $\\text{error}(\\beta F) = e^{10} \\approx 2.2 \\times 10^4$, requiring $N_{\\text{samples}} \\sim e^{20} \\approx 4.85 \\times 10^8$ independent samples just to reduce the error on $\\beta F$ to order $1$!"
@@ -1091,13 +1091,13 @@
         "question_type": "single_select",
         "difficulty": "easy",
         "taught_by": "sec_importance_sampling_and_variance_trap",
-        "prompt_markdown": "According to of the reference notes, what is the essential **debugging check** you should always perform after implementing a new importance sampling distribution $p_a(x)$ in a Monte Carlo integration code?",
+        "prompt_markdown": "According to the principles of simulation methodology,, what is the essential **debugging check** you should always perform after implementing a new importance sampling distribution $p_a(x)$ in a Monte Carlo integration code?",
         "hint_markdown": "Remember that the mean of $\\hat{I} = \\langle f(x)/p_a(x) \\rangle_{p_a}$ should not depend on $a$!",
         "options": [
           {
             "id": "a",
-            "text": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars).",
-            "text_markdown": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars)."
+            "text": "Verify that setting $a = -1$ produces positive probabilities.",
+            "text_markdown": "Verify that setting $a = -1$ produces positive probabilities."
           },
           {
             "id": "b",
@@ -1106,8 +1106,8 @@
           },
           {
             "id": "c",
-            "text": "Verify that setting $a = -1$ produces positive probabilities.",
-            "text_markdown": "Verify that setting $a = -1$ produces positive probabilities."
+            "text": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars).",
+            "text_markdown": "Verify that the estimated integral value $\\hat{I}$ remains statistically independent of the importance sampling distribution parameters (e.g., varying $a$ across several valid values yields the same mean within error bars)."
           },
           {
             "id": "d",
@@ -1115,7 +1115,7 @@
             "text_markdown": "Verify that $\\hat{I}$ increases linearly with the parameter $a$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Because $\\langle f(x)/p_a(x) \\rangle_{p_a} = \\int dx\\,p_a(x)[f(x)/p_a(x)] = \\int dx\\,f(x) = I$ is mathematically invariant under any valid choice of $p_a(x)$, testing that your code converges to the **same mean value $\\hat{I}$** for several different choices of $a$ (including uniform or $a = 1$) immediately catches normalization or Jacobian bugs in $p_a(x)$!"
       },
       {
@@ -1146,8 +1146,8 @@
         "options": [
           {
             "id": "a",
-            "text": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$.",
-            "text_markdown": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$."
+            "text": "The variance of the accepted points becomes zero.",
+            "text_markdown": "The variance of the accepted points becomes zero."
           },
           {
             "id": "b",
@@ -1161,11 +1161,11 @@
           },
           {
             "id": "d",
-            "text": "The variance of the accepted points becomes zero.",
-            "text_markdown": "The variance of the accepted points becomes zero."
+            "text": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$.",
+            "text_markdown": "If $a\\,q(x) < p(x)$ ($c(x) > 1$), the acceptance probability is clipped at $1.0$, systematically truncating the peak of $p(x)$ and biasing the sampled distribution; conversely, if $q(x)$ under-samples a region ($q(x) \\ll p(x)$), $a$ must be made enormous, collapsing the overall acceptance efficiency $1/a$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because a uniform test draw $u \\in [0, 1]$ satisfies $\\text{Prob}(u \\le c(x)) = \\min(1, c(x))$, any region where $c(x) = p(x)/[a\\,q(x)] > 1$ is accepted with probability $1$ instead of $c(x)$, shaving off the top of the distribution $p(x)$! And if you avoid clipping by raising $a = \\max_x [p(x)/q(x)]$ when $q(x)$ severely under-samples some region of $p(x)$, $a$ becomes huge and the efficiency $1/a$ plummets."
       },
       {
@@ -1180,7 +1180,7 @@
         "prompt_markdown": "In a $D = 10$-dimensional multivariate Gaussian sampler $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$, the Cholesky factor $\\mathbf{S}$ is a $10 \\times 10$ lower-triangular matrix ($S_{\\alpha i} = 0$ for all entries strictly above the main diagonal, $i > \\alpha$). How many entries of $\\mathbf{S}$ lie strictly above the diagonal and are guaranteed to be zero?",
         "hint_markdown": "Count the number of off-diagonal elements in the upper triangular portion of a $D \\times D$ square matrix.",
         "correct": {
-          "value": 45,
+          "value": 45.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "A $D \\times D$ matrix has $D^2 = 100$ total entries, with $D = 10$ on the main diagonal and:\n$$\\frac{D(D - 1)}{2} = \\frac{10 \\times 9}{2} = 45$$\nentries strictly above the main diagonal ($i > \\alpha$), all of which are zero in a lower-triangular Cholesky matrix $\\mathbf{S}$."
@@ -1234,13 +1234,13 @@
         "options": [
           {
             "id": "a",
-            "text": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$.",
-            "text_markdown": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$."
+            "text": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms.",
+            "text_markdown": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms."
           },
           {
             "id": "b",
-            "text": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms.",
-            "text_markdown": "(1) 500-dimensional rejection sampling; (2) 1D inverse CDF table lookup; (3) Uniform hit-or-miss sampling; (4) Independent uniform placement of all $1000$ atoms."
+            "text": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$.",
+            "text_markdown": "(1) Precomputed cumulative table $c_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search; (2) Box\u2013Muller standard normals transformed via Cholesky factor $\\mathbf{x} = \\mathbf{S}\\mathbf{y}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$); (3) Importance sampling $\\langle f(\\mathbf{x})/p(\\mathbf{x}) \\rangle_p$ with non-undersampled tails; (4) Markov chain random walk (Metropolis MC) near the peak of $e^{-\\beta V(\\mathbf{R})}$."
           },
           {
             "id": "c",
@@ -1253,7 +1253,7 @@
             "text_markdown": "(1) Linear scan; (2) Rejection sampling in 30D; (3) Importance sampling with $a = 0.2$ (under-sampled tails); (4) Uniform grid quadrature."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Each task pairs directly with its optimal tool:\n1. **Discrete $K = 500$ events:** Cumulative table $c_k = c_{k-1} + p_k$ with $\\mathcal{O}(\\log_2 K)$ bisection search.\n2. **$D = 30$ correlated Gaussian:** Independent normals $\\mathbf{y}$ (via Polar Box\u2013Muller) multiplied by the lower-triangular Cholesky matrix $\\mathbf{S}$ ($\\mathbf{S}\\mathbf{S}^T = \\mathbf{T}$).\n3. **5D integral with known approximate shape:** Importance sampling $\\langle f/p \\rangle_p$ (making sure $p(\\mathbf{x})$ never under-samples the tails of $\\sqrt{|f(\\mathbf{x})|}$).\n4. **$N = 1000$ Boltzmann configurations:** Independent sampling fails as $e^{+c N}$, so we must use a **Markov chain random walk** (Metropolis Monte Carlo, Lesson 15!)."
       }
     ]

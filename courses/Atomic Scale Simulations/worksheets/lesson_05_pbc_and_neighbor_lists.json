@@ -70,7 +70,7 @@
           "sec_surface_pbc_intro",
           "concept_surface_scaling"
         ],
-        "prompt_markdown": "As discussed in the lecture notes, suppose a simulated droplet has $N = 10^6 = (100)^3$ atoms on a cubic grid, and the surface region affected by under-coordination is $d = 5$ atomic layers thick on every face. Calculate the **exact percentage** of atoms that lie within this 5-atom-thick surface region.",
+        "prompt_markdown": "Suppose a simulated droplet has $N = 10^6 = (100)^3$ atoms on a cubic grid, and the surface region affected by under-coordination is $d = 5$ atomic layers thick on every face. Calculate the **exact percentage** of atoms that lie within this 5-atom-thick surface region.",
         "hint_markdown": "Consider the dimensions of the unaffected interior core after subtracting the under-coordinated boundary thickness from opposing faces along each axis.",
         "correct": {
           "value": 27.1,
@@ -126,13 +126,13 @@
         "options": [
           {
             "id": "a",
-            "text": "To eliminate free surfaces so that every atom experiences a bulk-like local environment despite small $N$",
-            "text_markdown": "To eliminate free surfaces so that every atom experiences a bulk-like local environment despite small $N$"
+            "text": "To make the total number of degrees of freedom strictly infinite in computer memory",
+            "text_markdown": "To make the total number of degrees of freedom strictly infinite in computer memory"
           },
           {
             "id": "b",
-            "text": "To make the total number of degrees of freedom strictly infinite in computer memory",
-            "text_markdown": "To make the total number of degrees of freedom strictly infinite in computer memory"
+            "text": "To eliminate free surfaces so that every atom experiences a bulk-like local environment despite small $N$",
+            "text_markdown": "To eliminate free surfaces so that every atom experiences a bulk-like local environment despite small $N$"
           },
           {
             "id": "c",
@@ -145,7 +145,7 @@
             "text_markdown": "To prevent atoms from ever crossing the walls of the primary simulation box"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Under 3D PBC, the primary box is surrounded by periodic replicas, completely eliminating free surfaces and allowing a small sample of $10^3\\text{\u2013}10^4$ atoms to reproduce bulk thermodynamic properties."
       },
       {
@@ -161,8 +161,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Mixed (slab) boundaries: periodic in $x$ and $y$, free boundaries (vacuum gap) in $z$",
-            "text_markdown": "Mixed (slab) boundaries: periodic in $x$ and $y$, free boundaries (vacuum gap) in $z$"
+            "text": "Free boundary conditions in all three directions ($x$, $y$, and $z$)",
+            "text_markdown": "Free boundary conditions in all three directions ($x$, $y$, and $z$)"
           },
           {
             "id": "b",
@@ -171,8 +171,8 @@
           },
           {
             "id": "c",
-            "text": "Free boundary conditions in all three directions ($x$, $y$, and $z$)",
-            "text_markdown": "Free boundary conditions in all three directions ($x$, $y$, and $z$)"
+            "text": "Mixed (slab) boundaries: periodic in $x$ and $y$, free boundaries (vacuum gap) in $z$",
+            "text_markdown": "Mixed (slab) boundaries: periodic in $x$ and $y$, free boundaries (vacuum gap) in $z$"
           },
           {
             "id": "d",
@@ -180,7 +180,7 @@
             "text_markdown": "Spherical boundary conditions on a 4D hypersphere"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "A slab geometry applies PBC in the in-plane directions ($x, y$) to mimic an infinite crystal plane while leaving the $z$-direction free (or separated by a wide vacuum layer) so that two flat $(001)$ surfaces are exposed without edge/corner artifacts."
       },
       {
@@ -292,8 +292,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Wrap: $x \\leftarrow x - L\\lfloor x/L \\rfloor$; Minimum Image: $\\Delta x \\leftarrow \\Delta x - L\\operatorname{nint}(\\Delta x/L)$",
-            "text_markdown": "Wrap: $x \\leftarrow x - L\\lfloor x/L \\rfloor$; Minimum Image: $\\Delta x \\leftarrow \\Delta x - L\\operatorname{nint}(\\Delta x/L)$"
+            "text": "Both operations use $u \\leftarrow u - L\\lceil u/L \\rceil$",
+            "text_markdown": "Both operations use $u \\leftarrow u - L\\lceil u/L \\rceil$"
           },
           {
             "id": "b",
@@ -307,11 +307,11 @@
           },
           {
             "id": "d",
-            "text": "Both operations use $u \\leftarrow u - L\\lceil u/L \\rceil$",
-            "text_markdown": "Both operations use $u \\leftarrow u - L\\lceil u/L \\rceil$"
+            "text": "Wrap: $x \\leftarrow x - L\\lfloor x/L \\rfloor$; Minimum Image: $\\Delta x \\leftarrow \\Delta x - L\\operatorname{nint}(\\Delta x/L)$",
+            "text_markdown": "Wrap: $x \\leftarrow x - L\\lfloor x/L \\rfloor$; Minimum Image: $\\Delta x \\leftarrow \\Delta x - L\\operatorname{nint}(\\Delta x/L)$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "`floor(x/L)` maps any real coordinate $x$ into $[0, L)$, whereas `nint(dx/L)` (nearest integer rounding) maps a pair displacement $\\Delta x$ into the symmetric interval $[-L/2, +L/2]$."
       },
       {
@@ -411,7 +411,7 @@
         "prompt_markdown": "You are setting up a 3D periodic FCC Argon crystal with conventional cubic lattice constant $a = 1.55\\,\\sigma$ ($4$ atoms per conventional cubic unit cell) and a Lennard-Jones cutoff of $r_c = 2.5\\,\\sigma$. To strictly satisfy $r_c < L/2$ for an $M \\times M \\times M$ supercell of FCC unit cells (where $L = M a$), what is the **minimum total number of atoms** required in the simulation supercell?",
         "hint_markdown": "Ensure the cubic box length strictly satisfies the minimum image criterion relative to the cutoff radius, and calculate the total atoms in the resulting supercell.",
         "correct": {
-          "value": 256,
+          "value": 256.0,
           "tolerance": 0.5
         },
         "rationale_markdown": "We require $L = M a > 2 r_c = 5.0\\,\\sigma \\implies M > 5.0 / 1.55 = 3.226$. Since $M$ must be an integer number of unit cells per edge, the smallest valid supercell is $M = 4$ ($L = 6.2\\,\\sigma > 5.0\\,\\sigma$). An FCC supercell with $M = 4$ contains $N = 4 M^3 = 4 \\times 4^3 = 256$ atoms."
@@ -429,13 +429,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\frac{\\sqrt{3}}{2} L \\approx 0.866 L$",
-            "text_markdown": "$\\frac{\\sqrt{3}}{2} L \\approx 0.866 L$"
+            "text": "$\\frac{1}{2} L = 0.500 L$",
+            "text_markdown": "$\\frac{1}{2} L = 0.500 L$"
           },
           {
             "id": "b",
-            "text": "$\\frac{1}{2} L = 0.500 L$",
-            "text_markdown": "$\\frac{1}{2} L = 0.500 L$"
+            "text": "$\\frac{\\sqrt{3}}{2} L \\approx 0.866 L$",
+            "text_markdown": "$\\frac{\\sqrt{3}}{2} L \\approx 0.866 L$"
           },
           {
             "id": "c",
@@ -448,7 +448,7 @@
             "text_markdown": "$\\sqrt{3} L \\approx 1.732 L$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In 3D, each minimum-image coordinate difference satisfies $|\\Delta x_{\\text{mic}}|, |\\Delta y_{\\text{mic}}|, |\\Delta z_{\\text{mic}}| \\le L/2$. At the body-diagonal corner of the Wigner-Seitz cube, $|\\mathbf{r}_{ij}|_{\\text{M}} = \\sqrt{(L/2)^2 + (L/2)^2 + (L/2)^2} = \\frac{\\sqrt{3}}{2}L \\approx 0.866L$."
       },
       {
@@ -459,13 +459,13 @@
         "taught_by": [
           "sec_mic_and_cutoffs"
         ],
-        "prompt_markdown": "In the lecture notes on handling the tail of a short-range potential at $r = r_c$, the **continuous potential and continuous force** (shifted-force) modification for $r \\le r_c$ is defined as:",
+        "prompt_markdown": "When handling the tail of a short-range potential at cutoff $r = r_c$, the standard shifted-force potential modification for $r \\le r_c$ is defined as:",
         "hint_markdown": "Subtract a first-order Taylor linear term at $r_c$ so both $V_c(r_c) = 0$ and $V_c'(r_c) = 0$.",
         "options": [
           {
             "id": "a",
-            "text": "$V_c(r) = V(r) - V(r_c) - \\left.\\frac{dV}{dr}\\right|_{r_c}(r - r_c)$",
-            "text_markdown": "$V_c(r) = V(r) - V(r_c) - \\left.\\frac{dV}{dr}\\right|_{r_c}(r - r_c)$"
+            "text": "$V_c(r) = V(r) + \\left.\\frac{dV}{dr}\\right|_{r_c} r$",
+            "text_markdown": "$V_c(r) = V(r) + \\left.\\frac{dV}{dr}\\right|_{r_c} r$"
           },
           {
             "id": "b",
@@ -474,8 +474,8 @@
           },
           {
             "id": "c",
-            "text": "$V_c(r) = V(r) + \\left.\\frac{dV}{dr}\\right|_{r_c} r$",
-            "text_markdown": "$V_c(r) = V(r) + \\left.\\frac{dV}{dr}\\right|_{r_c} r$"
+            "text": "$V_c(r) = V(r) - V(r_c) - \\left.\\frac{dV}{dr}\\right|_{r_c}(r - r_c)$",
+            "text_markdown": "$V_c(r) = V(r) - V(r_c) - \\left.\\frac{dV}{dr}\\right|_{r_c}(r - r_c)$"
           },
           {
             "id": "d",
@@ -483,7 +483,7 @@
             "text_markdown": "$V_c(r) = V(r) \\cdot \\exp(-r / r_c)$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Subtracting $V(r_c) + V'(r_c)(r - r_c)$ ensures $V_c(r_c) = 0$ and $-dV_c/dr|_{r_c} = -V'(r_c) + V'(r_c) = 0$, eliminating both the potential step and the force discontinuity at $r = r_c$."
       },
       {
@@ -554,8 +554,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The $1/r$ tail integral diverges in 3D; standard Ewald summation scales as $\\mathcal{O}(N^{3/2})$ while Fast Multipole Algorithms scale as $\\mathcal{O}(N)$ for very large $N$",
-            "text_markdown": "The $1/r$ tail integral diverges in 3D; standard Ewald summation scales as $\\mathcal{O}(N^{3/2})$ while Fast Multipole Algorithms scale as $\\mathcal{O}(N)$ for very large $N$"
+            "text": "Truncation works accurately for $1/r$ as long as $r_c = 2.5\\,\\sigma$; Ewald summation is only used for hard spheres",
+            "text_markdown": "Truncation works accurately for $1/r$ as long as $r_c = 2.5\\,\\sigma$; Ewald summation is only used for hard spheres"
           },
           {
             "id": "b",
@@ -569,11 +569,11 @@
           },
           {
             "id": "d",
-            "text": "Truncation works accurately for $1/r$ as long as $r_c = 2.5\\,\\sigma$; Ewald summation is only used for hard spheres",
-            "text_markdown": "Truncation works accurately for $1/r$ as long as $r_c = 2.5\\,\\sigma$; Ewald summation is only used for hard spheres"
+            "text": "The $1/r$ tail integral diverges in 3D; standard Ewald summation scales as $\\mathcal{O}(N^{3/2})$ while Fast Multipole Algorithms scale as $\\mathcal{O}(N)$ for very large $N$",
+            "text_markdown": "The $1/r$ tail integral diverges in 3D; standard Ewald summation scales as $\\mathcal{O}(N^{3/2})$ while Fast Multipole Algorithms scale as $\\mathcal{O}(N)$ for very large $N$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because $1/r$ decays slower than $r^{-3}$ in 3D, truncating it causes severe electrostatic artifacts. Summing over periodic images via Ewald summation with optimal real/reciprocal space cutoffs scales as $\\mathcal{O}(N^{3/2})$ (or $\\mathcal{O}(N\\log N)$ with mesh FFTs), while Fast Multipole Algorithms achieve $\\mathcal{O}(N)$ for very large $N$."
       },
       {
@@ -620,8 +620,8 @@
         "prompt_markdown": "In an all-pairs force calculation using Newton's third law (`j in range(i+1, N)`), how many distinct pair distance checks are performed per MD timestep for a system of $N = 4000$ atoms? (Enter the exact integer.)",
         "hint_markdown": "Consider how many unique unordered particle pairs $(i, j)$ exist in an $N$-particle system.",
         "correct": {
-          "value": 7998000,
-          "tolerance": 1
+          "value": 7998000.0,
+          "tolerance": 1.0
         },
         "rationale_markdown": "The number of unique pairs is $N(N-1)/2 = 4000 \\times 3999 / 2 = 7,998,000$ distance evaluations per timestep."
       },
@@ -674,13 +674,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Rebuild as soon as $d_1 + d_2 \\ge \\Delta$ (or conservatively $2 d_1 \\ge \\Delta$), measured relative to positions at the last rebuild",
-            "text_markdown": "Rebuild as soon as $d_1 + d_2 \\ge \\Delta$ (or conservatively $2 d_1 \\ge \\Delta$), measured relative to positions at the last rebuild"
+            "text": "Rebuild only when $d_1 \\ge r_c + \\Delta$, measured over a single timestep $\\Delta t$",
+            "text_markdown": "Rebuild only when $d_1 \\ge r_c + \\Delta$, measured over a single timestep $\\Delta t$"
           },
           {
             "id": "b",
-            "text": "Rebuild only when $d_1 \\ge r_c + \\Delta$, measured over a single timestep $\\Delta t$",
-            "text_markdown": "Rebuild only when $d_1 \\ge r_c + \\Delta$, measured over a single timestep $\\Delta t$"
+            "text": "Rebuild as soon as $d_1 + d_2 \\ge \\Delta$ (or conservatively $2 d_1 \\ge \\Delta$), measured relative to positions at the last rebuild",
+            "text_markdown": "Rebuild as soon as $d_1 + d_2 \\ge \\Delta$ (or conservatively $2 d_1 \\ge \\Delta$), measured relative to positions at the last rebuild"
           },
           {
             "id": "c",
@@ -693,7 +693,7 @@
             "text_markdown": "Rebuild only when the total system energy drifts by more than $\\Delta$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Two atoms $i$ and $j$ initially separated by $r_{ij}(t_{\\text{build}}) > r_c + \\Delta$ can decrease their separation by at most $|\\Delta\\mathbf{r}_i| + |\\Delta\\mathbf{r}_j| \\le d_1 + d_2$. As long as $d_1 + d_2 < \\Delta$, their current separation exceeds $r_c$; as soon as $d_1 + d_2 \\ge \\Delta$, the table must be rebuilt."
       },
       {
@@ -709,8 +709,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Displacements accumulate over multiple timesteps; checking only the single-step displacement $\\mathbf{r}(t) - \\mathbf{r}(t-\\Delta t)$ misses atoms that drift steadily across the skin $\\Delta$ over several steps",
-            "text_markdown": "Displacements accumulate over multiple timesteps; checking only the single-step displacement $\\mathbf{r}(t) - \\mathbf{r}(t-\\Delta t)$ misses atoms that drift steadily across the skin $\\Delta$ over several steps"
+            "text": "The rebuild check must use velocities $\\mathbf{v}_i$ instead of positions",
+            "text_markdown": "The rebuild check must use velocities $\\mathbf{v}_i$ instead of positions"
           },
           {
             "id": "b",
@@ -719,8 +719,8 @@
           },
           {
             "id": "c",
-            "text": "The rebuild check must use velocities $\\mathbf{v}_i$ instead of positions",
-            "text_markdown": "The rebuild check must use velocities $\\mathbf{v}_i$ instead of positions"
+            "text": "Displacements accumulate over multiple timesteps; checking only the single-step displacement $\\mathbf{r}(t) - \\mathbf{r}(t-\\Delta t)$ misses atoms that drift steadily across the skin $\\Delta$ over several steps",
+            "text_markdown": "Displacements accumulate over multiple timesteps; checking only the single-step displacement $\\mathbf{r}(t) - \\mathbf{r}(t-\\Delta t)$ misses atoms that drift steadily across the skin $\\Delta$ over several steps"
           },
           {
             "id": "d",
@@ -728,7 +728,7 @@
             "text_markdown": "The skin depth $\\Delta$ must be divided by $N$ when checking single-step displacements"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In a typical MD timestep, an atom moves only $\\sim 0.01\\,\\sigma \\ll \\Delta$, so single-step $d_1 + d_2$ would *never* exceed $\\Delta$, and the neighbor list would never rebuild! You must store reference positions `r_ref[i]` from the moment the table was last built and compute `d_i = norm(r[i] - r_ref[i])`."
       },
       {
@@ -762,8 +762,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The table must be rebuilt at every single timestep ($\\mathcal{O}(N^2)$ every step), making it slower than having no neighbor list at all due to table-construction overhead",
-            "text_markdown": "The table must be rebuilt at every single timestep ($\\mathcal{O}(N^2)$ every step), making it slower than having no neighbor list at all due to table-construction overhead"
+            "text": "Particles are frozen in place because $d_1 + d_2 \\le 0$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Particles are frozen in place because $d_1 + d_2 \\le 0$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
@@ -777,11 +777,11 @@
           },
           {
             "id": "d",
-            "text": "Particles are frozen in place because $d_1 + d_2 \\le 0$",
-            "text_markdown": "Particles are frozen in place because $d_1 + d_2 \\le 0$"
+            "text": "The table must be rebuilt at every single timestep ($\\mathcal{O}(N^2)$ every step), making it slower than having no neighbor list at all due to table-construction overhead",
+            "text_markdown": "The table must be rebuilt at every single timestep ($\\mathcal{O}(N^2)$ every step), making it slower than having no neighbor list at all due to table-construction overhead"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "With $\\Delta = 0$, any infinitesimal motion immediately allows a pair at $r_c + \\epsilon$ to cross inside $r_c$. The $\\mathcal{O}(N^2)$ table rebuild is triggered on *every* timestep, eliminating all savings."
       },
       {
@@ -833,13 +833,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Still $\\mathcal{O}(N^2)$ asymptotically (with a prefactor reduced by $1/n_{\\text{reb}}$), because the rebuild step itself checks all $N(N-1)/2$ pairs",
-            "text_markdown": "Still $\\mathcal{O}(N^2)$ asymptotically (with a prefactor reduced by $1/n_{\\text{reb}}$), because the rebuild step itself checks all $N(N-1)/2$ pairs"
+            "text": "Strictly $\\mathcal{O}(N)$ for all $N \\to \\infty$",
+            "text_markdown": "Strictly $\\mathcal{O}(N)$ for all $N \\to \\infty$"
           },
           {
             "id": "b",
-            "text": "Strictly $\\mathcal{O}(N)$ for all $N \\to \\infty$",
-            "text_markdown": "Strictly $\\mathcal{O}(N)$ for all $N \\to \\infty$"
+            "text": "Still $\\mathcal{O}(N^2)$ asymptotically (with a prefactor reduced by $1/n_{\\text{reb}}$), because the rebuild step itself checks all $N(N-1)/2$ pairs",
+            "text_markdown": "Still $\\mathcal{O}(N^2)$ asymptotically (with a prefactor reduced by $1/n_{\\text{reb}}$), because the rebuild step itself checks all $N(N-1)/2$ pairs"
           },
           {
             "id": "c",
@@ -852,7 +852,7 @@
             "text_markdown": "$\\mathcal{O}(N^{3/2})$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Although the Verlet list reduces the prefactor of the $\\mathcal{O}(N^2)$ term by $n_{\\text{reb}} \\sim 10\\text{\u2013}20\\times$, constructing the table by checking all pairs still costs $\\mathcal{O}(N^2)$ every $n_{\\text{reb}}$ steps. For very large $N$, we must combine Verlet lists with the Cell Method to make rebuilds $\\mathcal{O}(N)$ as well."
       },
       {
@@ -863,13 +863,13 @@
         "taught_by": [
           "sec_verlet_neighbor_lists"
         ],
-        "prompt_markdown": "storing an explicit Verlet neighbor table for $N$ atoms where each atom has on average $m_v$ neighbors in its list requires memory scaling as:",
+        "prompt_markdown": "Storing an explicit Verlet neighbor table for $N$ atoms where each atom has on average $m_v$ neighbors in its list requires memory scaling as:",
         "hint_markdown": "Each of the $N$ columns/rows in the neighbor table stores up to $\\sim m_v$ neighbor indices.",
         "options": [
           {
             "id": "a",
-            "text": "$\\mathcal{O}(m_v N)$ integers",
-            "text_markdown": "$\\mathcal{O}(m_v N)$ integers"
+            "text": "$\\mathcal{O}(1)$ integers",
+            "text_markdown": "$\\mathcal{O}(1)$ integers"
           },
           {
             "id": "b",
@@ -878,8 +878,8 @@
           },
           {
             "id": "c",
-            "text": "$\\mathcal{O}(1)$ integers",
-            "text_markdown": "$\\mathcal{O}(1)$ integers"
+            "text": "$\\mathcal{O}(m_v N)$ integers",
+            "text_markdown": "$\\mathcal{O}(m_v N)$ integers"
           },
           {
             "id": "d",
@@ -887,7 +887,7 @@
             "text_markdown": "$\\mathcal{O}(m_v^3)$ integers"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "An explicit Verlet neighbor table stores $\\sim m_v$ neighbor indices for each of the $N$ particles, requiring $\\mathcal{O}(m_v N)$ memory."
       },
       {
@@ -902,7 +902,7 @@
         "prompt_markdown": "In a liquid MD simulation with timestep $\\Delta t = 0.005\\,\\tau$ and skin depth $\\Delta = 0.40\\,\\sigma$, the fastest atoms move at $v_{\\max} = 4.0\\,\\sigma/\\tau$. Assuming the worst-case bound where the two fastest atoms travel straight lines ($d_1 = d_2 = v_{\\max} n \\Delta t$), after how many timesteps $n$ will the rebuild condition $d_1 + d_2 \\ge \\Delta$ be triggered?",
         "hint_markdown": "Equate the maximum possible relative displacement between two approaching atoms to the skin buffer thickness, and solve for the integer step threshold.",
         "correct": {
-          "value": 10,
+          "value": 10.0,
           "tolerance": 0.5
         },
         "rationale_markdown": "Each step increases $d_1 + d_2$ by at most $2 v_{\\max} \\Delta t = 2 \\times 4.0 \\times 0.005 = 0.04\\,\\sigma$. Reaching $\\Delta = 0.40\\,\\sigma$ requires $n = 0.40 / 0.04 = 10$ timesteps."
@@ -960,8 +960,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$ when constructing a Verlet list), so $M = \\lfloor L / r_c \\rfloor$",
-            "text_markdown": "$l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$ when constructing a Verlet list), so $M = \\lfloor L / r_c \\rfloor$"
+            "text": "$l_c > L / 2$",
+            "text_markdown": "$l_c > L / 2$"
           },
           {
             "id": "b",
@@ -975,11 +975,11 @@
           },
           {
             "id": "d",
-            "text": "$l_c > L / 2$",
-            "text_markdown": "$l_c > L / 2$"
+            "text": "$l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$ when constructing a Verlet list), so $M = \\lfloor L / r_c \\rfloor$",
+            "text_markdown": "$l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$ when constructing a Verlet list), so $M = \\lfloor L / r_c \\rfloor$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Two cells separated by at least one intervening cell are at distance $\\ge l_c$ apart. Setting $l_c \\ge r_c$ (or $l_c \\ge r_c + \\Delta$) guarantees that no interacting neighbor can lie beyond the immediately adjacent layer of cells."
       },
       {
@@ -993,7 +993,7 @@
         "prompt_markdown": "A 3D cubic periodic simulation box has side length $L = 22.0\\,\\sigma$, and you use the Cell Method to build a Verlet neighbor list of radius $r_v = r_c + \\Delta = 3.0\\,\\sigma$. What is the **maximum number of cells per edge $M$** (where $l_c = L / M \\ge r_v$) that you can partition the box into along each axis?",
         "hint_markdown": "Determine the largest number of subdivisions along each box dimension such that cell width remains no smaller than the Verlet list radius.",
         "correct": {
-          "value": 7,
+          "value": 7.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "We require $l_c = L / M \\ge 3.0\\,\\sigma \\implies M \\le 22.0 / 3.0 = 7.333$. Since $M$ must be an integer, $M = 7$ cells per axis (giving $7^3 = 343$ cells of side $l_c = 3.143\\,\\sigma \\ge 3.0\\,\\sigma$)."
@@ -1045,7 +1045,7 @@
         "prompt_markdown": "Suppose `head` is initialized to `-1` for all cells. While looping `i = 0, 1,..., 9` in ascending order, particles `i = 2`, `i = 5`, and `i = 8` are the only particles that map to cell `c = 3` using:\n```python\nlist[i] = head[c]\nhead[c] = i\n```\nAfter the loop finishes, what integer value is stored in `head[3]`?",
         "hint_markdown": "Each insertion prepends the new particle to the front (head) of the linked list (LIFO order).",
         "correct": {
-          "value": 8,
+          "value": 8.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "Initially `head[3] = -1`. When `i = 2`: `list[2] = -1, head[3] = 2`. When `i = 5`: `list[5] = 2, head[3] = 5`. When `i = 8`: `list[8] = 5, head[3] = 8`. Thus `head[3] = 8`."
@@ -1062,7 +1062,7 @@
         "prompt_markdown": "In the same scenario as the previous question (particles `2`, `5`, and `8` inserted sequentially into cell `c = 3`), what integer value is stored in `list[5]` after the construction loop finishes?",
         "hint_markdown": "When `i = 5` was inserted, what was the value of `head[3]` right before `head[3]` was overwritten with `5`?",
         "correct": {
-          "value": 2,
+          "value": 2.0,
           "tolerance": 0.1
         },
         "rationale_markdown": "When `i = 5` is processed, `head[3]` currently holds `2` (the previously inserted particle in cell 3). Executing `list[5] = head[3]` sets `list[5] = 2`."
@@ -1075,23 +1075,23 @@
         "taught_by": [
           "sec_cell_linked_lists"
         ],
-        "prompt_markdown": "According to of the reference notes (\"Improvements: the Cell Method\"), how does the memory requirement of the Cell Linked-List method compare to an explicit Verlet neighbor table?",
+        "prompt_markdown": "According to the principles of simulation methodology, (\"Improvements: the Cell Method\"), how does the memory requirement of the Cell Linked-List method compare to an explicit Verlet neighbor table?",
         "hint_markdown": "Count the size of `list[0..N-1]` plus `head[0..M^3-1]` versus a table storing $m$ neighbors for each of the $N$ atoms.",
         "options": [
           {
             "id": "a",
-            "text": "Cell Linked-List memory scales as $\\mathcal{O}(N)$ (specifically $N + M^3$ integers), whereas an explicit neighbor table requires $\\mathcal{O}(mN)$ memory",
-            "text_markdown": "Cell Linked-List memory scales as $\\mathcal{O}(N)$ (specifically $N + M^3$ integers), whereas an explicit neighbor table requires $\\mathcal{O}(mN)$ memory"
-          },
-          {
-            "id": "b",
             "text": "Cell Linked-List memory scales as $\\mathcal{O}(N^2)$, whereas an explicit neighbor table requires $\\mathcal{O}(N)$",
             "text_markdown": "Cell Linked-List memory scales as $\\mathcal{O}(N^2)$, whereas an explicit neighbor table requires $\\mathcal{O}(N)$"
           },
           {
+            "id": "b",
+            "text": "Cell Linked-List memory scales as $\\mathcal{O}(N)$ (specifically $N + M^3$ integers), whereas an explicit neighbor table requires $\\mathcal{O}(mN)$ memory",
+            "text_markdown": "Cell Linked-List memory scales as $\\mathcal{O}(N)$ (specifically $N + M^3$ integers), whereas an explicit neighbor table requires $\\mathcal{O}(mN)$ memory"
+          },
+          {
             "id": "c",
-            "text": "Both require $\\mathcal{O}(N^2)$ floating-point arrays",
-            "text_markdown": "Both require $\\mathcal{O}(N^2)$ floating-point arrays"
+            "text": "Both require $\\mathcal{O}(N^2)$ floating-point arrays, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "Both require $\\mathcal{O}(N^2)$ floating-point arrays, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
@@ -1099,7 +1099,7 @@
             "text_markdown": "Cell Linked-List requires dynamic heap allocations (`malloc`) for every pair interaction"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "The Cell Linked-List requires only one integer per particle (`list[N]`) plus one integer per cell (`head[M^3]`), which is $\\mathcal{O}(N)$ memory rather than $\\mathcal{O}(mN)$."
       },
       {
@@ -1131,8 +1131,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The Cell method makes neighbor list rebuilds strictly $\\mathcal{O}(N)$ instead of $\\mathcal{O}(N^2)$, while the spherical Verlet list avoids checking the $\\sim 6.45\\times$ excess volume of the 27 cubic cells on every intermediate timestep",
-            "text_markdown": "The Cell method makes neighbor list rebuilds strictly $\\mathcal{O}(N)$ instead of $\\mathcal{O}(N^2)$, while the spherical Verlet list avoids checking the $\\sim 6.45\\times$ excess volume of the 27 cubic cells on every intermediate timestep"
+            "text": "Combining them allows the cutoff $r_c$ to exceed the box length $L$",
+            "text_markdown": "Combining them allows the cutoff $r_c$ to exceed the box length $L$"
           },
           {
             "id": "b",
@@ -1141,8 +1141,8 @@
           },
           {
             "id": "c",
-            "text": "Combining them allows the cutoff $r_c$ to exceed the box length $L$",
-            "text_markdown": "Combining them allows the cutoff $r_c$ to exceed the box length $L$"
+            "text": "The Cell method makes neighbor list rebuilds strictly $\\mathcal{O}(N)$ instead of $\\mathcal{O}(N^2)$, while the spherical Verlet list avoids checking the $\\sim 6.45\\times$ excess volume of the 27 cubic cells on every intermediate timestep",
+            "text_markdown": "The Cell method makes neighbor list rebuilds strictly $\\mathcal{O}(N)$ instead of $\\mathcal{O}(N^2)$, while the spherical Verlet list avoids checking the $\\sim 6.45\\times$ excess volume of the 27 cubic cells on every intermediate timestep"
           },
           {
             "id": "d",
@@ -1150,7 +1150,7 @@
             "text_markdown": "The Verlet list eliminates the need for Periodic Boundary Conditions"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Using the Cell Linked-List to construct the Verlet list achieves $\\mathcal{O}(N)$ list rebuilds, while iterating over the spherical Verlet list on steps between rebuilds avoids the $\\sim 6.45\\times$ cubic-to-spherical volume overhead of scanning 27 cells every step."
       },
       {
@@ -1166,8 +1166,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$M = \\lfloor 6.0 / 2.5 \\rfloor = 2 < 3$, so a $3 \\times 3 \\times 3$ neighbor stencil wraps around and visits the same cells multiple times; the standard 27-cell stencil requires $M \\ge 3$ ($L \\ge 3 r_c$)",
-            "text_markdown": "$M = \\lfloor 6.0 / 2.5 \\rfloor = 2 < 3$, so a $3 \\times 3 \\times 3$ neighbor stencil wraps around and visits the same cells multiple times; the standard 27-cell stencil requires $M \\ge 3$ ($L \\ge 3 r_c$)"
+            "text": "The cell method works without modification for any $M \\ge 1$",
+            "text_markdown": "The cell method works without modification for any $M \\ge 1$"
           },
           {
             "id": "b",
@@ -1176,16 +1176,16 @@
           },
           {
             "id": "c",
-            "text": "The `head` array requires infinite memory when $M = 2$",
-            "text_markdown": "The `head` array requires infinite memory when $M = 2$"
+            "text": "The `head` array requires infinite memory when $M = 2$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text_markdown": "The `head` array requires infinite memory when $M = 2$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
-            "text": "The cell method works without modification for any $M \\ge 1$",
-            "text_markdown": "The cell method works without modification for any $M \\ge 1$"
+            "text": "$M = \\lfloor 6.0 / 2.5 \\rfloor = 2 < 3$, so a $3 \\times 3 \\times 3$ neighbor stencil wraps around and visits the same cells multiple times; the standard 27-cell stencil requires $M \\ge 3$ ($L \\ge 3 r_c$)",
+            "text_markdown": "$M = \\lfloor 6.0 / 2.5 \\rfloor = 2 < 3$, so a $3 \\times 3 \\times 3$ neighbor stencil wraps around and visits the same cells multiple times; the standard 27-cell stencil requires $M \\ge 3$ ($L \\ge 3 r_c$)"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "For the 27 neighbor offsets $\\Delta c_x, \\Delta c_y, \\Delta c_z \\in \\{-1, 0, +1\\}$ to refer to 27 *distinct* cells under periodic wrapping, there must be at least $M \\ge 3$ cells per axis ($L \\ge 3 l_c \\ge 3 r_c$). Here $M = 2$, so $+1$ and $-1$ wrap to the exact same neighbor cell!"
       },
       {

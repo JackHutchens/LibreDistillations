@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import random
 import re
 import sys
 from typing import Any, Mapping
@@ -248,6 +249,7 @@ class Worksheet:
         self.shared_figures: dict[str, Any] = dict(self.spec.get("shared_figures") or {})
         self.sections: list[dict[str, Any]] = list(self.spec.get("sections", []))
         self.concept_module = concept_module
+        self.shuffle_options: bool = bool(self.spec.get("shuffle_options", False))
 
         # Index sections and assign sequential numbers to problems
         self._section_map: dict[str, dict[str, Any]] = {}
@@ -610,7 +612,14 @@ class Worksheet:
             rows: list[widgets.Widget] = []
             saved_sel = set(existing.get("selected", [])) if existing else set()
 
-            for opt in options:
+            display_options = list(options)
+            if self.shuffle_options and len(display_options) > 1:
+                seed_str = f"{self.session_id}:{pid}:options"
+                seed_val = int(hashlib.sha256(seed_str.encode("utf-8")).hexdigest()[:8], 16)
+                rng = random.Random(seed_val)
+                rng.shuffle(display_options)
+
+            for opt in display_options:
                 oid = str(opt["id"])
                 otext = str(opt.get("text") or opt.get("text_markdown") or "")
                 cb = widgets.Checkbox(

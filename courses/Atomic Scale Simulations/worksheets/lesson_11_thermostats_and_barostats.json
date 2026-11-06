@@ -28,8 +28,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized.",
-            "text_markdown": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized."
+            "text": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized.",
+            "text_markdown": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized."
           },
           {
             "id": "b",
@@ -38,8 +38,8 @@
           },
           {
             "id": "c",
-            "text": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized.",
-            "text_markdown": "Isobaric-isothermal ($NPT$) ensemble; Gibbs free energy $G = E + PV - TS$ is minimized."
+            "text": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized.",
+            "text_markdown": "Microcanonical ($NVE$) ensemble; entropy $S$ is minimized."
           },
           {
             "id": "d",
@@ -47,7 +47,7 @@
             "text_markdown": "Grand canonical ($\\mu VT$) ensemble; grand potential $\\Phi_G = F - \\mu N$ is minimized."
           }
         ],
-        "correct": "c",
+        "correct": "a",
         "rationale_markdown": "Holding $(N, P, T)$ fixed while allowing volume $V$ and energy $E$ to fluctuate defines the **isobaric-isothermal ($NPT$) ensemble**. Its characteristic thermodynamic potential is the **Gibbs free energy** $G(N, P, T) = E + PV - TS = F + PV$, which is minimized at thermodynamic equilibrium."
       },
       {
@@ -99,13 +99,13 @@
           },
           {
             "id": "b",
-            "text": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$.",
-            "text_markdown": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$."
+            "text": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities.",
+            "text_markdown": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities."
           },
           {
             "id": "c",
-            "text": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities.",
-            "text_markdown": "$T_I(t)$ doubles (the system heats up) because phonon modes amplify the initial velocities."
+            "text": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$.",
+            "text_markdown": "$T_I(t)$ drops to roughly half its initial value (the system cools down) because disordering the perfect lattice increases potential energy $V$, which drains kinetic energy $K$ under constant $E = K + V$."
           },
           {
             "id": "d",
@@ -113,7 +113,7 @@
             "text_markdown": "$T_I(t)$ drops to $0\\text{ K}$ because total linear momentum conservation cancels opposite velocities."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "rationale_markdown": "On an ideal harmonic crystal lattice, all initial thermal energy is placed into kinetic energy $K(0)$ while potential displacement energy $\\Delta V(0) = 0$. By the **virial / equipartition theorem**, harmonic modes share energy equally between kinetic and potential degrees of freedom ($\\langle K \\rangle = \\langle \\Delta V \\rangle$). As the lattice disorders away from its potential minimum, $V(t)$ rises and sucks up roughly half of the initial kinetic energy, causing $T_I$ to drop until quenched or thermostatted."
       },
       {
@@ -271,12 +271,12 @@
         "difficulty": "easy",
         "taught_by": "sec_andersen_thermostat",
         "prompt_markdown": "When incorporating the **Andersen thermostat** into the standard **Velocity Verlet** integrator, where in the time-step cycle is the stochastic Maxwell\u2013Boltzmann velocity resampling step performed?",
-        "hint_markdown": "Check of the lecture notes: Velocity Verlet has two half-step velocity updates and one full-step position update.",
+        "hint_markdown": "Recall the structure of Velocity Verlet: it has two half-step velocity updates and one full-step position update.",
         "options": [
           {
             "id": "a",
-            "text": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step.",
-            "text_markdown": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step."
+            "text": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer.",
+            "text_markdown": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer."
           },
           {
             "id": "b",
@@ -290,11 +290,11 @@
           },
           {
             "id": "d",
-            "text": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer.",
-            "text_markdown": "By rescaling all atomic forces $\\mathbf{F}_i$ by a Poisson random integer."
+            "text": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step.",
+            "text_markdown": "Immediately after the second velocity half-step update $\\mathbf{v}(t+\\Delta t) = \\mathbf{v}(t+\\Delta t/2) + \\frac{1}{2}\\mathbf{a}(t+\\Delta t)\\Delta t$, at the end of the full step."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Velocity Verlet brings positions $\\mathbf{r}(t+\\Delta t)$ and velocities $\\mathbf{v}(t+\\Delta t)$ into synchronization at the end of the second velocity update. Adding the stochastic Maxwellian velocity replacement right after the second velocity update cleanly transitions the synchronized state $(\\mathbf{r}(t+\\Delta t), \\mathbf{v}(t+\\Delta t))$ on the constant-energy surface to a new energy shell with exact canonical detailed balance."
       },
       {
@@ -311,13 +311,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$.",
-            "text_markdown": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$."
+            "text": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions).",
+            "text_markdown": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions)."
           },
           {
             "id": "b",
-            "text": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions).",
-            "text_markdown": "Steepest slope at $\\nu = 0$ (unperturbed Newtonian dynamics); shallowest slope at $\\nu = 20$ (frequent randomizing collisions)."
+            "text": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$.",
+            "text_markdown": "Steepest slope at $\\nu = 20$; shallowest slope at $\\nu = 0$."
           },
           {
             "id": "c",
@@ -330,7 +330,7 @@
             "text_markdown": "Steepest slope at intermediate $\\nu = 10$ due to stochastic resonance; $\\nu = 0$ has zero slope."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "rationale_markdown": "Frequent stochastic collisions ($\\nu = 20$) randomize a particle's direction of motion before it can travel far, destroying velocity persistence and suppressing the self-diffusion coefficient $D(\\nu) = \\lim_{t\\to\\infty} \\langle \\Delta r^2(t) \\rangle / (6t)$. Thus $\\nu = 0$ has the steepest slope and $\\nu = 20$ has the lowest slope."
       },
       {
@@ -480,13 +480,13 @@
           },
           {
             "id": "b",
-            "text": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system.",
-            "text_markdown": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system."
+            "text": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy.",
+            "text_markdown": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy."
           },
           {
             "id": "c",
-            "text": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy.",
-            "text_markdown": "It rotates the particle momenta perpendicular to their velocities without changing kinetic energy."
+            "text": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system.",
+            "text_markdown": "It acts as 'negative friction' (anti-damping) parallel to $\\mathbf{p}_i$, accelerating the particles and pumping kinetic energy from the heat reservoir into the system."
           },
           {
             "id": "d",
@@ -494,7 +494,7 @@
             "text_markdown": "It randomly reassigns velocities from a Gaussian distribution."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "rationale_markdown": "When $\\zeta < 0$, the coefficient $-\\zeta$ is **positive**, so the force $-\\zeta \\mathbf{p}_i$ points in the *same* direction as the momentum $\\mathbf{p}_i$. This accelerates the particles and transfers energy from the heat reservoir into kinetic energy until $2K$ rises back to $3Nk_B T$."
       },
       {
@@ -527,8 +527,8 @@
           },
           {
             "id": "b",
-            "text": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$",
-            "text_markdown": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$"
+            "text": "$H' = (K + V)\\exp(-\\zeta t)$",
+            "text_markdown": "$H' = (K + V)\\exp(-\\zeta t)$"
           },
           {
             "id": "c",
@@ -537,11 +537,11 @@
           },
           {
             "id": "d",
-            "text": "$H' = (K + V)\\exp(-\\zeta t)$",
-            "text_markdown": "$H' = (K + V)\\exp(-\\zeta t)$"
+            "text": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$",
+            "text_markdown": "$H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln(s)$, where $\\frac{d\\ln s}{dt} = \\zeta$"
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "rationale_markdown": "Taking the time derivative of $H' = K + V + \\frac{Q}{2}\\zeta^2 + 3N k_B T \\ln s$ along the Nos\u00e9\u2013Hoover equations of motion gives:\n$$\\frac{dH'}{dt} = \\sum_i \\frac{\\mathbf{p}_i}{m_i}\\cdot(\\mathbf{F}_i - \\zeta\\mathbf{p}_i) - \\sum_i \\mathbf{F}_i\\cdot\\frac{\\mathbf{p}_i}{m_i} + Q\\zeta\\dot{\\zeta} + 3Nk_B T\\zeta = -\\zeta\\sum_i \\frac{p_i^2}{m_i} + \\zeta\\left(\\sum_i \\frac{p_i^2}{m_i} - 3Nk_B T\\right) + 3Nk_B T\\zeta = 0$$\nThus $H'$ is an exact constant of motion."
       },
       {
@@ -594,13 +594,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$.",
-            "text_markdown": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$."
+            "text": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step.",
+            "text_markdown": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step."
           },
           {
             "id": "b",
-            "text": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step.",
-            "text_markdown": "Because $Q = 1$ turns on a stochastic Poisson random number generator every step."
+            "text": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$.",
+            "text_markdown": "Because $Q = 1$ has very small thermal inertia, causing $\\zeta(t)$ to over-react rapidly to kinetic energy deviations with oscillation frequency $\\omega_{\\text{NH}} \\propto Q^{-1/2}$."
           },
           {
             "id": "c",
@@ -613,7 +613,7 @@
             "text_markdown": "Because $Q = 1$ changes the Lennard-Jones potential cutoff from $2.5\\sigma$ to $1.0\\sigma$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Differentiating the kinetic energy equation and substituting $\\dot{\\zeta}$ shows that small deviations $\\delta K$ obey a damped harmonic oscillator equation with frequency $\\omega_{\\text{NH}} = \\sqrt{2 g k_B T / Q} \\propto Q^{-1/2}$. When $Q = 1$, the thermal inertia of the reservoir is very small (strong coupling), so energy sloshes rapidly back and forth between the particles and the bath variable $\\zeta$."
       },
       {
@@ -641,8 +641,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$.",
-            "text_markdown": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$."
+            "text": "Hoover restricted the thermostat to 1D ideal gases.",
+            "text_markdown": "Hoover restricted the thermostat to 1D ideal gases."
           },
           {
             "id": "b",
@@ -651,8 +651,8 @@
           },
           {
             "id": "c",
-            "text": "Hoover restricted the thermostat to 1D ideal gases.",
-            "text_markdown": "Hoover restricted the thermostat to 1D ideal gases."
+            "text": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$.",
+            "text_markdown": "Nos\u00e9's original algorithm required unevenly spaced, fluctuating physical time steps ($dt \\propto s$), whereas Hoover reformulated the equations in real time with a constant time step $\\Delta t$ and dynamical friction $\\zeta = \\dot{s}/s$."
           },
           {
             "id": "d",
@@ -660,7 +660,7 @@
             "text_markdown": "Hoover eliminated the thermal inertia parameter $Q$ so no user parameter is needed."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Nos\u00e9 originally introduced a time-scaling variable $s$ into the Lagrangian, which meant uniform steps in virtual time corresponded to fluctuating steps in real physical time\u2014making time-correlation functions awkward to compute. Hoover transformed the equations of motion into real-time variables with $\\zeta = \\frac{d\\ln s}{dt}$, yielding a clean **constant-time-step** algorithm."
       },
       {
@@ -730,8 +730,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$",
-            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$"
+            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$",
+            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$"
           },
           {
             "id": "b",
@@ -745,11 +745,11 @@
           },
           {
             "id": "d",
-            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$",
-            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p} + \\mathbf{f}\\,\\delta t$"
+            "text": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$",
+            "text_markdown": "$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\,\\delta t)$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because $\\frac{\\partial}{\\partial \\mathbf{p}}$ is connected to $\\mathbf{p}$ via the linear scaling operator $-\\zeta \\mathbf{p}\\cdot\\frac{\\partial}{\\partial \\mathbf{p}}$, integrating $\\frac{d\\mathbf{p}}{dt} = -\\zeta\\mathbf{p}$ over $\\delta t$ yields the exact exponential scaling factor:\n$$\\exp(iL_3\\delta t)\\mathbf{p} = \\mathbf{p}\\exp(-\\zeta\\delta t)$$"
       },
       {
@@ -846,8 +846,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$",
-            "text_markdown": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$"
+            "text": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$",
+            "text_markdown": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$"
           },
           {
             "id": "b",
@@ -856,8 +856,8 @@
           },
           {
             "id": "c",
-            "text": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$",
-            "text_markdown": "$\\dot{\\xi}_2 = \\frac{r^2 - T}{Q_2}$"
+            "text": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$",
+            "text_markdown": "$\\dot{\\xi}_2 = \\frac{Q_1 \\xi_1^2 - T}{Q_2}$"
           },
           {
             "id": "d",
@@ -865,7 +865,7 @@
             "text_markdown": "$\\dot{\\xi}_2 = -\\xi_1 \\xi_2$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In a Nos\u00e9\u2013Hoover chain, each thermostat $\\xi_k$ acts as a heat bath for the preceding thermostat $\\xi_{k-1}$. Since the kinetic energy associated with $\\xi_1$ is $\\frac{1}{2}Q_1\\xi_1^2$ (with 1 degree of freedom), equipartition requires $\\langle Q_1\\xi_1^2 \\rangle = k_B T$, driving $\\xi_2$ via:\n$$\\dot{\\xi}_2 = \\frac{Q_1\\xi_1^2 - T}{Q_2}$$"
       },
       {
@@ -875,7 +875,7 @@
         "difficulty": "medium",
         "taught_by": "sec_nh_propagation_and_chains",
         "prompt_markdown": "In the 2-link Nos\u00e9\u2013Hoover Chain equations, $$\\dot{\\xi}_1 = \\frac{v^2 - T}{Q_1} - \\xi_1\\xi_2, \\qquad \\dot{\\xi}_2 = \\frac{Q_1\\xi_1^2 - T}{Q_2}$$\nsuppose $T = 1.0$, $Q_1 = 2.0$, $Q_2 = 4.0$, and at the current instant $v = 2.0$, $\\xi_1 = 1.5$, and $\\xi_2 = 0.5$. Compute the instantaneous value of $\\dot{\\xi}_2$.",
-        "hint_markdown": "Substitute $Q_1 = 2.0$, $\\xi_1 = 1.5$, $T = 1.0$, and $Q_2 = 4.0$ into $\\dot{\\xi}_2 = (Q_1 \\xi_1^2 - T) / Q_2$.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "correct": {
           "value": 0.875,
           "tolerance": 0.005
@@ -982,8 +982,8 @@
         "options": [
           {
             "id": "a",
-            "text": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line.",
-            "text_markdown": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line."
+            "text": "At constant pressure, surface tension becomes negative so droplets explode.",
+            "text_markdown": "At constant pressure, surface tension becomes negative so droplets explode."
           },
           {
             "id": "b",
@@ -997,11 +997,11 @@
           },
           {
             "id": "d",
-            "text": "At constant pressure, surface tension becomes negative so droplets explode.",
-            "text_markdown": "At constant pressure, surface tension becomes negative so droplets explode."
+            "text": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line.",
+            "text_markdown": "At constant volume, the system is forced into a two-phase coexistence region where forming solid/liquid droplets requires overcoming a large surface-tension (interfacial free energy) barrier, whereas at constant pressure the box volume jumps cleanly across a sharp transition line."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In the $(V, T)$ plane, a first-order transition expands into a broad two-phase coexistence region. Holding $V$ fixed inside this region forces both phases to coexist inside the same small periodic box, separated by an interface whose surface tension creates a large free-energy barrier. At constant $P$, the transition is a sharp vertical jump in $V(T)$ at $T_m$, allowing the entire box to melt homogeneously."
       },
       {
@@ -1011,7 +1011,7 @@
         "difficulty": "medium",
         "taught_by": "sec_constant_pressure_and_pr",
         "prompt_markdown": "Using the microscopic Virial Pressure formula, $$P = \\frac{1}{3\\Omega}\\sum_{i=1}^N \\left(\\frac{p_i^2}{m_i} + \\mathbf{r}_i \\cdot \\mathbf{F}_i\\right)$$\nconsider a simulation cell of volume $\\Omega = 200.0$ where the total kinetic term is $\\sum_{i=1}^N \\frac{p_i^2}{m_i} = 2K = 900.0$ and the internal virial is $\\sum_{i=1}^N \\mathbf{r}_i \\cdot \\mathbf{F}_i = 300.0$. What is the instantaneous internal pressure $P$?",
-        "hint_markdown": "Add the kinetic and virial sums ($900.0 + 300.0 = 1200.0$) and divide by $3\\Omega = 600.0$.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "correct": {
           "value": 2.0,
           "tolerance": 0.01
@@ -1065,13 +1065,13 @@
         "options": [
           {
             "id": "a",
-            "text": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space.",
-            "text_markdown": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space."
+            "text": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic.",
+            "text_markdown": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic."
           },
           {
             "id": "b",
-            "text": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic.",
-            "text_markdown": "Because only diagonal matrices are symmetric, which forces the cell to remain cubic."
+            "text": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space.",
+            "text_markdown": "To eliminate overall rigid-body rotation (angular momentum) of the simulation cell in space."
           },
           {
             "id": "c",
@@ -1084,7 +1084,7 @@
             "text_markdown": "To force the internal virial pressure to be zero."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "A general $3\\times 3$ cell matrix has 9 elements: 6 describe the intrinsic lengths and angles of the unit cell (symmetric strain/metric tensor), while 3 antisymmetric components describe arbitrary rigid-body rotations of the whole box in 3D space. Constraining $\\mathbf{L} = \\mathbf{L}^T$ eliminates unphysical cell rotation while preserving full flexibility of all 3 edge lengths and 3 interaxial angles."
       },
       {
@@ -1132,8 +1132,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$",
-            "text_markdown": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$"
+            "text": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$",
+            "text_markdown": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$"
           },
           {
             "id": "b",
@@ -1142,8 +1142,8 @@
           },
           {
             "id": "c",
-            "text": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$",
-            "text_markdown": "$\\omega \\frac{d\\mathbf{L}}{dt} = \\text{Tr}(\\boldsymbol{\\sigma})\\mathbf{1}$"
+            "text": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$",
+            "text_markdown": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$"
           },
           {
             "id": "d",
@@ -1151,7 +1151,7 @@
             "text_markdown": "$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = \\sum_i \\mathbf{F}_i$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "the imbalance between the internal microscopic stress tensor $\\boldsymbol{\\sigma} = \\frac{1}{\\Omega}\\sum_i [\\mathbf{r}_i\\mathbf{F}_i + m_i\\mathbf{v}_i\\mathbf{v}_i]$ and the applied isotropic pressure $P\\mathbf{1}$ acts across the cell surface area tensor $\\Omega\\mathbf{L}^{-T}$ to drive cell acceleration:\n$$\\omega \\frac{d^2\\mathbf{L}}{dt^2} = (\\boldsymbol{\\sigma} - P\\mathbf{1})\\Omega\\mathbf{L}^{-T}$$\nAt mechanical equilibrium ($\\langle \\ddot{\\mathbf{L}} \\rangle = \\mathbf{0}$), every component of the internal stress tensor balances the external pressure ($\\langle \\boldsymbol{\\sigma} \\rangle = P\\mathbf{1}$)."
       },
       {
@@ -1168,8 +1168,8 @@
         "options": [
           {
             "id": "a",
-            "text": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell.",
-            "text_markdown": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell."
+            "text": "The volume increases by $50\\%$ while remaining in the rocksalt structure.",
+            "text_markdown": "The volume increases by $50\\%$ while remaining in the rocksalt structure."
           },
           {
             "id": "b",
@@ -1183,11 +1183,11 @@
           },
           {
             "id": "d",
-            "text": "The volume increases by $50\\%$ while remaining in the rocksalt structure.",
-            "text_markdown": "The volume increases by $50\\%$ while remaining in the rocksalt structure."
+            "text": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell.",
+            "text_markdown": "The crystal transforms from the 6-coordinated rocksalt (NaCl / B1) structure to the denser 8-coordinated cesium chloride (CsCl / B2) structure via a body-diagonal dilatation and shear of the unit cell."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Under $P = 44\\text{ kbar}$ compression, Parrinello\u2013Rahman MD allows the initially cubic rocksalt (B1) cell to shear and dilate along a body diagonal (Figure 3 ), spontaneously transforming into the higher-density cesium chloride (B2) crystal structure, with a corresponding jump in density from $\\sim 2.0\\text{ g/cm}^3$ to $\\sim 2.6\\text{ g/cm}^3$."
       },
       {
@@ -1237,13 +1237,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$",
-            "text_markdown": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$"
+            "text": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$",
+            "text_markdown": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$"
           },
           {
             "id": "b",
-            "text": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$",
-            "text_markdown": "$r_{ij}^2 = \\det(\\mathbf{L})\\,|\\mathbf{s}_{ij}|^2$"
+            "text": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$",
+            "text_markdown": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^T \\mathbf{L}\\,\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\,\\mathbf{s}_{ij}$"
           },
           {
             "id": "c",
@@ -1256,7 +1256,7 @@
             "text_markdown": "$r_{ij}^2 = \\mathbf{s}_{ij}^T \\mathbf{L}^{-1} \\mathbf{s}_{ij}$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Since $\\mathbf{r}_{ij} = \\mathbf{L}\\mathbf{s}_{ij}$, the squared Euclidean distance is:\n$$r_{ij}^2 = \\mathbf{r}_{ij}^T \\mathbf{r}_{ij} = (\\mathbf{L}\\mathbf{s}_{ij})^T (\\mathbf{L}\\mathbf{s}_{ij}) = \\mathbf{s}_{ij}^T (\\mathbf{L}^T \\mathbf{L})\\mathbf{s}_{ij} = \\mathbf{s}_{ij}^T \\mathbf{G}\\mathbf{s}_{ij}$$\nwhere $\\mathbf{G} = \\mathbf{L}^T\\mathbf{L}$ (and since $\\mathbf{L}$ is symmetric, $\\mathbf{G} = \\mathbf{L}^2$) is the $3\\times 3$ covariant metric tensor encoding all cell lengths and angles."
       },
       {
@@ -1307,8 +1307,8 @@
         "options": [
           {
             "id": "a",
-            "text": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman.",
-            "text_markdown": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman."
+            "text": "6 degrees of freedom in both barostats.",
+            "text_markdown": "6 degrees of freedom in both barostats."
           },
           {
             "id": "b",
@@ -1317,8 +1317,8 @@
           },
           {
             "id": "c",
-            "text": "6 degrees of freedom in both barostats.",
-            "text_markdown": "6 degrees of freedom in both barostats."
+            "text": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman.",
+            "text_markdown": "1 scalar volume degree of freedom ($\\Omega$) in Andersen's isotropic barostat vs. 6 independent cell-matrix degrees of freedom ($L_{\\alpha\\beta} = L_{\\beta\\alpha}$) in Parrinello\u2013Rahman."
           },
           {
             "id": "d",
@@ -1326,7 +1326,7 @@
             "text_markdown": "1 degree of freedom in both barostats."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Andersen's isotropic barostat introduces a single scalar volume piston $\\Omega(t)$ (1 degree of freedom, scaling all three box lengths uniformly as $\\Omega^{1/3}$). Parrinello\u2013Rahman introduces a symmetric $3\\times 3$ cell matrix $\\mathbf{L}(t)$ with $3$ diagonal and $3$ off-diagonal independent elements ($6$ degrees of freedom), allowing full variation of all three edge lengths and all three cell angles."
       },
       {
