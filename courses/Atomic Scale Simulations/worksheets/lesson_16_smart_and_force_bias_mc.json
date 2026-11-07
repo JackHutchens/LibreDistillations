@@ -23,7 +23,7 @@
         "question_type": "single_select",
         "difficulty": "easy",
         "taught_by": "sec_menus_of_moves",
-        "prompt_markdown": "As emphasized and 6, why is a deterministic cycle of moves $(A, B, A, B, \\dots)$ valid in Markov Chain Monte Carlo even though the composite transition matrix $P = P_A P_B$ violates detailed balance?",
+        "prompt_markdown": "As emphasized in the discussion of Metropolis move menus,, why is a deterministic cycle of moves $(A, B, A, B, \\dots)$ valid in Markov Chain Monte Carlo even though the composite transition matrix $P = P_A P_B$ violates detailed balance?",
         "hint_markdown": "Evaluate $\\pi (P_A P_B)$ when $\\pi P_A = \\pi$ and $\\pi P_B = \\pi$.",
         "options": [
           {
@@ -61,13 +61,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Only if $P_A$ and $P_B$ commute ($P_A P_B = P_B P_A$), or if the sequence is palindromically symmetrized such as $P_A P_B P_A$.",
-            "text_markdown": "Only if $P_A$ and $P_B$ commute ($P_A P_B = P_B P_A$), or if the sequence is palindromically symmetrized such as $P_A P_B P_A$."
+            "text": "Always, because the product of two symmetric matrices is always symmetric.",
+            "text_markdown": "Always, because the product of two symmetric matrices is always symmetric."
           },
           {
             "id": "b",
-            "text": "Always, because the product of two symmetric matrices is always symmetric.",
-            "text_markdown": "Always, because the product of two symmetric matrices is always symmetric."
+            "text": "Only if $P_A$ and $P_B$ commute ($P_A P_B = P_B P_A$), or if the sequence is palindromically symmetrized such as $P_A P_B P_A$.",
+            "text_markdown": "Only if $P_A$ and $P_B$ commute ($P_A P_B = P_B P_A$), or if the sequence is palindromically symmetrized such as $P_A P_B P_A$."
           },
           {
             "id": "c",
@@ -80,7 +80,7 @@
             "text_markdown": "Only when $\\pi(s)$ is the uniform distribution."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Because $(D_\\pi P_A P_B)^T = P_B^T P_A^T D_\\pi = P_B^T D_\\pi P_A = D_\\pi P_B P_A$, detailed balance $D_\\pi(P_A P_B) = (D_\\pi P_A P_B)^T$ holds if and only if $P_A P_B = P_B P_A$ (or if one uses a palindromic sequence like $P_A P_B P_A$)."
       },
       {
@@ -94,8 +94,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$P$ satisfies both detailed balance and global balance for the $NPT$ distribution.",
-            "text_markdown": "$P$ satisfies both detailed balance and global balance for the $NPT$ distribution."
+            "text": "$P$ is not a stochastic matrix because its rows sum to $1.98$.",
+            "text_markdown": "$P$ is not a stochastic matrix because its rows sum to $1.98$."
           },
           {
             "id": "b",
@@ -104,8 +104,8 @@
           },
           {
             "id": "c",
-            "text": "$P$ is not a stochastic matrix because its rows sum to $1.98$.",
-            "text_markdown": "$P$ is not a stochastic matrix because its rows sum to $1.98$."
+            "text": "$P$ satisfies both detailed balance and global balance for the $NPT$ distribution.",
+            "text_markdown": "$P$ satisfies both detailed balance and global balance for the $NPT$ distribution."
           },
           {
             "id": "d",
@@ -113,7 +113,7 @@
             "text_markdown": "$P$ biases the equilibrium volume by a factor of $0.02 / 0.98$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "A convex combination $P = \\sum_k \\alpha_k P_k$ with $\\alpha_k \\ge 0$ and $\\sum_k \\alpha_k = 1$ preserves row normalization and satisfies $\\pi(s)P(s\\to s') = \\sum_k \\alpha_k \\pi(s)P_k(s\\to s') = \\sum_k \\alpha_k \\pi(s')P_k(s'\\to s) = \\pi(s')P(s'\\to s)$ for any fixed choice of probabilities $\\alpha_k$."
       },
       {
@@ -127,8 +127,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Yes: because each single-particle transition operator $P_i$ individually satisfies detailed balance for $\\pi(\\mathbf{R})$, the composite sweep $P_{\\text{sweep}} = P_1 P_2 \\cdots P_N$ has $\\pi(\\mathbf{R})$ as its exact stationary distribution and guarantees every particle is attempted once per pass.",
-            "text_markdown": "Yes: because each single-particle transition operator $P_i$ individually satisfies detailed balance for $\\pi(\\mathbf{R})$, the composite sweep $P_{\\text{sweep}} = P_1 P_2 \\cdots P_N$ has $\\pi(\\mathbf{R})$ as its exact stationary distribution and guarantees every particle is attempted once per pass."
+            "text": "No: it violates the Markov property unless all $N$ moves are accepted simultaneously.",
+            "text_markdown": "No: it violates the Markov property unless all $N$ moves are accepted simultaneously."
           },
           {
             "id": "b",
@@ -142,11 +142,11 @@
           },
           {
             "id": "d",
-            "text": "No: it violates the Markov property unless all $N$ moves are accepted simultaneously.",
-            "text_markdown": "No: it violates the Markov property unless all $N$ moves are accepted simultaneously."
+            "text": "Yes: because each single-particle transition operator $P_i$ individually satisfies detailed balance for $\\pi(\\mathbf{R})$, the composite sweep $P_{\\text{sweep}} = P_1 P_2 \\cdots P_N$ has $\\pi(\\mathbf{R})$ as its exact stationary distribution and guarantees every particle is attempted once per pass.",
+            "text_markdown": "Yes: because each single-particle transition operator $P_i$ individually satisfies detailed balance for $\\pi(\\mathbf{R})$, the composite sweep $P_{\\text{sweep}} = P_1 P_2 \\cdots P_N$ has $\\pi(\\mathbf{R})$ as its exact stationary distribution and guarantees every particle is attempted once per pass."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "As explicitly stated: *'EX: in classic Metropolis, instead of randomly choosing the particle to be moved, then one can go through them sequentially. After one pass, all particles are attempted once. This is correct and might be faster.'*"
       },
       {
@@ -268,13 +268,13 @@
         "options": [
           {
             "id": "a",
-            "text": "To focus CPU time on sampling the most physically interesting degrees of freedom (such as a surface or interface), increasing the statistical efficiency of surface observables even though overall move acceptance is slightly lowered.",
-            "text_markdown": "To focus CPU time on sampling the most physically interesting degrees of freedom (such as a surface or interface), increasing the statistical efficiency of surface observables even though overall move acceptance is slightly lowered."
+            "text": "To change the equilibrium thermodynamic ensemble from canonical ($NVT$) to microcanonical ($NVE$).",
+            "text_markdown": "To change the equilibrium thermodynamic ensemble from canonical ($NVT$) to microcanonical ($NVE$)."
           },
           {
             "id": "b",
-            "text": "To change the equilibrium thermodynamic ensemble from canonical ($NVT$) to microcanonical ($NVE$).",
-            "text_markdown": "To change the equilibrium thermodynamic ensemble from canonical ($NVT$) to microcanonical ($NVE$)."
+            "text": "To focus CPU time on sampling the most physically interesting degrees of freedom (such as a surface or interface), increasing the statistical efficiency of surface observables even though overall move acceptance is slightly lowered.",
+            "text_markdown": "To focus CPU time on sampling the most physically interesting degrees of freedom (such as a surface or interface), increasing the statistical efficiency of surface observables even though overall move acceptance is slightly lowered."
           },
           {
             "id": "c",
@@ -287,7 +287,7 @@
             "text_markdown": "To eliminate the need to calculate potential energy differences $\\Delta V$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "*'We focus the CPU time on interesting degrees of freedom (it will lower overall acceptances but increase efficiency of what we want to calculate).'*"
       },
       {
@@ -316,8 +316,8 @@
           "sec_preferential_sampling",
           "concept_preferential_surface"
         ],
-        "prompt_markdown": "Using the numbers from the previous question ($H(\\mathbf{R}) = 40.0$, $h(z_i) = 0.80$, $H(\\mathbf{R}') = 39.5$, $h(z_i') = 0.30$), suppose the trial move from $z_i$ to $z_i'$ has zero potential energy change ($\\Delta V = V(\\mathbf{R}') - V(\\mathbf{R}) = 0$). What is the exact Metropolis\u2013Hastings acceptance probability\n$$A(\\mathbf{R} \\to \\mathbf{R}') = \\min\\!\\left\\{1,\\; \\frac{T(\\mathbf{R}' \\to \\mathbf{R})}{T(\\mathbf{R} \\to \\mathbf{R}')} e^{-\\beta \\Delta V}\\right\\} = \\min\\!\\left\\{1,\\; \\frac{h(z_i')/H(\\mathbf{R}')}{h(z_i)/H(\\mathbf{R})}\\right\\}$$\nfor this surface-to-bulk move?",
-        "hint_markdown": "Evaluate the ratio of reverse to forward selection probabilities using the individual weights and their respective partition sums.",
+        "prompt_markdown": "Using the numbers from the previous question ($H(\\mathbf{R}) = 40.0$, $h(z_i) = 0.80$, $H(\\mathbf{R}') = 39.5$, $h(z_i') = 0.30$), suppose the trial move from $z_i$ to $z_i'$ has zero potential energy change ($\\Delta V = V(\\mathbf{R}') - V(\\mathbf{R}) = 0$). What is the exact Metropolis\u2013Hastings acceptance probability $A(\\mathbf{R} \\to \\mathbf{R}')$ for this surface-to-bulk preferential sampling move?",
+        "hint_markdown": "Recall that preferential selection introduces a proposal bias $T(\\mathbf{R} \\to \\mathbf{R}') \\propto h(z_i)/H(\\mathbf{R})$. Balance this by setting $A = \\min\\{1, \\frac{T(\\mathbf{R}' \\to \\mathbf{R})}{T(\\mathbf{R} \\to \\mathbf{R}')}\\}$.",
         "correct": {
           "value": 0.3797,
           "tolerance": 0.002
@@ -338,8 +338,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because surface atoms are selected $10\\times$ more often than bulk atoms; rejecting $90\\%$ of surface-to-bulk proposals balances the $10\\times$ higher proposal attempt frequency so the net flux between surface and bulk is equal in both directions.",
-            "text_markdown": "Because surface atoms are selected $10\\times$ more often than bulk atoms; rejecting $90\\%$ of surface-to-bulk proposals balances the $10\\times$ higher proposal attempt frequency so the net flux between surface and bulk is equal in both directions."
+            "text": "Because bulk atoms have a higher temperature than surface atoms.",
+            "text_markdown": "Because bulk atoms have a higher temperature than surface atoms."
           },
           {
             "id": "b",
@@ -348,8 +348,8 @@
           },
           {
             "id": "c",
-            "text": "Because bulk atoms have a higher temperature than surface atoms.",
-            "text_markdown": "Because bulk atoms have a higher temperature than surface atoms."
+            "text": "Because surface atoms are selected $10\\times$ more often than bulk atoms; rejecting $90\\%$ of surface-to-bulk proposals balances the $10\\times$ higher proposal attempt frequency so the net flux between surface and bulk is equal in both directions.",
+            "text_markdown": "Because surface atoms are selected $10\\times$ more often than bulk atoms; rejecting $90\\%$ of surface-to-bulk proposals balances the $10\\times$ higher proposal attempt frequency so the net flux between surface and bulk is equal in both directions."
           },
           {
             "id": "d",
@@ -357,7 +357,7 @@
             "text_markdown": "Because the trial cube volume $\\Delta^3$ is $10\\times$ smaller in the bulk."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "At uniform equilibrium density, a surface atom is picked $10\\times$ more often than a bulk atom ($T_{\\text{surf}\\to\\text{bulk}} = 10\\, T_{\\text{bulk}\\to\\text{surf}}$). Detailed balance $\\pi P(\\text{surf}\\to\\text{bulk}) = \\pi P(\\text{bulk}\\to\\text{surf})$ therefore requires $A(\\text{surf}\\to\\text{bulk}) = \\frac{1}{10} A(\\text{bulk}\\to\\text{surf}) = 0.10$."
       },
       {
@@ -371,8 +371,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$h(z) > 0$ strictly everywhere in the accessible volume so that every particle has a nonzero probability of being selected and reverse moves from any $z'$ to $z$ remain possible.",
-            "text_markdown": "$h(z) > 0$ strictly everywhere in the accessible volume so that every particle has a nonzero probability of being selected and reverse moves from any $z'$ to $z$ remain possible."
+            "text": "$h(z)$ must be an oscillatory sine wave $\\sin(kz)$.",
+            "text_markdown": "$h(z)$ must be an oscillatory sine wave $\\sin(kz)$."
           },
           {
             "id": "b",
@@ -386,11 +386,11 @@
           },
           {
             "id": "d",
-            "text": "$h(z)$ must be an oscillatory sine wave $\\sin(kz)$.",
-            "text_markdown": "$h(z)$ must be an oscillatory sine wave $\\sin(kz)$."
+            "text": "$h(z) > 0$ strictly everywhere in the accessible volume so that every particle has a nonzero probability of being selected and reverse moves from any $z'$ to $z$ remain possible.",
+            "text_markdown": "$h(z) > 0$ strictly everywhere in the accessible volume so that every particle has a nonzero probability of being selected and reverse moves from any $z'$ to $z$ remain possible."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "If $h(z') = 0$ in the bulk, any particle that steps into $z'$ can never be selected again ($T(\\mathbf{R}' \\to \\mathbf{R}) = 0$), breaking proposal reversibility (or freezing all moves into $z'$ via $A = 0$)."
       },
       {
@@ -494,13 +494,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$T(s \\to s') = \\dfrac{\\pi(s')}{C(s)}$ where $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$",
-            "text_markdown": "$T(s \\to s') = \\dfrac{\\pi(s')}{C(s)}$ where $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$"
+            "text": "$T(s \\to s') = \\dfrac{1}{|\\mathcal{N}(s)|}$ (uniform over the neighborhood)",
+            "text_markdown": "$T(s \\to s') = \\dfrac{1}{|\\mathcal{N}(s)|}$ (uniform over the neighborhood)"
           },
           {
             "id": "b",
-            "text": "$T(s \\to s') = \\dfrac{1}{|\\mathcal{N}(s)|}$ (uniform over the neighborhood)",
-            "text_markdown": "$T(s \\to s') = \\dfrac{1}{|\\mathcal{N}(s)|}$ (uniform over the neighborhood)"
+            "text": "$T(s \\to s') = \\dfrac{\\pi(s')}{C(s)}$ where $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$",
+            "text_markdown": "$T(s \\to s') = \\dfrac{\\pi(s')}{C(s)}$ where $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$"
           },
           {
             "id": "c",
@@ -513,7 +513,7 @@
             "text_markdown": "$T(s \\to s') = \\exp(-\\beta [E(s') + E(s)])$"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Heat-Bath samples $s' \\in \\mathcal{N}(s)$ directly in proportion to its equilibrium weight $\\pi(s')$, normalized over the local neighborhood by $C(s) = \\sum_{s'' \\in \\mathcal{N}(s)} \\pi(s'')$."
       },
       {
@@ -527,8 +527,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$A(s \\to s') = \\min\\!\\left\\{1,\\; \\dfrac{C(s)}{C(s')}\\right\\}$",
-            "text_markdown": "$A(s \\to s') = \\min\\!\\left\\{1,\\; \\dfrac{C(s)}{C(s')}\\right\\}$"
+            "text": "$A(s \\to s') = \\min\\!\\left\\{1,\\; C(s) C(s')\\right\\}$",
+            "text_markdown": "$A(s \\to s') = \\min\\!\\left\\{1,\\; C(s) C(s')\\right\\}$"
           },
           {
             "id": "b",
@@ -537,8 +537,8 @@
           },
           {
             "id": "c",
-            "text": "$A(s \\to s') = \\min\\!\\left\\{1,\\; C(s) C(s')\\right\\}$",
-            "text_markdown": "$A(s \\to s') = \\min\\!\\left\\{1,\\; C(s) C(s')\\right\\}$"
+            "text": "$A(s \\to s') = \\min\\!\\left\\{1,\\; \\dfrac{C(s)}{C(s')}\\right\\}$",
+            "text_markdown": "$A(s \\to s') = \\min\\!\\left\\{1,\\; \\dfrac{C(s)}{C(s')}\\right\\}$"
           },
           {
             "id": "d",
@@ -546,7 +546,7 @@
             "text_markdown": "$A(s \\to s') = 0$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Substituting $T(s' \\to s) = \\pi(s)/C(s')$ and $T(s \\to s') = \\pi(s')/C(s)$ yields $\\frac{[\\pi(s)/C(s')]\\pi(s')}{[\\pi(s')/C(s)]\\pi(s)} = \\frac{C(s)}{C(s')}$, so $A(s \\to s') = \\min\\{1, C(s)/C(s')\\}$."
       },
       {
@@ -563,8 +563,8 @@
         "options": [
           {
             "id": "a",
-            "text": "When the neighborhood normalization sum $C(s)$ is independent of the state $s$ ($C(s) = C(s')$), as when updating a single lattice spin $\\sigma_i$ over its full local state set while all other spins remain fixed.",
-            "text_markdown": "When the neighborhood normalization sum $C(s)$ is independent of the state $s$ ($C(s) = C(s')$), as when updating a single lattice spin $\\sigma_i$ over its full local state set while all other spins remain fixed."
+            "text": "When the neighborhood $\\mathcal{N}(s)$ contains no states.",
+            "text_markdown": "When the neighborhood $\\mathcal{N}(s)$ contains no states."
           },
           {
             "id": "b",
@@ -578,11 +578,11 @@
           },
           {
             "id": "d",
-            "text": "When the neighborhood $\\mathcal{N}(s)$ contains no states.",
-            "text_markdown": "When the neighborhood $\\mathcal{N}(s)$ contains no states."
+            "text": "When the neighborhood normalization sum $C(s)$ is independent of the state $s$ ($C(s) = C(s')$), as when updating a single lattice spin $\\sigma_i$ over its full local state set while all other spins remain fixed.",
+            "text_markdown": "When the neighborhood normalization sum $C(s)$ is independent of the state $s$ ($C(s) = C(s')$), as when updating a single lattice spin $\\sigma_i$ over its full local state set while all other spins remain fixed."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "*'Acceptance ratio = 1 if $C(s)$ is independent of $s$.'* Whenever $s'$ is drawn from a fixed conditional subspace (so $\\mathcal{N}(s) = \\mathcal{N}(s')$), $C(s) = C(s')$ and $A = \\min(1, 1) = 1$."
       },
       {
@@ -680,13 +680,13 @@
         "options": [
           {
             "id": "a",
-            "text": "By Taylor-expanding $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ inside a trial cube and setting $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})]$.",
-            "text_markdown": "By Taylor-expanding $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ inside a trial cube and setting $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})]$."
+            "text": "By integrating $\\mathbf{F} = m\\mathbf{a}$ for $100$ Verlet steps without any acceptance test.",
+            "text_markdown": "By integrating $\\mathbf{F} = m\\mathbf{a}$ for $100$ Verlet steps without any acceptance test."
           },
           {
             "id": "b",
-            "text": "By integrating $\\mathbf{F} = m\\mathbf{a}$ for $100$ Verlet steps without any acceptance test.",
-            "text_markdown": "By integrating $\\mathbf{F} = m\\mathbf{a}$ for $100$ Verlet steps without any acceptance test."
+            "text": "By Taylor-expanding $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ inside a trial cube and setting $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})]$.",
+            "text_markdown": "By Taylor-expanding $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ inside a trial cube and setting $T(\\mathbf{r} \\to \\mathbf{r}') \\propto \\exp[\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})]$."
           },
           {
             "id": "c",
@@ -699,7 +699,7 @@
             "text_markdown": "By setting the temperature $\\beta$ proportional to $|\\mathbf{F}(\\mathbf{r})|$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Linearizing $V(\\mathbf{r}') \\approx V(\\mathbf{r}) - \\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})$ turns the intractable local Boltzmann factor $e^{-\\beta V(\\mathbf{r}')}$ into a separable exponential $e^{\\lambda\\beta\\mathbf{F}(\\mathbf{r})\\cdot(\\mathbf{r}' - \\mathbf{r})}$ that pushes displacements in the direction of $\\mathbf{F}(\\mathbf{r})$."
       },
       {
@@ -713,8 +713,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Using the analytical inverse-CDF mapping method along each Cartesian coordinate $x, y, z$ independently.",
-            "text_markdown": "Using the analytical inverse-CDF mapping method along each Cartesian coordinate $x, y, z$ independently."
+            "text": "By running a secondary sub-Markov chain of $10^4$ steps inside the cube.",
+            "text_markdown": "By running a secondary sub-Markov chain of $10^4$ steps inside the cube."
           },
           {
             "id": "b",
@@ -723,8 +723,8 @@
           },
           {
             "id": "c",
-            "text": "By running a secondary sub-Markov chain of $10^4$ steps inside the cube.",
-            "text_markdown": "By running a secondary sub-Markov chain of $10^4$ steps inside the cube."
+            "text": "Using the analytical inverse-CDF mapping method along each Cartesian coordinate $x, y, z$ independently.",
+            "text_markdown": "Using the analytical inverse-CDF mapping method along each Cartesian coordinate $x, y, z$ independently."
           },
           {
             "id": "d",
@@ -732,7 +732,7 @@
             "text_markdown": "By always placing $\\mathbf{r}'$ at the corner of the cube."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Because the domain is a cube $[ -\\Delta/2, +\\Delta/2 ]^3$ and the exponent $\\lambda\\beta(F_x \\delta x + F_y \\delta y + F_z \\delta z)$ separates into three 1D exponentials, each Cartesian coordinate can be sampled analytically in $\\mathcal{O}(1)$ time via the inverse-CDF mapping method."
       },
       {
@@ -774,8 +774,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because the reverse proposal uses $\\mathbf{F}(\\mathbf{r}')$ while the forward proposal uses $\\mathbf{F}(\\mathbf{r})$, their sum in the acceptance ratio forms the trapezoidal force average $\\frac{1}{2}[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ when $\\lambda = 1/2$, canceling $\\Delta V$ to second order!",
-            "text_markdown": "Because the reverse proposal uses $\\mathbf{F}(\\mathbf{r}')$ while the forward proposal uses $\\mathbf{F}(\\mathbf{r})$, their sum in the acceptance ratio forms the trapezoidal force average $\\frac{1}{2}[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ when $\\lambda = 1/2$, canceling $\\Delta V$ to second order!"
+            "text": "Because $\\lambda = 1$ makes the proposal distribution uniform.",
+            "text_markdown": "Because $\\lambda = 1$ makes the proposal distribution uniform."
           },
           {
             "id": "b",
@@ -789,11 +789,11 @@
           },
           {
             "id": "d",
-            "text": "Because $\\lambda = 1$ makes the proposal distribution uniform.",
-            "text_markdown": "Because $\\lambda = 1$ makes the proposal distribution uniform."
+            "text": "Because the reverse proposal uses $\\mathbf{F}(\\mathbf{r}')$ while the forward proposal uses $\\mathbf{F}(\\mathbf{r})$, their sum in the acceptance ratio forms the trapezoidal force average $\\frac{1}{2}[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ when $\\lambda = 1/2$, canceling $\\Delta V$ to second order!",
+            "text_markdown": "Because the reverse proposal uses $\\mathbf{F}(\\mathbf{r}')$ while the forward proposal uses $\\mathbf{F}(\\mathbf{r})$, their sum in the acceptance ratio forms the trapezoidal force average $\\frac{1}{2}[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ when $\\lambda = 1/2$, canceling $\\Delta V$ to second order!"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Both $\\lambda = 1/2$ and $\\lambda = 1$ satisfy exact detailed balance, but because $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$ contributes $-\\lambda\\beta[\\mathbf{F}(\\mathbf{r}) + \\mathbf{F}(\\mathbf{r}')]\\cdot\\Delta\\mathbf{r}$ to the log-acceptance ratio, setting $\\lambda = 1/2$ matches the average of initial and final forces, whereas $\\lambda = 1$ double-counts the linear force work!"
       },
       {
@@ -924,13 +924,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Mean $\\langle \\Delta x \\rangle = \\tau\\beta F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 2\\tau$.",
-            "text_markdown": "Mean $\\langle \\Delta x \\rangle = \\tau\\beta F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 2\\tau$."
+            "text": "Mean $\\langle \\Delta x \\rangle = 0$ and variance $\\operatorname{Var}(\\Delta x) = \\tau\\beta F_x(\\mathbf{r})$.",
+            "text_markdown": "Mean $\\langle \\Delta x \\rangle = 0$ and variance $\\operatorname{Var}(\\Delta x) = \\tau\\beta F_x(\\mathbf{r})$."
           },
           {
             "id": "b",
-            "text": "Mean $\\langle \\Delta x \\rangle = 0$ and variance $\\operatorname{Var}(\\Delta x) = \\tau\\beta F_x(\\mathbf{r})$.",
-            "text_markdown": "Mean $\\langle \\Delta x \\rangle = 0$ and variance $\\operatorname{Var}(\\Delta x) = \\tau\\beta F_x(\\mathbf{r})$."
+            "text": "Mean $\\langle \\Delta x \\rangle = \\tau\\beta F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 2\\tau$.",
+            "text_markdown": "Mean $\\langle \\Delta x \\rangle = \\tau\\beta F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 2\\tau$."
           },
           {
             "id": "c",
@@ -943,7 +943,7 @@
             "text_markdown": "Mean $\\langle \\Delta x \\rangle = -F_x(\\mathbf{r})$ and variance $\\operatorname{Var}(\\Delta x) = 0$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Since $\\langle \\delta_x \\rangle = 0$ and $\\langle \\delta_x^2 \\rangle = 2\\tau$, the shifted Gaussian variable $\\Delta x = \\tau\\beta F_x(\\mathbf{r}) + \\delta_x$ has mean $\\tau\\beta F_x(\\mathbf{r})$ and variance $2\\tau$."
       },
       {
@@ -957,8 +957,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because shifting the mean of a Gaussian over $(-\\infty, +\\infty)^3$ does not change its integral, the normalization factor $(4\\pi\\tau)^{-3/2}$ is completely independent of $\\mathbf{F}(\\mathbf{r})$ and cancels out of $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$!",
-            "text_markdown": "Because shifting the mean of a Gaussian over $(-\\infty, +\\infty)^3$ does not change its integral, the normalization factor $(4\\pi\\tau)^{-3/2}$ is completely independent of $\\mathbf{F}(\\mathbf{r})$ and cancels out of $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$!"
+            "text": "Smart MC makes $T(\\mathbf{r} \\to \\mathbf{r}') = T(\\mathbf{r}' \\to \\mathbf{r})$ symmetric even when $\\mathbf{F}(\\mathbf{r}) \\ne \\mathbf{0}$.",
+            "text_markdown": "Smart MC makes $T(\\mathbf{r} \\to \\mathbf{r}') = T(\\mathbf{r}' \\to \\mathbf{r})$ symmetric even when $\\mathbf{F}(\\mathbf{r}) \\ne \\mathbf{0}$."
           },
           {
             "id": "b",
@@ -967,8 +967,8 @@
           },
           {
             "id": "c",
-            "text": "Smart MC makes $T(\\mathbf{r} \\to \\mathbf{r}') = T(\\mathbf{r}' \\to \\mathbf{r})$ symmetric even when $\\mathbf{F}(\\mathbf{r}) \\ne \\mathbf{0}$.",
-            "text_markdown": "Smart MC makes $T(\\mathbf{r} \\to \\mathbf{r}') = T(\\mathbf{r}' \\to \\mathbf{r})$ symmetric even when $\\mathbf{F}(\\mathbf{r}) \\ne \\mathbf{0}$."
+            "text": "Because shifting the mean of a Gaussian over $(-\\infty, +\\infty)^3$ does not change its integral, the normalization factor $(4\\pi\\tau)^{-3/2}$ is completely independent of $\\mathbf{F}(\\mathbf{r})$ and cancels out of $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$!",
+            "text_markdown": "Because shifting the mean of a Gaussian over $(-\\infty, +\\infty)^3$ does not change its integral, the normalization factor $(4\\pi\\tau)^{-3/2}$ is completely independent of $\\mathbf{F}(\\mathbf{r})$ and cancels out of $T(\\mathbf{r}' \\to \\mathbf{r}) / T(\\mathbf{r} \\to \\mathbf{r}')$!"
           },
           {
             "id": "d",
@@ -976,7 +976,7 @@
             "text_markdown": "Smart MC restricts displacements to a sphere of radius $\\tau$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In Force-Bias MC, truncating the exponential to a finite cube $[ -\\Delta/2, +\\Delta/2 ]^3$ produces a force-dependent normalization $C(\\mathbf{r})$. In Smart MC, integrating the Gaussian over all $\\mathbb{R}^3$ gives $(4\\pi\\tau)^{3/2}$ regardless of the shift $\\tau\\beta\\mathbf{F}(\\mathbf{r})$, so the prefactors cancel identically!"
       },
       {
@@ -1024,8 +1024,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Potential curvature (the Hessian $\\nabla\\nabla V = -\\nabla\\mathbf{F}$) and higher derivatives, entering the log-acceptance exponent at order $\\mathcal{O}(\\tau^{3/2})$ (from the $\\frac{\\tau\\beta^2}{4}(|\\mathbf{F}'|^2 - |\\mathbf{F}|^2)$ and cubic $\\mathcal{O}(\\Delta r^3)$ terms).",
-            "text_markdown": "Potential curvature (the Hessian $\\nabla\\nabla V = -\\nabla\\mathbf{F}$) and higher derivatives, entering the log-acceptance exponent at order $\\mathcal{O}(\\tau^{3/2})$ (from the $\\frac{\\tau\\beta^2}{4}(|\\mathbf{F}'|^2 - |\\mathbf{F}|^2)$ and cubic $\\mathcal{O}(\\Delta r^3)$ terms)."
+            "text": "The particle mass $m$, entering at order $\\mathcal{O}(\\tau^2)$.",
+            "text_markdown": "The particle mass $m$, entering at order $\\mathcal{O}(\\tau^2)$."
           },
           {
             "id": "b",
@@ -1039,11 +1039,11 @@
           },
           {
             "id": "d",
-            "text": "The particle mass $m$, entering at order $\\mathcal{O}(\\tau^2)$.",
-            "text_markdown": "The particle mass $m$, entering at order $\\mathcal{O}(\\tau^2)$."
+            "text": "Potential curvature (the Hessian $\\nabla\\nabla V = -\\nabla\\mathbf{F}$) and higher derivatives, entering the log-acceptance exponent at order $\\mathcal{O}(\\tau^{3/2})$ (from the $\\frac{\\tau\\beta^2}{4}(|\\mathbf{F}'|^2 - |\\mathbf{F}|^2)$ and cubic $\\mathcal{O}(\\Delta r^3)$ terms).",
+            "text_markdown": "Potential curvature (the Hessian $\\nabla\\nabla V = -\\nabla\\mathbf{F}$) and higher derivatives, entering the log-acceptance exponent at order $\\mathcal{O}(\\tau^{3/2})$ (from the $\\frac{\\tau\\beta^2}{4}(|\\mathbf{F}'|^2 - |\\mathbf{F}|^2)$ and cubic $\\mathcal{O}(\\Delta r^3)$ terms)."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In Classic Metropolis, $\\Delta V = -\\mathbf{F}\\cdot\\Delta\\mathbf{r} + \\mathcal{O}(\\Delta r^2) = \\mathcal{O}(\\tau^{1/2})$. Smart MC cancels the entire linear force contribution, so rejections only arise when the force changes across the step ($\\mathbf{F}(\\mathbf{r}') - \\mathbf{F}(\\mathbf{r}) \\approx -(\\nabla\\nabla V)\\Delta\\mathbf{r} = \\mathcal{O}(\\tau^{1/2})$), which enters $\\ln A$ at order $\\mathcal{O}(\\tau^{3/2})$!"
       },
       {
@@ -1090,13 +1090,13 @@
         "options": [
           {
             "id": "a",
-            "text": "One step of Brownian Dynamics is identical to the Smart MC trial proposal $T(R \\to R')$; adding the Smart MC Metropolis rejection test eliminates the finite-$\\tau$ discretization error of Brownian Dynamics and enforces exact detailed balance!",
-            "text_markdown": "One step of Brownian Dynamics is identical to the Smart MC trial proposal $T(R \\to R')$; adding the Smart MC Metropolis rejection test eliminates the finite-$\\tau$ discretization error of Brownian Dynamics and enforces exact detailed balance!"
+            "text": "Brownian Dynamics is already exact for any finite time step $\\tau$ without rejections.",
+            "text_markdown": "Brownian Dynamics is already exact for any finite time step $\\tau$ without rejections."
           },
           {
             "id": "b",
-            "text": "Brownian Dynamics is already exact for any finite time step $\\tau$ without rejections.",
-            "text_markdown": "Brownian Dynamics is already exact for any finite time step $\\tau$ without rejections."
+            "text": "One step of Brownian Dynamics is identical to the Smart MC trial proposal $T(R \\to R')$; adding the Smart MC Metropolis rejection test eliminates the finite-$\\tau$ discretization error of Brownian Dynamics and enforces exact detailed balance!",
+            "text_markdown": "One step of Brownian Dynamics is identical to the Smart MC trial proposal $T(R \\to R')$; adding the Smart MC Metropolis rejection test eliminates the finite-$\\tau$ discretization error of Brownian Dynamics and enforces exact detailed balance!"
           },
           {
             "id": "c",
@@ -1109,7 +1109,7 @@
             "text_markdown": "Brownian Dynamics moves particles opposite to the force $\\mathbf{F}(R)$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "highlights that the discretized Brownian Dynamics step generates the exact displaced-Gaussian transition density $T(R \\to R')$ of Smart MC. Enforcing detailed balance via Metropolis rejections turns approximate Brownian Dynamics into an exact hybrid MCMC method."
       },
       {
@@ -1123,8 +1123,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Diffusion Quantum Monte Carlo (DMC), where imaginary-time Schr\u00f6dinger evolution combines diffusion with drift along the quantum force $\\mathbf{F}_Q = 2\\nabla\\ln\\Psi_T$.",
-            "text_markdown": "Diffusion Quantum Monte Carlo (DMC), where imaginary-time Schr\u00f6dinger evolution combines diffusion with drift along the quantum force $\\mathbf{F}_Q = 2\\nabla\\ln\\Psi_T$."
+            "text": "Density Functional Perturbation Theory (DFPT).",
+            "text_markdown": "Density Functional Perturbation Theory (DFPT)."
           },
           {
             "id": "b",
@@ -1133,8 +1133,8 @@
           },
           {
             "id": "c",
-            "text": "Density Functional Perturbation Theory (DFPT).",
-            "text_markdown": "Density Functional Perturbation Theory (DFPT)."
+            "text": "Diffusion Quantum Monte Carlo (DMC), where imaginary-time Schr\u00f6dinger evolution combines diffusion with drift along the quantum force $\\mathbf{F}_Q = 2\\nabla\\ln\\Psi_T$.",
+            "text_markdown": "Diffusion Quantum Monte Carlo (DMC), where imaginary-time Schr\u00f6dinger evolution combines diffusion with drift along the quantum force $\\mathbf{F}_Q = 2\\nabla\\ln\\Psi_T$."
           },
           {
             "id": "d",
@@ -1142,7 +1142,7 @@
             "text_markdown": "Tight-binding molecular dynamics."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "explicitly notes: *'Also the equation for Diffusion Quantum Monte Carlo!'* In importance-sampled DMC, walkers undergo Gaussian diffusion plus drift along the quantum drift velocity $\\nabla\\ln|\\Psi_T|^2$, followed by a Smart MC acceptance step to remove finite-$\\tau$ time-step bias."
       },
       {
@@ -1177,8 +1177,8 @@
         "options": [
           {
             "id": "a",
-            "text": "While Force-Bias ($\\lambda=0.5$) and Smart MC have higher acceptance ratios at a given $\\Delta$ and lower energy correlation $C(50)$ at moderate $\\Delta$, classic Metropolis at a larger step size ($\\Delta/\\sigma \\approx 0.36$, $A \\approx 20\\%$) achieves comparable or higher 100-step diffusion and similar energy variance without the extra CPU cost of computing forces!",
-            "text_markdown": "While Force-Bias ($\\lambda=0.5$) and Smart MC have higher acceptance ratios at a given $\\Delta$ and lower energy correlation $C(50)$ at moderate $\\Delta$, classic Metropolis at a larger step size ($\\Delta/\\sigma \\approx 0.36$, $A \\approx 20\\%$) achieves comparable or higher 100-step diffusion and similar energy variance without the extra CPU cost of computing forces!"
+            "text": "Classic Metropolis cannot converge for liquid Argon at any step size.",
+            "text_markdown": "Classic Metropolis cannot converge for liquid Argon at any step size."
           },
           {
             "id": "b",
@@ -1192,11 +1192,11 @@
           },
           {
             "id": "d",
-            "text": "Classic Metropolis cannot converge for liquid Argon at any step size.",
-            "text_markdown": "Classic Metropolis cannot converge for liquid Argon at any step size."
+            "text": "While Force-Bias ($\\lambda=0.5$) and Smart MC have higher acceptance ratios at a given $\\Delta$ and lower energy correlation $C(50)$ at moderate $\\Delta$, classic Metropolis at a larger step size ($\\Delta/\\sigma \\approx 0.36$, $A \\approx 20\\%$) achieves comparable or higher 100-step diffusion and similar energy variance without the extra CPU cost of computing forces!",
+            "text_markdown": "While Force-Bias ($\\lambda=0.5$) and Smart MC have higher acceptance ratios at a given $\\Delta$ and lower energy correlation $C(50)$ at moderate $\\Delta$, classic Metropolis at a larger step size ($\\Delta/\\sigma \\approx 0.36$, $A \\approx 20\\%$) achieves comparable or higher 100-step diffusion and similar energy variance without the extra CPU cost of computing forces!"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "In Figs. 1\u20134, Force-Bias ($\\lambda=0.5$) and Smart MC clearly boost acceptance $P$ (Fig. 1) and reduce 50-step energy autocorrelation $C(50)$ (Fig. 2), but classic Metropolis tuned to $\\Delta/\\sigma \\approx 0.36$ reaches the highest 100-step MSD (Fig. 3) and virtually the same energy variance $\\sigma_V$ (Fig. 4) without evaluating forces. Smart/Force-Bias MC becomes most advantageous in strongly coupled, stiff, or Associating/Coulombic fluids where blind moves are almost always rejected."
       },
       {

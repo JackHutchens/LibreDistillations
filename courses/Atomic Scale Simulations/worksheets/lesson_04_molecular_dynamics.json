@@ -91,13 +91,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Total kinetic energy and potential energy are each independently conserved at every point in time.",
-            "text": "Total kinetic energy and potential energy are each independently conserved at every point in time."
+            "text_markdown": "The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\\Omega/dt = 0$).",
+            "text": "The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\\Omega/dt = 0$)."
           },
           {
             "id": "b",
-            "text_markdown": "The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\\Omega/dt = 0$).",
-            "text": "The volume of an ensemble of trajectories in $6N$-dimensional phase space is conserved over time ($d\\Omega/dt = 0$)."
+            "text_markdown": "Total kinetic energy and potential energy are each independently conserved at every point in time.",
+            "text": "Total kinetic energy and potential energy are each independently conserved at every point in time."
           },
           {
             "id": "c",
@@ -110,7 +110,7 @@
             "text": "All microstates in phase space have zero momentum."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Recall the divergence of the canonical phase-space velocity field $\\nabla_\\Gamma \\cdot \\mathbf{u} = 0$.",
         "rationale_markdown": "Liouville's theorem states that the phase-space density along a trajectory is constant, meaning any volume element in $6N$-dimensional phase space $(\\mathbf{r}^N, \\mathbf{p}^N)$ preserves its volume under exact Hamiltonian evolution."
       },
@@ -190,8 +190,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "1",
-            "text": "1"
+            "text_markdown": "4",
+            "text": "4"
           },
           {
             "id": "b",
@@ -205,11 +205,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "4",
-            "text": "4"
+            "text_markdown": "1",
+            "text": "1"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "hint_markdown": "Notice that the acceleration $\\mathbf{a}(t)$ from the end of the previous step is reused at the beginning of the new step.",
         "rationale_markdown": "Velocity Verlet computes $\\mathbf{a}(t+\\Delta t)$ exactly once per timestep (in Step 3). This acceleration is used to finish the current velocity update and then reused in Step 1 of the subsequent step."
       },
@@ -223,8 +223,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Energy is exactly conserved and the orbit is a closed circle.",
-            "text": "Energy is exactly conserved and the orbit is a closed circle."
+            "text_markdown": "Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \\omega^2 \\Delta t^2)$), causing the phase orbit to spiral outward indefinitely.",
+            "text": "Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \\omega^2 \\Delta t^2)$), causing the phase orbit to spiral outward indefinitely."
           },
           {
             "id": "b",
@@ -233,8 +233,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \\omega^2 \\Delta t^2)$), causing the phase orbit to spiral outward indefinitely.",
-            "text": "Energy grows monotonically with each step ($E_{n+1} = E_n(1 + \\omega^2 \\Delta t^2)$), causing the phase orbit to spiral outward indefinitely."
+            "text_markdown": "Energy is exactly conserved and the orbit is a closed circle.",
+            "text": "Energy is exactly conserved and the orbit is a closed circle."
           },
           {
             "id": "d",
@@ -242,7 +242,7 @@
             "text": "Energy oscillates periodically with zero net drift."
           }
         ],
-        "correct": "c",
+        "correct": "a",
         "hint_markdown": "Calculate $x_{n+1}^2 + v_{n+1}^2$ using $x_{n+1} = x_n + v_n \\Delta t$ and $v_{n+1} = v_n - \\omega^2 x_n \\Delta t$.",
         "rationale_markdown": "For forward Euler, $x_{n+1}^2 + v_{n+1}^2/\\omega^2 = (1 + \\omega^2 \\Delta t^2)(x_n^2 + v_n^2/\\omega^2)$. Since the amplification factor $1 + \\omega^2 \\Delta t^2 > 1$, energy grows unboundedly and the orbit spirals outwards."
       },
@@ -323,8 +323,10 @@
         "difficulty": "easy",
         "taught_by": "sec_integrators_and_symplectic_geometry",
         "prompt_markdown": "In Velocity Verlet, a particle starts at $x(0) = 1.0\\text{ nm}$ with velocity $v(0) = 0.5\\text{ nm/ps}$ and constant acceleration $a = -2.0\\text{ nm/ps}^2$. Using timestep $\\Delta t = 0.1\\text{ ps}$, calculate its position $x(\\Delta t)$ in nm.",
-        "correct": 1.04,
-        "tolerance": 0.001,
+        "correct": {
+          "value": 1.04,
+          "tolerance": 0.001
+        },
         "unit": "nm",
         "hint_markdown": "Apply the first update step of the Velocity Verlet position algorithm using the initial position, velocity, and current acceleration.",
         "rationale_markdown": "$x(0.1) = 1.0 + (0.5)(0.1) + 0.5(-2.0)(0.1)^2 = 1.0 + 0.05 - 0.01 = 1.04\\text{ nm}$."
@@ -336,8 +338,10 @@
         "difficulty": "medium",
         "taught_by": "sec_integrators_and_symplectic_geometry",
         "prompt_markdown": "Continuing from the previous problem, assuming the force remains constant so that $a(\\Delta t) = -2.0\\text{ nm/ps}^2$, calculate the final velocity $v(\\Delta t)$ in nm/ps after the step.",
-        "correct": 0.3,
-        "tolerance": 0.001,
+        "correct": {
+          "value": 0.3,
+          "tolerance": 0.001
+        },
         "unit": "nm/ps",
         "hint_markdown": "Evaluate the velocity update by integrating the average of the initial and final accelerations across the timestep.",
         "rationale_markdown": "$v(0.1) = 0.5 + 0.5(-2.0 - 2.0)(0.1) = 0.5 - 0.2 = 0.30\\text{ nm/ps}$."
@@ -352,26 +356,26 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "$\\mathbf{M}^T \\mathbf{M} = \\mathbf{I}$ (orthogonal matrix)",
-            "text": "$\\mathbf{M}^T \\mathbf{M} = \\mathbf{I}$ (orthogonal matrix)"
+            "text_markdown": "$\\mathbf{M}^T \\mathbf{M} = \\mathbf{I}$ (orthogonal matrix), which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text": "$\\mathbf{M}^T \\mathbf{M} = \\mathbf{I}$ (orthogonal matrix), which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
+            "text_markdown": "$\\text{Tr}(\\mathbf{M}) = 0$, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text": "$\\text{Tr}(\\mathbf{M}) = 0$, which fails to satisfy the necessary boundary conditions and physical conservation laws."
+          },
+          {
+            "id": "c",
             "text_markdown": "$\\mathbf{M}^T \\mathbf{J} \\mathbf{M} = \\mathbf{J}$, where $\\mathbf{J} = \\begin{pmatrix} 0 & \\mathbf{I} \\\\ -\\mathbf{I} & 0 \\end{pmatrix}$ is the standard symplectic matrix",
             "text": "$\\mathbf{M}^T \\mathbf{J} \\mathbf{M} = \\mathbf{J}$, where $\\mathbf{J} = \\begin{pmatrix} 0 & \\mathbf{I} \\\\ -\\mathbf{I} & 0 \\end{pmatrix}$ is the standard symplectic matrix"
           },
           {
-            "id": "c",
-            "text_markdown": "$\\text{Tr}(\\mathbf{M}) = 0$",
-            "text": "$\\text{Tr}(\\mathbf{M}) = 0$"
-          },
-          {
             "id": "d",
-            "text_markdown": "All eigenvalues of $\\mathbf{M}$ must be strictly real",
-            "text": "All eigenvalues of $\\mathbf{M}$ must be strictly real"
+            "text_markdown": "All eigenvalues of $\\mathbf{M}$ must be strictly real, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text": "All eigenvalues of $\\mathbf{M}$ must be strictly real, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Symplectic maps preserve the canonical Poisson bracket structure and phase space 2-form $\\omega$.",
         "rationale_markdown": "By definition, a linear transformation (or tangent map $\\mathbf{M}$) is symplectic if and only if $\\mathbf{M}^T \\mathbf{J} \\mathbf{M} = \\mathbf{J}$, which guarantees the preservation of the differential 2-form $\\sum_i d\\mathbf{r}_i \\wedge d\\mathbf{p}_i$ and implies $\\det(\\mathbf{M}) = 1$."
       },
@@ -436,8 +440,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "They exactly conserve a nearby 'shadow' or modified Hamiltonian $\\widetilde{\\mathcal{H}} = \\mathcal{H} + \\mathcal{O}(\\Delta t^2)$.",
-            "text": "They exactly conserve a nearby 'shadow' or modified Hamiltonian $\\widetilde{\\mathcal{H}} = \\mathcal{H} + \\mathcal{O}(\\Delta t^2)$."
+            "text_markdown": "They enforce an explicit Lagrange multiplier constraint on the total kinetic energy.",
+            "text": "They enforce an explicit Lagrange multiplier constraint on the total kinetic energy."
           },
           {
             "id": "c",
@@ -446,11 +450,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "They enforce an explicit Lagrange multiplier constraint on the total kinetic energy.",
-            "text": "They enforce an explicit Lagrange multiplier constraint on the total kinetic energy."
+            "text_markdown": "They exactly conserve a nearby 'shadow' or modified Hamiltonian $\\widetilde{\\mathcal{H}} = \\mathcal{H} + \\mathcal{O}(\\Delta t^2)$.",
+            "text": "They exactly conserve a nearby 'shadow' or modified Hamiltonian $\\widetilde{\\mathcal{H}} = \\mathcal{H} + \\mathcal{O}(\\Delta t^2)$."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Look at backward error analysis and the modified Hamiltonian concept.",
         "rationale_markdown": "Symplectic integrators exactly trace the continuous flow of an asymptotic modified Hamiltonian $\\widetilde{\\mathcal{H}} = \\mathcal{H} + \\Delta t^2 \\mathcal{H}_2 + \\dots$. Because $\\widetilde{\\mathcal{H}}$ is strictly conserved, the true Hamiltonian $\\mathcal{H}$ oscillates within a narrow band of width $\\mathcal{O}(\\Delta t^2)$ and cannot secularly drift."
       },
@@ -464,13 +468,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "It approaches 1, meaning the integrator becomes infinitely accurate.",
-            "text": "It approaches 1, meaning the integrator becomes infinitely accurate."
+            "text_markdown": "It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical orbit blows up.",
+            "text": "It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical orbit blows up."
           },
           {
             "id": "b",
-            "text_markdown": "It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical orbit blows up.",
-            "text": "It approaches 0, signaling a resonance divergence where the shadow Hamiltonian ceases to exist and the numerical orbit blows up."
+            "text_markdown": "It approaches 1, meaning the integrator becomes infinitely accurate.",
+            "text": "It approaches 1, meaning the integrator becomes infinitely accurate."
           },
           {
             "id": "c",
@@ -483,7 +487,7 @@
             "text": "It forces the position to remain zero."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Identify the critical value of the dimensionless product of frequency and timestep where the shadow Hamiltonian denominator passes through zero.",
         "rationale_markdown": "When $\\omega \\Delta t = 2$ (corresponding to $\\Delta t = 2/\\omega = T_{\\text{vib}}/\\pi$), the denominator goes to zero. The eigenvalues of the symplectic step matrix become complex unimodular or real unstable, the shadow Hamiltonian diverges, and the numerical trajectory undergoes catastrophic resonance explosion."
       },
@@ -535,13 +539,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$, causing severe energy non-conservation.",
-            "text": "The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$, causing severe energy non-conservation."
+            "text_markdown": "It doubles the computational complexity of the neighbor list.",
+            "text": "It doubles the computational complexity of the neighbor list."
           },
           {
             "id": "c",
-            "text_markdown": "It doubles the computational complexity of the neighbor list.",
-            "text": "It doubles the computational complexity of the neighbor list."
+            "text_markdown": "The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$, causing severe energy non-conservation.",
+            "text": "The discontinuity in $V(r)$ at $r_c$ produces an infinite delta-function impulse force when particles cross $r_c$, causing severe energy non-conservation."
           },
           {
             "id": "d",
@@ -549,7 +553,7 @@
             "text": "It violates Newton's third law $\\mathbf{F}_{ij} = -\\mathbf{F}_{ji}$."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "What is the derivative of a step function $\\Theta(r_c - r)$?",
         "rationale_markdown": "Since $\\mathbf{F} = -\\nabla V$, a step discontinuity in $V(r)$ of magnitude $\\Delta V = V(r_c)$ produces a Dirac delta force $\\mathbf{F}_{ij} = -V(r_c)\\delta(r_{ij} - r_c)\\hat{\\mathbf{r}}_{ij}$. In discrete timestepping, an atom jumping across $r_c$ gains or loses $V(r_c)$ abruptly without feeling a finite continuous force, destroying $NVE$ energy conservation."
       },
@@ -563,8 +567,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "It ensures that $V_{\\text{shift}}(r_c) = 0$, making the potential continuous at the cutoff boundary.",
-            "text": "It ensures that $V_{\\text{shift}}(r_c) = 0$, making the potential continuous at the cutoff boundary."
+            "text_markdown": "It alters the atomic forces at all distances $r < r_c$.",
+            "text": "It alters the atomic forces at all distances $r < r_c$."
           },
           {
             "id": "b",
@@ -578,11 +582,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "It alters the atomic forces at all distances $r < r_c$.",
-            "text": "It alters the atomic forces at all distances $r < r_c$."
+            "text_markdown": "It ensures that $V_{\\text{shift}}(r_c) = 0$, making the potential continuous at the cutoff boundary.",
+            "text": "It ensures that $V_{\\text{shift}}(r_c) = 0$, making the potential continuous at the cutoff boundary."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "hint_markdown": "Evaluate $V_{\\text{shift}}(r)$ as $r \\to r_c^-$.",
         "rationale_markdown": "By subtracting the constant $V(r_c)$, $V_{\\text{shift}}(r_c) = V(r_c) - V(r_c) = 0$. The potential thus approaches 0 continuously as $r \\to r_c^-$, matching the exterior value of 0. Furthermore, because subtracting a constant has zero derivative ($d(V(r_c))/dr = 0$), the forces for $r < r_c$ are completely unchanged!"
       },
@@ -596,13 +600,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The position of particles becomes discontinuous.",
-            "text": "The position of particles becomes discontinuous."
+            "text_markdown": "The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \\ne 0$ while $F(r_c^+) = 0$.",
+            "text": "The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \\ne 0$ while $F(r_c^+) = 0$."
           },
           {
             "id": "b",
-            "text_markdown": "The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \\ne 0$ while $F(r_c^+) = 0$.",
-            "text": "The force $F(r) = -dV/dr$ has a finite jump discontinuity at $r_c$ because $F(r_c^-) = -V'(r_c) \\ne 0$ while $F(r_c^+) = 0$."
+            "text_markdown": "The position of particles becomes discontinuous.",
+            "text": "The position of particles becomes discontinuous."
           },
           {
             "id": "c",
@@ -615,7 +619,7 @@
             "text": "The mass of the particles becomes time-dependent."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Does shifting by a constant alter the derivative $V'(r_c)$?",
         "rationale_markdown": "Shifting by a constant $V(r_c)$ does not change the derivative: $V_{\\text{shift}}'(r) = V'(r)$. At $r = r_c$, the force inside is $F(r_c^-) = -V'(r_c) \\ne 0$, whereas outside it is $0$. This jump in force causes small $\\mathcal{O}(\\Delta t)$ noise and elevated energy fluctuations unless a force-shifted potential or polynomial switching function is used."
       },
@@ -626,8 +630,10 @@
         "difficulty": "medium",
         "taught_by": "concept_cutoff_discontinuity",
         "prompt_markdown": "For a standard Lennard-Jones potential $V(r) = 4\\epsilon \\left[ (\\sigma/r)^{12} - (\\sigma/r)^6 \\right]$ with $\\epsilon = 1.0$ and $\\sigma = 1.0$, calculate the unshifted potential value $V(r_c)$ at cutoff $r_c = 2.5\\sigma$. (Enter as a signed decimal to 4 decimal places).",
-        "correct": -0.0163,
-        "tolerance": 0.001,
+        "correct": {
+          "value": -0.0163,
+          "tolerance": 0.001
+        },
         "hint_markdown": "Evaluate the raw Lennard-Jones potential energy directly at the cutoff distance in units of the well depth.",
         "rationale_markdown": "$r = 2.5 \\implies r^{-6} = (1/2.5)^6 = 1/244.140625 \\approx 0.004096$. Then $r^{-12} = (0.004096)^2 \\approx 0.00001678$. Thus $V(2.5) = 4(0.00001678 - 0.004096) = 4(-0.0040792) = -0.016317 \\approx -0.0163\\epsilon$."
       },
@@ -638,10 +644,12 @@
         "difficulty": "medium",
         "taught_by": "concept_cutoff_discontinuity",
         "prompt_markdown": "Calculate the magnitude of the force jump $|F(r_c)|$ in units of $\\epsilon/\\sigma$ at $r_c = 2.5\\sigma$ for the Lennard-Jones potential with $\\epsilon=1, \\sigma=1$. (Recall $F(r) = 24\\frac{\\epsilon}{\\sigma}\\left[ 2(\\sigma/r)^{13} - (\\sigma/r)^7 \\right]$).",
-        "correct": 0.039,
-        "tolerance": 0.002,
+        "correct": {
+          "value": 0.039,
+          "tolerance": 0.002
+        },
         "unit": "epsilon/sigma",
-        "hint_markdown": "Substitute $r=2.5$ into $24[2(2.5)^{-13} - (2.5)^{-7}]$.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "rationale_markdown": "$2.5^{-7} = 0.0016384$, $2(2.5)^{-13} = 2(0.00000671) = 0.0000134$. Thus $F(2.5) = 24(0.0000134 - 0.0016384) = 24(-0.001625) = -0.0390\\epsilon/\\sigma$. The magnitude is $0.0390\\epsilon/\\sigma$."
       },
       {
@@ -654,13 +662,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Both $V_{\\text{SF}}(r_c) = 0$ and $F_{\\text{SF}}(r_c) = -V_{\\text{SF}}'(r_c) = 0$.",
-            "text": "Both $V_{\\text{SF}}(r_c) = 0$ and $F_{\\text{SF}}(r_c) = -V_{\\text{SF}}'(r_c) = 0$."
+            "text_markdown": "$V_{\\text{SF}}(r_c) = 1$ and $F_{\\text{SF}}(r_c) = -1$.",
+            "text": "$V_{\\text{SF}}(r_c) = 1$ and $F_{\\text{SF}}(r_c) = -1$."
           },
           {
             "id": "b",
-            "text_markdown": "$V_{\\text{SF}}(r_c) = 1$ and $F_{\\text{SF}}(r_c) = -1$.",
-            "text": "$V_{\\text{SF}}(r_c) = 1$ and $F_{\\text{SF}}(r_c) = -1$."
+            "text_markdown": "Both $V_{\\text{SF}}(r_c) = 0$ and $F_{\\text{SF}}(r_c) = -V_{\\text{SF}}'(r_c) = 0$.",
+            "text": "Both $V_{\\text{SF}}(r_c) = 0$ and $F_{\\text{SF}}(r_c) = -V_{\\text{SF}}'(r_c) = 0$."
           },
           {
             "id": "c",
@@ -673,7 +681,7 @@
             "text": "The force becomes independent of interatomic distance."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "Differentiate $V_{\\text{SF}}(r)$ with respect to $r$ and evaluate at $r=r_c$.",
         "rationale_markdown": "At $r=r_c$, $V_{\\text{SF}}(r_c) = V(r_c) - V(r_c) - 0 = 0$. Differentiating gives $V_{\\text{SF}}'(r) = V'(r) - V'(r_c)$, so at $r=r_c$, $V_{\\text{SF}}'(r_c) = 0$, meaning the force drops smoothly to zero with no jump."
       },
@@ -765,13 +773,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "$\\Delta t_{\\text{crit}} = 2/\\omega = T_{\\text{vib}}/\\pi$",
-            "text": "$\\Delta t_{\\text{crit}} = 2/\\omega = T_{\\text{vib}}/\\pi$"
+            "text_markdown": "$\\Delta t_{\\text{crit}} = \\pi/\\omega$",
+            "text": "$\\Delta t_{\\text{crit}} = \\pi/\\omega$"
           },
           {
             "id": "c",
-            "text_markdown": "$\\Delta t_{\\text{crit}} = \\pi/\\omega$",
-            "text": "$\\Delta t_{\\text{crit}} = \\pi/\\omega$"
+            "text_markdown": "$\\Delta t_{\\text{crit}} = 2/\\omega = T_{\\text{vib}}/\\pi$",
+            "text": "$\\Delta t_{\\text{crit}} = 2/\\omega = T_{\\text{vib}}/\\pi$"
           },
           {
             "id": "d",
@@ -779,7 +787,7 @@
             "text": "$\\Delta t_{\\text{crit}} = 2\\pi/\\omega = T_{\\text{vib}}$"
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Analyze the roots of $\\lambda^2 - 2(1 - \\frac{1}{2}\\omega^2 \\Delta t^2)\\lambda + 1 = 0$.",
         "rationale_markdown": "The characteristic polynomial roots remain on the unit circle $|\\lambda|=1$ as long as $|1 - \\frac{1}{2}\\omega^2\\Delta t^2| < 1$, which simplifies to $\\omega \\Delta t < 2$, or $\\Delta t < 2/\\omega = 2/(2\\pi/T_{\\text{vib}}) = T_{\\text{vib}}/\\pi$."
       },
@@ -790,10 +798,12 @@
         "difficulty": "medium",
         "taught_by": "sec_timestep_selection_and_resonance",
         "prompt_markdown": "A water molecule has an O-H symmetric stretch frequency of $\\nu = 1.1 \\times 10^{14}\\text{ s}^{-1}$ ($T_{\\text{vib}} \\approx 9.09\\text{ fs}$). Using the rule of thumb $\\Delta t = T_{\\text{vib}}/20$, calculate the recommended maximum timestep in femtoseconds (fs).",
-        "correct": 0.455,
-        "tolerance": 0.02,
+        "correct": {
+          "value": 0.455,
+          "tolerance": 0.02
+        },
         "unit": "fs",
-        "hint_markdown": "Divide the period $9.09\\text{ fs}$ by 20.",
+        "hint_markdown": "Recall the numerical stability heuristic relating Verlet integration timesteps to the period of the fastest vibrational mode.",
         "rationale_markdown": "$\\Delta t = 9.09\\text{ fs} / 20 = 0.4545\\text{ fs} \\approx 0.455\\text{ fs}$. In practice, flexible water models use $\\Delta t = 0.5\\text{ fs}$."
       },
       {
@@ -803,10 +813,12 @@
         "difficulty": "medium",
         "taught_by": "sec_timestep_selection_and_resonance",
         "prompt_markdown": "For the same O-H vibration with $T_{\\text{vib}} = 9.09\\text{ fs}$, what is the critical resonance blowup timestep $\\Delta t_{\\text{crit}} = T_{\\text{vib}}/\\pi$ in femtoseconds?",
-        "correct": 2.89,
-        "tolerance": 0.05,
+        "correct": {
+          "value": 2.89,
+          "tolerance": 0.05
+        },
         "unit": "fs",
-        "hint_markdown": "Divide $9.09\\text{ fs}$ by $\\pi \\approx 3.14159$.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "rationale_markdown": "$\\Delta t_{\\text{crit}} = 9.09 / \\pi \\approx 2.893\\text{ fs}$. Any timestep $\\ge 2.9\\text{ fs}$ will cause immediate exponential divergence in an unconstrained flexible water simulation."
       },
       {
@@ -824,8 +836,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "$1\\text{ to }5\\text{ fs}$ (or $\\approx 0.001\\text{ to }0.005\\,\\tau_{\\text{LJ}}$)",
-            "text": "$1\\text{ to }5\\text{ fs}$ (or $\\approx 0.001\\text{ to }0.005\\,\\tau_{\\text{LJ}}$)"
+            "text_markdown": "$1\\text{ ns}$",
+            "text": "$1\\text{ ns}$"
           },
           {
             "id": "c",
@@ -834,11 +846,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "$1\\text{ ns}$",
-            "text": "$1\\text{ ns}$"
+            "text_markdown": "$1\\text{ to }5\\text{ fs}$ (or $\\approx 0.001\\text{ to }0.005\\,\\tau_{\\text{LJ}}$)",
+            "text": "$1\\text{ to }5\\text{ fs}$ (or $\\approx 0.001\\text{ to }0.005\\,\\tau_{\\text{LJ}}$)"
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Convert Lennard-Jones unit of time $\\tau = \\sqrt{m\\sigma^2/\\epsilon} \\approx 2.15\\text{ ps}$.",
         "rationale_markdown": "For liquid argon, the LJ time unit is $\\tau \\approx 2.15\\text{ ps}$. A reduced timestep $\\Delta t^* = 0.001\\text{--}0.005$ corresponds to $\\Delta t \\approx 2\\text{--}10\\text{ fs}$, well below the cage vibrational period of ~1 ps."
       },
@@ -852,13 +864,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The total energy must remain strictly constant to within machine epsilon ($10^{-16}$).",
-            "text": "The total energy must remain strictly constant to within machine epsilon ($10^{-16}$)."
+            "text_markdown": "Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\\Delta E| / K < 0.01$).",
+            "text": "Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\\Delta E| / K < 0.01$)."
           },
           {
             "id": "b",
-            "text_markdown": "Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\\Delta E| / K < 0.01$).",
-            "text": "Energy drift over the course of the simulation should remain less than 1% of the total kinetic energy ($|\\Delta E| / K < 0.01$)."
+            "text_markdown": "The total energy must remain strictly constant to within machine epsilon ($10^{-16}$).",
+            "text": "The total energy must remain strictly constant to within machine epsilon ($10^{-16}$)."
           },
           {
             "id": "c",
@@ -871,8 +883,8 @@
             "text": "Energy drift of 50% is acceptable as long as temperature is maintained by scaling."
           }
         ],
-        "correct": "b",
-        "hint_markdown": "Divide the characteristic vibrational oscillation period by the required discretization samples per cycle.",
+        "correct": "a",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "rationale_markdown": "specifies: 'Adjust to get energy conservation to 1% of kinetic energy.' Fluctuations below ~1% of kinetic energy ensure that statistical ensemble averages are unaffected by discretization error."
       },
       {
@@ -952,8 +964,10 @@
         "difficulty": "easy",
         "taught_by": "sec_timestep_selection_and_resonance",
         "prompt_markdown": "If a simulation of 100,000 steps is run with $\\Delta t = 2.0\\text{ fs}$, what is the total simulated physical trajectory duration in picoseconds (ps)?",
-        "correct": 200.0,
-        "tolerance": 0.1,
+        "correct": {
+          "value": 200.0,
+          "tolerance": 0.1
+        },
         "unit": "ps",
         "hint_markdown": "Compute the accumulated physical time from the total step count and step duration, converting units appropriately.",
         "rationale_markdown": "$100,000 \\times 2.0\\text{ fs} = 200,000\\text{ fs} = 200.0\\text{ ps}$."
@@ -973,13 +987,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "Quadratic: $|dE/dt| \\propto \\Delta t^2$",
-            "text": "Quadratic: $|dE/dt| \\propto \\Delta t^2$"
+            "text_markdown": "Exponential: $|dE/dt| \\propto e^{\\Delta t}$",
+            "text": "Exponential: $|dE/dt| \\propto e^{\\Delta t}$"
           },
           {
             "id": "c",
-            "text_markdown": "Exponential: $|dE/dt| \\propto e^{\\Delta t}$",
-            "text": "Exponential: $|dE/dt| \\propto e^{\\Delta t}$"
+            "text_markdown": "Quadratic: $|dE/dt| \\propto \\Delta t^2$",
+            "text": "Quadratic: $|dE/dt| \\propto \\Delta t^2$"
           },
           {
             "id": "d",
@@ -987,7 +1001,7 @@
             "text": "Independent of $\\Delta t$"
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Recall the order of the leading term in the Velocity Verlet shadow Hamiltonian $\\mathcal{H}_2 \\Delta t^2$.",
         "rationale_markdown": "Below resonance, the error in the shadow Hamiltonian scales as $\\mathcal{O}(\\Delta t^2)$. Hence the RMS energy fluctuation amplitude and drift rate scale quadratically with $\\Delta t$."
       },
@@ -1001,8 +1015,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes (angle bends ~1500 cm^-1) have roughly double the period.",
-            "text": "It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes (angle bends ~1500 cm^-1) have roughly double the period."
+            "text_markdown": "It makes hydrogen atoms infinitely heavy.",
+            "text": "It makes hydrogen atoms infinitely heavy."
           },
           {
             "id": "b",
@@ -1016,11 +1030,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "It makes hydrogen atoms infinitely heavy.",
-            "text": "It makes hydrogen atoms infinitely heavy."
+            "text_markdown": "It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes (angle bends ~1500 cm^-1) have roughly double the period.",
+            "text": "It eliminates the highest-frequency vibrational modes (~3000 cm^-1 C-H stretch), so the fastest remaining modes (angle bends ~1500 cm^-1) have roughly double the period."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "hint_markdown": "What vibration is fastest in organic molecules containing hydrogen?",
         "rationale_markdown": "Because hydrogen is the lightest atom, bonds to hydrogen vibrate at the highest frequency (period ~10 fs). Constraining these bonds removes those high-frequency degrees of freedom, leaving slower heavy-atom modes as the limit on $\\Delta t$."
       },
@@ -1081,8 +1095,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "$N$",
-            "text": "$N$"
+            "text_markdown": "$\\frac{N(N - 1)}{2} \\approx \\frac{N^2}{2}$",
+            "text": "$\\frac{N(N - 1)}{2} \\approx \\frac{N^2}{2}$"
           },
           {
             "id": "b",
@@ -1091,8 +1105,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "$\\frac{N(N - 1)}{2} \\approx \\frac{N^2}{2}$",
-            "text": "$\\frac{N(N - 1)}{2} \\approx \\frac{N^2}{2}$"
+            "text_markdown": "$N$",
+            "text": "$N$"
           },
           {
             "id": "d",
@@ -1100,7 +1114,7 @@
             "text": "$N^3$"
           }
         ],
-        "correct": "c",
+        "correct": "a",
         "hint_markdown": "How many distinct pairs can be chosen from $N$ items?",
         "rationale_markdown": "A naive double sum pairs each particle $i$ with all particles $j > i$, requiring $\\binom{N}{2} = \\frac{N(N-1)}{2} = \\mathcal{O}(N^2)$ force evaluations."
       },
@@ -1144,8 +1158,10 @@
         "difficulty": "medium",
         "taught_by": "sec_reversibility_and_complexity",
         "prompt_markdown": "A simulation of $N = 10,000$ atoms uses a naive $\\mathcal{O}(N^2)$ pair loop. If the system size is increased to $N = 50,000$ atoms, by what factor does the pair calculation time increase?",
-        "correct": 25.0,
-        "tolerance": 0.5,
+        "correct": {
+          "value": 25.0,
+          "tolerance": 0.5
+        },
         "hint_markdown": "Consider how the operation count of an unindexed all-pairs loop scales with the ratio of particle numbers.",
         "rationale_markdown": "Because the calculation scales as $N^2$, $(50,000 / 10,000)^2 = 5^2 = 25.0$. The computational time increases by a factor of 25."
       },
@@ -1164,13 +1180,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "$d \\ge r_c$",
-            "text": "$d \\ge r_c$"
+            "text_markdown": "$d \\ge 2 r_c$",
+            "text": "$d \\ge 2 r_c$"
           },
           {
             "id": "c",
-            "text_markdown": "$d \\ge 2 r_c$",
-            "text": "$d \\ge 2 r_c$"
+            "text_markdown": "$d \\ge r_c$",
+            "text": "$d \\ge r_c$"
           },
           {
             "id": "d",
@@ -1178,7 +1194,7 @@
             "text": "$d \\ge \\pi r_c$"
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "If an atom is at the far boundary of a cell, how far can a particle be in the adjacent cell?",
         "rationale_markdown": "If $d \\ge r_c$, any particle at distance $\\le r_c$ from an atom located anywhere inside cell $(i, j, k)$ is guaranteed to lie either in cell $(i, j, k)$ or in one of the 26 neighboring cells sharing a face, edge, or corner. If $d < r_c$, particles in next-nearest cells could interact, requiring searches beyond the 26 nearest cells."
       },
@@ -1197,8 +1213,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "The positive Lyapunov exponent causes exponential growth $\\sim e^{\\lambda t}$ of tiny floating-point roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory.",
-            "text": "The positive Lyapunov exponent causes exponential growth $\\sim e^{\\lambda t}$ of tiny floating-point roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory."
+            "text_markdown": "Potential cutoffs permanently delete particle information from memory.",
+            "text": "Potential cutoffs permanently delete particle information from memory."
           },
           {
             "id": "c",
@@ -1207,11 +1223,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "Potential cutoffs permanently delete particle information from memory.",
-            "text": "Potential cutoffs permanently delete particle information from memory."
+            "text_markdown": "The positive Lyapunov exponent causes exponential growth $\\sim e^{\\lambda t}$ of tiny floating-point roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory.",
+            "text": "The positive Lyapunov exponent causes exponential growth $\\sim e^{\\lambda t}$ of tiny floating-point roundoff errors ($10^{-16}$), completely desynchronizing the microscopic reversed trajectory."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Recall the discussion of chaos, Lyapunov instability, and roundoff error.",
         "rationale_markdown": "Many-body classical systems are chaotic with positive Lyapunov exponents $\\lambda > 0$. Microscopic roundoff errors of order $10^{-16}$ grow exponentially as $\\delta(t) \\approx \\delta(0) e^{\\lambda t}$. After several Lyapunov times, the error reaches macroscopic scale (~interatomic spacing), diverging from the exact time-reversed path."
       },
@@ -1255,8 +1271,10 @@
         "difficulty": "hard",
         "taught_by": "sec_reversibility_and_complexity",
         "prompt_markdown": "In a liquid simulation with maximal Lyapunov exponent $\\lambda_{\\text{max}} = 0.5\\text{ ps}^{-1}$, an initial floating-point roundoff error is $\\delta_0 = 10^{-15}\\text{ nm}$. Approximately how long in picoseconds (ps) will it take for the trajectory separation $\\delta(t) = \\delta_0 e^{\\lambda_{\\text{max}} t}$ to grow to the size of an atomic radius $\\delta(t) = 0.1\\text{ nm}$?",
-        "correct": 64.5,
-        "tolerance": 2.0,
+        "correct": {
+          "value": 64.5,
+          "tolerance": 2.0
+        },
         "unit": "ps",
         "hint_markdown": "Relate the elapsed time to the initial separation, target separation, and exponential growth rate via the Lyapunov divergence relation.",
         "rationale_markdown": "$t = \\frac{1}{0.5} \\ln(0.1 / 10^{-15}) = 2 \\times \\ln(10^{14}) = 2 \\times (14 \\times 2.302585) = 2 \\times 32.236 = 64.47\\text{ ps}$."
@@ -1271,13 +1289,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Machine precision ($10^{-15}$ to $10^{-14}$)",
-            "text": "Machine precision ($10^{-15}$ to $10^{-14}$)"
+            "text_markdown": "Order 1 ($1.0$)",
+            "text": "Order 1 ($1.0$)"
           },
           {
             "id": "b",
-            "text_markdown": "Order 1 ($1.0$)",
-            "text": "Order 1 ($1.0$)"
+            "text_markdown": "Machine precision ($10^{-15}$ to $10^{-14}$)",
+            "text": "Machine precision ($10^{-15}$ to $10^{-14}$)"
           },
           {
             "id": "c",
@@ -1290,7 +1308,7 @@
             "text": "Zero exactly (integer arithmetic)"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "Notice that for a small number of steps in double precision, roundoff error has not had enough Lyapunov time to grow to macroscopic scale.",
         "rationale_markdown": "Because Velocity Verlet is algebraically reversible, swapping velocities $\\mathbf{v} \\to -\\mathbf{v}$ exactly undoes each algebraic step. Over 80 steps, roundoff error accumulates to only $\\sim 10^{-15}\\text{--}10^{-14}$."
       },
@@ -1328,7 +1346,7 @@
           "b",
           "c"
         ],
-        "hint_markdown": "Review of 04.MD.pdf on spatial scales and boundary condition possibilities.",
+        "hint_markdown": "Consider which boundary conditions are physically meaningful in atomistic simulations (eliminating surfaces, modeling isolated molecules, or confining fluids).",
         "rationale_markdown": "Standard MD simulations employ periodic boundary conditions (to eliminate surface artifacts), vacuum/free boundary conditions (for isolated molecules/clusters), or explicit walls/confinement. Klein bottle boundaries are not used in physical molecular simulations."
       },
       {
@@ -1341,8 +1359,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "To eliminate surface and boundary effects so a small system of $10^3\\text{--}10^6$ particles mimics an infinite bulk macroscopic system.",
-            "text": "To eliminate surface and boundary effects so a small system of $10^3\\text{--}10^6$ particles mimics an infinite bulk macroscopic system."
+            "text_markdown": "To avoid computing Newton's equations of motion.",
+            "text": "To avoid computing Newton's equations of motion."
           },
           {
             "id": "b",
@@ -1351,8 +1369,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "To avoid computing Newton's equations of motion.",
-            "text": "To avoid computing Newton's equations of motion."
+            "text_markdown": "To eliminate surface and boundary effects so a small system of $10^3\\text{--}10^6$ particles mimics an infinite bulk macroscopic system.",
+            "text": "To eliminate surface and boundary effects so a small system of $10^3\\text{--}10^6$ particles mimics an infinite bulk macroscopic system."
           },
           {
             "id": "d",
@@ -1360,7 +1378,7 @@
             "text": "Because computers cannot store negative coordinates."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "hint_markdown": "What fraction of atoms sit on the surface of a cube of $1000$ atoms ($10 \\times 10 \\times 10$)?",
         "rationale_markdown": "In a cluster of $1000$ atoms ($10^3$), roughly $10^3 - 8^3 = 488$ atoms (nearly 50%) reside on the surface! PBC wrap the coordinates into a 3-torus, eliminating surfaces and enabling accurate bulk property calculations with modest particle counts."
       },
@@ -1379,8 +1397,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space volume conservation over long trajectories.",
-            "text": "Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space volume conservation over long trajectories."
+            "text_markdown": "Gear integrators only work for 1D systems.",
+            "text": "Gear integrators only work for 1D systems."
           },
           {
             "id": "c",
@@ -1389,12 +1407,12 @@
           },
           {
             "id": "d",
-            "text_markdown": "Gear integrators only work for 1D systems.",
-            "text": "Gear integrators only work for 1D systems."
+            "text_markdown": "Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space volume conservation over long trajectories.",
+            "text": "Gear integrators are non-symplectic and non-reversible, leading to slow secular energy drift and poor phase-space volume conservation over long trajectories."
           }
         ],
-        "correct": "b",
-        "hint_markdown": "'Higher Order Methods?' in 04.MD.pdf.",
+        "correct": "d",
+        "hint_markdown": "Consider whether high-order Taylor/predictor-corrector algorithms preserve phase space volume (Liouville theorem) and time-reversibility.",
         "rationale_markdown": "Gear predictor-corrector integrators have smaller errors per step for short runs, but because they are non-symplectic, their energy drifts systematically over long times. Moreover, they require storing higher derivatives (jerk, snap), consuming more memory and CPU time."
       },
       {
@@ -1404,8 +1422,10 @@
         "difficulty": "medium",
         "taught_by": "sec_reversibility_and_complexity",
         "prompt_markdown": "A cubic simulation box of edge length $L = 5.0\\text{ nm}$ contains particles interacting via a potential with cutoff $r_c = 1.2\\text{ nm}$. If the box is subdivided into linked cells of equal size $d \\ge r_c$, what is the maximum integer number of cell divisions $M$ along each dimension (such that $L/M \\ge r_c$)?",
-        "correct": 4.0,
-        "tolerance": 0.01,
+        "correct": {
+          "value": 4.0,
+          "tolerance": 0.01
+        },
         "hint_markdown": "Determine the maximum integer division of the box edge that ensures each subcell width remains at least as large as the potential cutoff distance.",
         "rationale_markdown": "$M \\le 5.0 / 1.2 = 4.167$. Since $M$ must be an integer, the maximum number of cell divisions along each axis is $M = 4$ (giving cell width $d = 5.0 / 4 = 1.25\\text{ nm} \\ge 1.2\\text{ nm}$)."
       }

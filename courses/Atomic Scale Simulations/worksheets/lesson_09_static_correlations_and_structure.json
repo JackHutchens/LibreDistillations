@@ -153,17 +153,17 @@
         "difficulty": "medium",
         "question_type": "single_select",
         "prompt_markdown": "Because both the mean total energy $\\langle E \\rangle$ and the energy variance $\\langle (\\delta E)^2 \\rangle = k_B T^2 C_V$ are extensive ($O(N)$), how does the **relative** root-mean-square energy fluctuation $\\sigma_E / |\\langle E\\rangle| = \\sqrt{\\langle (\\delta E)^2\\rangle} / |\\langle E\\rangle|$ scale with particle number $N$ away from a critical point?",
-        "hint_markdown": "Take the square root of an $O(N)$ variance and divide by an $O(N)$ mean.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "options": [
           {
             "id": "a",
-            "text": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$.",
-            "text_markdown": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$."
+            "text": "It remains constant ($O(1)$) regardless of system size $N$.",
+            "text_markdown": "It remains constant ($O(1)$) regardless of system size $N$."
           },
           {
             "id": "b",
-            "text": "It remains constant ($O(1)$) regardless of system size $N$.",
-            "text_markdown": "It remains constant ($O(1)$) regardless of system size $N$."
+            "text": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$.",
+            "text_markdown": "It scales as $N^{-1/2}$, vanishing in the thermodynamic limit $N \\to \\infty$."
           },
           {
             "id": "c",
@@ -176,7 +176,7 @@
             "text_markdown": "It scales as $N^{-1}$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Since $\\langle (\\delta E)^2 \\rangle \\propto N$, the standard deviation scales as $\\sigma_E \\propto \\sqrt{N}$. Dividing by the extensive mean $|\\langle E\\rangle| \\propto N$ yields $\\sigma_E / |\\langle E\\rangle| \\propto N^{-1/2}$ (**A**), which is why different statistical ensembles become equivalent in the thermodynamic limit $N \\to \\infty$."
       },
       {
@@ -192,7 +192,7 @@
         "difficulty": "easy",
         "question_type": "numeric",
         "prompt_markdown": "In a canonical ($NVT$) simulation of $N = 512$ silicon atoms in a periodic cubic box of side length $L = 20\\,\\text{\u00c5}$, what is the exact value of the Fourier-transformed microscopic density $\\rho_{\\mathbf{k}} = \\sum_{i=1}^N e^{i\\mathbf{k}\\cdot\\mathbf{r}_i}$ evaluated at wavevector $\\mathbf{k} = (0, 0, 0)$?",
-        "hint_markdown": "Substitute $\\mathbf{k} = \\mathbf{0}$ into $e^{i\\mathbf{k}\\cdot\\mathbf{r}_i} = e^0 = 1$ and sum over all $N$ atoms.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "correct": {
           "value": 512.0,
           "tolerance": 0.01
@@ -224,8 +224,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken.",
-            "text_markdown": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken."
+            "text": "Only rotational symmetry is broken; translational symmetry remains continuous.",
+            "text_markdown": "Only rotational symmetry is broken; translational symmetry remains continuous."
           },
           {
             "id": "b",
@@ -234,8 +234,8 @@
           },
           {
             "id": "c",
-            "text": "Only rotational symmetry is broken; translational symmetry remains continuous.",
-            "text_markdown": "Only rotational symmetry is broken; translational symmetry remains continuous."
+            "text": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken.",
+            "text_markdown": "Both continuous translational symmetry and continuous rotational (orientational) symmetry are broken."
           },
           {
             "id": "d",
@@ -243,7 +243,7 @@
             "text_markdown": "Time-reversal symmetry and particle-exchange symmetry are broken."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "A liquid is invariant under arbitrary translations and rotations ($\\langle\\rho(\\mathbf{r})\\rangle = \\text{const}$). Freezing into a crystal selects both discrete lattice positions and specific crystallographic orientations, breaking **both** continuous translational and continuous rotational symmetry (**A**)."
       },
       {
@@ -257,8 +257,8 @@
         "options": [
           {
             "id": "a",
-            "text": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$.",
-            "text_markdown": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$."
+            "text": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point.",
+            "text_markdown": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point."
           },
           {
             "id": "b",
@@ -272,11 +272,11 @@
           },
           {
             "id": "d",
-            "text": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point.",
-            "text_markdown": "$\\rho_{\\mathbf{G}}$ is non-zero only at the liquid-gas critical point."
+            "text": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$.",
+            "text_markdown": "In a homogeneous fluid, random phases cause $\\langle \\rho_{\\mathbf{G}} \\rangle = 0$ for $\\mathbf{G} \\neq \\mathbf{0}$, whereas in a crystal $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j^0} = 1$ sums coherently to $O(N)$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "For any non-zero reciprocal lattice vector $\\mathbf{G}$, ideal lattice sites satisfy $\\mathbf{G}\\cdot\\mathbf{r}_j^0 = 2\\pi \\times \\text{integer}$, so $e^{i\\mathbf{G}\\cdot\\mathbf{r}_j}$ adds constructively across all $N$ atoms to give $\\langle\\rho_{\\mathbf{G}}\\rangle \\propto N$. In a translationally invariant fluid, atomic positions are uniform over space and the phase factors cancel to zero (**A**)."
       },
       {
@@ -319,7 +319,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In an MD simulation of FCC aluminum with nearest-neighbor distance $d = 2.86\\,\\text{\u00c5}$ near its melting point, you measure the mean-squared thermal deviation from ideal lattice sites to be $\\langle |\\mathbf{r}_i - \\mathbf{r}_i^0|^2 \\rangle = 0.184\\,\\text{\u00c5}^2$. Calculate the dimensionless RMS Lindemann ratio $\\sqrt{\\langle |\\mathbf{r}_i - \\mathbf{r}_i^0|^2 \\rangle} / d$.",
-        "hint_markdown": "Take $\\sqrt{0.184}$ and divide by $2.86$.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "correct": {
           "value": 0.15,
           "tolerance": 0.005
@@ -400,13 +400,13 @@
         "options": [
           {
             "id": "a",
-            "text": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated.",
-            "text_markdown": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated."
+            "text": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$.",
+            "text_markdown": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$."
           },
           {
             "id": "b",
-            "text": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$.",
-            "text_markdown": "$g(r \\to 0) = 1$ and $g(r \\to \\infty) = 0$."
+            "text": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated.",
+            "text_markdown": "$g(r \\to 0) = 0$ due to core repulsion, and $g(r \\to \\infty) = 1$ as pair positions become uncorrelated."
           },
           {
             "id": "c",
@@ -419,7 +419,7 @@
             "text_markdown": "$g(r) = 1$ for all $r$ including $r \\to 0$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Strong short-range repulsion ($V(r\\to 0) \\to +\\infty$) makes the probability of two atoms overlapping zero, producing the exclusion hole $g(r\\to 0) = 0$. At large distances in a fluid, positions decorrelate and the local density around a reference particle equals the bulk density $\\rho$, so $g(r\\to\\infty) = 1$ (**A**)."
       },
       {
@@ -436,8 +436,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations.",
-            "text_markdown": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations."
+            "text": "$g(r) = 0$ everywhere because the gas density approaches zero.",
+            "text_markdown": "$g(r) = 0$ everywhere because the gas density approaches zero."
           },
           {
             "id": "b",
@@ -446,8 +446,8 @@
           },
           {
             "id": "c",
-            "text": "$g(r) = 0$ everywhere because the gas density approaches zero.",
-            "text_markdown": "$g(r) = 0$ everywhere because the gas density approaches zero."
+            "text": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations.",
+            "text_markdown": "$g(r) = \\exp(-\\beta V(r))$, exhibiting a single peak of height $e^{+\\beta\\varepsilon} > 1$ at the potential minimum and no second-shell oscillations."
           },
           {
             "id": "d",
@@ -455,7 +455,7 @@
             "text_markdown": "$g(r) = \\beta V(r)$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "In the low-density limit ($\\rho\\sigma^3 \\ll 1$), only direct two-body interactions matter, so $g(r) \\to e^{-\\beta V(r)}$ (**A**). At the Lennard-Jones minimum $V(r_{\\min}) = -\\varepsilon$, $g(r)$ reaches $e^{+\\varepsilon/(k_B T)} > 1$ and then decays monotonically to $1$ without the multi-shell packing oscillations seen in dense liquids."
       },
       {
@@ -497,8 +497,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass.",
-            "text_markdown": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass."
+            "text": "Because `g[index]` automatically normalizes the pressure without needing a volume factor.",
+            "text_markdown": "Because `g[index]` automatically normalizes the pressure without needing a volume factor."
           },
           {
             "id": "b",
@@ -512,11 +512,11 @@
           },
           {
             "id": "d",
-            "text": "Because `g[index]` automatically normalizes the pressure without needing a volume factor.",
-            "text_markdown": "Because `g[index]` automatically normalizes the pressure without needing a volume factor."
+            "text": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass.",
+            "text_markdown": "Because minimum-image pair displacements $\\mathbf{r}_{ij}$ and distances $r_{ij}$ are already computed for the $N(N-1)/2$ pairs during force evaluation, avoiding a redundant $O(N^2)$ pass."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Computing minimum-image pair distances for all $N(N-1)/2$ pairs is the most expensive $O(N^2)$ part of a simulation step. Accumulating the $g(r)$ histogram simultaneously inside the force/energy pair loop reuses `r2` with almost zero extra overhead (**A**)."
       },
       {
@@ -583,13 +583,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering).",
-            "text_markdown": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering)."
+            "text": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix.",
+            "text_markdown": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix."
           },
           {
             "id": "b",
-            "text": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix.",
-            "text_markdown": "Phase separation of pure solid aluminum precipitates out of the liquid nickel matrix."
+            "text": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering).",
+            "text_markdown": "Chemical short-range ordering in which Al solute atoms avoid each other as nearest neighbors (preferring Ni\u2013Al hetero-coordination over Al\u2013Al clustering)."
           },
           {
             "id": "c",
@@ -602,7 +602,7 @@
             "text_markdown": "That the simulation box is too small to resolve Al\u2013Al distances."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In a binary alloy, partial pair correlation functions $g_{\\alpha\\beta}(r)$ reveal chemical short-range order. A suppressed first peak in $g_{\\text{Al\u2013Al}}(r)$ means Al atoms are much less likely to sit next to other Al atoms than in a clustering alloy, reflecting strong exothermic Ni\u2013Al attraction that favors hetero-atomic Ni\u2013Al nearest neighbors (**A**)."
       },
       {
@@ -616,8 +616,8 @@
         "options": [
           {
             "id": "a",
-            "text": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$.",
-            "text_markdown": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$."
+            "text": "Because oxygen atoms do not scatter X-rays or neutrons.",
+            "text_markdown": "Because oxygen atoms do not scatter X-rays or neutrons."
           },
           {
             "id": "b",
@@ -626,8 +626,8 @@
           },
           {
             "id": "c",
-            "text": "Because oxygen atoms do not scatter X-rays or neutrons.",
-            "text_markdown": "Because oxygen atoms do not scatter X-rays or neutrons."
+            "text": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$.",
+            "text_markdown": "Because water molecules are anisotropic and form directional hydrogen bonds, so pair correlations depend on both center-of-mass distance $r$ and relative molecular orientation $\\alpha$."
           },
           {
             "id": "d",
@@ -635,7 +635,7 @@
             "text_markdown": "Because periodic boundary conditions only apply to dipolar angles $\\alpha$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Unlike spherically symmetric noble gases, water molecules interact via strongly directional hydrogen bonds and dipole-dipole interactions. Consequently, a single radial coordinate $r_{\\text{OO}}$ averages over orientations, whereas $g(r_{\\text{OO}}, \\alpha)$ and the distinct site-site functions ($g_{\\text{OO}}, g_{\\text{OH}}, g_{\\text{HH}}$) capture tetrahedral hydrogen-bonding geometry (**A**)."
       },
       {
@@ -743,8 +743,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$",
-            "text_markdown": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
+            "text": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$",
+            "text_markdown": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$"
           },
           {
             "id": "b",
@@ -758,11 +758,11 @@
           },
           {
             "id": "d",
-            "text": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$",
-            "text_markdown": "$S(\\mathbf{k}) = \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}} V(r)$"
+            "text": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$",
+            "text_markdown": "$S(\\mathbf{k}) = \\frac{1}{N} \\langle |\\rho_{\\mathbf{k}}|^2 \\rangle$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "The static structure factor is defined as $S(\\mathbf{k}) = \\frac{1}{N}\\langle |\\rho_{\\mathbf{k}}|^2\\rangle = \\frac{1}{N}\\langle \\rho_{\\mathbf{k}}\\rho_{-\\mathbf{k}}\\rangle$ (**A**). The $1/N$ normalization ensures that the $N$ diagonal self-terms ($i=j$, where $e^{i\\mathbf{k}\\cdot(\\mathbf{r}_i-\\mathbf{r}_i)} = 1$) contribute exactly $N/N = 1$ at large $k$."
       },
       {
@@ -789,7 +789,7 @@
         "difficulty": "easy",
         "question_type": "numeric",
         "prompt_markdown": "For a classical ideal gas in which particle positions are completely uncorrelated ($g(r) = 1$ for all $r > 0$), what is the value of $S(k)$ for any non-zero wavevector $k > 0$?",
-        "hint_markdown": "Substitute $g(r) = 1$ into $S(k) = 1 + \\rho \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}}[g(r) - 1]$.",
+        "hint_markdown": "Recall the governing physical expression and substitute the specified parameters.",
         "correct": {
           "value": 1.0,
           "tolerance": 0.01
@@ -803,7 +803,7 @@
         "difficulty": "medium",
         "question_type": "multi_select",
         "prompt_markdown": "Although $S(\\mathbf{k}) = 1 + \\rho \\int d^3r\\, e^{i\\mathbf{k}\\cdot\\mathbf{r}}[g(\\mathbf{r}) - 1]$ is mathematically exact in an infinite system, why is it usually better in a finite periodic simulation to compute $S(\\mathbf{k}) = \\frac{1}{N}\\langle |\\rho_{\\mathbf{k}}|^2\\rangle$ directly on the reciprocal grid rather than numerically Fourier-transforming the radial histogram $g(r)$? (Select all that apply.)",
-        "hint_markdown": "Review the two problems with the integral listed of the lecture notes.",
+        "hint_markdown": "Consider the effects of finite box truncation on Fourier integrals and structural anisotropy.",
         "options": [
           {
             "id": "a",
@@ -830,7 +830,7 @@
           "a",
           "b"
         ],
-        "rationale_markdown": "As highlighted in the lecture notes, numerically integrating $g(r)$ suffers from two major issues: (1) $g(r)$ is cut off at $r = L/2$, so one would have to extrapolate $g(r)$ to infinity to avoid truncation artifacts at small $k$ (**A**), and (2) in solids or anisotropic phases, one needs the full 3D $g(\\mathbf{r})$ rather than the spherically averaged $g(r)$ (**B**)."
+        "rationale_markdown": "Numerically integrating $g(r)$ suffers from two major issues: (1) $g(r)$ is cut off at $r = L/2$, so one would have to extrapolate $g(r)$ to infinity to avoid truncation artifacts at small $k$ (**A**), and (2) in solids or anisotropic phases, one needs the full 3D $g(\\mathbf{r})$ rather than the spherically averaged $g(r)$ (**B**)."
       },
       {
         "id": "q25_bragg_peak_scaling_n",
@@ -899,13 +899,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$.",
-            "text_markdown": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$."
+            "text": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks.",
+            "text_markdown": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks."
           },
           {
             "id": "b",
-            "text": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks.",
-            "text_markdown": "Higher-order Bragg peaks at large $G$ grow taller than low-$G$ peaks."
+            "text": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$.",
+            "text_markdown": "Higher-order Bragg peaks at large $G$ are attenuated much more strongly (exponentially in $G^2$), while the missing intensity appears as diffuse thermal background $1 - e^{-k^2\\langle u^2\\rangle/3}$."
           },
           {
             "id": "c",
@@ -918,7 +918,7 @@
             "text_markdown": "The Bragg peaks shift to $G = 0$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "Because the Debye-Waller factor decays as $\\exp(-G^2 \\langle u^2 \\rangle / 3)$, short-wavelength (large-$G$) reflections are much more sensitive to small atomic displacements than low-$G$ reflections and are strongly damped (**A**). The lost Bragg intensity is transferred into the thermal diffuse background $1 - \\exp(-k^2\\langle u^2\\rangle/3)$."
       },
       {
@@ -931,7 +931,7 @@
         "difficulty": "medium",
         "question_type": "numeric",
         "prompt_markdown": "In a simulation of a fluid at reduced number density $\\rho^* = 0.60$ and reduced temperature $k_B T / \\varepsilon = 1.25$, extrapolating the static structure factor to $k \\to 0$ yields $S(0) = 0.45$. Calculate the reduced isothermal compressibility $\\chi_T^* = \\chi_T \\varepsilon / \\sigma^3$ using:\n$$\\chi_T = \\frac{S(0)}{\\rho k_B T}$$",
-        "hint_markdown": "Divide $S(0) = 0.45$ by $\\rho^* T^* = 0.60 \\times 1.25 = 0.75$.",
+        "hint_markdown": "Apply the appropriate definition or scaling relation to compute the ratio.",
         "correct": {
           "value": 0.6,
           "tolerance": 0.01
@@ -949,8 +949,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence.",
-            "text_markdown": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence."
+            "text": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$.",
+            "text_markdown": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$."
           },
           {
             "id": "b",
@@ -959,8 +959,8 @@
           },
           {
             "id": "c",
-            "text": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$.",
-            "text_markdown": "Sharp Bragg peaks appear at large reciprocal lattice vectors $\\mathbf{G}$."
+            "text": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence.",
+            "text_markdown": "$S(k)$ diverges as $k \\to 0$ ($S(0) \\to \\infty$), corresponding to critical opalescence."
           },
           {
             "id": "d",
@@ -968,7 +968,7 @@
             "text_markdown": "$S(k)$ becomes negative at small $k$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "Since $\\lim_{k\\to 0} S(k) = \\rho k_B T \\chi_T$, a diverging compressibility at the liquid\u2013gas transition causes $S(k)$ to shoot up sharply as $k \\to 0$ (**A**). In experiments, this strong small-angle scattering of visible light is observed as critical opalescence."
       },
       {
@@ -1017,13 +1017,13 @@
         "taught_by": "sec_glasses_mixtures_and_advanced",
         "difficulty": "medium",
         "question_type": "single_select",
-        "prompt_markdown": "of the lecture, you are shown a snapshot of a dense binary mixture of red ($A$) and blue ($B$) particles that has segregated into a red-rich upper region and a blue-rich lower region at constant total packing density. Which correlation function is most informative for quantifying this compositional order?",
+        "prompt_markdown": "Consider a simulation snapshot of a dense binary mixture of $A$ and $B$ particles that has segregated into a red-rich upper region and a blue-rich lower region at constant total packing density. Which correlation function is most informative for quantifying this compositional order?",
         "hint_markdown": "Since the total number density $\\rho_A + \\rho_B$ is uniform everywhere, total $g(r)$ barely changes; you need species-resolved correlations.",
         "options": [
           {
             "id": "a",
-            "text": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$).",
-            "text_markdown": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$)."
+            "text": "The ideal-gas partition function.",
+            "text_markdown": "The ideal-gas partition function."
           },
           {
             "id": "b",
@@ -1037,11 +1037,11 @@
           },
           {
             "id": "d",
-            "text": "The ideal-gas partition function.",
-            "text_markdown": "The ideal-gas partition function."
+            "text": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$).",
+            "text_markdown": "The partial pair correlation functions $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ (or the concentration-concentration structure factor $S_{cc}(k)$ of $\\rho_A - \\rho_B$)."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "When two equally sized species demix at constant total density, the species-blind total $g(r)$ remains almost unchanged. Resolving the **partial RDFs** $g_{AA}(r), g_{BB}(r), g_{AB}(r)$ or the concentration structure factor $S_{cc}(k) = \\frac{1}{N}\\langle |\\rho_A(\\mathbf{k}) - \\rho_B(\\mathbf{k})|^2\\rangle$ directly detects whether like particles cluster ($g_{AA} > g_{AB}$, $S_{cc}(k\\to 0)$ large) or alternate (**A**)."
       },
       {
@@ -1127,13 +1127,13 @@
         "options": [
           {
             "id": "a",
-            "text": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation.",
-            "text_markdown": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation."
+            "text": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$.",
+            "text_markdown": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$."
           },
           {
             "id": "b",
-            "text": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$.",
-            "text_markdown": "The second peak vanishes completely, leaving $g(r) = 1$ for all $r > 1.5\\sigma$."
+            "text": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation.",
+            "text_markdown": "Shoulders or sub-peak splitting appear on the second peak as distinct coordination geometries (e.g., $\\sqrt{3}\\sigma$ vs. $2\\sigma$ shells) resolve out of the smooth liquid oscillation."
           },
           {
             "id": "c",
@@ -1146,7 +1146,7 @@
             "text_markdown": "The first peak shifts to $r = 0$."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "rationale_markdown": "In a liquid, the second coordination shell is a single broad oscillation. Upon freezing into a crystal (or forming a dense metallic glass with icosahedral/polytetrahedral local packing), distinct geometric distances (such as colinear $2\\sigma$ vs. Triangular $\\sqrt{3}\\sigma$ paths) produce characteristic **shoulders or splitting** on the second peak of $g(r)$ (**A**)."
       },
       {
@@ -1160,8 +1160,8 @@
         "options": [
           {
             "id": "a",
-            "text": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$.",
-            "text_markdown": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$."
+            "text": "Only when the Coulomb interaction is turned off ($e = 0$).",
+            "text_markdown": "Only when the Coulomb interaction is turned off ($e = 0$)."
           },
           {
             "id": "b",
@@ -1170,8 +1170,8 @@
           },
           {
             "id": "c",
-            "text": "Only when the Coulomb interaction is turned off ($e = 0$).",
-            "text_markdown": "Only when the Coulomb interaction is turned off ($e = 0$)."
+            "text": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$.",
+            "text_markdown": "At low electron density (large inter-electron spacing $r_s$) and low temperature, where potential energy $\\propto 1/r_s$ dominates over quantum kinetic energy $\\propto 1/r_s^2$."
           },
           {
             "id": "d",
@@ -1179,7 +1179,7 @@
             "text_markdown": "At infinite density ($r_s \\to 0$) where electrons behave as an ideal Fermi gas."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "rationale_markdown": "For quantum particles with mass $m$ and spacing $r_s$, zero-point kinetic energy scales as $\\hbar^2/(m r_s^2)$ while Coulomb repulsion scales as $e^2/r_s$. At **low density** (large $r_s$) and low $T$, Coulomb repulsion dominates over quantum delocalization, causing the electrons to crystallize into a Wigner lattice (**A**)."
       },
       {
@@ -1196,8 +1196,8 @@
         "options": [
           {
             "id": "a",
-            "text": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$.",
-            "text_markdown": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$."
+            "text": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$.",
+            "text_markdown": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$."
           },
           {
             "id": "b",
@@ -1211,11 +1211,11 @@
           },
           {
             "id": "d",
-            "text": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$.",
-            "text_markdown": "$P = -\\frac{2\\pi}{3} \\rho^2 \\sigma^3 k_B T$."
+            "text": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$.",
+            "text_markdown": "$P = \\rho k_B T \\left[ 1 + \\frac{2\\pi}{3} \\rho \\sigma^3 g(\\sigma^+) \\right]$, where $g(\\sigma^+)$ is the contact value of the RDF at $r = \\sigma^+$."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "rationale_markdown": "Because the hard-sphere potential jumps from $\\infty$ to $0$ at $r = \\sigma$, impulsive collisions occur exclusively at contact $r = \\sigma^+$. Writing $g(r) = e^{-\\beta V(r)} y(r)$ where $y(r)$ is continuous across $r=\\sigma$, we have $-\\beta \\frac{dV}{dr} g(r) = \\delta(r-\\sigma) g(\\sigma^+)$. Integrating over $r$ yields $P = \\rho k_B T \\left[1 + \\frac{2\\pi}{3}\\rho\\sigma^3 g(\\sigma^+)\\right]$ (**A**)."
       },
       {

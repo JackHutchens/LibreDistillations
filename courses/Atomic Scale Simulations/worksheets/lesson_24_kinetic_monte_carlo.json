@@ -113,13 +113,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "MD cannot simulate systems with more than 2 atoms.",
-            "text": "MD cannot simulate systems with more than 2 atoms."
+            "text_markdown": "High-frequency atomic vibrations constrain the MD timestep to ~1 femtosecond ($10^{-15}\\text{ s}$), requiring billions of CPU steps to observe rare activated hops ($10^{-6}\\text{--}10^3\\text{ s}$).",
+            "text": "High-frequency atomic vibrations constrain the MD timestep to ~1 femtosecond ($10^{-15}\\text{ s}$), requiring billions of CPU steps to observe rare activated hops ($10^{-6}\\text{--}10^3\\text{ s}$)."
           },
           {
             "id": "b",
-            "text_markdown": "High-frequency atomic vibrations constrain the MD timestep to ~1 femtosecond ($10^{-15}\\text{ s}$), requiring billions of CPU steps to observe rare activated hops ($10^{-6}\\text{--}10^3\\text{ s}$).",
-            "text": "High-frequency atomic vibrations constrain the MD timestep to ~1 femtosecond ($10^{-15}\\text{ s}$), requiring billions of CPU steps to observe rare activated hops ($10^{-6}\\text{--}10^3\\text{ s}$)."
+            "text_markdown": "MD cannot simulate systems with more than 2 atoms.",
+            "text": "MD cannot simulate systems with more than 2 atoms."
           },
           {
             "id": "c",
@@ -132,7 +132,7 @@
             "text": "MD only works at $T = 0\\text{ K}$."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Consider the ratio between vibrational periods ($10^{-14}\\text{ s}$) and activation barrier crossing times ($10^{-3}\\text{ s}$).",
         "rationale_markdown": "In MD, stability requires resolving fast atomic vibrations ($\\Delta t \\sim 1\\text{ fs}$). For processes with barriers $E_a > 0.5\\text{ eV}$, transition events occur after millions of vibrational periods, making MD trapped in local minima and unable to reach macroscopic timescales."
       },
@@ -146,13 +146,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The ratio of the product of all $3N$ vibrational normal-mode frequencies at the initial basin minimum to the product of the $3N-1$ stable vibrational frequencies at the transition saddle point.",
-            "text": "The ratio of the product of all $3N$ vibrational normal-mode frequencies at the initial basin minimum to the product of the $3N-1$ stable vibrational frequencies at the transition saddle point."
+            "text_markdown": "The speed of light divided by the lattice constant.",
+            "text": "The speed of light divided by the lattice constant."
           },
           {
             "id": "b",
-            "text_markdown": "The speed of light divided by the lattice constant.",
-            "text": "The speed of light divided by the lattice constant."
+            "text_markdown": "The ratio of the product of all $3N$ vibrational normal-mode frequencies at the initial basin minimum to the product of the $3N-1$ stable vibrational frequencies at the transition saddle point.",
+            "text": "The ratio of the product of all $3N$ vibrational normal-mode frequencies at the initial basin minimum to the product of the $3N-1$ stable vibrational frequencies at the transition saddle point."
           },
           {
             "id": "c",
@@ -165,7 +165,7 @@
             "text": "The mass of the electron."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "Compare the vibrational normal-mode spectrum of the stable potential energy minimum with the non-imaginary normal modes of the transition saddle point.",
         "rationale_markdown": "George Vineyard derived in 1957 that in the harmonic approximation, the attempt frequency $\\nu_0 = \\frac{\\prod_{i=1}^{3N} \\nu_i^{\\text{min}}}{\\prod_{j=1}^{3N-1} \\nu_j^{\\text{saddle}}}$ represents the ratio of partition function vibrational curvatures at the minimum vs the saddle point (where one imaginary mode along the reaction coordinate is removed)."
       },
@@ -176,8 +176,10 @@
         "difficulty": "easy",
         "taught_by": "sec_kmc_motivation_and_tst",
         "prompt_markdown": "An atom hops across a surface with activation barrier $E_a = 0.50\\text{ eV}$ and attempt frequency $\\nu_0 = 10^{13}\\text{ s}^{-1}$ at temperature $T = 500\\text{ K}$ ($k_B T = 0.043087\\text{ eV}$). According to transition state theory, calculate the transition rate $k$ in hops per second ($\\text{s}^{-1}$) in scientific notation (enter the mantissa $M$ where $k = M \\times 10^7$).",
-        "correct": 9.07,
-        "tolerance": 0.2,
+        "correct": {
+          "value": 9.07,
+          "tolerance": 0.2
+        },
         "hint_markdown": "Evaluate the Arrhenius factor using the thermal energy $k_B T$ and scale by the vibrational attempt frequency.",
         "rationale_markdown": "$E_a / k_B T = 0.50 / 0.043087 = 11.6044$. $e^{-11.6044} \\approx 9.074 \\times 10^{-6}$. Then $k = 10^{13} \\times (9.074 \\times 10^{-6}) = 9.074 \\times 10^7\\text{ s}^{-1}$."
       },
@@ -196,13 +198,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "Because every simulation step selects and executes a valid event chosen from the rate catalog, so no proposed moves are ever rejected.",
-            "text": "Because every simulation step selects and executes a valid event chosen from the rate catalog, so no proposed moves are ever rejected."
+            "text_markdown": "Because it accepts all moves with probability 0.5.",
+            "text": "Because it accepts all moves with probability 0.5."
           },
           {
             "id": "c",
-            "text_markdown": "Because it accepts all moves with probability 0.5.",
-            "text": "Because it accepts all moves with probability 0.5."
+            "text_markdown": "Because every simulation step selects and executes a valid event chosen from the rate catalog, so no proposed moves are ever rejected.",
+            "text": "Because every simulation step selects and executes a valid event chosen from the rate catalog, so no proposed moves are ever rejected."
           },
           {
             "id": "d",
@@ -210,7 +212,7 @@
             "text": "Because it only simulates exothermic reactions."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Contrast BKL with standard Metropolis Monte Carlo where moves with $\\Delta E > 0$ can be rejected.",
         "rationale_markdown": "In standard Metropolis MC, moves are randomly proposed and often rejected with probability $1 - e^{-\\beta \\Delta E}$. BKL compiles all possible transitions and chooses among them with probability $r_i / R_{\\text{total}}$, executing an event on *every single step*."
       },
@@ -229,8 +231,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "A uniform random number drawn on the interval $(0, 1]$",
-            "text": "A uniform random number drawn on the interval $(0, 1]$"
+            "text_markdown": "The Planck constant",
+            "text": "The Planck constant"
           },
           {
             "id": "c",
@@ -239,11 +241,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "The Planck constant",
-            "text": "The Planck constant"
+            "text_markdown": "A uniform random number drawn on the interval $(0, 1]$",
+            "text": "A uniform random number drawn on the interval $(0, 1]$"
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Recall the transformation method for generating exponential random variables from uniform deviates.",
         "rationale_markdown": "The transformation $t = -\\frac{\\ln u}{R}$ maps a uniformly distributed random variable $u \\in (0, 1]$ directly into an exponentially distributed waiting time with probability density $p(t) = R e^{-R t}$."
       },
@@ -253,9 +255,11 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_poisson_clock_and_sampling",
-        "prompt_markdown": "From a current state, the total escape rate is $R_{\\text{total}} = 5000\\text{ s}^{-1}$. A uniform random number $u_2 = 0.367879$ (which is $1/e$) is drawn. Calculate the time step increment $\\Delta t$ in seconds.",
-        "correct": 0.0002,
-        "tolerance": 1e-05,
+        "prompt_markdown": "From a current state, the total escape rate is $R_{\\text{total}} = 5000\\text{ s}^{-1}$. A uniform random number $u_2 = 0.367879$  is drawn. Calculate the time step increment $\\Delta t$ in seconds.",
+        "correct": {
+          "value": 0.0002,
+          "tolerance": 1e-05
+        },
         "unit": "s",
         "hint_markdown": "Apply the inversion method for exponentially distributed waiting times given the total escape rate and uniform random deviate.",
         "rationale_markdown": "$\\Delta t = -\\ln(0.367879) / 5000 = -(-1.0) / 5000 = 1 / 5000 = 0.0002\\text{ s}$ ($0.2\\text{ ms}$)."
@@ -303,8 +307,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Quantum entanglement between all particles",
-            "text": "Quantum entanglement between all particles"
+            "text_markdown": "Quantum entanglement between all particles, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text": "Quantum entanglement between all particles, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "b",
@@ -313,8 +317,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "The assumption that all atoms move at the speed of sound",
-            "text": "The assumption that all atoms move at the speed of sound"
+            "text_markdown": "The assumption that all atoms move at the speed of sound, which fails to satisfy the necessary boundary conditions and physical conservation laws.",
+            "text": "The assumption that all atoms move at the speed of sound, which fails to satisfy the necessary boundary conditions and physical conservation laws."
           },
           {
             "id": "d",
@@ -372,14 +376,31 @@
       {
         "id": "q24_10",
         "type": "problem",
-        "question_type": "numeric",
+        "question_type": "single_select",
         "difficulty": "medium",
         "taught_by": "sec_master_equation_and_bkl",
-        "prompt_markdown": "A state has two outbound transitions with rates $r_1 = 300\\text{ s}^{-1}$ and $r_2 = 700\\text{ s}^{-1}$. What is the probability $P_1$ that transition 1 occurs?",
-        "correct": 0.3,
-        "tolerance": 0.01,
-        "hint_markdown": "Normalize the rate of the designated pathway by the total escape rate from the current state.",
-        "rationale_markdown": "$R = 300 + 700 = 1000\\text{ s}^{-1}$. Then $P_1 = 300 / 1000 = 0.30$ (30%)."
+        "prompt_markdown": "In the continuum limit of the discrete Master equation, expanding the transition jump moments in a Taylor series yields the Fokker-Planck equation. Why does this naive truncation fail when the probability distribution is extensive, $P(x,t) \\propto e^{-N \\phi(x)}$, as resolved by Kubo, Matsuo, and Kitahara (1973)?",
+        "correct": "c",
+        "hint_markdown": "Consider how the extensive scaling exponent $N \\phi(x)$ affects spatial derivatives of $P(x,t)$.",
+        "rationale_markdown": "Kubo et al. (1973) demonstrated that when $P(x,t) \\sim e^{-N\\phi(x)}$, derivatives generate factors of $N$, causing all terms in the standard Taylor expansion to be of the same order $\\mathcal{O}(N)$. A naive second-order truncation is therefore inconsistent unless a systematic expansion in powers of $1/N$ or $1/\\sqrt{N}$ is performed.",
+        "options": [
+          {
+            "id": "a",
+            "text": "Because the attempt frequency $\\nu_0$ diverges exponentially with system volume in any continuous-time Markov process."
+          },
+          {
+            "id": "b",
+            "text": "Because extensive probability distributions violate the conservation of total probability $\\int P(x,t) dx = 1$ whenever transition jump rates are state-dependent."
+          },
+          {
+            "id": "c",
+            "text": "Because all higher-order terms in the Kramers-Moyal expansion contribute at the same order $\\mathcal{O}(N)$, requiring an asymptotic expansion in powers of $1/N$ to preserve thermodynamic consistency up to $\\mathcal{O}(N^{-1})$."
+          },
+          {
+            "id": "d",
+            "text": "Because detailed balance cannot be satisfied in any system whose energy barrier scales linearly with the number of particles $N$."
+          }
+        ]
       },
       {
         "id": "sec_adsorption_desorption_kinetics",
@@ -443,8 +464,10 @@
         "difficulty": "easy",
         "taught_by": "sec_adsorption_desorption_kinetics",
         "prompt_markdown": "In surface kinetics with adsorption rate $r_A = 1.5\\text{ s}^{-1}$ and desorption rate $r_D = 0.5\\text{ s}^{-1}$, calculate the steady-state equilibrium coverage $\\theta_{\\text{eq}}$.",
-        "correct": 0.75,
-        "tolerance": 0.01,
+        "correct": {
+          "value": 0.75,
+          "tolerance": 0.01
+        },
         "hint_markdown": "Set the net rate of coverage change to zero by balancing the rates of site adsorption and desorption.",
         "rationale_markdown": "$\\theta_{\\text{eq}} = 1.5 / (1.5 + 0.5) = 1.5 / 2.0 = 0.75$ (75% coverage)."
       },
@@ -455,8 +478,10 @@
         "difficulty": "medium",
         "taught_by": "sec_adsorption_desorption_kinetics",
         "prompt_markdown": "For the same system ($r_A = 1.5\\text{ s}^{-1}, r_D = 0.5\\text{ s}^{-1}$), what is the characteristic exponential relaxation time constant $\\tau_{\\text{relax}}$ in seconds?",
-        "correct": 0.5,
-        "tolerance": 0.01,
+        "correct": {
+          "value": 0.5,
+          "tolerance": 0.01
+        },
         "unit": "s",
         "hint_markdown": "Determine the inverse of the sum of forward and reverse kinetic rates governing the approach to steady-state coverage.",
         "rationale_markdown": "$\\tau_{\\text{relax}} = 1 / (1.5 + 0.5) = 1 / 2.0 = 0.50\\text{ s}$."
@@ -476,8 +501,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "The magnitude of stochastic fluctuations around the analytical curve decreases as $1/\\sqrt{N_{\\text{sites}}}$, making the trajectory smoother.",
-            "text": "The magnitude of stochastic fluctuations around the analytical curve decreases as $1/\\sqrt{N_{\\text{sites}}}$, making the trajectory smoother."
+            "text_markdown": "The time constant $\\tau_{\\text{relax}}$ drops to zero.",
+            "text": "The time constant $\\tau_{\\text{relax}}$ drops to zero."
           },
           {
             "id": "c",
@@ -486,11 +511,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "The time constant $\\tau_{\\text{relax}}$ drops to zero.",
-            "text": "The time constant $\\tau_{\\text{relax}}$ drops to zero."
+            "text_markdown": "The magnitude of stochastic fluctuations around the analytical curve decreases as $1/\\sqrt{N_{\\text{sites}}}$, making the trajectory smoother.",
+            "text": "The magnitude of stochastic fluctuations around the analytical curve decreases as $1/\\sqrt{N_{\\text{sites}}}$, making the trajectory smoother."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Recall how Central Limit Theorem fluctuations scale with system size $N$.",
         "rationale_markdown": "By the Central Limit Theorem, the standard deviation of fractional coverage fluctuations scales as $\\sigma_\\theta = \\sqrt{\\theta(1-\\theta)/N_{\\text{sites}}} \\propto 1/\\sqrt{N_{\\text{sites}}}$. Increasing $N$ reduces relative noise, bringing the stochastic KMC simulation closer to the deterministic master equation."
       },
@@ -537,13 +562,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "It decomposes the time evolution operator $e^{\\mathcal{L} \\Delta t} = \\prod_k e^{\\mathcal{L}_k \\Delta t} + \\mathcal{O}(\\Delta t^2)$, proving that for small enough time increments, independent Poisson events can be executed sequentially without mutual interference.",
-            "text": "It decomposes the time evolution operator $e^{\\mathcal{L} \\Delta t} = \\prod_k e^{\\mathcal{L}_k \\Delta t} + \\mathcal{O}(\\Delta t^2)$, proving that for small enough time increments, independent Poisson events can be executed sequentially without mutual interference."
+            "text_markdown": "It proves that KMC is identical to quantum electrodynamics.",
+            "text": "It proves that KMC is identical to quantum electrodynamics."
           },
           {
             "id": "b",
-            "text_markdown": "It proves that KMC is identical to quantum electrodynamics.",
-            "text": "It proves that KMC is identical to quantum electrodynamics."
+            "text_markdown": "It decomposes the time evolution operator $e^{\\mathcal{L} \\Delta t} = \\prod_k e^{\\mathcal{L}_k \\Delta t} + \\mathcal{O}(\\Delta t^2)$, proving that for small enough time increments, independent Poisson events can be executed sequentially without mutual interference.",
+            "text": "It decomposes the time evolution operator $e^{\\mathcal{L} \\Delta t} = \\prod_k e^{\\mathcal{L}_k \\Delta t} + \\mathcal{O}(\\Delta t^2)$, proving that for small enough time increments, independent Poisson events can be executed sequentially without mutual interference."
           },
           {
             "id": "c",
@@ -556,9 +581,9 @@
             "text": "It eliminates the need for random numbers."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "Examine how operator splitting allows a composite continuous-time generator to be approximated as a sequence of independent local Poisson generators.",
-        "rationale_markdown": "As shown in the lecture notes, Trotter's formula allows the global transition generator $\\mathcal{L} = \\sum_k \\mathcal{L}_k$ to be factored into independent sub-generators over small time slices $\\Delta t$, justifying treating competing Poisson processes as independent channels."
+        "rationale_markdown": "By the Trotter product formula, the global transition generator $\\mathcal{L} = \\sum_k \\mathcal{L}_k$ to be factored into independent sub-generators over small time slices $\\Delta t$, justifying treating competing Poisson processes as independent channels."
       },
       {
         "id": "q24_16",
@@ -612,13 +637,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "$\\theta_{\\text{eq}} \\to 1$ (monolayer saturation)",
-            "text": "$\\theta_{\\text{eq}} \\to 1$ (monolayer saturation)"
+            "text_markdown": "$\\theta_{\\text{eq}} \\to 0.5$",
+            "text": "$\\theta_{\\text{eq}} \\to 0.5$"
           },
           {
             "id": "c",
-            "text_markdown": "$\\theta_{\\text{eq}} \\to 0.5$",
-            "text": "$\\theta_{\\text{eq}} \\to 0.5$"
+            "text_markdown": "$\\theta_{\\text{eq}} \\to 1$ (monolayer saturation)",
+            "text": "$\\theta_{\\text{eq}} \\to 1$ (monolayer saturation)"
           },
           {
             "id": "d",
@@ -626,7 +651,7 @@
             "text": "$\\theta_{\\text{eq}}$ oscillates wildly"
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Analyze the steady-state site balance when the rate of arrival completely overwhelms the desorption rate.",
         "rationale_markdown": "As $r_A \\to \\infty$, $\\theta_{\\text{eq}} = \\frac{r_A}{r_A + r_D} = \\frac{1}{1 + r_D/r_A} \\to 1.0$. All available surface sites become occupied, forming a complete saturated monolayer."
       },
@@ -637,8 +662,10 @@
         "difficulty": "hard",
         "taught_by": "sec_adsorption_desorption_kinetics",
         "prompt_markdown": "On a surface of $N_{\\text{sites}} = 100$, the equilibrium coverage is $\\theta_{\\text{eq}} = 0.50$. Assuming independent site occupations under binomial statistics, calculate the expected standard deviation of fractional coverage fluctuations $\\sigma_\\theta$ to 3 decimal places.",
-        "correct": 0.05,
-        "tolerance": 0.002,
+        "correct": {
+          "value": 0.05,
+          "tolerance": 0.002
+        },
         "hint_markdown": "Apply the binomial variance formula for fractional site occupancy normalized by total site count.",
         "rationale_markdown": "$\\sigma_\\theta = \\sqrt{\\frac{0.25}{100}} = \\sqrt{0.0025} = 0.050$ (5% coverage fluctuation)."
       },
@@ -657,8 +684,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "It increases by an enormous factor of $\\sim 10^5$, because the Arrhenius factor changes from $e^{-23.2} \\approx 8.3 \\times 10^{-11}$ to $e^{-11.6} \\approx 9.1 \\times 10^{-6}$.",
-            "text": "It increases by an enormous factor of $\\sim 10^5$, because the Arrhenius factor changes from $e^{-23.2} \\approx 8.3 \\times 10^{-11}$ to $e^{-11.6} \\approx 9.1 \\times 10^{-6}$."
+            "text_markdown": "It remains strictly constant.",
+            "text": "It remains strictly constant."
           },
           {
             "id": "c",
@@ -667,11 +694,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "It remains strictly constant.",
-            "text": "It remains strictly constant."
+            "text_markdown": "It increases by an enormous factor of $\\sim 10^5$, because the Arrhenius factor changes from $e^{-23.2} \\approx 8.3 \\times 10^{-11}$ to $e^{-11.6} \\approx 9.1 \\times 10^{-6}$.",
+            "text": "It increases by an enormous factor of $\\sim 10^5$, because the Arrhenius factor changes from $e^{-23.2} \\approx 8.3 \\times 10^{-11}$ to $e^{-11.6} \\approx 9.1 \\times 10^{-6}$."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Evaluate how the exponential Arrhenius activation factor responds when the thermal denominator in the exponent is doubled.",
         "rationale_markdown": "The ratio is $e^{-0.60/0.0517} / e^{-0.60/0.02585} = e^{-11.605} / e^{-23.21} = e^{+11.605} \\approx 1.1 \\times 10^5$. Doubling temperature accelerates the rate by over five orders of magnitude!"
       },
@@ -810,8 +837,10 @@
         "difficulty": "hard",
         "taught_by": "sec_superbasin_and_flickering_bottleneck",
         "prompt_markdown": "At $T = 500\\text{ K}$ ($k_B T = 0.043087\\text{ eV}$), a dimer has a flickering barrier $E_{\\text{flicker}} = 0.20\\text{ eV}$ and an escape barrier $E_{\\text{escape}} = 0.70\\text{ eV}$. Assuming equal attempt frequencies, what is the expected number of flickering hops before escaping the trap? (Enter to nearest 1000).",
-        "correct": 109000.0,
-        "tolerance": 5000.0,
+        "correct": {
+          "value": 109000.0,
+          "tolerance": 5000.0
+        },
         "hint_markdown": "Determine the ratio of the fast intra-basin rate to the slow basin escape rate governed by the barrier difference.",
         "rationale_markdown": "$\\Delta E / k_B T = 0.50 / 0.043087 \\approx 11.6044$. $e^{11.6044} \\approx 109,578 \\approx 109,000$ hops."
       },
@@ -830,13 +859,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "By grouping fast-equilibrating states into a single macro-state, assuming internal quasi-equilibrium, and computing an effective escape rate from the macro-state to outer states.",
-            "text": "By grouping fast-equilibrating states into a single macro-state, assuming internal quasi-equilibrium, and computing an effective escape rate from the macro-state to outer states."
+            "text_markdown": "By lowering the temperature to freeze the system.",
+            "text": "By lowering the temperature to freeze the system."
           },
           {
             "id": "c",
-            "text_markdown": "By lowering the temperature to freeze the system.",
-            "text": "By lowering the temperature to freeze the system."
+            "text_markdown": "By grouping fast-equilibrating states into a single macro-state, assuming internal quasi-equilibrium, and computing an effective escape rate from the macro-state to outer states.",
+            "text": "By grouping fast-equilibrating states into a single macro-state, assuming internal quasi-equilibrium, and computing an effective escape rate from the macro-state to outer states."
           },
           {
             "id": "d",
@@ -844,7 +873,7 @@
             "text": "By converting the simulation to molecular dynamics."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "How can states connected by fast reversible transitions be treated collectively?",
         "rationale_markdown": "Superbasin KMC identifies fast connected subgraphs, computes the internal Boltzmann equilibrium distribution within the basin, and evaluates a single effective exit rate $R_{\\text{exit}} = \\sum_{i \\in \\text{basin}} P_{\\text{eq}}(i) r_{i \\to \\text{out}}$, bypassing all internal flickering moves."
       },
@@ -863,8 +892,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "The ratio grows exponentially, making the flickering trap vastly worse at lower temperatures.",
-            "text": "The ratio grows exponentially, making the flickering trap vastly worse at lower temperatures."
+            "text_markdown": "Both rates become identical.",
+            "text": "Both rates become identical."
           },
           {
             "id": "c",
@@ -873,11 +902,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "Both rates become identical.",
-            "text": "Both rates become identical."
+            "text_markdown": "The ratio grows exponentially, making the flickering trap vastly worse at lower temperatures.",
+            "text": "The ratio grows exponentially, making the flickering trap vastly worse at lower temperatures."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Consider the Arrhenius ratio for two competing processes with differing activation barriers as thermal energy decreases.",
         "rationale_markdown": "Because $e^{\\Delta E / k_B T}$ has $T$ in the denominator of the exponent, lowering temperature exponentially amplifies the rate ratio. At low temperatures, the trap becomes extremely severe, requiring millions of hops per escape."
       },
@@ -928,13 +957,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "A simulation where particles are restricted to rigid cubic lattice points.",
-            "text": "A simulation where particles are restricted to rigid cubic lattice points."
+            "text_markdown": "A simulation where atomic coordinates are continuous in space, and transition pathways and saddle points are discovered on-the-fly using saddle-search methods (like the Dimer method or NEB) without pre-defined lattice catalogs.",
+            "text": "A simulation where atomic coordinates are continuous in space, and transition pathways and saddle points are discovered on-the-fly using saddle-search methods (like the Dimer method or NEB) without pre-defined lattice catalogs."
           },
           {
             "id": "b",
-            "text_markdown": "A simulation where atomic coordinates are continuous in space, and transition pathways and saddle points are discovered on-the-fly using saddle-search methods (like the Dimer method or NEB) without pre-defined lattice catalogs.",
-            "text": "A simulation where atomic coordinates are continuous in space, and transition pathways and saddle points are discovered on-the-fly using saddle-search methods (like the Dimer method or NEB) without pre-defined lattice catalogs."
+            "text_markdown": "A simulation where particles are restricted to rigid cubic lattice points.",
+            "text": "A simulation where particles are restricted to rigid cubic lattice points."
           },
           {
             "id": "c",
@@ -947,7 +976,7 @@
             "text": "A Monte Carlo simulation that runs backward in time."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "How do you apply KMC to amorphous solids or complex defect geometries where no fixed crystal lattice exists?",
         "rationale_markdown": "Adaptive/off-lattice KMC does not assume a rigid lattice. For each newly visited basin, it uses automated minimum-mode following algorithms (like the Henkelman-J\u00f3nsson Dimer method) to search the potential energy surface on-the-fly, discovering all relevant saddle points and rates dynamically."
       },
@@ -961,13 +990,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Nudged Elastic Band (NEB)",
-            "text": "Nudged Elastic Band (NEB)"
+            "text_markdown": "Simulated Annealing",
+            "text": "Simulated Annealing"
           },
           {
             "id": "b",
-            "text_markdown": "Simulated Annealing",
-            "text": "Simulated Annealing"
+            "text_markdown": "Nudged Elastic Band (NEB)",
+            "text": "Nudged Elastic Band (NEB)"
           },
           {
             "id": "c",
@@ -980,7 +1009,7 @@
             "text": "Steepest descent energy minimization"
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "What method connects initial and final states with a chain of images tethered by spring forces?",
         "rationale_markdown": "The Nudged Elastic Band (NEB) method connects initial and final configurations with an elastic chain of replicas, projecting out parallel spring forces and perpendicular potential forces to converge cleanly onto the Minimum Energy Path (MEP) and exact saddle point."
       },
@@ -991,8 +1020,10 @@
         "difficulty": "medium",
         "taught_by": "sec_poisson_clock_and_sampling",
         "prompt_markdown": "In a KMC simulation, 100,000 steps were executed. If the average escape rate across all steps was $\\langle R \\rangle = 200\\text{ s}^{-1}$, what is the total simulated physical time in seconds?",
-        "correct": 500.0,
-        "tolerance": 5.0,
+        "correct": {
+          "value": 500.0,
+          "tolerance": 5.0
+        },
         "unit": "s",
         "hint_markdown": "Relate the total elapsed physical time to the cumulative sum of expected increments for the given average transition rate.",
         "rationale_markdown": "$\\langle \\Delta t \\rangle = 1 / 200\\text{ s}^{-1} = 0.005\\text{ s}$. Total time is $100,000 \\times 0.005\\text{ s} = 500.0\\text{ s}$ (over 8 minutes of physical time!)."
@@ -1007,8 +1038,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Using a fixed $\\Delta t = 1/R$ correctly models the first moment, but eliminates all temporal variance and higher moments of the Poisson point process, distorting correlation functions and fluctuations in multi-step kinetics.",
-            "text": "Using a fixed $\\Delta t = 1/R$ correctly models the first moment, but eliminates all temporal variance and higher moments of the Poisson point process, distorting correlation functions and fluctuations in multi-step kinetics."
+            "text_markdown": "Because $\\Delta t$ must always be zero in Monte Carlo.",
+            "text": "Because $\\Delta t$ must always be zero in Monte Carlo."
           },
           {
             "id": "b",
@@ -1017,8 +1048,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "Because $\\Delta t$ must always be zero in Monte Carlo.",
-            "text": "Because $\\Delta t$ must always be zero in Monte Carlo."
+            "text_markdown": "Using a fixed $\\Delta t = 1/R$ correctly models the first moment, but eliminates all temporal variance and higher moments of the Poisson point process, distorting correlation functions and fluctuations in multi-step kinetics.",
+            "text": "Using a fixed $\\Delta t = 1/R$ correctly models the first moment, but eliminates all temporal variance and higher moments of the Poisson point process, distorting correlation functions and fluctuations in multi-step kinetics."
           },
           {
             "id": "d",
@@ -1026,7 +1057,7 @@
             "text": "Because the computer cannot divide by $R$."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "hint_markdown": "Consider whether waiting times in real Poisson decay processes are deterministic or stochastic.",
         "rationale_markdown": "While $\\Delta t = 1/R$ gives the correct average time over large numbers of independent steps, substituting a deterministic interval destroys the stochastic Poisson nature of rare event arrivals, introducing artifacts into non-stationary kinetics and time correlation functions."
       },
@@ -1040,8 +1071,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The fundamental matrix $\\mathbf{N} = (\\mathbf{I} - \\mathbf{Q})^{-1}$",
-            "text": "The fundamental matrix $\\mathbf{N} = (\\mathbf{I} - \\mathbf{Q})^{-1}$"
+            "text_markdown": "$\\mathbf{N} = \\det(\\mathbf{Q}) \\mathbf{I}$",
+            "text": "$\\mathbf{N} = \\det(\\mathbf{Q}) \\mathbf{I}$"
           },
           {
             "id": "b",
@@ -1055,11 +1086,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "$\\mathbf{N} = \\det(\\mathbf{Q}) \\mathbf{I}$",
-            "text": "$\\mathbf{N} = \\det(\\mathbf{Q}) \\mathbf{I}$"
+            "text_markdown": "The fundamental matrix $\\mathbf{N} = (\\mathbf{I} - \\mathbf{Q})^{-1}$",
+            "text": "The fundamental matrix $\\mathbf{N} = (\\mathbf{I} - \\mathbf{Q})^{-1}$"
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "hint_markdown": "Sum the powers of the transient transition matrix representing the probability of remaining within the basin after successive steps.",
         "rationale_markdown": "In absorbing Markov chain theory, the expected number of visits to transient states before absorption into an exit state is given by the geometric series $\\sum_{k=0}^\\infty \\mathbf{Q}^k = (\\mathbf{I} - \\mathbf{Q})^{-1} = \\mathbf{N}$, known as the fundamental matrix."
       },
@@ -1103,8 +1134,10 @@
         "difficulty": "easy",
         "taught_by": "sec_adsorption_desorption_kinetics",
         "prompt_markdown": "If a surface starts fully empty ($\\theta_0 = 0$), with adsorption rate $r_A = 2.0\\text{ s}^{-1}$ and zero desorption ($r_D = 0.0\\text{ s}^{-1}$, irreversible adsorption), what is the fractional coverage $\\theta(t)$ at $t = 0.5\\text{ s}$? (Recall $e^{-1} \\approx 0.368$).",
-        "correct": 0.632,
-        "tolerance": 0.01,
+        "correct": {
+          "value": 0.632,
+          "tolerance": 0.01
+        },
         "hint_markdown": "Integrate the rate equation for irreversible first-order site filling over the elapsed time interval.",
         "rationale_markdown": "$\\theta(0.5) = 1 - e^{-1.0} = 1 - 0.367879 = 0.6321 \\approx 0.632$ (63.2%)."
       },
@@ -1118,13 +1151,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The probability per unit time that reaction $j$ occurs, given the current population state $\\mathbf{x}$.",
-            "text": "The probability per unit time that reaction $j$ occurs, given the current population state $\\mathbf{x}$."
+            "text_markdown": "The equilibrium constant of reaction $j$.",
+            "text": "The equilibrium constant of reaction $j$."
           },
           {
             "id": "b",
-            "text_markdown": "The equilibrium constant of reaction $j$.",
-            "text": "The equilibrium constant of reaction $j$."
+            "text_markdown": "The probability per unit time that reaction $j$ occurs, given the current population state $\\mathbf{x}$.",
+            "text": "The probability per unit time that reaction $j$ occurs, given the current population state $\\mathbf{x}$."
           },
           {
             "id": "c",
@@ -1137,7 +1170,7 @@
             "text": "The activation energy in Joules."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "Notice that Gillespie's propensity $a_j$ is the chemical kinetics equivalent of the KMC transition rate $r_k$.",
         "rationale_markdown": "In Gillespie's stochastic simulation algorithm, the propensity $a_j(\\mathbf{x}) dt$ is defined as the probability that reaction $j$ occurs in infinitesimal time interval $dt$ given current species populations $\\mathbf{x}$. It is the exact chemical analog of transition rate $r_k$ in physical KMC."
       },
@@ -1151,8 +1184,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "$\\frac{W(A \\to B)}{W(B \\to A)} = \\frac{e^{-\\beta E_B}}{e^{-\\beta E_A}} = e^{-\\beta(E_B - E_A)}$",
-            "text": "$\\frac{W(A \\to B)}{W(B \\to A)} = \\frac{e^{-\\beta E_B}}{e^{-\\beta E_A}} = e^{-\\beta(E_B - E_A)}$"
+            "text_markdown": "$W(A \\to B) + W(B \\to A) = 1$",
+            "text": "$W(A \\to B) + W(B \\to A) = 1$"
           },
           {
             "id": "b",
@@ -1161,8 +1194,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "$W(A \\to B) + W(B \\to A) = 1$",
-            "text": "$W(A \\to B) + W(B \\to A) = 1$"
+            "text_markdown": "$\\frac{W(A \\to B)}{W(B \\to A)} = \\frac{e^{-\\beta E_B}}{e^{-\\beta E_A}} = e^{-\\beta(E_B - E_A)}$",
+            "text": "$\\frac{W(A \\to B)}{W(B \\to A)} = \\frac{e^{-\\beta E_B}}{e^{-\\beta E_A}} = e^{-\\beta(E_B - E_A)}$"
           },
           {
             "id": "d",
@@ -1170,7 +1203,7 @@
             "text": "$\\frac{W(A \\to B)}{W(B \\to A)} = 0$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "hint_markdown": "Equate the microscopic probability flux between two configurations using their canonical Boltzmann equilibrium weights.",
         "rationale_markdown": "Detailed balance states that at thermodynamic equilibrium, the probability flux between any two states must balance exactly: $\\pi(A) W(A \\to B) = \\pi(B) W(B \\to A)$. Substituting the Boltzmann distribution $\\pi(s) = e^{-\\beta E_s} / Z$ yields $W(A \\to B) / W(B \\to A) = e^{-\\beta(E_B - E_A)}$."
       },
@@ -1181,8 +1214,10 @@
         "difficulty": "medium",
         "taught_by": "sec_master_equation_and_bkl",
         "prompt_markdown": "Two states $A$ and $B$ have energies $E_A = 0.0\\text{ eV}$ and $E_B = 0.10\\text{ eV}$ at $T = 300\\text{ K}$ ($k_B T = 0.02585\\text{ eV}$). If the forward transition rate is $W(A \\to B) = 100\\text{ s}^{-1}$, calculate the reverse transition rate $W(B \\to A)$ in $\\text{s}^{-1}$ to the nearest integer.",
-        "correct": 4790.0,
-        "tolerance": 50.0,
+        "correct": {
+          "value": 4790.0,
+          "tolerance": 50.0
+        },
         "unit": "s^-1",
         "hint_markdown": "Apply the condition of detailed balance using the energy difference between states $A$ and $B$.",
         "rationale_markdown": "$e^{0.10 / 0.02585} = e^{3.86847} \\approx 47.87$. Then $W(B \\to A) = 100 \\times 47.87 \\approx 4787 \\approx 4790\\text{ s}^{-1}$."
@@ -1197,8 +1232,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Because on many metals (e.g. Al, Pt), pushing a substrate atom out while the adatom takes its place has a lower activation barrier than climbing over the top of substrate atoms.",
-            "text": "Because on many metals (e.g. Al, Pt), pushing a substrate atom out while the adatom takes its place has a lower activation barrier than climbing over the top of substrate atoms."
+            "text_markdown": "Because adatoms can only move in diagonal directions.",
+            "text": "Because adatoms can only move in diagonal directions."
           },
           {
             "id": "b",
@@ -1212,11 +1247,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "Because adatoms can only move in diagonal directions.",
-            "text": "Because adatoms can only move in diagonal directions."
+            "text_markdown": "Because on many metals (e.g. Al, Pt), pushing a substrate atom out while the adatom takes its place has a lower activation barrier than climbing over the top of substrate atoms.",
+            "text": "Because on many metals (e.g. Al, Pt), pushing a substrate atom out while the adatom takes its place has a lower activation barrier than climbing over the top of substrate atoms."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "hint_markdown": "Recall concerted exchange diffusion on metal surfaces discovered by Feibelman (1990).",
         "rationale_markdown": "P. J. Feibelman discovered via DFT that on surfaces like Al(001) and Pt(001), concerted exchange\u2014where the adatom dives into the surface layer while displacing a substrate atom outward\u2014has a significantly lower barrier than hopping over the bridge, demonstrating why unexpected pathways must be included in KMC catalogs."
       },
@@ -1260,8 +1295,10 @@
         "difficulty": "medium",
         "taught_by": "sec_kmc_motivation_and_tst",
         "prompt_markdown": "In transition state theory, if the attempt frequency is $\\nu_0 = 5.0 \\times 10^{12}\\text{ s}^{-1}$ and the activation barrier is $E_a = 0.30\\text{ eV}$ at $T = 300\\text{ K}$ ($k_B T = 0.02585\\text{ eV}$), what is the mean waiting time $\\tau$ for this transition in microseconds ($\\mu\\text{s}$)?",
-        "correct": 0.022,
-        "tolerance": 0.5,
+        "correct": {
+          "value": 0.022,
+          "tolerance": 0.003
+        },
         "unit": "microseconds",
         "hint_markdown": "Determine the transition rate from the Arrhenius relation, invert to obtain the mean waiting time, and convert to microsecond units.",
         "rationale_markdown": "$E_a / k_B T = 0.30 / 0.02585 = 11.6054$. $e^{-11.6054} \\approx 9.117 \\times 10^{-6}$. Then $k = 5 \\times 10^{12} \\times (9.117 \\times 10^{-6}) = 4.558 \\times 10^7\\text{ s}^{-1}$. The mean waiting time is $\\tau = 1/k = 2.194 \\times 10^{-8}\\text{ s} = 0.0219\\,\\mu\\text{s} \\approx 0.022\\,\\mu\\text{s}$."
@@ -1313,13 +1350,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Because the cumulative rate array $\\sum_{k=1}^i r_k$ maps the entire interval $[0, R_{\\text{total}})$ into $M$ non-overlapping contiguous bins, each of length $r_i$.",
-            "text": "Because the cumulative rate array $\\sum_{k=1}^i r_k$ maps the entire interval $[0, R_{\\text{total}})$ into $M$ non-overlapping contiguous bins, each of length $r_i$."
+            "text_markdown": "Because only one process can have a non-zero rate.",
+            "text": "Because only one process can have a non-zero rate."
           },
           {
             "id": "b",
-            "text_markdown": "Because only one process can have a non-zero rate.",
-            "text": "Because only one process can have a non-zero rate."
+            "text_markdown": "Because the cumulative rate array $\\sum_{k=1}^i r_k$ maps the entire interval $[0, R_{\\text{total}})$ into $M$ non-overlapping contiguous bins, each of length $r_i$.",
+            "text": "Because the cumulative rate array $\\sum_{k=1}^i r_k$ maps the entire interval $[0, R_{\\text{total}})$ into $M$ non-overlapping contiguous bins, each of length $r_i$."
           },
           {
             "id": "c",
@@ -1332,7 +1369,7 @@
             "text": "Because random numbers are 64-bit integers."
           }
         ],
-        "correct": "a",
+        "correct": "b",
         "hint_markdown": "Think of partitioning a line of length $R_{\\text{total}}$ into segments of length $r_k$ and throwing a dart at location $u_1 R_{\\text{total}}$.",
         "rationale_markdown": "The cumulative distribution partitions $[0, R_{\\text{total}})$ into $M$ contiguous subintervals whose lengths equal $r_i$. Multiplying a uniform random number $u_1 \\in (0, 1)$ by $R_{\\text{total}}$ lands in subinterval $i$ with probability exactly $r_i / R_{\\text{total}}$."
       },
@@ -1346,8 +1383,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The simulation leaps forward by a pre-selected time step $\\tau$, and the number of firings of each reaction channel during $\\tau$ is sampled as an independent Poisson random variable $\\mathcal{P}(r_k \\tau)$, assuming propensities remain approximately constant during $\\tau$.",
-            "text": "The simulation leaps forward by a pre-selected time step $\\tau$, and the number of firings of each reaction channel during $\\tau$ is sampled as an independent Poisson random variable $\\mathcal{P}(r_k \\tau)$, assuming propensities remain approximately constant during $\\tau$."
+            "text_markdown": "The system switches to quantum Monte Carlo.",
+            "text": "The system switches to quantum Monte Carlo."
           },
           {
             "id": "b",
@@ -1356,8 +1393,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "The system switches to quantum Monte Carlo.",
-            "text": "The system switches to quantum Monte Carlo."
+            "text_markdown": "The simulation leaps forward by a pre-selected time step $\\tau$, and the number of firings of each reaction channel during $\\tau$ is sampled as an independent Poisson random variable $\\mathcal{P}(r_k \\tau)$, assuming propensities remain approximately constant during $\\tau$.",
+            "text": "The simulation leaps forward by a pre-selected time step $\\tau$, and the number of firings of each reaction channel during $\\tau$ is sampled as an independent Poisson random variable $\\mathcal{P}(r_k \\tau)$, assuming propensities remain approximately constant during $\\tau$."
           },
           {
             "id": "d",
@@ -1365,7 +1402,7 @@
             "text": "Only the slowest reaction is allowed to fire."
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "hint_markdown": "Review the concept of Tau-Leaping as a bridge between exact discrete KMC and continuous chemical Langevin equations.",
         "rationale_markdown": "Gillespie's tau-leaping accelerates simulation by choosing a time step $\\tau$ during which state changes are small enough that reaction propensities remain nearly constant. The number of occurrences of each channel $k$ is drawn from a Poisson distribution $\\text{Poisson}(r_k \\tau)$, leaping over thousands of individual events in one step."
       },
@@ -1376,8 +1413,10 @@
         "difficulty": "easy",
         "taught_by": "sec_poisson_clock_and_sampling",
         "prompt_markdown": "A radioactive decay or atomic desorption process has a single transition channel with rate $r = 10.0\\text{ s}^{-1}$ ($R_{\\text{total}} = 10.0\\text{ s}^{-1}$). If the uniform random deviate drawn is $u = 0.50$, calculate the sampled Poisson waiting time $\\Delta t$ in seconds to 3 decimal places.",
-        "correct": 0.069,
-        "tolerance": 0.002,
+        "correct": {
+          "value": 0.069,
+          "tolerance": 0.002
+        },
         "unit": "s",
         "hint_markdown": "Apply the standard exponential random variate inversion formula using the given random deviate and escape rate.",
         "rationale_markdown": "$\\Delta t = -(-0.69315) / 10.0 = 0.69315 / 10.0 = 0.0693 \\approx 0.069\\text{ s}$."

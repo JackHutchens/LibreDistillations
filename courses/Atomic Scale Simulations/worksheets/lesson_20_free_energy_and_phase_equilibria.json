@@ -83,13 +83,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Free energy depends on quantum spin operators that are neglected in classical MD.",
-            "text": "Free energy depends on quantum spin operators that are neglected in classical MD."
+            "text_markdown": "Free energy is an entropic, phase-space volume property determined by the normalization integral $Q$, whereas importance sampling only explores relative probabilities $P \\propto e^{-\\beta V}$ without computing $Q$.",
+            "text": "Free energy is an entropic, phase-space volume property determined by the normalization integral $Q$, whereas importance sampling only explores relative probabilities $P \\propto e^{-\\beta V}$ without computing $Q$."
           },
           {
             "id": "b",
-            "text_markdown": "Free energy is an entropic, phase-space volume property determined by the normalization integral $Q$, whereas importance sampling only explores relative probabilities $P \\propto e^{-\\beta V}$ without computing $Q$.",
-            "text": "Free energy is an entropic, phase-space volume property determined by the normalization integral $Q$, whereas importance sampling only explores relative probabilities $P \\propto e^{-\\beta V}$ without computing $Q$."
+            "text_markdown": "Free energy depends on quantum spin operators that are neglected in classical MD.",
+            "text": "Free energy depends on quantum spin operators that are neglected in classical MD."
           },
           {
             "id": "c",
@@ -102,7 +102,7 @@
             "text": "The virial theorem proves that free energy is identical to kinetic energy."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Consider what the partition function $Q$ represents mathematically in phase space.",
         "rationale_markdown": "Free energy $F = -k_B T \\ln Q$ is directly proportional to the total volume of accessible phase space $Q$. Importance sampling algorithms evaluate ratios of probabilities $e^{-\\beta \\Delta V}$ and never visit the vast empty volume of unpopulated phase space needed to compute the denominator $Q$ directly."
       },
@@ -154,13 +154,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "Because the configurations that contribute most heavily to $\\langle e^{-\\beta \\Delta V} \\rangle_0$ (where $\\Delta V \\ll 0$) are virtually never sampled in ensemble 0.",
-            "text": "Because the configurations that contribute most heavily to $\\langle e^{-\\beta \\Delta V} \\rangle_0$ (where $\\Delta V \\ll 0$) are virtually never sampled in ensemble 0."
+            "text_markdown": "Because $e^{-\\beta \\Delta V}$ diverges to infinity for all configurations.",
+            "text": "Because $e^{-\\beta \\Delta V}$ diverges to infinity for all configurations."
           },
           {
             "id": "c",
-            "text_markdown": "Because $e^{-\\beta \\Delta V}$ diverges to infinity for all configurations.",
-            "text": "Because $e^{-\\beta \\Delta V}$ diverges to infinity for all configurations."
+            "text_markdown": "Because the configurations that contribute most heavily to $\\langle e^{-\\beta \\Delta V} \\rangle_0$ (where $\\Delta V \\ll 0$) are virtually never sampled in ensemble 0.",
+            "text": "Because the configurations that contribute most heavily to $\\langle e^{-\\beta \\Delta V} \\rangle_0$ (where $\\Delta V \\ll 0$) are virtually never sampled in ensemble 0."
           },
           {
             "id": "d",
@@ -168,7 +168,7 @@
             "text": "Because Newton's third law is violated."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Where do the most important configurations for state 1 lie in the probability distribution of state 0?",
         "rationale_markdown": "The exponential $e^{-\\beta \\Delta V}$ gives overwhelming weight to rare configurations where $\\Delta V$ is negative and large. If state 0 rarely or never visits these regions, the sample average severely underestimates the true exponential average, leading to large systematic error."
       },
@@ -187,8 +187,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "$I(\\lambda) = \\langle V_1 - V_0 \\rangle_\\lambda$",
-            "text": "$I(\\lambda) = \\langle V_1 - V_0 \\rangle_\\lambda$"
+            "text_markdown": "$I(\\lambda) = \\beta \\langle V_1 + V_0 \\rangle_\\lambda$",
+            "text": "$I(\\lambda) = \\beta \\langle V_1 + V_0 \\rangle_\\lambda$"
           },
           {
             "id": "c",
@@ -197,11 +197,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "$I(\\lambda) = \\beta \\langle V_1 + V_0 \\rangle_\\lambda$",
-            "text": "$I(\\lambda) = \\beta \\langle V_1 + V_0 \\rangle_\\lambda$"
+            "text_markdown": "$I(\\lambda) = \\langle V_1 - V_0 \\rangle_\\lambda$",
+            "text": "$I(\\lambda) = \\langle V_1 - V_0 \\rangle_\\lambda$"
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Differentiate $V_\\lambda$ with respect to $\\lambda$: $\\partial V_\\lambda / \\partial \\lambda = V_1 - V_0$.",
         "rationale_markdown": "By definition, $\\partial F_\\lambda / \\partial \\lambda = \\langle \\partial V_\\lambda / \\partial \\lambda \\rangle_\\lambda$. For linear coupling, $\\partial V_\\lambda / \\partial \\lambda = V_1 - V_0 = \\Delta V$, so the integrand is simply the ensemble average $\\langle V_1 - V_0 \\rangle_\\lambda$ evaluated at coupling parameter $\\lambda$."
       },
@@ -244,11 +244,13 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_thermodynamic_integration_kirkwood",
-        "prompt_markdown": "A 3-point Simpson's rule is used for Kirkwood TI: $\\Delta F \\approx \\frac{1}{6}[I(0) + 4 I(0.5) + I(1.0)]$. If the measured values are $I(0) = 12.0\\text{ kcal/mol}$, $I(0.5) = 7.5\\text{ kcal/mol}$, and $I(1.0) = 4.0\\text{ kcal/mol}$, calculate $\\Delta F$ in kcal/mol.",
-        "correct": 7.67,
-        "tolerance": 0.05,
+        "prompt_markdown": "A 3-point Simpson's quadrature rule across $\\lambda \\in [0, 1]$ is used to numerically integrate the Kirkwood thermodynamic integration integrand $I(\\lambda) = \\langle \\partial U / \\partial \\lambda \\rangle_\\lambda$. If the measured integrand values are $I(0) = 12.0\\text{ kcal/mol}$, $I(0.5) = 7.5\\text{ kcal/mol}$, and $I(1.0) = 4.0\\text{ kcal/mol}$, calculate the free energy difference $\\Delta F$ in kcal/mol.",
+        "correct": {
+          "value": 7.67,
+          "tolerance": 0.05
+        },
         "unit": "kcal/mol",
-        "hint_markdown": "Apply the Simpson's rule weights $(1, 4, 1)/6$ to the three integrand evaluations.",
+        "hint_markdown": "Recall Simpson's 1/3 quadrature rule weights $(1, 4, 1)/6$ for three equally spaced points on the unit interval $[0, 1]$.",
         "rationale_markdown": "$\\Delta F = \\frac{1}{6}[12.0 + 30.0 + 4.0] = \\frac{46.0}{6} = 7.6667 \\approx 7.67\\text{ kcal/mol}$."
       },
       {
@@ -299,13 +301,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "They constructed a reversible thermodynamic path connecting the interacting solid to an 'Einstein crystal' (independent harmonic oscillators anchored to lattice sites), whose absolute free energy is known analytically.",
-            "text": "They constructed a reversible thermodynamic path connecting the interacting solid to an 'Einstein crystal' (independent harmonic oscillators anchored to lattice sites), whose absolute free energy is known analytically."
+            "text_markdown": "They set the temperature of the crystal to absolute zero ($T = 0\\text{ K}$).",
+            "text": "They set the temperature of the crystal to absolute zero ($T = 0\\text{ K}$)."
           },
           {
             "id": "c",
-            "text_markdown": "They set the temperature of the crystal to absolute zero ($T = 0\\text{ K}$).",
-            "text": "They set the temperature of the crystal to absolute zero ($T = 0\\text{ K}$)."
+            "text_markdown": "They constructed a reversible thermodynamic path connecting the interacting solid to an 'Einstein crystal' (independent harmonic oscillators anchored to lattice sites), whose absolute free energy is known analytically.",
+            "text": "They constructed a reversible thermodynamic path connecting the interacting solid to an 'Einstein crystal' (independent harmonic oscillators anchored to lattice sites), whose absolute free energy is known analytically."
           },
           {
             "id": "d",
@@ -313,7 +315,7 @@
             "text": "They replaced all atoms with ideal gas particles in a single step."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "What reference system has an analytically solvable partition function for localized particles?",
         "rationale_markdown": "An Einstein crystal consists of non-interacting particles tethered to lattice positions by harmonic springs, for which $Q_{\\text{Ein}}$ and $F_{\\text{Ein}}$ are known exactly in closed form. By coupling the real interatomic potential to harmonic springs without crossing any phase boundary, Frenkel and Ladd obtained reversible, hysteresis-free absolute free energies."
       },
@@ -332,8 +334,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "Yes: integrating pressure gives $\\Delta F = -\\int_{V_0}^{V_1} P(V) dV$ at constant $T$, and integrating energy gives $\\Delta(F/T) = -\\int_{T_0}^{T_1} \\frac{E(T)}{T^2} dT$ at constant $V$.",
-            "text": "Yes: integrating pressure gives $\\Delta F = -\\int_{V_0}^{V_1} P(V) dV$ at constant $T$, and integrating energy gives $\\Delta(F/T) = -\\int_{T_0}^{T_1} \\frac{E(T)}{T^2} dT$ at constant $V$."
+            "text_markdown": "No, because $P$ and $E$ are not thermodynamic state functions.",
+            "text": "No, because $P$ and $E$ are not thermodynamic state functions."
           },
           {
             "id": "c",
@@ -342,11 +344,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "No, because $P$ and $E$ are not thermodynamic state functions.",
-            "text": "No, because $P$ and $E$ are not thermodynamic state functions."
+            "text_markdown": "Yes: integrating pressure gives $\\Delta F = -\\int_{V_0}^{V_1} P(V) dV$ at constant $T$, and integrating energy gives $\\Delta(F/T) = -\\int_{T_0}^{T_1} \\frac{E(T)}{T^2} dT$ at constant $V$.",
+            "text": "Yes: integrating pressure gives $\\Delta F = -\\int_{V_0}^{V_1} P(V) dV$ at constant $T$, and integrating energy gives $\\Delta(F/T) = -\\int_{T_0}^{T_1} \\frac{E(T)}{T^2} dT$ at constant $V$."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Recall the fundamental thermodynamic relation $dF = -S dT - P dV$ and the Gibbs-Helmholtz equation.",
         "rationale_markdown": "Standard thermodynamics dictates $(\\partial F/\\partial V)_T = -P$ and $\\partial(F/T)/\\partial T = -E/T^2$. Hence one can integrate measured equation-of-state data $P(V, T)$ and $E(V, T)$ along reversible physical paths to find free energy differences."
       },
@@ -451,13 +453,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Yes, it causes surrounding particles to recoil violently.",
-            "text": "Yes, it causes surrounding particles to recoil violently."
+            "text_markdown": "No, it is a purely virtual 'ghost' probe that evaluates the potential energy of interaction without affecting the actual system trajectory or coordinates.",
+            "text": "No, it is a purely virtual 'ghost' probe that evaluates the potential energy of interaction without affecting the actual system trajectory or coordinates."
           },
           {
             "id": "b",
-            "text_markdown": "No, it is a purely virtual 'ghost' probe that evaluates the potential energy of interaction without affecting the actual system trajectory or coordinates.",
-            "text": "No, it is a purely virtual 'ghost' probe that evaluates the potential energy of interaction without affecting the actual system trajectory or coordinates."
+            "text_markdown": "Yes, it causes surrounding particles to recoil violently.",
+            "text": "Yes, it causes surrounding particles to recoil violently."
           },
           {
             "id": "c",
@@ -470,7 +472,7 @@
             "text": "It permanently changes the total number of particles from $N$ to $N+1$."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Notice why Widom insertion is also called 'ghost particle insertion'.",
         "rationale_markdown": "The test particle in Widom insertion is a ghost: it is placed randomly at coordinates $\\mathbf{s}$, its interaction energy $\\Delta U_{\\text{test}}$ with the existing $N$ particles is recorded, and it is immediately removed without ever affecting the positions or forces of the real particles."
       },
@@ -514,8 +516,10 @@
         "difficulty": "medium",
         "taught_by": "sec_widom_and_phase_equilibria",
         "prompt_markdown": "In a Widom insertion simulation at $T = 300\\text{ K}$ ($k_B T = 2.479\\text{ kJ/mol}$), the ensemble average of the test-particle Boltzmann factor is measured to be $\\langle e^{-\\beta \\Delta U} \\rangle = 0.0183$. Calculate the excess chemical potential $\\mu_{\\text{ex}}$ in kJ/mol.",
-        "correct": 9.92,
-        "tolerance": 0.1,
+        "correct": {
+          "value": 9.92,
+          "tolerance": 0.1
+        },
         "unit": "kJ/mol",
         "hint_markdown": "Relate the excess chemical potential to the logarithm of the ensemble-averaged test-particle Boltzmann factor.",
         "rationale_markdown": "$\\mu_{\\text{ex}} = -2.479 \\times \\ln(0.0183) = -2.479 \\times (-4.0009) \\approx 9.918 \\approx 9.92\\text{ kJ/mol}$."
@@ -577,13 +581,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "By trial volume exchanges $\\Delta V_1 = -\\Delta V_2$ with total volume $V_1 + V_2$ held constant, accepted according to the Metropolis rule involving pressure and volume ratios.",
-            "text": "By trial volume exchanges $\\Delta V_1 = -\\Delta V_2$ with total volume $V_1 + V_2$ held constant, accepted according to the Metropolis rule involving pressure and volume ratios."
+            "text_markdown": "By adjusting the temperature of Box 1 while keeping Box 2 fixed.",
+            "text": "By adjusting the temperature of Box 1 while keeping Box 2 fixed."
           },
           {
             "id": "c",
-            "text_markdown": "By adjusting the temperature of Box 1 while keeping Box 2 fixed.",
-            "text": "By adjusting the temperature of Box 1 while keeping Box 2 fixed."
+            "text_markdown": "By trial volume exchanges $\\Delta V_1 = -\\Delta V_2$ with total volume $V_1 + V_2$ held constant, accepted according to the Metropolis rule involving pressure and volume ratios.",
+            "text": "By trial volume exchanges $\\Delta V_1 = -\\Delta V_2$ with total volume $V_1 + V_2$ held constant, accepted according to the Metropolis rule involving pressure and volume ratios."
           },
           {
             "id": "d",
@@ -591,7 +595,7 @@
             "text": "By setting the external force on all atoms to zero."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "How do subsystems exchange volume to equalize pressure in Gibbs ensemble?",
         "rationale_markdown": "Volume exchange moves change the volume of Box 1 by $\\Delta V$ while simultaneously changing Box 2 by $-\\Delta V$, keeping total volume $V = V_1 + V_2$ constant. The acceptance probability depends on the internal energy changes and the term $(V_1'/V_1)^{N_1}(V_2'/V_2)^{N_2}$, driving the system toward equal pressures $P_1 = P_2$."
       },
@@ -610,8 +614,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "It avoids simulating the physical liquid-gas interface and its associated interfacial free energy, allowing small bulk systems ($N \\sim 500$) to yield precise bulk coexistence densities without finite-size interfacial distortion.",
-            "text": "It avoids simulating the physical liquid-gas interface and its associated interfacial free energy, allowing small bulk systems ($N \\sim 500$) to yield precise bulk coexistence densities without finite-size interfacial distortion."
+            "text_markdown": "It guarantees that no particles ever change position.",
+            "text": "It guarantees that no particles ever change position."
           },
           {
             "id": "c",
@@ -620,11 +624,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "It guarantees that no particles ever change position.",
-            "text": "It guarantees that no particles ever change position."
+            "text_markdown": "It avoids simulating the physical liquid-gas interface and its associated interfacial free energy, allowing small bulk systems ($N \\sim 500$) to yield precise bulk coexistence densities without finite-size interfacial distortion.",
+            "text": "It avoids simulating the physical liquid-gas interface and its associated interfacial free energy, allowing small bulk systems ($N \\sim 500$) to yield precise bulk coexistence densities without finite-size interfacial distortion."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Why is an explicit interface computationally expensive in a small periodic box?",
         "rationale_markdown": "An explicit interface requires large simulation boxes (thousands of atoms) to minimize boundary artifacts, and capillary waves create severe finite-size rounding. GEMC isolates the two bulk phases in separate boxes with no interfacial area, drastically reducing finite-size effects and simulation cost."
       },
@@ -638,13 +642,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Because solids have zero entropy.",
-            "text": "Because solids have zero entropy."
+            "text_markdown": "Because inserting or deleting whole atoms into a dense crystalline lattice without creating severe vacancy/interstitial defects has an astronomically low acceptance probability.",
+            "text": "Because inserting or deleting whole atoms into a dense crystalline lattice without creating severe vacancy/interstitial defects has an astronomically low acceptance probability."
           },
           {
             "id": "b",
-            "text_markdown": "Because inserting or deleting whole atoms into a dense crystalline lattice without creating severe vacancy/interstitial defects has an astronomically low acceptance probability.",
-            "text": "Because inserting or deleting whole atoms into a dense crystalline lattice without creating severe vacancy/interstitial defects has an astronomically low acceptance probability."
+            "text_markdown": "Because solids have zero entropy.",
+            "text": "Because solids have zero entropy."
           },
           {
             "id": "c",
@@ -657,7 +661,7 @@
             "text": "Because the pressure in a solid is always negative."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Consider the particle transfer step of GEMC in an ordered crystalline lattice.",
         "rationale_markdown": "Particle transfer moves require deleting an atom from one box and randomly inserting it into the other. In a dense crystalline solid, randomly inserting an atom almost certainly produces severe atomic overlap, while deleting an atom creates an unphysical point defect. GEMC particle transfer fails completely in solids."
       },
@@ -676,13 +680,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "It remains strictly constant at 50%.",
-            "text": "It remains strictly constant at 50%."
+            "text_markdown": "It decays precipitously by several orders of magnitude (from $\\sim 0.7$ down to $< 10^{-4}$), mirroring the vanishing fraction of available cavity space.",
+            "text": "It decays precipitously by several orders of magnitude (from $\\sim 0.7$ down to $< 10^{-4}$), mirroring the vanishing fraction of available cavity space."
           },
           {
             "id": "c",
-            "text_markdown": "It decays precipitously by several orders of magnitude (from $\\sim 0.7$ down to $< 10^{-4}$), mirroring the vanishing fraction of available cavity space.",
-            "text": "It decays precipitously by several orders of magnitude (from $\\sim 0.7$ down to $< 10^{-4}$), mirroring the vanishing fraction of available cavity space."
+            "text_markdown": "It remains strictly constant at 50%.",
+            "text": "It remains strictly constant at 50%."
           },
           {
             "id": "d",
@@ -690,7 +694,7 @@
             "text": "It oscillates periodically."
           }
         ],
-        "correct": "c",
+        "correct": "b",
         "hint_markdown": "Observe the logarithmic scale on the insertion probability curve in the Concept Cell.",
         "rationale_markdown": "As density increases, the free volume per particle shrinks rapidly and cavity formation probability scales exponentially as $e^{-\\beta P V_{\\text{cavity}}}$, causing the acceptance probability to plummet by many orders of magnitude."
       },
@@ -704,8 +708,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Chemical potential $\\mu$, Volume $V$, and Temperature $T$",
-            "text": "Chemical potential $\\mu$, Volume $V$, and Temperature $T$"
+            "text_markdown": "Energy $E$, Volume $V$, and Number $N$",
+            "text": "Energy $E$, Volume $V$, and Number $N$"
           },
           {
             "id": "b",
@@ -714,8 +718,8 @@
           },
           {
             "id": "c",
-            "text_markdown": "Energy $E$, Volume $V$, and Number $N$",
-            "text": "Energy $E$, Volume $V$, and Number $N$"
+            "text_markdown": "Chemical potential $\\mu$, Volume $V$, and Temperature $T$",
+            "text": "Chemical potential $\\mu$, Volume $V$, and Temperature $T$"
           },
           {
             "id": "d",
@@ -723,21 +727,38 @@
             "text": "Temperature $T$, Pressure $P$, and Entropy $S$"
           }
         ],
-        "correct": "a",
+        "correct": "c",
         "hint_markdown": "Recall the definition of the grand canonical ensemble $(\\mu, V, T)$ from statistical mechanics.",
         "rationale_markdown": "The Grand Canonical ensemble holds chemical potential $\\mu$, volume $V$, and temperature $T$ constant, while the number of particles $N$ and internal energy $E$ fluctuate via particle insertion and deletion moves."
       },
       {
         "id": "q20_20",
         "type": "problem",
-        "question_type": "numeric",
-        "difficulty": "hard",
+        "question_type": "single_select",
+        "difficulty": "medium",
         "taught_by": "sec_widom_and_phase_equilibria",
-        "prompt_markdown": "For an ideal gas at density $\\rho = 0.05\\text{ nm}^{-3}$, what is the exact excess chemical potential $\\mu_{\\text{ex}}$ in units of $k_B T$?",
-        "correct": 0.0,
-        "tolerance": 0.001,
-        "hint_markdown": "Consider the definition of excess chemical potential relative to the non-interacting reference state.",
-        "rationale_markdown": "For an ideal gas, $V(\\mathbf{r}^N) = 0$, so $\\Delta U_{\\text{test}} = 0$. Thus $\\langle e^{-\\beta \\Delta U} \\rangle = \\langle e^0 \\rangle = 1$. The excess chemical potential is $\\mu_{\\text{ex}} = -k_B T \\ln(1) = 0.0$."
+        "prompt_markdown": "In thermodynamic integration along a geometric reaction coordinate, how can the Helmholtz free energy profile $F(r)$ of a coiled polymer chain be calculated from constrained molecular dynamics simulations where the end-to-end separation $r = |\\mathbf{R}_N - \\mathbf{R}_1|$ is fixed?",
+        "correct": "d",
+        "hint_markdown": "Consider how the potential of mean force relates to the generalized constraint force along the reaction coordinate.",
+        "rationale_markdown": "As established in thermodynamic integration applied to geometric coordinates, the derivative of free energy with respect to separation $r$ equals the mean constraint force $\\partial F / \\partial r = -\\langle f_c \\rangle_r$. Integrating this force from $r_1$ to $r_2$ yields the potential of mean force $\\Delta F$.",
+        "options": [
+          {
+            "id": "a",
+            "text": "By evaluating the radial pair distribution function $g(r)$ among non-bonded monomers and performing a direct Boltzmann inversion."
+          },
+          {
+            "id": "b",
+            "text": "By measuring the instantaneous kinetic energy of the terminal monomers and applying the classical equipartition theorem."
+          },
+          {
+            "id": "c",
+            "text": "By counting the rejection rate of Monte Carlo bead-displacement moves without applying any constraining potential."
+          },
+          {
+            "id": "d",
+            "text": "By integrating the ensemble average of the internal constraint force required to hold the chain ends at fixed separation: $F(r_2) - F(r_1) = -\\int_{r_1}^{r_2} \\langle f_c \\rangle_r \\, dr$."
+          }
+        ]
       },
       {
         "id": "sec_bennett_acceptance_ratio",
@@ -803,13 +824,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "Gaussian function $f(x) = e^{-x^2}$",
-            "text": "Gaussian function $f(x) = e^{-x^2}$"
+            "text_markdown": "Fermi-Dirac function $f(x) = \\frac{1}{1 + e^{\\beta x}}$",
+            "text": "Fermi-Dirac function $f(x) = \\frac{1}{1 + e^{\\beta x}}$"
           },
           {
             "id": "b",
-            "text_markdown": "Fermi-Dirac function $f(x) = \\frac{1}{1 + e^{\\beta x}}$",
-            "text": "Fermi-Dirac function $f(x) = \\frac{1}{1 + e^{\\beta x}}$"
+            "text_markdown": "Gaussian function $f(x) = e^{-x^2}$",
+            "text": "Gaussian function $f(x) = e^{-x^2}$"
           },
           {
             "id": "c",
@@ -822,7 +843,7 @@
             "text": "Heaviside step function $f(x) = \\Theta(x)$"
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Recall the solution to the calculus of variations problem minimizing the variance of the free energy estimator.",
         "rationale_markdown": "Charles Bennett proved using calculus of variations that the weighting function minimizing the expected statistical variance of $\\Delta F$ from two finite datasets is the Fermi-Dirac function $f(x) = \\frac{1}{1 + e^{\\beta x}}$."
       },
@@ -874,13 +895,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "BAR achieves the minimum theoretical variance by combining forward and reverse transition data, self-consistently canceling unilateral sampling biases.",
-            "text": "BAR achieves the minimum theoretical variance by combining forward and reverse transition data, self-consistently canceling unilateral sampling biases."
+            "text_markdown": "BAR does not require evaluating energy differences.",
+            "text": "BAR does not require evaluating energy differences."
           },
           {
             "id": "c",
-            "text_markdown": "BAR does not require evaluating energy differences.",
-            "text": "BAR does not require evaluating energy differences."
+            "text_markdown": "BAR achieves the minimum theoretical variance by combining forward and reverse transition data, self-consistently canceling unilateral sampling biases.",
+            "text": "BAR achieves the minimum theoretical variance by combining forward and reverse transition data, self-consistently canceling unilateral sampling biases."
           },
           {
             "id": "d",
@@ -888,7 +909,7 @@
             "text": "BAR only works when no configurations overlap."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Think about variance reduction and utilizing all available simulation data from both end states.",
         "rationale_markdown": "Unidirectional FEP relies on rare tail events and suffers from unilateral bias. BAR optimally combines data from both ensembles using the Fermi weight, provably achieving the lowest possible variance among all asymptotically unbiased estimators."
       },
@@ -899,8 +920,10 @@
         "difficulty": "medium",
         "taught_by": "sec_bennett_acceptance_ratio",
         "prompt_markdown": "In a BAR calculation with equal samples ($n_0 = n_1$), a single energy difference observation in ensemble 0 gives $\\beta(V_1 - V_0 - \\Delta F) = 0.0$. What is the Fermi weight $f(x) = \\frac{1}{1 + e^{\\beta(V_1 - V_0 - \\Delta F)}}$ assigned to this configuration?",
-        "correct": 0.5,
-        "tolerance": 0.01,
+        "correct": {
+          "value": 0.5,
+          "tolerance": 0.01
+        },
         "hint_markdown": "Evaluate the Fermi weighting function when its exponential argument is zero.",
         "rationale_markdown": "$f(0) = \\frac{1}{1 + e^0} = \\frac{1}{1 + 1} = 0.5$."
       },
@@ -914,8 +937,8 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "MBAR uses configurations from all $K$ simulated states simultaneously to compute the free energy of every state, utilizing all sampled data globally and achieving lower variance than pairwise BAR.",
-            "text": "MBAR uses configurations from all $K$ simulated states simultaneously to compute the free energy of every state, utilizing all sampled data globally and achieving lower variance than pairwise BAR."
+            "text_markdown": "MBAR only works for ideal gases.",
+            "text": "MBAR only works for ideal gases."
           },
           {
             "id": "b",
@@ -929,11 +952,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "MBAR only works for ideal gases.",
-            "text": "MBAR only works for ideal gases."
+            "text_markdown": "MBAR uses configurations from all $K$ simulated states simultaneously to compute the free energy of every state, utilizing all sampled data globally and achieving lower variance than pairwise BAR.",
+            "text": "MBAR uses configurations from all $K$ simulated states simultaneously to compute the free energy of every state, utilizing all sampled data globally and achieving lower variance than pairwise BAR."
           }
         ],
-        "correct": "a",
+        "correct": "d",
         "hint_markdown": "Consider how MBAR reweights samples from every simulated $\\lambda_k$ window to all other windows.",
         "rationale_markdown": "While pairwise BAR only combines adjacent pairs $(\\lambda_k, \\lambda_{k+1})$, MBAR pools the configurations from all $K$ states into a single global likelihood estimator, extracting information from non-adjacent overlap and providing the globally optimal, minimum-variance solution."
       },
@@ -947,13 +970,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "The overlap increases to 100%.",
-            "text": "The overlap increases to 100%."
+            "text_markdown": "The overlap drops towards zero, and the statistical uncertainty in $\\Delta F$ diverges because neither ensemble samples configurations near the crossing point.",
+            "text": "The overlap drops towards zero, and the statistical uncertainty in $\\Delta F$ diverges because neither ensemble samples configurations near the crossing point."
           },
           {
             "id": "b",
-            "text_markdown": "The overlap drops towards zero, and the statistical uncertainty in $\\Delta F$ diverges because neither ensemble samples configurations near the crossing point.",
-            "text": "The overlap drops towards zero, and the statistical uncertainty in $\\Delta F$ diverges because neither ensemble samples configurations near the crossing point."
+            "text_markdown": "The overlap increases to 100%.",
+            "text": "The overlap increases to 100%."
           },
           {
             "id": "c",
@@ -966,7 +989,7 @@
             "text": "The two distributions merge into a single delta peak."
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Look at the shaded purple region between the two distributions as you drag the separation slider.",
         "rationale_markdown": "When the energy distributions $\\rho_0$ and $\\rho_1$ are pulled apart, the overlap region in the middle shrinks exponentially. Without overlapping samples, neither state can inform the other, requiring intermediate bridging windows (stratification) to restore overlap."
       },
@@ -1010,8 +1033,10 @@
         "difficulty": "medium",
         "taught_by": "sec_bennett_acceptance_ratio",
         "prompt_markdown": "If $n_0 = 10,000$ configurations are collected in state 0 and $n_1 = 1,000$ configurations in state 1, what is the shift term $\\ln(n_0 / n_1)$ in the BAR equation? (Enter to 2 decimal places).",
-        "correct": 2.3,
-        "tolerance": 0.05,
+        "correct": {
+          "value": 2.3,
+          "tolerance": 0.05
+        },
         "hint_markdown": "Evaluate the natural logarithm of the sample size ratio.",
         "rationale_markdown": "$\\ln(10,000 / 1,000) = \\ln(10) \\approx 2.3026 \\approx 2.30$."
       },
@@ -1030,13 +1055,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "It relates the exponential average of non-equilibrium work $W$ performed during finite-time irreversible processes to the equilibrium free energy difference $\\Delta F$.",
-            "text": "It relates the exponential average of non-equilibrium work $W$ performed during finite-time irreversible processes to the equilibrium free energy difference $\\Delta F$."
+            "text_markdown": "It only holds for infinitely slow, quasi-static processes where $W = \\Delta F$.",
+            "text": "It only holds for infinitely slow, quasi-static processes where $W = \\Delta F$."
           },
           {
             "id": "c",
-            "text_markdown": "It only holds for infinitely slow, quasi-static processes where $W = \\Delta F$.",
-            "text": "It only holds for infinitely slow, quasi-static processes where $W = \\Delta F$."
+            "text_markdown": "It relates the exponential average of non-equilibrium work $W$ performed during finite-time irreversible processes to the equilibrium free energy difference $\\Delta F$.",
+            "text": "It relates the exponential average of non-equilibrium work $W$ performed during finite-time irreversible processes to the equilibrium free energy difference $\\Delta F$."
           },
           {
             "id": "d",
@@ -1044,7 +1069,7 @@
             "text": "It is an approximation valid only for linear harmonic springs."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "Recall Jarzynski's remarkable 1997 equality for non-equilibrium pulling trajectories.",
         "rationale_markdown": "Jarzynski proved that by averaging $e^{-\\beta W}$ over an ensemble of non-equilibrium trajectories driven at finite speed, one recovers the exact equilibrium $\\Delta F$. By Jensen's inequality, $\\langle W \\rangle \\ge \\Delta F$, with equality only in the reversible limit."
       },
@@ -1154,8 +1179,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "To overcome high free energy barriers along a reaction coordinate $\\xi$ and force uniform sampling of transition states and rare configurations.",
-            "text": "To overcome high free energy barriers along a reaction coordinate $\\xi$ and force uniform sampling of transition states and rare configurations."
+            "text_markdown": "To convert molecular dynamics into quantum mechanics.",
+            "text": "To convert molecular dynamics into quantum mechanics."
           },
           {
             "id": "c",
@@ -1164,11 +1189,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "To convert molecular dynamics into quantum mechanics.",
-            "text": "To convert molecular dynamics into quantum mechanics."
+            "text_markdown": "To overcome high free energy barriers along a reaction coordinate $\\xi$ and force uniform sampling of transition states and rare configurations.",
+            "text": "To overcome high free energy barriers along a reaction coordinate $\\xi$ and force uniform sampling of transition states and rare configurations."
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Think about why standard Boltzmann sampling fails when barriers exceed several $k_B T$.",
         "rationale_markdown": "High free energy barriers prevent standard Boltzmann simulations from crossing transition states in reasonable time. Umbrella sampling adds restraining potentials (e.g. Harmonic springs) to force the system to thoroughly sample high-energy barrier regions."
       },
@@ -1182,13 +1207,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{-\\beta W_i(\\xi)}$",
-            "text": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{-\\beta W_i(\\xi)}$"
+            "text_markdown": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{+\\beta W_i(\\xi)} e^{-\\beta F_i}$",
+            "text": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{+\\beta W_i(\\xi)} e^{-\\beta F_i}$"
           },
           {
             "id": "b",
-            "text_markdown": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{+\\beta W_i(\\xi)} e^{-\\beta F_i}$",
-            "text": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{+\\beta W_i(\\xi)} e^{-\\beta F_i}$"
+            "text_markdown": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{-\\beta W_i(\\xi)}$",
+            "text": "$P_i(\\xi) = P_i^{\\text{biased}}(\\xi) e^{-\\beta W_i(\\xi)}$"
           },
           {
             "id": "c",
@@ -1201,7 +1226,7 @@
             "text": "$P_i(\\xi) = \\frac{d}{d\\xi} P_i^{\\text{biased}}(\\xi)$"
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Since the biased distribution is $P_i^{\\text{biased}}(\\xi) \\propto P_i(\\xi) e^{-\\beta W_i(\\xi)}$, invert this relation.",
         "rationale_markdown": "Because the biased probability contains an extra factor of $e^{-\\beta W_i(\\xi)}$, multiplying by $e^{+\\beta W_i(\\xi)}$ removes the bias. The constant factor $e^{-\\beta F_i}$ accounts for the unknown free energy offset of window $i$ (determined self-consistently by WHAM)."
       },
@@ -1253,13 +1278,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "The log modification factor is halved: $\\ln f_{k+1} = \\frac{1}{2}\\ln f_k \\implies f_{k+1} = \\sqrt{f_k}$, and $H(E)$ is reset to zero",
-            "text": "The log modification factor is halved: $\\ln f_{k+1} = \\frac{1}{2}\\ln f_k \\implies f_{k+1} = \\sqrt{f_k}$, and $H(E)$ is reset to zero"
+            "text_markdown": "$f$ is set to zero immediately and the simulation terminates",
+            "text": "$f$ is set to zero immediately and the simulation terminates"
           },
           {
             "id": "c",
-            "text_markdown": "$f$ is set to zero immediately and the simulation terminates",
-            "text": "$f$ is set to zero immediately and the simulation terminates"
+            "text_markdown": "The log modification factor is halved: $\\ln f_{k+1} = \\frac{1}{2}\\ln f_k \\implies f_{k+1} = \\sqrt{f_k}$, and $H(E)$ is reset to zero",
+            "text": "The log modification factor is halved: $\\ln f_{k+1} = \\frac{1}{2}\\ln f_k \\implies f_{k+1} = \\sqrt{f_k}$, and $H(E)$ is reset to zero"
           },
           {
             "id": "d",
@@ -1267,7 +1292,7 @@
             "text": "$f$ remains unchanged forever"
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "How is $f$ refined in each stage of Wang-Landau?",
         "rationale_markdown": "When the histogram is sufficiently flat (e.g. All bins within 80% of the mean), the modification factor is refined by setting $\\ln f_{k+1} = \\frac{1}{2}\\ln f_k$ ($f \\to \\sqrt{f}$), and the histogram is reset to zero for the next iteration."
       },
@@ -1278,8 +1303,10 @@
         "difficulty": "easy",
         "taught_by": "sec_umbrella_and_wang_landau",
         "prompt_markdown": "Starting with an initial Wang-Landau modification factor $f_0 = e^1$ (so $\\ln f_0 = 1.0$), what is the value of $\\ln f$ after $k = 4$ successful flatness refinement stages?",
-        "correct": 0.0625,
-        "tolerance": 0.001,
+        "correct": {
+          "value": 0.0625,
+          "tolerance": 0.001
+        },
         "hint_markdown": "Recall how the log modification factor is updated at each completed flatness stage.",
         "rationale_markdown": "$\\ln f_k = \\ln f_0 \\times (1/2)^k = 1.0 \\times (1/2)^4 = 1/16 = 0.0625$."
       },
@@ -1289,10 +1316,12 @@
         "question_type": "numeric",
         "difficulty": "medium",
         "taught_by": "sec_umbrella_and_wang_landau",
-        "prompt_markdown": "How many refinement stages $k$ are required to reduce $\\ln f$ from $1.0$ to below $10^{-6}$ (i.e. $(1/2)^k < 10^{-6}$)?",
-        "correct": 20.0,
-        "tolerance": 0.01,
-        "hint_markdown": "Determine the smallest integer power of 2 that exceeds one million.",
+        "prompt_markdown": "In the Wang-Landau algorithm, the modification factor is refined at each stage according to $\\ln f_{k+1} = \\frac{1}{2}\\ln f_k$, beginning at $\\ln f_0 = 1.0$. How many refinement stages $k$ are required to reduce $\\ln f$ to below $10^{-6}$?",
+        "correct": {
+          "value": 20.0,
+          "tolerance": 0.01
+        },
+        "hint_markdown": "Solve for the integer $k$ such that $(1/2)^k < 10^{-6}$.",
         "rationale_markdown": "$2^{19} = 524,288 < 10^6$, whereas $2^{20} = 1,048,576 > 10^6$. Therefore, exactly $k = 20$ stages are required."
       },
       {
@@ -1310,8 +1339,8 @@
           },
           {
             "id": "b",
-            "text_markdown": "They can be evaluated immediately by numerical quadrature: $Z(T) = \\sum_E g(E) e^{-E / k_B T}$ and $\\langle E \\rangle_T = \\frac{1}{Z(T)} \\sum_E E g(E) e^{-E / k_B T}$ without any additional simulations!",
-            "text": "They can be evaluated immediately by numerical quadrature: $Z(T) = \\sum_E g(E) e^{-E / k_B T}$ and $\\langle E \\rangle_T = \\frac{1}{Z(T)} \\sum_E E g(E) e^{-E / k_B T}$ without any additional simulations!"
+            "text_markdown": "The density of states cannot be used to compute canonical averages.",
+            "text": "The density of states cannot be used to compute canonical averages."
           },
           {
             "id": "c",
@@ -1320,11 +1349,11 @@
           },
           {
             "id": "d",
-            "text_markdown": "The density of states cannot be used to compute canonical averages.",
-            "text": "The density of states cannot be used to compute canonical averages."
+            "text_markdown": "They can be evaluated immediately by numerical quadrature: $Z(T) = \\sum_E g(E) e^{-E / k_B T}$ and $\\langle E \\rangle_T = \\frac{1}{Z(T)} \\sum_E E g(E) e^{-E / k_B T}$ without any additional simulations!",
+            "text": "They can be evaluated immediately by numerical quadrature: $Z(T) = \\sum_E g(E) e^{-E / k_B T}$ and $\\langle E \\rangle_T = \\frac{1}{Z(T)} \\sum_E E g(E) e^{-E / k_B T}$ without any additional simulations!"
           }
         ],
-        "correct": "b",
+        "correct": "d",
         "hint_markdown": "Recall the microcanonical-to-canonical transformation $Z(\\beta) = \\int g(E) e^{-\\beta E} dE$.",
         "rationale_markdown": "Because $g(E)$ is a purely temperature-independent property of the Hamiltonian, once $g(E)$ is known, canonical thermodynamics (free energy, heat capacity, average energy) across all temperatures can be evaluated in seconds by simple 1D summation over energy bins."
       },
@@ -1338,13 +1367,13 @@
         "options": [
           {
             "id": "a",
-            "text_markdown": "$T(E) = \\frac{E}{k_B}$",
-            "text": "$T(E) = \\frac{E}{k_B}$"
+            "text_markdown": "$\\frac{1}{T(E)} = \\frac{\\partial S(E)}{\\partial E} = k_B \\frac{\\partial \\ln g(E)}{\\partial E}$",
+            "text": "$\\frac{1}{T(E)} = \\frac{\\partial S(E)}{\\partial E} = k_B \\frac{\\partial \\ln g(E)}{\\partial E}$"
           },
           {
             "id": "b",
-            "text_markdown": "$\\frac{1}{T(E)} = \\frac{\\partial S(E)}{\\partial E} = k_B \\frac{\\partial \\ln g(E)}{\\partial E}$",
-            "text": "$\\frac{1}{T(E)} = \\frac{\\partial S(E)}{\\partial E} = k_B \\frac{\\partial \\ln g(E)}{\\partial E}$"
+            "text_markdown": "$T(E) = \\frac{E}{k_B}$",
+            "text": "$T(E) = \\frac{E}{k_B}$"
           },
           {
             "id": "c",
@@ -1357,7 +1386,7 @@
             "text": "$T(E) = \\sqrt{S(E)}$"
           }
         ],
-        "correct": "b",
+        "correct": "a",
         "hint_markdown": "Recall the fundamental thermodynamic definition of temperature $1/T = (\\partial S / \\partial E)_{V, N}$.",
         "rationale_markdown": "From fundamental thermodynamics $dE = T dS - P dV + \\mu dN$, the inverse temperature is $1/T = (\\partial S / \\partial E)_{V, N} = k_B \\frac{\\partial \\ln g(E)}{\\partial E}$. In Wang-Landau simulations, the slope of $\\ln g(E)$ directly yields $1/T$."
       },
@@ -1446,13 +1475,13 @@
           },
           {
             "id": "b",
-            "text_markdown": "$S(E)$ has a region of positive curvature ($d^2 S / dE^2 > 0$), producing a convex 'dip' that corresponds to a negative microcanonical heat capacity ($C_V < 0$) in finite systems.",
-            "text": "$S(E)$ has a region of positive curvature ($d^2 S / dE^2 > 0$), producing a convex 'dip' that corresponds to a negative microcanonical heat capacity ($C_V < 0$) in finite systems."
+            "text_markdown": "$S(E)$ drops to negative infinity.",
+            "text": "$S(E)$ drops to negative infinity."
           },
           {
             "id": "c",
-            "text_markdown": "$S(E)$ drops to negative infinity.",
-            "text": "$S(E)$ drops to negative infinity."
+            "text_markdown": "$S(E)$ has a region of positive curvature ($d^2 S / dE^2 > 0$), producing a convex 'dip' that corresponds to a negative microcanonical heat capacity ($C_V < 0$) in finite systems.",
+            "text": "$S(E)$ has a region of positive curvature ($d^2 S / dE^2 > 0$), producing a convex 'dip' that corresponds to a negative microcanonical heat capacity ($C_V < 0$) in finite systems."
           },
           {
             "id": "d",
@@ -1460,7 +1489,7 @@
             "text": "$S(E)$ becomes discontinuous."
           }
         ],
-        "correct": "b",
+        "correct": "c",
         "hint_markdown": "What does a barrier between two coexistence phases imply for the concavity of $S(E)$ in a finite system?",
         "rationale_markdown": "In finite systems with first-order transitions, the interfacial free energy penalty between coexistence phases makes intermediate energies less probable, producing a convex intruder ($d^2 S/dE^2 > 0$) in $S(E)$, which corresponds to negative heat capacity $C_V = -(d^2 S/dE^2)^{-1} / T^2 < 0$ in the microcanonical ensemble."
       },
@@ -1471,8 +1500,10 @@
         "difficulty": "medium",
         "taught_by": "sec_free_energy_foundations",
         "prompt_markdown": "A reaction has a free energy barrier of $\\Delta F^* = 10.0\\text{ kcal/mol}$ at $T = 300\\text{ K}$ ($k_B T = 0.596\\text{ kcal/mol}$). By what factor is the transition state probability reduced relative to the reactant minimum? Enter the base-10 order of magnitude exponent $m$ where the reduction factor is $10^{-m}$.",
-        "correct": 7.29,
-        "tolerance": 0.1,
+        "correct": {
+          "value": 7.29,
+          "tolerance": 0.1
+        },
         "hint_markdown": "Convert the natural exponential Boltzmann factor into base 10 using the thermal energy.",
         "rationale_markdown": "$\\Delta F^* / k_B T = 10.0 / 0.596 = 16.7785$. In base 10: $m = 16.7785 / \\ln(10) = 16.7785 / 2.302585 \\approx 7.287 \\approx 7.29$. The probability is suppressed by a factor of $\\sim 10^{-7.3}$."
       }

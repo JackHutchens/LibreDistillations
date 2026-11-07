@@ -1,63 +1,67 @@
 worksheet:
   id: lesson_13_prng_and_statistical_tests
-  title: 'Atomic Scale Simulations · Lesson 13: Pseudo-Random Number Generators, Marsaglia Hyperplanes & Chi-Squared Testing'
+  title: 'Atomic Scale Simulations · Lesson 13: Pseudo-Random Number Generators, Marsaglia
+    Hyperplanes & Chi-Squared Testing'
   estimated_minutes: 110
   learning_objectives:
-  - Distinguish True Random, Pseudo-Random (PRNG), and Quasi-Random (QRNG) sequences, comparing their reproducibility, serial
-    correlations, and Monte Carlo integration error scaling.
-  - Analyze a PRNG as a deterministic finite-state automaton (State S, Transition T, Output Mapping F) and calculate period
-    exhaustion times on modern GHz and massively parallel computers.
-  - Trace Linear Congruential Generators I_{n+1} = (a I_n + c) mod m by hand, diagnose bit-level periodicity in power-of-2
-    moduli, and calculate Marsaglia hyperplane bounds in d dimensions.
-  - Contrast Lagged Fibonacci Generators (LFGs) and Combined Multiple Recursive Generators against LCGs in terms of internal
-    state size, period length, and seeding requirements.
-  - Apply Pearson's chi-squared test and the incomplete gamma tail probability Q(chi^2 | N-1) to evaluate empirical uniformity,
-    interpreting both small-Q (biased) and large-Q (over-uniform) rejection tails.
-  - Design scalable parallel Monte Carlo random number streams using SPRNG, avoiding identical-seed cloning disasters and
-    comparing Cycle Division (Leapfrogging) against Cycle and Iteration Parameterization.
+  - Distinguish True Random, Pseudo-Random (PRNG), and Quasi-Random (QRNG) sequences,
+    comparing their reproducibility, serial correlations, and Monte Carlo integration
+    error scaling.
+  - Analyze a PRNG as a deterministic finite-state automaton (State S, Transition
+    T, Output Mapping F) and calculate period exhaustion times on modern GHz and massively
+    parallel computers.
+  - Trace Linear Congruential Generators I_{n+1} = (a I_n + c) mod m by hand, diagnose
+    bit-level periodicity in power-of-2 moduli, and calculate Marsaglia hyperplane
+    bounds in d dimensions.
+  - Contrast Lagged Fibonacci Generators (LFGs) and Combined Multiple Recursive Generators
+    against LCGs in terms of internal state size, period length, and seeding requirements.
+  - Apply Pearson's chi-squared test and the incomplete gamma tail probability Q(chi^2
+    | N-1) to evaluate empirical uniformity, interpreting both small-Q (biased) and
+    large-Q (over-uniform) rejection tails.
+  - Design scalable parallel Monte Carlo random number streams using SPRNG, avoiding
+    identical-seed cloning disasters and comparing Cycle Division (Leapfrogging) against
+    Cycle and Iteration Parameterization.
   sections:
   - id: sec_rng_taxonomy_and_automata
     type: markdown_section
     title: 1. What Is a Random Number on a Computer? TRNG vs. PRNG vs. QRNG
-    body_markdown: "As John von Neumann famously quipped in 1951, *\"Anyone who considers arithmetical methods of producing\
-      \ random digits is, of course, in a state of sin\"*—and Donald Knuth added in 1986, *\"Random numbers should not be\
-      \ chosen at random.\"* A **single number** cannot be random; randomness is a **negative property** (the absence of predictable\
-      \ order) of an **infinite sequence** such that all subsequences are equally distributed and no intelligent gambler can\
-      \ profit by betting on the next draw.\n\nIn scientific computing we distinguish three fundamentally different families\
-      \ of generators:\n\n| Generator Class | Mechanism | Reproducible? | Serial Correlation | $D$-Dim Quadrature Error |\
-      \ Primary Use Case |\n|:--- |:--- |:---: |:--- |:--- |:--- |\n| **True Random (TRNG)** | Physical noise (circuit thermal\
-      \ noise, Geiger decay counts, clock jitter) | **No** | Uncorrelated (if unbiased) | $\\mathcal{O}(N^{-1/2})$ | Cryptographic\
-      \ keys, one-time seeds (too slow for MC: we need $\\sim 10^{10}\\text{ RN/s}$) |\n| **Pseudo-Random (PRNG)** | Deterministic\
-      \ finite-state recurrence with long repeat period $L$ | **Yes** (from seed $S_0$) | Designed to vanish: $\\langle f_1(x_{i+1})\\\
-      cdots f_k(x_{i+k})\\rangle = \\langle f_1\\rangle\\cdots\\langle f_k\\rangle$ | $\\mathcal{O}(N^{-1/2})$ | Markov Chain\
-      \ Monte Carlo, Molecular Dynamics, KMC |\n| **Quasi-Random (QRNG)** | Low-discrepancy deterministic sequences (Halton,\
-      \ Sobol, van der Corput) | **Yes** | **Strongly negatively correlated** (sequentially fills the largest \"holes\" in\
-      \ space) | $\\mathcal{O}\\!\\left(\\frac{(\\ln N)^D}{N}\\right)$ | Low-dimensional ($D \\lesssim 6$) numerical integration\
-      \ |\n\n### The Finite-State Automaton Model & Cycle Exhaustion\nEvery computer PRNG is a deterministic finite-state\
-      \ machine defined by $(S, T, F)$:\n1. **State $S_n$ (and Initial Seed $S_0$):** An internal memory buffer of $M$ bits\
-      \ ($2^M$ total possible states).\n2. **Iteration Process $T$:** A deterministic transition rule $S_{n+1} = T(S_n)$.\n\
-      3. **Output Mapping $F$:** Extracts an integer $I_n \\in \\{0, 1, \\dots, 2^N-1\\}$ or uniform real $U_n = I_n / 2^N\
-      \ \\in [0, 1)$ from $S_n$.\n\nBecause the state space has at most $2^M$ distinct configurations and $T$ is deterministic,\
-      \ the sequence **must eventually repeat**, entering a periodic cycle of length $L \\le 2^M$. If $T$ is a one-to-one\
-      \ (bijective) mapping, the state space partitions into one or more disjoint closed cycles.\n- On a modern processor\
-      \ generating $\\sim 10^9 \\approx 2^{30}\\text{ RN/s}$ per core:\n - **31-bit `rand` ($L \\approx 2^{31}$):** Exhausted\
-      \ in **$\\sim 1\\text{–}2\\text{ seconds}$** on a single processor!\n - **48-bit `drand48` ($L = 2^{48} \\approx 2.8\
-      \ \\times 10^{14}$):** Exhausted in **$\\sim 3\\text{ days}$** on $1$ processor, or **$\\sim 45\\text{ minutes}$** across\
-      \ $100$ processors.\n - **64-bit LCG ($L \\approx 2^{64} \\approx 1.8 \\times 10^{19}$):** Exhausted in $\\sim 600\\\
-      text{ years}$ on 1 core (or $\\sim 2\\text{ days}$ on $10^5$ cores).\n - **SPRNG Lagged Fibonacci ($L \\approx 2^{1310}$):**\
-      \ Takes **$\\sim 10^{375}\\text{ years}$** even on $10^5$ processors!\n\n### 1D Uniformity Moments\nFor a continuous\
-      \ uniform random variable $R \\sim U(0, 1)$ with PDF $p(R) = 1$ on $[0, 1)$:\n$$\\langle R \\rangle = \\int_0^1 R\\\
-      ,dR = \\frac{1}{2}, \\qquad \\sigma_R^2 = \\left\\langle (R - \\langle R \\rangle)^2 \\right\\rangle = \\int_0^1 \\\
-      left(R - \\frac{1}{2}\\right)^2 dR = \\frac{1}{12} \\approx 0.08333$$\nIn a finite sample of $N$ draws, the expected\
-      \ count inside a sub-interval $(a, b) \\subset [0, 1]$ is $N(b - a) \\pm \\sqrt{N(b - a)[1 - (b - a)]} \\approx N(b\
-      \ - a) \\pm [N(b - a)]^{1/2}$."
+    body_markdown: |-
+      As John von Neumann famously quipped in 1951, *"Anyone who considers arithmetical methods of producing random digits is, of course, in a state of sin"*—and Donald Knuth added in 1986, *"Random numbers should not be chosen at random."* A **single number** cannot be random; randomness is a **negative property** (the absence of predictable order) of an **infinite sequence** such that all subsequences are equally distributed and no intelligent gambler can profit by betting on the next draw.
+
+      In scientific computing we distinguish three fundamentally different families of generators:
+
+      | Generator Class | Mechanism | Reproducible? | Serial Correlation | $D$-Dim Quadrature Error | Primary Use Case |
+      |:--- |:--- |:---: |:--- |:--- |:--- |
+      | **True Random (TRNG)** | Physical noise (circuit thermal noise, Geiger decay counts, clock jitter) | **No** | Uncorrelated (if unbiased) | $\mathcal{O}(N^{-1/2})$ | Cryptographic keys, one-time seeds (too slow for MC: we need $\sim 10^{10}\text{ RN/s}$) |
+      | **Pseudo-Random (PRNG)** | Deterministic finite-state recurrence with long repeat period $L$ | **Yes** (from seed $S_0$) | Designed to vanish: $\langle f_1(x_{i+1})\cdots f_k(x_{i+k})\rangle = \langle f_1\rangle\cdots\langle f_k\rangle$ | $\mathcal{O}(N^{-1/2})$ | Markov Chain Monte Carlo, Molecular Dynamics, KMC |
+      | **Quasi-Random (QRNG)** | Low-discrepancy deterministic sequences (Halton, Sobol, van der Corput) | **Yes** | **Strongly negatively correlated** (sequentially fills the largest "holes" in space) | $\mathcal{O}\!\left(\frac{(\ln N)^D}{N}\right)$ | Low-dimensional ($D \lesssim 6$) numerical integration |
+
+      ### The Finite-State Automaton Model & Cycle Exhaustion
+      Every computer PRNG is a deterministic finite-state machine defined by $(S, T, F)$:
+      1. **State $S_n$ (and Initial Seed $S_0$):** An internal memory buffer of $M$ bits ($2^M$ total possible states).
+      2. **Iteration Process $T$:** A deterministic transition rule $S_{n+1} = T(S_n)$.
+      3. **Output Mapping $F$:** Extracts an integer $I_n \in \{0, 1, \dots, 2^N-1\}$ or uniform real $U_n = I_n / 2^N \in [0, 1)$ from $S_n$.
+
+      Because the state space has at most $2^M$ distinct configurations and $T$ is deterministic, the sequence **must eventually repeat**, entering a periodic cycle of length $L \le 2^M$. If $T$ is a one-to-one (bijective) mapping, the state space partitions into one or more disjoint closed cycles.
+      - On a modern processor generating $\sim 10^9 \approx 2^{30}\text{ RN/s}$ per core:
+       - **31-bit `rand` ($L \approx 2^{31}$):** Exhausted in **$\sim 1\text{–}2\text{ seconds}$** on a single processor!
+       - **48-bit `drand48` ($L = 2^{48} \approx 2.8 \times 10^{14}$):** Exhausted in **$\sim 3\text{ days}$** on $1$ processor, or **$\sim 45\text{ minutes}$** across $100$ processors.
+       - **64-bit LCG ($L \approx 2^{64} \approx 1.8 \times 10^{19}$):** Exhausted in $\sim 600\text{ years}$ on 1 core (or $\sim 2\text{ days}$ on $10^5$ cores).
+       - **SPRNG Lagged Fibonacci ($L \approx 2^{1310}$):** Takes **$\sim 10^{375}\text{ years}$** even on $10^5$ processors!
+
+      ### 1D Uniformity Moments
+      For a continuous uniform random variable $R \sim U(0, 1)$ with PDF $p(R) = 1$ on $[0, 1)$:
+      $$\langle R \rangle = \int_0^1 R\,dR = \frac{1}{2}, \qquad \sigma_R^2 = \left\langle (R - \langle R \rangle)^2 \right\rangle = \int_0^1 \left(R - \frac{1}{2}\right)^2 dR = \frac{1}{12} \approx 0.08333$$
+      In a finite sample of $N$ draws, the expected count inside a sub-interval $(a, b) \subset [0, 1]$ is $N(b - a) \pm \sqrt{N(b - a)[1 - (b - a)]} \approx N(b - a) \pm [N(b - a)]^{1/2}$.
   - id: concept_prng_vs_qrng
     type: concept_cell
-    title: 'Interactive Lab: Pseudo-Random Clumping vs. Quasi-Random Low-Discrepancy Sequences'
-    description_markdown: Compare a standard **Pseudo-Random Number Generator (PRNG)** against a 2D **Halton Quasi-Random
-      Number Generator (QRNG)** constructed from base-2 and base-3 van der Corput radical-inverse sequences. Switch the display
-      mode to inspect 2D spatial voids/clumps on an $8\times 8$ grid or the log-log integration error convergence rate as
-      $N$ grows.
+    title: 'Interactive Lab: Pseudo-Random Clumping vs. Quasi-Random Low-Discrepancy
+      Sequences'
+    description_markdown: Compare a standard **Pseudo-Random Number Generator (PRNG)**
+      against a 2D **Halton Quasi-Random Number Generator (QRNG)** constructed from
+      base-2 and base-3 van der Corput radical-inverse sequences. Switch the display
+      mode to inspect 2D spatial voids/clumps on an $8\times 8$ grid or the log-log
+      integration error convergence rate as $N$ grows.
     render_function: render_prng_vs_qrng_discrepancy
     layout: figure_left
     controls:
@@ -88,70 +92,91 @@ worksheet:
         max: 50
         step: 1
         default: 42
-    takeaway_markdown: '**Key Takeaway:** Uncorrelated PRNG draws naturally clump together and leave $\mathcal{O}(\sqrt{n})$
-      Poisson voids, bounding Monte Carlo integration error to $\mathcal{O}(N^{-1/2})$. A QRNG deliberately violates serial
-      independence so each new point lands inside the largest remaining void, accelerating low-dimensional integration convergence
-      to $\mathcal{O}((\ln N)^D / N)$—but making QRNGs **unusable** for Markov Chain random walks where step-to-step independence
+    takeaway_markdown: '**Key Takeaway:** Uncorrelated PRNG draws naturally clump
+      together and leave $\mathcal{O}(\sqrt{n})$ Poisson voids, bounding Monte Carlo
+      integration error to $\mathcal{O}(N^{-1/2})$. A QRNG deliberately violates serial
+      independence so each new point lands inside the largest remaining void, accelerating
+      low-dimensional integration convergence to $\mathcal{O}((\ln N)^D / N)$—but
+      making QRNGs **unusable** for Markov Chain random walks where step-to-step independence
       is required!'
   - id: q13_01_rng_philosophy
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: Why can a **single number** (such as $x = 0.42857$) never be classified as "random" on its own?
-    hint_markdown: Recall the lecture's definition of randomness as a property of an infinite sequence and its subsequences.
+    prompt_markdown: Why can a **single number** (such as $x = 0.42857$) never be
+      classified as "random" on its own?
+    hint_markdown: Recall the lecture's definition of randomness as a property of
+      an infinite sequence and its subsequences.
     options:
     - id: a
-      text: Because randomness is a property of an infinite sequence (the absence of predictable order and equal distribution
-        across all subsequences), not of an isolated scalar value.
-      text_markdown: Because randomness is a property of an infinite sequence (the absence of predictable order and equal
-        distribution across all subsequences), not of an isolated scalar value.
+      text: Because randomness is a property of an infinite sequence (the absence
+        of predictable order and equal distribution across all subsequences), not
+        of an isolated scalar value.
+      text_markdown: Because randomness is a property of an infinite sequence (the
+        absence of predictable order and equal distribution across all subsequences),
+        not of an isolated scalar value.
     - id: b
-      text: Because any floating-point number stored in binary on a computer is rational and therefore cannot be random.
-      text_markdown: Because any floating-point number stored in binary on a computer is rational and therefore cannot be
-        random.
+      text: Because any floating-point number stored in binary on a computer is rational
+        and therefore cannot be random.
+      text_markdown: Because any floating-point number stored in binary on a computer
+        is rational and therefore cannot be random.
     - id: c
-      text: Because a single number is only random if it is irrational, such as $\pi/4$ or $\sqrt{2}/2$.
-      text_markdown: Because a single number is only random if it is irrational, such as $\pi/4$ or $\sqrt{2}/2$.
+      text: Because a single number is only random if it is irrational, such as $\pi/4$
+        or $\sqrt{2}/2$.
+      text_markdown: Because a single number is only random if it is irrational, such
+        as $\pi/4$ or $\sqrt{2}/2$.
     - id: d
-      text: Because randomness requires the number to be strictly equal to the ensemble mean $1/2$.
-      text_markdown: Because randomness requires the number to be strictly equal to the ensemble mean $1/2$.
+      text: Because randomness requires the number to be strictly equal to the ensemble
+        mean $1/2$.
+      text_markdown: Because randomness requires the number to be strictly equal to
+        the ensemble mean $1/2$.
     correct: a
-    rationale_markdown: 'A single scalar value carries no statistical distribution or serial transition history. Randomness
-      is defined strictly as a property of a **sequence**: the absence of predictable order (an intelligent gambler cannot
-      beat chance predicting $x_{n+1}$ from $x_1, \dots, x_n$) and equidistribution across all infinite subsequences.'
+    rationale_markdown: 'A single scalar value carries no statistical distribution
+      or serial transition history. Randomness is defined strictly as a property of
+      a **sequence**: the absence of predictable order (an intelligent gambler cannot
+      beat chance predicting $x_{n+1}$ from $x_1, \dots, x_n$) and equidistribution
+      across all infinite subsequences.'
   - id: q13_02_trng_limitations
     type: problem
     question_type: multi_select
     difficulty: easy
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: 'Select **all** reasons why physical **True Random Number Generators (TRNGs)** (e.g., thermal circuit
-      noise or Geiger counter clicks) are generally **not** used directly to drive large-scale Monte Carlo or Molecular Dynamics
+    prompt_markdown: 'Select **all** reasons why physical **True Random Number Generators
+      (TRNGs)** (e.g., thermal circuit noise or Geiger counter clicks) are generally
+      **not** used directly to drive large-scale Monte Carlo or Molecular Dynamics
       simulations:'
-    hint_markdown: Check the three disadvantages of Truly Random numbers listed of the reference notes.
+    hint_markdown: Check the three disadvantages of Truly Random numbers listed of
+      the reference notes.
     options:
     - id: a
-      text: They are not reproducible, making it impossible to replay an exact trajectory to debug a simulation crash.
-      text_markdown: They are not reproducible, making it impossible to replay an exact trajectory to debug a simulation crash.
+      text: They are not reproducible, making it impossible to replay an exact trajectory
+        to debug a simulation crash.
+      text_markdown: They are not reproducible, making it impossible to replay an
+        exact trajectory to debug a simulation crash.
     - id: b
-      text: They are far too slow and expensive when a simulation requires $\sim 10^{9}\text{–}10^{10}$ random numbers per
-        second.
-      text_markdown: They are far too slow and expensive when a simulation requires $\sim 10^{9}\text{–}10^{10}$ random numbers
-        per second.
+      text: They are far too slow and expensive when a simulation requires $\sim 10^{9}\text{–}10^{10}$
+        random numbers per second.
+      text_markdown: They are far too slow and expensive when a simulation requires
+        $\sim 10^{9}\text{–}10^{10}$ random numbers per second.
     - id: c
-      text: Raw physical noise sources often suffer from hardware drift, bias, or low statistical quality unless heavily post-processed.
-      text_markdown: Raw physical noise sources often suffer from hardware drift, bias, or low statistical quality unless
-        heavily post-processed.
+      text: Raw physical noise sources often suffer from hardware drift, bias, or
+        low statistical quality unless heavily post-processed.
+      text_markdown: Raw physical noise sources often suffer from hardware drift,
+        bias, or low statistical quality unless heavily post-processed.
     - id: d
-      text: Physical radioactive decay obeys a deterministic linear congruential recurrence with period $2^{16}$.
-      text_markdown: Physical radioactive decay obeys a deterministic linear congruential recurrence with period $2^{16}$.
+      text: Physical radioactive decay obeys a deterministic linear congruential recurrence
+        with period $2^{16}$.
+      text_markdown: Physical radioactive decay obeys a deterministic linear congruential
+        recurrence with period $2^{16}$.
     correct:
     - a
     - b
     - c
-    rationale_markdown: 'As noted in the lecture, physical TRNGs are: (1) **not reproducible** (fatal for debugging subtle
-      code bugs), (2) **too slow and expensive** compared to the $\sim 10^{10}\text{ RN/s}$ demanded by modern CPUs, and (3)
-      frequently of **low raw quality** due to analog hardware drift or bias.'
+    rationale_markdown: 'As noted in the lecture, physical TRNGs are: (1) **not reproducible**
+      (fatal for debugging subtle code bugs), (2) **too slow and expensive** compared
+      to the $\sim 10^{10}\text{ RN/s}$ demanded by modern CPUs, and (3) frequently
+      of **low raw quality** due to analog hardware drift or bias.'
   - id: q13_03_qrng_convergence
     type: problem
     question_type: single_select
@@ -159,224 +184,264 @@ worksheet:
     taught_by:
     - sec_rng_taxonomy_and_automata
     - concept_prng_vs_qrng
-    prompt_markdown: How does a **Quasi-Random Number Generator (QRNG)** achieve an integration error convergence rate faster
-      than $\mathcal{O}(N^{-1/2})$ (approaching $\mathcal{O}((\ln N)^D / N)$ in low dimension $D$), and what fundamental PRNG
+    prompt_markdown: How does a **Quasi-Random Number Generator (QRNG)** achieve an
+      integration error convergence rate faster than $\mathcal{O}(N^{-1/2})$ (approaching
+      $\mathcal{O}((\ln N)^D / N)$ in low dimension $D$), and what fundamental PRNG
       property does it sacrifice to do so?
-    hint_markdown: Think about how QRNG places each subsequent point relative to previous points.
+    hint_markdown: Think about how QRNG places each subsequent point relative to previous
+      points.
     options:
     - id: a
-      text: It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation so each
-        new point sequentially fills the largest remaining 'holes' in space.
-      text_markdown: It sacrifices statistical independence (uncorrelatedness), introducing strong negative serial correlation
-        so each new point sequentially fills the largest remaining 'holes' in space.
+      text: It sacrifices determinism, using quantum hardware interrupts to eliminate
+        variance.
+      text_markdown: It sacrifices determinism, using quantum hardware interrupts
+        to eliminate variance.
     - id: b
-      text: It sacrifices determinism, using quantum hardware interrupts to eliminate variance.
-      text_markdown: It sacrifices determinism, using quantum hardware interrupts to eliminate variance.
+      text: It sacrifices statistical independence (uncorrelatedness), introducing
+        strong negative serial correlation so each new point sequentially fills the
+        largest remaining 'holes' in space.
+      text_markdown: It sacrifices statistical independence (uncorrelatedness), introducing
+        strong negative serial correlation so each new point sequentially fills the
+        largest remaining 'holes' in space.
     - id: c
-      text: It sacrifices 1D uniformity, concentrating all points near the origin $x = 0$.
-      text_markdown: It sacrifices 1D uniformity, concentrating all points near the origin $x = 0$.
+      text: It sacrifices 1D uniformity, concentrating all points near the origin
+        $x = 0$.
+      text_markdown: It sacrifices 1D uniformity, concentrating all points near the
+        origin $x = 0$.
     - id: d
       text: It uses a modulus $m = 16$ so that the sequence repeats every 16 evaluations.
-      text_markdown: It uses a modulus $m = 16$ so that the sequence repeats every 16 evaluations.
-    correct: a
-    rationale_markdown: A QRNG is "halfway between a random sequence and a uniform grid." By giving up **serial independence**
-      (correlation $= 0$), it places each subsequent point at maximum distance from existing points to fill spatial voids
-      sequentially, reducing discrepancy and accelerating low-$D$ quadrature from $\mathcal{O}(N^{-1/2})$ to $\mathcal{O}((\ln
-      N)^D / N)$.
+      text_markdown: It uses a modulus $m = 16$ so that the sequence repeats every
+        16 evaluations.
+    correct: b
+    rationale_markdown: A QRNG is "halfway between a random sequence and a uniform
+      grid." By giving up **serial independence** (correlation $= 0$), it places each
+      subsequent point at maximum distance from existing points to fill spatial voids
+      sequentially, reducing discrepancy and accelerating low-$D$ quadrature from
+      $\mathcal{O}(N^{-1/2})$ to $\mathcal{O}((\ln N)^D / N)$.
   - id: q13_04_automaton_components
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: In the formal finite-state automaton model of a pseudo-random sequence shown in lecture, what are the
-      roles of $S_n$, $T$, and $F$?
-    hint_markdown: Refer to the state-transition diagram $S_{n-1} \xrightarrow{T} S_n \xrightarrow{T} S_{n+1}$ with vertical
-      arrows $F$.
+    prompt_markdown: In the formal finite-state automaton model of a pseudo-random
+      sequence shown in lecture, what are the roles of $S_n$, $T$, and $F$?
+    hint_markdown: Refer to the state-transition diagram $S_{n-1} \xrightarrow{T}
+      S_n \xrightarrow{T} S_{n+1}$ with vertical arrows $F$.
     options:
     - id: a
-      text: $S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration process
-        $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$.
-      text_markdown: $S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the deterministic state-iteration
-        process $S_{n+1} = T(S_n)$, and $F$ is the mapping from state $S_n$ to an output integer $I_n$ or uniform real $U_n$.
+      text: $S_n$ is the output floating-point number, $T$ is the chi-squared test,
+        and $F$ is the Fourier transform.
+      text_markdown: $S_n$ is the output floating-point number, $T$ is the chi-squared
+        test, and $F$ is the Fourier transform.
     - id: b
-      text: $S_n$ is the statistical variance, $T$ is the CPU temperature, and $F$ is the cumulative distribution function.
-      text_markdown: $S_n$ is the statistical variance, $T$ is the CPU temperature, and $F$ is the cumulative distribution
-        function.
+      text: $S_n$ is the statistical variance, $T$ is the CPU temperature, and $F$
+        is the cumulative distribution function.
+      text_markdown: $S_n$ is the statistical variance, $T$ is the CPU temperature,
+        and $F$ is the cumulative distribution function.
     - id: c
-      text: $S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform.
-      text_markdown: $S_n$ is the output floating-point number, $T$ is the chi-squared test, and $F$ is the Fourier transform.
+      text: $S_n$ is the internal state (initialized by the seed $S_0$), $T$ is the
+        deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$ is the mapping
+        from state $S_n$ to an output integer $I_n$ or uniform real $U_n$.
+      text_markdown: $S_n$ is the internal state (initialized by the seed $S_0$),
+        $T$ is the deterministic state-iteration process $S_{n+1} = T(S_n)$, and $F$
+        is the mapping from state $S_n$ to an output integer $I_n$ or uniform real
+        $U_n$.
     - id: d
       text: $S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive constant.
-      text_markdown: $S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive constant.
-    correct: a
-    rationale_markdown: 'Every PRNG stores an internal state $S_n$ (seeded at $S_0$), advances that state deterministically
-      via an iteration operator $T: S_{n-1} \to S_n$, and projects the internal state onto an observable integer $I_n$ or
+      text_markdown: $S_n$ is the modulus, $T$ is the multiplier, and $F$ is the additive
+        constant.
+    correct: c
+    rationale_markdown: 'Every PRNG stores an internal state $S_n$ (seeded at $S_0$),
+      advances that state deterministically via an iteration operator $T: S_{n-1}
+      \to S_n$, and projects the internal state onto an observable integer $I_n$ or
       floating-point real $U_n \in [0, 1)$ via the output mapping $F$.'
   - id: q13_05_state_bits_bound
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: Suppose a PRNG maintains an internal state $S$ consisting of $M = 12$ bits. If the iteration mapping
-      $T$ is one-to-one (bijective) and breaks the state space into $4$ disjoint cycles of equal length, what is the period
+    prompt_markdown: Suppose a PRNG maintains an internal state $S$ consisting of
+      $M = 12$ bits. If the iteration mapping $T$ is one-to-one (bijective) and breaks
+      the state space into $4$ disjoint cycles of equal length, what is the period
       (cycle length) $L$ of each cycle?
-    hint_markdown: Total state space size is $2^M$. Divide $2^{12}$ by the number of equal-length cycles.
+    hint_markdown: Apply the appropriate definition or scaling relation to compute
+      the ratio.
     correct:
-      value: 1024
+      value: 1024.0
       tolerance: 0.1
-    rationale_markdown: 'An $M = 12$-bit internal state has $2^{12} = 4096$ distinct states. If the 1-to-1 transition function
-      divides the state space into $4$ equal disjoint cycles, each cycle has length:
-
-      $$L = \frac{2^M}{4} = \frac{4096}{4} = 1024$$'
+    rationale_markdown: |-
+      An $M = 12$-bit internal state has $2^{12} = 4096$ distinct states. If the 1-to-1 transition function divides the state space into $4$ equal disjoint cycles, each cycle has length:
+      $$L = \frac{2^M}{4} = \frac{4096}{4} = 1024$$
   - id: q13_06_drand48_exhaustion
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: The classic UNIX generator `drand48` is a 48-bit Linear Congruential Generator with maximum period $L
-      = 2^{48} \approx 2.815 \times 10^{14}$. If you run a parallel Monte Carlo simulation across $P = 100$ processor cores,
-      each consuming $10^9$ random numbers per second, how many **minutes** does it take for the entire simulation to exhaust
-      $2^{48}$ random numbers? (Round to the nearest minute.)
-    hint_markdown: Divide $2^{48} \approx 2.81475 \times 10^{14}$ by the total consumption rate $(100 \times 10^9\text{ RN/s})$,
-      then convert seconds to minutes.
+    prompt_markdown: The classic UNIX generator `drand48` is a 48-bit Linear Congruential
+      Generator with maximum period $L = 2^{48} \approx 2.815 \times 10^{14}$. If
+      you run a parallel Monte Carlo simulation across $P = 100$ processor cores,
+      each consuming $10^9$ random numbers per second, how many **minutes** does it
+      take for the entire simulation to exhaust $2^{48}$ random numbers? (Round to
+      the nearest minute.)
+    hint_markdown: Divide $2^{48} \approx 2.81475 \times 10^{14}$ by the total consumption
+      rate $(100 \times 10^9\text{ RN/s})$, then convert seconds to minutes.
     correct:
-      value: 47
+      value: 47.0
       tolerance: 2.5
-    rationale_markdown: 'Total generation rate across $100$ processors is $R = 100 \times 10^9 = 10^{11}\text{ RN/s}$. The
-      exhaustion time is:
-
-      $$t = \frac{2^{48}}{10^{11}\text{ s}^{-1}} = \frac{2.81475 \times 10^{14}}{10^{11}}\text{ s} \approx 2814.75\text{ s}
-      \approx 46.9\text{ minutes}$$
-
-      (Quoted as $\sim 45\text{ minutes}$ in the lecture table!)'
+    rationale_markdown: |-
+      Total generation rate across $100$ processors is $R = 100 \times 10^9 = 10^{11}\text{ RN/s}$. The exhaustion time is:
+      $$t = \frac{2^{48}}{10^{11}\text{ s}^{-1}} = \frac{2.81475 \times 10^{14}}{10^{11}}\text{ s} \approx 2814.75\text{ s} \approx 46.9\text{ minutes}$$
+      (Quoted as $\sim 45\text{ minutes}$ in the lecture table!)
   - id: q13_07_ising_lattice_rn_budget
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: Consider a 2D Ising Monte Carlo simulation on a $1024 \times 1024$ spin lattice ($\approx 10^6$ sites).
-      To collect well-converged thermodynamic averages, you perform $10^7$ Monte Carlo sweeps (where $1$ sweep tests every
-      spin once, consuming $1$ random number per spin). What is the base-10 logarithm $\log_{10}(N_{\text{total}})$ of the
-      total number of random numbers required, and why does a 32-bit generator ($2^{32} \approx 4.29 \times 10^9$) fail? Enter
+    prompt_markdown: Consider a 2D Ising Monte Carlo simulation on a $1024 \times
+      1024$ spin lattice ($\approx 10^6$ sites). To collect well-converged thermodynamic
+      averages, you perform $10^7$ Monte Carlo sweeps (where $1$ sweep tests every
+      spin once, consuming $1$ random number per spin). What is the base-10 logarithm
+      $\log_{10}(N_{\text{total}})$ of the total number of random numbers required,
+      and why does a 32-bit generator ($2^{32} \approx 4.29 \times 10^9$) fail? Enter
       $\log_{10}(N_{\text{total}})$.
     hint_markdown: Multiply $10^6$ sites per sweep by $10^7$ sweeps, then take $\log_{10}$.
     correct:
-      value: 13
+      value: 13.0
       tolerance: 0.1
-    rationale_markdown: The simulation requires $N_{\text{total}} \approx 10^6\text{ sites/sweep} \times 10^7\text{ sweeps}
-      = 10^{13}$ random numbers ($\log_{10} N_{\text{total}} = 13$). Because a 32-bit RNG has a maximum period of only $2^{32}
-      \approx 4.3 \times 10^9$, the simulation would recycle through the exact same sequence over $2{,}300$ times!
+    rationale_markdown: The simulation requires $N_{\text{total}} \approx 10^6\text{
+      sites/sweep} \times 10^7\text{ sweeps} = 10^{13}$ random numbers ($\log_{10}
+      N_{\text{total}} = 13$). Because a 32-bit RNG has a maximum period of only $2^{32}
+      \approx 4.3 \times 10^9$, the simulation would recycle through the exact same
+      sequence over $2{,}300$ times!
   - id: q13_08_uniform_variance
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: For an ideal continuous uniform random number generator producing $R \in [0, 1)$ with mean $\langle R
-      \rangle = 0.5$, what is the exact theoretical variance $\sigma_R^2 = \langle (R - \langle R \rangle)^2 \rangle$? (Enter
-      as a decimal to at least 4 significant figures.)
+    prompt_markdown: For an ideal continuous uniform random number generator producing
+      $R \in [0, 1)$ with mean $\langle R \rangle = 0.5$, what is the exact theoretical
+      variance $\sigma_R^2 = \langle (R - \langle R \rangle)^2 \rangle$? (Enter as
+      a decimal to at least 4 significant figures.)
     hint_markdown: Evaluate $\int_0^1 (R - 1/2)^2 dR = 1/12$.
     correct:
       value: 0.08333
       tolerance: 0.001
-    rationale_markdown: 'By direct integration over the uniform density $p(R) = 1$ on $[0, 1)$:
-
-      $$\left\langle (R - \langle R \rangle)^2 \right\rangle = \int_0^1 \left(R - \frac{1}{2}\right)^2 dR = \left[\frac{(R
-      - 1/2)^3}{3}\right]_0^1 = \frac{1/8 - (-1/8)}{3} = \frac{1}{12} \approx 0.083333$$'
+    rationale_markdown: |-
+      By direct integration over the uniform density $p(R) = 1$ on $[0, 1)$:
+      $$\left\langle (R - \langle R \rangle)^2 \right\rangle = \int_0^1 \left(R - \frac{1}{2}\right)^2 dR = \left[\frac{(R - 1/2)^3}{3}\right]_0^1 = \frac{1/8 - (-1/8)}{3} = \frac{1}{12} \approx 0.083333$$
   - id: q13_09_subinterval_fluctuation
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: You generate $N = 10{,}000$ uniform random numbers $x \in [0, 1)$ and count how many fall inside the
-      sub-interval $(a, b) = (0.20, 0.45)$. According to the lecture's quick Poisson uniformity rule $N(b-a) \pm [N(b-a)]^{1/2}$,
-      what is the magnitude of the $1\sigma$ expected fluctuation $[N(b-a)]^{1/2}$ around the expected count of $2500$?
+    prompt_markdown: You generate $N = 10{,}000$ uniform random numbers $x \in [0,
+      1)$ and count how many fall inside the sub-interval $(a, b) = (0.20, 0.45)$.
+      According to the lecture's quick Poisson uniformity rule $N(b-a) \pm [N(b-a)]^{1/2}$,
+      what is the magnitude of the $1\sigma$ expected fluctuation $[N(b-a)]^{1/2}$
+      around the expected count of $2500$?
     hint_markdown: Compute $\sqrt{N(b-a)}$ where $N = 10000$ and $b - a = 0.25$.
     correct:
-      value: 50
+      value: 50.0
       tolerance: 0.1
-    rationale_markdown: 'The expected count in $(0.20, 0.45)$ is $n = N(b - a) = 10{,}000 \times 0.25 = 2500$. The standard
-      Poisson fluctuation scale is:
-
-      $$\sqrt{N(b - a)} = \sqrt{2500} = 50$$'
+    rationale_markdown: |-
+      The expected count in $(0.20, 0.45)$ is $n = N(b - a) = 10{,}000 \times 0.25 = 2500$. The standard Poisson fluctuation scale is:
+      $$\sqrt{N(b - a)} = \sqrt{2500} = 50$$
   - id: q13_10_serial_uncorrelated_condition
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_rng_taxonomy_and_automata
-    prompt_markdown: In a 3D Metropolis Monte Carlo simulation of $128$ atoms where each trial move picks a random atom index
-      $i$ and a random 3D displacement $(\Delta x, \Delta y, \Delta z)$ (consuming $4$ random numbers per move, or $128 \times
-      4 = 512$ random numbers per pass), which mathematical condition guarantees that sequential random numbers do **not**
-      introduce spurious multi-point correlations into the Markov chain?
-    hint_markdown: Look at the multi-point expectation value factorization and 11 of the reference notes.
+    prompt_markdown: In a 3D Metropolis Monte Carlo simulation of $128$ atoms where
+      each trial move picks a random atom index $i$ and a random 3D displacement $(\Delta
+      x, \Delta y, \Delta z)$ (consuming $4$ random numbers per move, or $128 \times
+      4 = 512$ random numbers per pass), which mathematical condition guarantees that
+      sequential random numbers do **not** introduce spurious multi-point correlations
+      into the Markov chain?
+    hint_markdown: Look at the multi-point expectation value factorization and 11
+      of the reference notes.
     options:
     - id: a
-      text: $\langle f_1(x_{i+1}) f_2(x_{i+2}) \cdots f_k(x_{i+k}) \rangle = \langle f_1(x_{i+1}) \rangle \langle f_2(x_{i+2})
-        \rangle \cdots \langle f_k(x_{i+k}) \rangle$ for arbitrary test functions $f_1, \dots, f_k$ and lags $k$.
-      text_markdown: $\langle f_1(x_{i+1}) f_2(x_{i+2}) \cdots f_k(x_{i+k}) \rangle = \langle f_1(x_{i+1}) \rangle \langle
-        f_2(x_{i+2}) \rangle \cdots \langle f_k(x_{i+k}) \rangle$ for arbitrary test functions $f_1, \dots, f_k$ and lags
-        $k$.
+      text: $\langle x_{i+1}^2 \rangle = \langle x_{i+1} \rangle^2$ so that the 1D
+        variance vanishes.
+      text_markdown: $\langle x_{i+1}^2 \rangle = \langle x_{i+1} \rangle^2$ so that
+        the 1D variance vanishes.
     - id: b
-      text: $\langle x_{i+1} + x_{i+2} + \cdots + x_{i+k} \rangle = 0$ for all $k \ge 1$.
-      text_markdown: $\langle x_{i+1} + x_{i+2} + \cdots + x_{i+k} \rangle = 0$ for all $k \ge 1$.
+      text: $\langle x_{i+1} + x_{i+2} + \cdots + x_{i+k} \rangle = 0$ for all $k
+        \ge 1$.
+      text_markdown: $\langle x_{i+1} + x_{i+2} + \cdots + x_{i+k} \rangle = 0$ for
+        all $k \ge 1$.
     - id: c
       text: $x_{i+1} < x_{i+2} < \cdots < x_{i+k}$ for every block of $k$ numbers.
-      text_markdown: $x_{i+1} < x_{i+2} < \cdots < x_{i+k}$ for every block of $k$ numbers.
+      text_markdown: $x_{i+1} < x_{i+2} < \cdots < x_{i+k}$ for every block of $k$
+        numbers.
     - id: d
-      text: $\langle x_{i+1}^2 \rangle = \langle x_{i+1} \rangle^2$ so that the 1D variance vanishes.
-      text_markdown: $\langle x_{i+1}^2 \rangle = \langle x_{i+1} \rangle^2$ so that the 1D variance vanishes.
-    correct: a
-    rationale_markdown: 'Statistical independence of $k$-tuples requires the joint expectation of any product of functions
-      of consecutive draws to factorize into the product of their individual expectations:
-
+      text: $\langle f_1(x_{i+1}) f_2(x_{i+2}) \cdots f_k(x_{i+k}) \rangle = \langle
+        f_1(x_{i+1}) \rangle \langle f_2(x_{i+2}) \rangle \cdots \langle f_k(x_{i+k})
+        \rangle$ for arbitrary test functions $f_1, \dots, f_k$ and lags $k$.
+      text_markdown: $\langle f_1(x_{i+1}) f_2(x_{i+2}) \cdots f_k(x_{i+k}) \rangle
+        = \langle f_1(x_{i+1}) \rangle \langle f_2(x_{i+2}) \rangle \cdots \langle
+        f_k(x_{i+k}) \rangle$ for arbitrary test functions $f_1, \dots, f_k$ and lags
+        $k$.
+    correct: d
+    rationale_markdown: |-
+      Statistical independence of $k$-tuples requires the joint expectation of any product of functions of consecutive draws to factorize into the product of their individual expectations:
       $$\langle f_1(x_{i+1})\cdots f_k(x_{i+k})\rangle = \langle f_1(x_{i+1})\rangle\cdots\langle f_k(x_{i+k})\rangle$$
-
-      Even when 1D uniformity holds ($k=1$), hidden correlations at lag $k$ (such as $k = 512$ or $1024$ in an $N$-atom MC
-      pass) can systematically bias thermodynamic averages.'
+      Even when 1D uniformity holds ($k=1$), hidden correlations at lag $k$ (such as $k = 512$ or $1024$ in an $N$-atom MC pass) can systematically bias thermodynamic averages.
   - id: sec_lcg_marsaglia_and_lfg
     type: markdown_section
     title: 2. Linear Congruential Generators (LCGs), Marsaglia Planes & Lagged Fibonacci
-    body_markdown: "### Linear Congruential Generators (LCG)\nThe most widely analyzed PRNG is the **Linear Congruential Generator**,\
-      \ denoted $\\text{LCG}(a, c, m, I_0)$:\n$$I_{n+1} = (a I_n + c) \\bmod m, \\qquad R_n = \\frac{I_n}{\\text{float}(m)}\
-      \ \\in [0, 1) \\quad \\left(\\text{or } \\frac{I_n}{m-1} \\in [0, 1]\\right)$$\nwhere $a$ is the **multiplier**, $c$\
-      \ is the **additive increment** ($c=0$ is a pure *multiplicative* LCG), $m$ is the **modulus**, and $I_0$ is the integer\
-      \ **seed**.\n\n#### Complete Worked Trace: $\\text{LCG}(a=5, c=1, m=16, I_0=0)$\nBecause $m = 16 = 2^4$ ($M = \\log_2\
-      \ 16 = 4$ bits), the maximum possible period is $P = 16$. Starting from seed $I_0 = 0$:\n\n| Step | Modular Arithmetic\
-      \ $(5 I_n + 1)\\bmod 16$ | Integer | 4-Bit Binary | Real $R = I/16$ |\n|:---: |:--- |:---: |:---: |:---: |\n| $1$ |\
-      \ $5(0) + 1 = 1 - 0\\times 16$ | **$1$** | `0001` | $0.0625$ |\n| $2$ | $5(1) + 1 = 6 - 0\\times 16$ | **$6$** | `0110`\
-      \ | $0.3750$ |\n| $3$ | $5(6) + 1 = 31 - 1\\times 16$ | **$15$** | `1111` | $0.9375$ |\n| $4$ | $5(15) + 1 = 76 - 4\\\
-      times 16$ | **$12$** | `1100` | $0.7500$ |\n| $5$ | $5(12) + 1 = 61 - 3\\times 16$ | **$13$** | `1101` | $0.8125$ |\n\
-      | $6$ | $5(13) + 1 = 66 - 4\\times 16$ | **$2$** | `0010` | $0.1250$ |\n| $7\\text{–}16$ | $\\dots \\to 11 \\to 8 \\\
-      to 9 \\to 14 \\to 7 \\to 4 \\to 5 \\to 10 \\to 3 \\to 0$ | **$0$** | `0000` | $0.0000$ |\n\nBy the **Hull–Dobell Theorem**,\
-      \ $\\text{LCG}(a, c, m)$ achieves the full period $L = m$ if and only if:\n1. $c$ and $m$ are relatively prime ($\\\
-      gcd(c, m) = 1$).\n2. $a - 1$ is divisible by every prime factor of $m$.\n3. If $m$ is a multiple of $4$, then $a - 1$\
-      \ is also a multiple of $4$.\n\n> [!WARNING]\n> **Bit-Level Correlation in Power-of-2 LCGs ($m = 2^M$):** Look closely\
-      \ at the 4-bit binary column of $\\text{LCG}(5, 1, 16, 0)$ above:\n> - The **least significant bit (LSB)** strictly\
-      \ alternates `1, 0, 1, 0, 1, 0...` (period $2$) because $I_{n+1} \\equiv (1\\cdot I_n + 1)\\bmod 2$.\n> - In general,\
-      \ the $k$-th bit from the right depends *only* on the lowest $k$ bits and has a period of at most $2^k$. Even the most\
-      \ significant binary digit in small LCGs exhibits strong short-range pattern correlations!\n\n### Marsaglia's Theorem\
-      \ (1968): \"Random Numbers Fall Mainly in the Planes\"\nEven when an LCG has a full 1D period $L = m$, consecutive $d$-tuples\
-      \ $\\mathbf{r}_n = (u_n, u_{n+1}, \\dots, u_{n+d-1}) \\in [0, 1)^d$ **do not fill $d$-dimensional space uniformly**.\
-      \ George Marsaglia proved that all $d$-tuples generated by an LCG lie on at most:\n$$N_{\\text{planes}} \\le (d!\\,m)^{1/d}$$\n\
-      parallel $(d-1)$-dimensional hyperplanes!\n- For a 32-bit LCG ($m = 2^{32}$) in $d = 3$, $(6 \\times 2^{32})^{1/3} \\\
-      approx 2953$ planes at best—and poorly chosen multipliers are far worse (IBM's infamous **RANDU** generator $I_{n+1}\
-      \ = 65539 I_n \\bmod 2^{31}$ collapses onto just **15 parallel planes** in 3D!).\n- **Practical Rule of Thumb:** For\
-      \ a $k$-bit LCG, **never group more than $k/2$ consecutive numbers together** in a high-dimensional vector.\n\n### Beyond\
-      \ Simple LCGs: Lagged Fibonacci & Combined Generators\nTo overcome the short periods and hyperplane crystal lattices\
-      \ of single-word LCGs, modern libraries (like SPRNG) implement:\n- **Additive / Multiplicative Lagged Fibonacci Generators\
-      \ (LFG):**\n $$z_n = (z_{n-p} \\odot z_{n-q}) \\bmod 2^m \\qquad (\\odot \\in \\{+, -, \\times, \\oplus\\}, \\quad p\
-      \ > q > 0)$$\n Because the internal state stores a **ring buffer of $p$ past $m$-bit words** ($M = p \\times m$ total\
-      \ state bits), an LFG achieves colossal periods—up to $(2^p - 1)2^{m-1}$ for additive LFG and $(2^p - 1)2^{m-3}$ for\
-      \ multiplicative LFG—while requiring only one fast addition or multiplication per draw. Parallel streams are created\
-      \ by **varying the initial $p$-word seed table**.\n- **Prime Modulus LCGs ($m = 2^{61}-1$ or $2^{31}-1$):** Eliminate\
-      \ power-of-2 low-bit periodicity.\n- **Combined Multiple Recursive Generators (CMRG):** Combine a multi-lag recurrence\
-      \ $z_n = a_1 z_{n-1} + \\dots + a_k z_{n-k}$ with an LCG to destroy hyperplane structure and extend the cycle length."
+    body_markdown: |-
+      ### Linear Congruential Generators (LCG)
+      The most widely analyzed PRNG is the **Linear Congruential Generator**, denoted $\text{LCG}(a, c, m, I_0)$:
+      $$I_{n+1} = (a I_n + c) \bmod m, \qquad R_n = \frac{I_n}{\text{float}(m)} \in [0, 1) \quad \left(\text{or } \frac{I_n}{m-1} \in [0, 1]\right)$$
+      where $a$ is the **multiplier**, $c$ is the **additive increment** ($c=0$ is a pure *multiplicative* LCG), $m$ is the **modulus**, and $I_0$ is the integer **seed**.
+
+      #### Complete Worked Trace: $\text{LCG}(a=5, c=1, m=16, I_0=0)$
+      Because $m = 16 = 2^4$ ($M = \log_2 16 = 4$ bits), the maximum possible period is $P = 16$. Starting from seed $I_0 = 0$:
+
+      | Step | Modular Arithmetic $(5 I_n + 1)\bmod 16$ | Integer | 4-Bit Binary | Real $R = I/16$ |
+      |:---: |:--- |:---: |:---: |:---: |
+      | $1$ | $5(0) + 1 = 1 - 0\times 16$ | **$1$** | `0001` | $0.0625$ |
+      | $2$ | $5(1) + 1 = 6 - 0\times 16$ | **$6$** | `0110` | $0.3750$ |
+      | $3$ | $5(6) + 1 = 31 - 1\times 16$ | **$15$** | `1111` | $0.9375$ |
+      | $4$ | $5(15) + 1 = 76 - 4\times 16$ | **$12$** | `1100` | $0.7500$ |
+      | $5$ | $5(12) + 1 = 61 - 3\times 16$ | **$13$** | `1101` | $0.8125$ |
+      | $6$ | $5(13) + 1 = 66 - 4\times 16$ | **$2$** | `0010` | $0.1250$ |
+      | $7\text{–}16$ | $\dots \to 11 \to 8 \to 9 \to 14 \to 7 \to 4 \to 5 \to 10 \to 3 \to 0$ | **$0$** | `0000` | $0.0000$ |
+
+      By the **Hull–Dobell Theorem**, $\text{LCG}(a, c, m)$ achieves the full period $L = m$ if and only if:
+      1. $c$ and $m$ are relatively prime ($\gcd(c, m) = 1$).
+      2. $a - 1$ is divisible by every prime factor of $m$.
+      3. If $m$ is a multiple of $4$, then $a - 1$ is also a multiple of $4$.
+
+      > [!WARNING]
+      > **Bit-Level Correlation in Power-of-2 LCGs ($m = 2^M$):** Look closely at the 4-bit binary column of $\text{LCG}(5, 1, 16, 0)$ above:
+      > - The **least significant bit (LSB)** strictly alternates `1, 0, 1, 0, 1, 0...` (period $2$) because $I_{n+1} \equiv (1\cdot I_n + 1)\bmod 2$.
+      > - In general, the $k$-th bit from the right depends *only* on the lowest $k$ bits and has a period of at most $2^k$. Even the most significant binary digit in small LCGs exhibits strong short-range pattern correlations!
+
+      ### Marsaglia's Theorem (1968): "Random Numbers Fall Mainly in the Planes"
+      Even when an LCG has a full 1D period $L = m$, consecutive $d$-tuples $\mathbf{r}_n = (u_n, u_{n+1}, \dots, u_{n+d-1}) \in [0, 1)^d$ **do not fill $d$-dimensional space uniformly**. George Marsaglia proved that all $d$-tuples generated by an LCG lie on at most:
+      $$N_{\text{planes}} \le (d!\,m)^{1/d}$$
+      parallel $(d-1)$-dimensional hyperplanes!
+      - For a 32-bit LCG ($m = 2^{32}$) in $d = 3$, $(6 \times 2^{32})^{1/3} \approx 2953$ planes at best—and poorly chosen multipliers are far worse (IBM's infamous **RANDU** generator $I_{n+1} = 65539 I_n \bmod 2^{31}$ collapses onto just **15 parallel planes** in 3D!).
+      - **Practical Rule of Thumb:** For a $k$-bit LCG, **never group more than $k/2$ consecutive numbers together** in a high-dimensional vector.
+
+      ### Beyond Simple LCGs: Lagged Fibonacci & Combined Generators
+      To overcome the short periods and hyperplane crystal lattices of single-word LCGs, modern libraries (like SPRNG) implement:
+      - **Additive / Multiplicative Lagged Fibonacci Generators (LFG):**
+       $$z_n = (z_{n-p} \odot z_{n-q}) \bmod 2^m \qquad (\odot \in \{+, -, \times, \oplus\}, \quad p > q > 0)$$
+       Because the internal state stores a **ring buffer of $p$ past $m$-bit words** ($M = p \times m$ total state bits), an LFG achieves colossal periods—up to $(2^p - 1)2^{m-1}$ for additive LFG and $(2^p - 1)2^{m-3}$ for multiplicative LFG—while requiring only one fast addition or multiplication per draw. Parallel streams are created by **varying the initial $p$-word seed table**.
+      - **Prime Modulus LCGs ($m = 2^{61}-1$ or $2^{31}-1$):** Eliminate power-of-2 low-bit periodicity.
+      - **Combined Multiple Recursive Generators (CMRG):** Combine a multi-lag recurrence $z_n = a_1 z_{n-1} + \dots + a_k z_{n-k}$ with an LCG to destroy hyperplane structure and extend the cycle length.
   - id: concept_lcg_hyperplanes
     type: concept_cell
-    title: 'Interactive Lab: LCG Cycle Traces & Marsaglia Hyperplanes in 2D Delay Space'
-    description_markdown: Explore how the choice of multiplier $a$, increment $c$, and modulus $m$ controls both the **1D
-      cycle length** $L$ and the **2D Marsaglia hyperplane geometry** $(u_n, u_{n+1})$. Compare the lecture's full-period
-      $\text{LCG}(5, 1, 16)$ against degraded parameters and larger $m = 256$ generators where consecutive pairs crystallize
-      onto parallel lines.
+    title: 'Interactive Lab: LCG Cycle Traces & Marsaglia Hyperplanes in 2D Delay
+      Space'
+    description_markdown: Explore how the choice of multiplier $a$, increment $c$,
+      and modulus $m$ controls both the **1D cycle length** $L$ and the **2D Marsaglia
+      hyperplane geometry** $(u_n, u_{n+1})$. Compare the lecture's full-period $\text{LCG}(5,
+      1, 16)$ against degraded parameters and larger $m = 256$ generators where consecutive
+      pairs crystallize onto parallel lines.
     render_function: render_lcg_hyperplanes
     layout: figure_left
     controls:
@@ -411,10 +476,11 @@ worksheet:
         max: 256
         step: 16
         default: 128
-    takeaway_markdown: '**Key Takeaway:** Even when an LCG visits every integer in $\{0, 1, \dots, m-1\}$ once per cycle (perfect
-      1D uniformity), plotting consecutive pairs $(u_n, u_{n+1})$ reveals that all points are trapped on a small number of
-      parallel lines (**Marsaglia''s planes**). Notice that changing $I_0$ in $\text{LCG}(5, 2, 16)$ hops between two disjoint
-      8-state cycles (even integers vs. Odd integers)!'
+    takeaway_markdown: '**Key Takeaway:** Even when an LCG visits every integer in
+      $\{0, 1, \dots, m-1\}$ once per cycle (perfect 1D uniformity), plotting consecutive
+      pairs $(u_n, u_{n+1})$ reveals that all points are trapped on a small number
+      of parallel lines (**Marsaglia''s planes**). Notice that changing $I_0$ in $\text{LCG}(5,
+      2, 16)$ hops between two disjoint 8-state cycles (even integers vs. Odd integers)!'
   - id: q13_11_lcg_trace_step
     type: problem
     question_type: numeric
@@ -422,46 +488,54 @@ worksheet:
     taught_by:
     - sec_lcg_marsaglia_and_lfg
     - concept_lcg_hyperplanes
-    prompt_markdown: In the lecture's worked example $\text{LCG}(a=5, c=1, m=16)$ starting from seed $I_0 = 0$, the first
-      four generated integers are $1, 6, 15, 12$. Following the recurrence $I_{n+1} = (5 I_n + 1) \bmod 16$, what is the **6th**
-      generated integer (i.e., the integer immediately after $13$)?
+    prompt_markdown: In the lecture's worked example $\text{LCG}(a=5, c=1, m=16)$
+      starting from seed $I_0 = 0$, the first four generated integers are $1, 6, 15,
+      12$. Following the recurrence $I_{n+1} = (5 I_n + 1) \bmod 16$, what is the
+      **6th** generated integer (i.e., the integer immediately after $13$)?
     hint_markdown: Compute $(5 \times 13 + 1) \bmod 16 = 66 - 4 \times 16$.
     correct:
-      value: 2
+      value: 2.0
       tolerance: 0.01
-    rationale_markdown: 'Given the 5th integer $I = 13$:
-
+    rationale_markdown: |-
+      Given the 5th integer $I = 13$:
       $$I_{\text{next}} = (5 \times 13 + 1) \bmod 16 = 66 \bmod 16 = 66 - 4 \times 16 = 2$$
-
-      which maps to the 4-bit binary `0010` and uniform real $R = 2/16 = 0.1250$.'
+      which maps to the 4-bit binary `0010` and uniform real $R = 2/16 = 0.1250$.
   - id: q13_12_lcg_float_mapping
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: An LCG produces integers $I_n \in \{0, 1, 2, \dots, m-1\}$. How do the two standard floating-point mappings
-      $R_n = I_n / \text{float}(m)$ and $R_n' = I_n / \text{float}(m - 1)$ differ in their output range?
-    hint_markdown: Substitute the minimum ($I_n = 0$) and maximum ($I_n = m - 1$) integer values into both expressions.
+    prompt_markdown: An LCG produces integers $I_n \in \{0, 1, 2, \dots, m-1\}$. How
+      do the two standard floating-point mappings $R_n = I_n / \text{float}(m)$ and
+      $R_n' = I_n / \text{float}(m - 1)$ differ in their output range?
+    hint_markdown: Recall the governing physical expression and substitute the specified
+      parameters.
     options:
     - id: a
-      text: $R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding $1.0$), whereas $R_n' = I_n / (m - 1)$ maps
-        onto the closed interval $[0, 1]$ (including both $0.0$ and $1.0$).
-      text_markdown: $R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding $1.0$), whereas $R_n' = I_n / (m
-        - 1)$ maps onto the closed interval $[0, 1]$ (including both $0.0$ and $1.0$).
+      text: $R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding $1.0$),
+        whereas $R_n' = I_n / (m - 1)$ maps onto the closed interval $[0, 1]$ (including
+        both $0.0$ and $1.0$).
+      text_markdown: $R_n = I_n / m$ maps onto the half-open interval $[0, 1)$ (excluding
+        $1.0$), whereas $R_n' = I_n / (m - 1)$ maps onto the closed interval $[0,
+        1]$ (including both $0.0$ and $1.0$).
     - id: b
-      text: $R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas $R_n' = I_n / (m - 1)$ maps onto $(-1, 1)$.
-      text_markdown: $R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas $R_n' = I_n / (m - 1)$ maps onto $(-1,
-        1)$.
+      text: $R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas $R_n' =
+        I_n / (m - 1)$ maps onto $(-1, 1)$.
+      text_markdown: $R_n = I_n / m$ maps onto $(0, 1]$ (excluding $0.0$), whereas
+        $R_n' = I_n / (m - 1)$ maps onto $(-1, 1)$.
     - id: c
       text: Both mappings produce identical floating-point values for all $m$.
-      text_markdown: Both mappings produce identical floating-point values for all $m$.
+      text_markdown: Both mappings produce identical floating-point values for all
+        $m$.
     - id: d
       text: $R_n = I_n / m$ can exceed $1.0$ whenever $I_n = m - 1$.
       text_markdown: $R_n = I_n / m$ can exceed $1.0$ whenever $I_n = m - 1$.
     correct: a
-    rationale_markdown: Since $I_n \in \{0, 1, \dots, m-1\}$, dividing by $m$ gives minimum $0/m = 0$ and maximum $(m-1)/m
-      = 1 - 1/m < 1$, yielding $[0, 1)$. Dividing by $m - 1$ stretches the maximum integer $m-1$ to $(m-1)/(m-1) = 1.0$, yielding
-      $[0, 1]$. Note that for transformations like $-\ln(u)$, one must also avoid $u = 0$!
+    rationale_markdown: Since $I_n \in \{0, 1, \dots, m-1\}$, dividing by $m$ gives
+      minimum $0/m = 0$ and maximum $(m-1)/m = 1 - 1/m < 1$, yielding $[0, 1)$. Dividing
+      by $m - 1$ stretches the maximum integer $m-1$ to $(m-1)/(m-1) = 1.0$, yielding
+      $[0, 1]$. Note that for transformations like $-\ln(u)$, one must also avoid
+      $u = 0$!
   - id: q13_13_lcg_lsb_alternation
     type: problem
     question_type: single_select
@@ -469,33 +543,36 @@ worksheet:
     taught_by:
     - sec_lcg_marsaglia_and_lfg
     - concept_lcg_hyperplanes
-    prompt_markdown: Why does the least significant bit (LSB, i.e., $I_n \bmod 2$) of any full-period power-of-2 LCG ($m =
-      2^M$) strictly alternate `0, 1, 0, 1, 0, 1...` with a period of only $2$?
-    hint_markdown: Take the recurrence $I_{n+1} = (a I_n + c) \bmod 2^M$ modulo $2$, noting that a full-period generator must
-      have odd $a$ and odd $c$.
+    prompt_markdown: Why does the least significant bit (LSB, i.e., $I_n \bmod 2$)
+      of any full-period power-of-2 LCG ($m = 2^M$) strictly alternate `0, 1, 0, 1,
+      0, 1...` with a period of only $2$?
+    hint_markdown: Take the recurrence $I_{n+1} = (a I_n + c) \bmod 2^M$ modulo $2$,
+      noting that a full-period generator must have odd $a$ and odd $c$.
     options:
     - id: a
-      text: Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces to $I_{n+1}
-        \equiv (1 \cdot I_n + 1) \bmod 2$, which flips parity every step.
-      text_markdown: Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so modulo $2$ the recurrence reduces
-        to $I_{n+1} \equiv (1 \cdot I_n + 1) \bmod 2$, which flips parity every step.
+      text: Because IEEE-754 floating-point numbers always round the lowest mantissa
+        bit to alternating parity.
+      text_markdown: Because IEEE-754 floating-point numbers always round the lowest
+        mantissa bit to alternating parity.
     - id: b
-      text: Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity.
-      text_markdown: Because IEEE-754 floating-point numbers always round the lowest mantissa bit to alternating parity.
+      text: Because $m = 2^M$ is even, full period requires odd $a$ and odd $c$, so
+        modulo $2$ the recurrence reduces to $I_{n+1} \equiv (1 \cdot I_n + 1) \bmod
+        2$, which flips parity every step.
+      text_markdown: Because $m = 2^M$ is even, full period requires odd $a$ and odd
+        $c$, so modulo $2$ the recurrence reduces to $I_{n+1} \equiv (1 \cdot I_n
+        + 1) \bmod 2$, which flips parity every step.
     - id: c
       text: Because $a$ is always an even multiple of $4$ in a full-period LCG.
-      text_markdown: Because $a$ is always an even multiple of $4$ in a full-period LCG.
+      text_markdown: Because $a$ is always an even multiple of $4$ in a full-period
+        LCG.
     - id: d
       text: Because the modulus $m = 2^M$ is a prime number.
       text_markdown: Because the modulus $m = 2^M$ is a prime number.
-    correct: a
-    rationale_markdown: 'In a power-of-2 LCG ($m = 2^M$), achieving full period requires $\gcd(c, 2^M) = 1$ (so $c$ is odd)
-      and $a - 1$ divisible by $4$ (so $a$ is odd). Taking $I_{n+1} = (a I_n + c) \bmod 2^M$ modulo $2$ gives:
-
+    correct: b
+    rationale_markdown: |-
+      In a power-of-2 LCG ($m = 2^M$), achieving full period requires $\gcd(c, 2^M) = 1$ (so $c$ is odd) and $a - 1$ divisible by $4$ (so $a$ is odd). Taking $I_{n+1} = (a I_n + c) \bmod 2^M$ modulo $2$ gives:
       $$I_{n+1} \bmod 2 = (1 \cdot I_n + 1) \bmod 2$$
-
-      which simply toggles between even ($0$) and odd ($1$) on every single call! More generally, the $k$-th lowest bit has
-      a period no longer than $2^k$.'
+      which simply toggles between even ($0$) and odd ($1$) on every single call! More generally, the $k$-th lowest bit has a period no longer than $2^k$.
   - id: q13_14_hull_dobell_even_c
     type: problem
     question_type: numeric
@@ -503,143 +580,161 @@ worksheet:
     taught_by:
     - sec_lcg_marsaglia_and_lfg
     - concept_lcg_hyperplanes
-    prompt_markdown: Suppose you modify $\text{LCG}(5, 1, 16)$ by changing the additive constant from $c = 1$ to $c = 2$,
-      giving $I_{n+1} = (5 I_n + 2) \bmod 16$. If you initialize with seed $I_0 = 0$, what is the cycle period $L$ of the
-      resulting sequence? (Check with the interactive LCG preset `"LCG(5, 2, 16)"` if needed!)
-    hint_markdown: When $I_0 = 0$, $a = 5$, and $c = 2$, can $I_n$ ever become an odd integer?
+    prompt_markdown: Suppose you modify $\text{LCG}(5, 1, 16)$ by changing the additive
+      constant from $c = 1$ to $c = 2$, giving $I_{n+1} = (5 I_n + 2) \bmod 16$. If
+      you initialize with seed $I_0 = 0$, what is the cycle period $L$ of the resulting
+      sequence? (Check with the interactive LCG preset `"LCG(5, 2, 16)"` if needed!)
+    hint_markdown: When $I_0 = 0$, $a = 5$, and $c = 2$, can $I_n$ ever become an
+      odd integer?
     correct:
-      value: 8
+      value: 8.0
       tolerance: 0.1
-    rationale_markdown: Because $I_0 = 0$ is even and $c = 2$ is even, $5 I_n + 2$ is **always even**! The generator is trapped
-      on the $8$ even residues $\{0, 2, 12, 14, 8, 10, 4, 6\}$ and can never visit any odd integer, cutting the period in
-      half to $L = 8$ (and if seeded with an odd $I_0$, it is trapped on the $8$ odd residues). This violates the Hull–Dobell
-      requirement $\gcd(c, m) = 1$.
+    rationale_markdown: Because $I_0 = 0$ is even and $c = 2$ is even, $5 I_n + 2$
+      is **always even**! The generator is trapped on the $8$ even residues $\{0,
+      2, 12, 14, 8, 10, 4, 6\}$ and can never visit any odd integer, cutting the period
+      in half to $L = 8$ (and if seeded with an odd $I_0$, it is trapped on the $8$
+      odd residues). This violates the Hull–Dobell requirement $\gcd(c, m) = 1$.
   - id: q13_15_marsaglia_3d_bound
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: According to **Marsaglia's Theorem**, consecutive $d$-tuples $(u_n, u_{n+1}, \dots, u_{n+d-1})$ from
-      an LCG with modulus $m$ fall on at most $N_{\text{planes}} \le (d!\,m)^{1/d}$ parallel hyperplanes. For a 24-bit LCG
-      ($m = 2^{24} = 16{,}777{,}216$) used to generate 3D coordinates ($d = 3$), what is the theoretical maximum number of
-      parallel 2D planes $(3!\,m)^{1/3}$ that can contain all generated 3D triplets? (Round to the nearest integer.)
-    hint_markdown: Compute $(6 \times 2^{24})^{1/3} = 6^{1/3} \times 2^8 = 256 \times 6^{1/3}$.
+    prompt_markdown: According to **Marsaglia's Theorem**, consecutive $d$-tuples
+      $(u_n, u_{n+1}, \dots, u_{n+d-1})$ from an LCG with modulus $m$ fall on at most
+      $N_{\text{planes}} \le (d!\,m)^{1/d}$ parallel hyperplanes. For a 24-bit LCG
+      ($m = 2^{24} = 16{,}777{,}216$) used to generate 3D coordinates ($d = 3$), what
+      is the theoretical maximum number of parallel 2D planes $(3!\,m)^{1/3}$ that
+      can contain all generated 3D triplets? (Round to the nearest integer.)
+    hint_markdown: Compute $(6 \times 2^{24})^{1/3} = 6^{1/3} \times 2^8 = 256 \times
+      6^{1/3}$.
     correct:
-      value: 465
+      value: 465.0
       tolerance: 2.0
-    rationale_markdown: 'Substituting $d = 3$ ($d! = 6$) and $m = 2^{24}$ into Marsaglia''s bound:
-
-      $$N_{\text{planes}} \le (3!\,m)^{1/3} = \left(6 \times 2^{24}\right)^{1/3} = 6^{1/3} \times 2^8 \approx 1.81712 \times
-      256 \approx 465.2 \implies 465\text{ planes}$$'
+    rationale_markdown: |-
+      Substituting $d = 3$ ($d! = 6$) and $m = 2^{24}$ into Marsaglia's bound:
+      $$N_{\text{planes}} \le (3!\,m)^{1/3} = \left(6 \times 2^{24}\right)^{1/3} = 6^{1/3} \times 2^8 \approx 1.81712 \times 256 \approx 465.2 \implies 465\text{ planes}$$
   - id: q13_16_k_over_2_rule
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: Based on the lecture's rule of thumb for avoiding severe Marsaglia hyperplane correlations (*"For a $k$-bit
-      generator, do not use them more than $k/2$ together"*), what is the maximum dimension $d_{\max}$ of a vector that should
-      ever be constructed from consecutive draws of a **48-bit LCG** (such as `drand48`)?
-    hint_markdown: Substitute $k = 48$ into $k / 2$.
+    prompt_markdown: Based on the lecture's rule of thumb for avoiding severe Marsaglia
+      hyperplane correlations (*"For a $k$-bit generator, do not use them more than
+      $k/2$ together"*), what is the maximum dimension $d_{\max}$ of a vector that
+      should ever be constructed from consecutive draws of a **48-bit LCG** (such
+      as `drand48`)?
+    hint_markdown: Recall the governing physical expression and substitute the specified
+      parameters.
     correct:
-      value: 24
+      value: 24.0
       tolerance: 0.1
-    rationale_markdown: 'For a $k = 48$-bit LCG, the lecture rule of thumb restricts grouping consecutive outputs to at most:
-
-      $$d_{\max} = \frac{k}{2} = \frac{48}{2} = 24$$'
+    rationale_markdown: |-
+      For a $k = 48$-bit LCG, the lecture rule of thumb restricts grouping consecutive outputs to at most:
+      $$d_{\max} = \frac{k}{2} = \frac{48}{2} = 24$$
   - id: q13_17_lfg_state_space
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: How does an additive **Lagged Fibonacci Generator (LFG)** $z_n = (z_{n-k} + z_{n-l}) \bmod 2^m$ (with
-      $k > l > 0$, e.g., $k = 1279, m = 32$) achieve an astronomical period ($L \sim 10^{375}\text{ years}$) even though its
-      output word size is only $m = 32$ or $64$ bits?
-    hint_markdown: What is the total number of bits $M$ in the internal state $S_n$ of a lagged recurrence with maximum lag
-      $k$?
+    prompt_markdown: How does an additive **Lagged Fibonacci Generator (LFG)** $z_n
+      = (z_{n-k} + z_{n-l}) \bmod 2^m$ (with $k > l > 0$, e.g., $k = 1279, m = 32$)
+      achieve an astronomical period ($L \sim 10^{375}\text{ years}$) even though
+      its output word size is only $m = 32$ or $64$ bits?
+    hint_markdown: What is the total number of bits $M$ in the internal state $S_n$
+      of a lagged recurrence with maximum lag $k$?
     options:
     - id: a
-      text: Its internal state stores a ring buffer of the last $k$ integers ($M = k \times m$ total state bits), expanding
-        the state space to $2^{km}$ configurations instead of $2^m$.
-      text_markdown: Its internal state stores a ring buffer of the last $k$ integers ($M = k \times m$ total state bits),
-        expanding the state space to $2^{km}$ configurations instead of $2^m$.
-    - id: b
-      text: It changes the modulus $2^m$ dynamically at every step using a hardware Geiger counter.
-      text_markdown: It changes the modulus $2^m$ dynamically at every step using a hardware Geiger counter.
-    - id: c
       text: It divides each integer by zero to create an infinite floating-point mantissa.
-      text_markdown: It divides each integer by zero to create an infinite floating-point mantissa.
+      text_markdown: It divides each integer by zero to create an infinite floating-point
+        mantissa.
+    - id: b
+      text: It changes the modulus $2^m$ dynamically at every step using a hardware
+        Geiger counter.
+      text_markdown: It changes the modulus $2^m$ dynamically at every step using
+        a hardware Geiger counter.
+    - id: c
+      text: Its internal state stores a ring buffer of the last $k$ integers ($M =
+        k \times m$ total state bits), expanding the state space to $2^{km}$ configurations
+        instead of $2^m$.
+      text_markdown: Its internal state stores a ring buffer of the last $k$ integers
+        ($M = k \times m$ total state bits), expanding the state space to $2^{km}$
+        configurations instead of $2^m$.
     - id: d
-      text: It evaluates a transcendental cosine function $\cos(z_{n-1})$ at 1024-bit quadruple precision.
-      text_markdown: It evaluates a transcendental cosine function $\cos(z_{n-1})$ at 1024-bit quadruple precision.
-    correct: a
-    rationale_markdown: Unlike a simple LCG whose state $S_n$ is a single $m$-bit word ($M = m$), an LFG with lags $(k, l)$
-      ($k > l$) requires the last $k$ words $(z_{n-1}, \dots, z_{n-k})$ to determine $z_n$. Its internal state therefore has
-      $M = k \times m$ bits, allowing periods up to $(2^k - 1)2^{m-1}$.
+      text: It evaluates a transcendental cosine function $\cos(z_{n-1})$ at 1024-bit
+        quadruple precision.
+      text_markdown: It evaluates a transcendental cosine function $\cos(z_{n-1})$
+        at 1024-bit quadruple precision.
+    correct: c
+    rationale_markdown: Unlike a simple LCG whose state $S_n$ is a single $m$-bit
+      word ($M = m$), an LFG with lags $(k, l)$ ($k > l$) requires the last $k$ words
+      $(z_{n-1}, \dots, z_{n-k})$ to determine $z_n$. Its internal state therefore
+      has $M = k \times m$ bits, allowing periods up to $(2^k - 1)2^{m-1}$.
   - id: q13_18_lfg_trace_step
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: Consider a toy additive Lagged Fibonacci Generator $z_n = (z_{n-3} + z_{n-1}) \bmod 16$ ($k=3, l=1, m=4$).
-      If the initial 3-word ring buffer is seeded with $(z_0, z_1, z_2) = (3, 7, 11)$, what is the value of $z_4$ (the **second**
-      newly generated integer after $z_3$)?
-    hint_markdown: First compute $z_3 = (z_0 + z_2) \bmod 16 = (3 + 11) \bmod 16 = 14$. Then compute $z_4 = (z_1 + z_3) \bmod
-      16$.
+    prompt_markdown: Consider a toy additive Lagged Fibonacci Generator $z_n = (z_{n-3}
+      + z_{n-1}) \bmod 16$ ($k=3, l=1, m=4$). If the initial 3-word ring buffer is
+      seeded with $(z_0, z_1, z_2) = (3, 7, 11)$, what is the value of $z_4$ (the
+      **second** newly generated integer after $z_3$)?
+    hint_markdown: First compute $z_3 = (z_0 + z_2) \bmod 16 = (3 + 11) \bmod 16 =
+      14$. Then compute $z_4 = (z_1 + z_3) \bmod 16$.
     correct:
-      value: 5
+      value: 5.0
       tolerance: 0.01
-    rationale_markdown: 'Step 1 ($n = 3$):
-
+    rationale_markdown: |-
+      Step 1 ($n = 3$):
       $$z_3 = (z_0 + z_2) \bmod 16 = (3 + 11) \bmod 16 = 14$$
-
       Step 2 ($n = 4$):
-
-      $$z_4 = (z_1 + z_3) \bmod 16 = (7 + 14) \bmod 16 = 21 \bmod 16 = 5$$'
+      $$z_4 = (z_1 + z_3) \bmod 16 = (7 + 14) \bmod 16 = 21 \bmod 16 = 5$$
   - id: q13_19_generator_parallelization_table
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: According to the lecture's *"Common PRNG Generators"* summary table, how are parallel independent streams
-      parameterized in **Lagged Fibonacci** generators versus **48-bit / 64-bit / Prime-Modulus LCGs**?
-    hint_markdown: 'Check the ''Parallelization'' column: what is varied for Lagged Fibonacci vs. LCGs?'
+    prompt_markdown: According to the lecture's *"Common PRNG Generators"* summary
+      table, how are parallel independent streams parameterized in **Lagged Fibonacci**
+      generators versus **48-bit / 64-bit / Prime-Modulus LCGs**?
+    hint_markdown: 'Check the ''Parallelization'' column: what is varied for Lagged
+      Fibonacci vs. LCGs?'
     options:
     - id: a
-      text: Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles), whereas
-        LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs).
-      text_markdown: Lagged Fibonacci generators vary the initial seed table ('vary initialization' into disjoint cycles),
-        whereas LCGs vary the additive prime constant $p$ (or multiplier $a$ for prime-modulus LCGs).
+      text: Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas
+        LCGs vary the floating-point exponent.
+      text_markdown: Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$,
+        whereas LCGs vary the floating-point exponent.
     - id: b
-      text: Lagged Fibonacci generators vary the modulus $2^m$ on each processor, whereas LCGs always use identical seeds
-        and identical parameters on all processors.
-      text_markdown: Lagged Fibonacci generators vary the modulus $2^m$ on each processor, whereas LCGs always use identical
-        seeds and identical parameters on all processors.
+      text: Lagged Fibonacci generators vary the modulus $2^m$ on each processor,
+        whereas LCGs always use identical seeds and identical parameters on all processors.
+      text_markdown: Lagged Fibonacci generators vary the modulus $2^m$ on each processor,
+        whereas LCGs always use identical seeds and identical parameters on all processors.
     - id: c
-      text: Both Lagged Fibonacci and LCGs can only be parallelized by having Processor 0 broadcast every single random number
-        over MPI.
-      text_markdown: Both Lagged Fibonacci and LCGs can only be parallelized by having Processor 0 broadcast every single
-        random number over MPI.
+      text: Both Lagged Fibonacci and LCGs can only be parallelized by having Processor
+        0 broadcast every single random number over MPI.
+      text_markdown: Both Lagged Fibonacci and LCGs can only be parallelized by having
+        Processor 0 broadcast every single random number over MPI.
     - id: d
-      text: Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent.
-      text_markdown: Lagged Fibonacci generators vary the lag $k$ from $1$ to $P$, whereas LCGs vary the floating-point exponent.
-    correct: a
-    rationale_markdown: 'explicitly lists the SPRNG parallelization mechanisms:
-
-      - **Multiplicative / Modified Lagged Fibonacci:** *vary initialization* (placing each stream onto a different disjoint
-      cycle of the huge state space).
-
+      text: Lagged Fibonacci generators vary the initial seed table ('vary initialization'
+        into disjoint cycles), whereas LCGs vary the additive prime constant $p$ (or
+        multiplier $a$ for prime-modulus LCGs).
+      text_markdown: Lagged Fibonacci generators vary the initial seed table ('vary
+        initialization' into disjoint cycles), whereas LCGs vary the additive prime
+        constant $p$ (or multiplier $a$ for prime-modulus LCGs).
+    correct: d
+    rationale_markdown: |-
+      explicitly lists the SPRNG parallelization mechanisms:
+      - **Multiplicative / Modified Lagged Fibonacci:** *vary initialization* (placing each stream onto a different disjoint cycle of the huge state space).
       - **48-bit & 64-bit LCG ($z_n = a z_{n-1} + p \bmod m$):** *vary $p$* (distinct prime additive constants).
-
       - **Prime Modulus LCG:** *vary $a$* (distinct multipliers).
-
-      - **Combined Multiple Recursive:** *vary LCG* component.'
+      - **Combined Multiple Recursive:** *vary LCG* component.
   - id: q13_20_lcg_64bit_period
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: Approximately what is the maximum cycle length $L$ of a full-period **64-bit LCG** (or two combined 32-bit
-      LCGs)?
+    prompt_markdown: Approximately what is the maximum cycle length $L$ of a full-period
+      **64-bit LCG** (or two combined 32-bit LCGs)?
     hint_markdown: Recall $2^{10} \approx 10^3$, so $2^{64} = 16 \times (2^{10})^6$.
     options:
     - id: a
@@ -655,49 +750,57 @@ worksheet:
       text: $L = 10^{64}$
       text_markdown: $L = 10^{64}$
     correct: a
-    rationale_markdown: A 64-bit word holds $2^{64} \approx 1.84 \times 10^{19}$ states (quoted as a period of $\sim 10^{18}\text{–}10^{19}$).
+    rationale_markdown: A 64-bit word holds $2^{64} \approx 1.84 \times 10^{19}$ states
+      (quoted as a period of $\sim 10^{18}\text{–}10^{19}$).
   - id: sec_chi_squared_testing
     type: markdown_section
     title: 3. Empirical Statistical Testing & Pearson's Chi-Squared Test
-    body_markdown: "How do we test whether a sequence of $P$ draws (or $P$ $d$-dimensional tuples) is genuinely distributed\
-      \ according to a hypothesized probability distribution?\n\n### Origin of the $\\chi^2$ Distribution\nSuppose $\\{x_1,\
-      \ x_2, \\dots, x_\\nu\\}$ are $\\nu$ independent standard Gaussian random variables with mean $0$ and variance $1$.\
-      \ The sum of their squares:\n$$y = \\sum_{k=1}^\\nu x_k^2$$\nobeys the **chi-squared distribution** with $\\nu$ degrees\
-      \ of freedom. Because $\\langle x_k^2 \\rangle = 1$ and $\\text{Var}(x_k^2) = \\langle x_k^4 \\rangle - \\langle x_k^2\
-      \ \\rangle^2 = 3 - 1 = 2$, the exact mean and variance of $y \\sim \\chi^2_\\nu$ are:\n$$\\langle \\chi^2 \\rangle =\
-      \ \\nu, \\qquad \\text{Var}(\\chi^2) = 2\\nu \\implies \\sigma_{\\chi^2} = \\sqrt{2\\nu}$$\nRoughly speaking, a valid\
-      \ random sample should yield a $\\chi^2$ statistic inside the $\\pm 1\\sigma$ interval:\n$$\\nu - \\sqrt{2\\nu} \\lesssim\
-      \ \\chi^2 \\lesssim \\nu + \\sqrt{2\\nu}$$\n\n### Pearson's $\\chi^2$ Statistic for Binned Counts\nTo test a PRNG in\
-      \ $d$ dimensions, we partition the hypercube $[0, 1)^d$ into $N$ bins of known probabilities $p_i$ ($\\sum_{i=1}^N p_i\
-      \ = 1$) and draw $P$ independent $d$-tuples.\n- **Expected count in bin $i$:** $n_i = P p_i$ (for equal-volume bins,\
-      \ $n_i = P / N$).\n- **Observed integer count in bin $i$:** $N_i$, with expected Poisson variance $\\sigma_i^2 \\approx\
-      \ n_i$.\n- **Chi-squared statistic:**\n $$\\chi^2 = \\sum_{i=1}^N \\frac{(N_i - n_i)^2}{n_i}$$\n *(Convention: omit\
-      \ terms where $n_i = N_i = 0$; any bin with $n_i = 0$ and $N_i \\ne 0$ gives $\\chi^2 = \\infty$.)*\n- **Degrees of\
-      \ Freedom ($\\nu = N - 1$):** Because the observed counts obey the **sum rule** $\\sum_{i=1}^N N_i = P = \\sum_{i=1}^N\
-      \ n_i$, the last bin count $N_N$ is completely fixed once $N_1, \\dots, N_{N-1}$ are known. Therefore, there are $\\\
-      nu = N - 1$ degrees of freedom!\n\n### Interpreting the Chi-Squared Tail Probability $Q(\\chi^2 | N - 1)$\nWe quantify\
-      \ the test using the complementary cumulative distribution (the incomplete gamma function `gammaincc((N-1)/2, chi2/2)`):\n\
-      $$Q(\\chi^2 | \\nu) = \\text{Prob}(y > \\chi^2)$$\nwhich gives the probability that a genuinely random sequence would\
-      \ produce a $\\chi^2$ value *larger* than the one observed.\n\n| Tail Probability $Q(\\chi^2 | N-1)$ | Interpretation\
-      \ | Physical Meaning |\n|:---: |:---: |:--- |\n| **$< 1\\%$** ($Q < 0.01$) | **Reject** | $\\chi^2 \\gg \\nu$: Fluctuations\
-      \ are way too large (biased, lumpy, or correlated generator) |\n| **$1\\%\\text{–}5\\%$** | **Suspect** | Moderately\
-      \ large $\\chi^2$; investigate further |\n| **$5\\%\\text{–}10\\%$** | **Almost Suspect** | Borderline high $\\chi^2$\
-      \ |\n| **$10\\%\\text{–}90\\%$** | **Pass** | $\\chi^2 \\approx \\nu \\pm \\sqrt{2\\nu}$: Normal random Poisson fluctuations\
-      \ |\n| **$90\\%\\text{–}95\\%$** | **Almost Suspect** | Borderline low $\\chi^2$ |\n| **$95\\%\\text{–}99\\%$** | **Suspect**\
-      \ | Fluctuations are unnaturally small |\n| **$> 99\\%$** ($Q > 0.99$) | **Reject** | $\\chi^2 \\ll \\nu$: Counts $N_i$\
-      \ are **too close** to $n_i$ (quasi-random, grid-like, or \"cooked\" data!) |\n\n> [!IMPORTANT]\n> **Passing Statistical\
-      \ Tests Is Necessary, Not Sufficient!** No universal battery of statistical tests can prove a PRNG is flawless for *every*\
-      \ physics algorithm (for instance, the Ferrenberg–Landau–Wong crisis where a \"good\" shift-register RNG biased the\
-      \ 2D Ising Wolff cluster algorithm). For careful research, **always rerun your simulation with several different generator\
-      \ families** (in SPRNG, simply relink or change the generator parameter) and combine the independent runs to reduce\
-      \ error bars!"
+    body_markdown: |-
+      How do we test whether a sequence of $P$ draws (or $P$ $d$-dimensional tuples) is genuinely distributed according to a hypothesized probability distribution?
+
+      ### Origin of the $\chi^2$ Distribution
+      Suppose $\{x_1, x_2, \dots, x_\nu\}$ are $\nu$ independent standard Gaussian random variables with mean $0$ and variance $1$. The sum of their squares:
+      $$y = \sum_{k=1}^\nu x_k^2$$
+      obeys the **chi-squared distribution** with $\nu$ degrees of freedom. Because $\langle x_k^2 \rangle = 1$ and $\text{Var}(x_k^2) = \langle x_k^4 \rangle - \langle x_k^2 \rangle^2 = 3 - 1 = 2$, the exact mean and variance of $y \sim \chi^2_\nu$ are:
+      $$\langle \chi^2 \rangle = \nu, \qquad \text{Var}(\chi^2) = 2\nu \implies \sigma_{\chi^2} = \sqrt{2\nu}$$
+      Roughly speaking, a valid random sample should yield a $\chi^2$ statistic inside the $\pm 1\sigma$ interval:
+      $$\nu - \sqrt{2\nu} \lesssim \chi^2 \lesssim \nu + \sqrt{2\nu}$$
+
+      ### Pearson's $\chi^2$ Statistic for Binned Counts
+      To test a PRNG in $d$ dimensions, we partition the hypercube $[0, 1)^d$ into $N$ bins of known probabilities $p_i$ ($\sum_{i=1}^N p_i = 1$) and draw $P$ independent $d$-tuples.
+      - **Expected count in bin $i$:** $n_i = P p_i$ (for equal-volume bins, $n_i = P / N$).
+      - **Observed integer count in bin $i$:** $N_i$, with expected Poisson variance $\sigma_i^2 \approx n_i$.
+      - **Chi-squared statistic:**
+       $$\chi^2 = \sum_{i=1}^N \frac{(N_i - n_i)^2}{n_i}$$
+       *(Convention: omit terms where $n_i = N_i = 0$; any bin with $n_i = 0$ and $N_i \ne 0$ gives $\chi^2 = \infty$.)*
+      - **Degrees of Freedom ($\nu = N - 1$):** Because the observed counts obey the **sum rule** $\sum_{i=1}^N N_i = P = \sum_{i=1}^N n_i$, the last bin count $N_N$ is completely fixed once $N_1, \dots, N_{N-1}$ are known. Therefore, there are $\nu = N - 1$ degrees of freedom!
+
+      ### Interpreting the Chi-Squared Tail Probability $Q(\chi^2 | N - 1)$
+      We quantify the test using the complementary cumulative distribution (the incomplete gamma function `gammaincc((N-1)/2, chi2/2)`):
+      $$Q(\chi^2 | \nu) = \text{Prob}(y > \chi^2)$$
+      which gives the probability that a genuinely random sequence would produce a $\chi^2$ value *larger* than the one observed.
+
+      | Tail Probability $Q(\chi^2 | N-1)$ | Interpretation | Physical Meaning |
+      |:---: |:---: |:--- |
+      | **$< 1\%$** ($Q < 0.01$) | **Reject** | $\chi^2 \gg \nu$: Fluctuations are way too large (biased, lumpy, or correlated generator) |
+      | **$1\%\text{–}5\%$** | **Suspect** | Moderately large $\chi^2$; investigate further |
+      | **$5\%\text{–}10\%$** | **Almost Suspect** | Borderline high $\chi^2$ |
+      | **$10\%\text{–}90\%$** | **Pass** | $\chi^2 \approx \nu \pm \sqrt{2\nu}$: Normal random Poisson fluctuations |
+      | **$90\%\text{–}95\%$** | **Almost Suspect** | Borderline low $\chi^2$ |
+      | **$95\%\text{–}99\%$** | **Suspect** | Fluctuations are unnaturally small |
+      | **$> 99\%$** ($Q > 0.99$) | **Reject** | $\chi^2 \ll \nu$: Counts $N_i$ are **too close** to $n_i$ (quasi-random, grid-like, or "cooked" data!) |
+
+      > [!IMPORTANT]
+      > **Passing Statistical Tests Is Necessary, Not Sufficient!** No universal battery of statistical tests can prove a PRNG is flawless for *every* physics algorithm (for instance, the Ferrenberg–Landau–Wong crisis where a "good" shift-register RNG biased the 2D Ising Wolff cluster algorithm). For careful research, **always rerun your simulation with several different generator families** (in SPRNG, simply relink or change the generator parameter) and combine the independent runs to reduce error bars!
   - id: concept_chi_squared_lab
     type: concept_cell
     title: 'Interactive Lab: Pearson''s Chi-Squared Test & Two-Sided Tail Rejection'
-    description_markdown: Test four different sequences by binning $P$ draws into $N$ equal intervals on $[0, 1)$. Observe
-      how a **genuine PRNG** fluctuates naturally inside the $\pm\sqrt{n_i}$ band ($10\% \le Q \le 90\%$), how a **biased**
-      or **short-cycle** generator fails at the $Q < 1\%$ tail ($\chi^2 \gg N-1$), and how a **Quasi-Random (QRNG)** sequence
-      fails at the **$Q > 99\%$ tail** ($\chi^2 \ll N-1$) because its counts are *too uniform*!
+    description_markdown: Test four different sequences by binning $P$ draws into
+      $N$ equal intervals on $[0, 1)$. Observe how a **genuine PRNG** fluctuates naturally
+      inside the $\pm\sqrt{n_i}$ band ($10\% \le Q \le 90\%$), how a **biased** or
+      **short-cycle** generator fails at the $Q < 1\%$ tail ($\chi^2 \gg N-1$), and
+      how a **Quasi-Random (QRNG)** sequence fails at the **$Q > 99\%$ tail** ($\chi^2
+      \ll N-1$) because its counts are *too uniform*!
     render_function: render_chi_squared_diagnostic
     layout: figure_left
     controls:
@@ -735,75 +838,79 @@ worksheet:
         max: 30
         step: 1
         default: 7
-    takeaway_markdown: '**Key Takeaway:** A $\chi^2$ value near zero ($\chi^2 \ll N-1$, giving $Q(\chi^2|N-1) > 99\%$) is
-      **not** a "super-good" random number generator—it is a **rejection**! Truly independent random draws *must* exhibit
-      $\pm\sqrt{n_i}$ Poisson noise from bin to bin; an unnaturally flat histogram proves strong negative correlations (like
-      a quasi-random sequence or an LCG cycled an exact integer multiple of its period).'
+    takeaway_markdown: '**Key Takeaway:** A $\chi^2$ value near zero ($\chi^2 \ll
+      N-1$, giving $Q(\chi^2|N-1) > 99\%$) is **not** a "super-good" random number
+      generator—it is a **rejection**! Truly independent random draws *must* exhibit
+      $\pm\sqrt{n_i}$ Poisson noise from bin to bin; an unnaturally flat histogram
+      proves strong negative correlations (like a quasi-random sequence or an LCG
+      cycled an exact integer multiple of its period).'
   - id: q13_21_chi2_mean_variance
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_chi_squared_testing
-    prompt_markdown: If $y = \sum_{k=1}^{50} x_k^2$ is the sum of squares of $\nu = 50$ independent standard normal variables
-      $x_k \sim \mathcal{N}(0, 1)$, its distribution is $\chi^2_\nu$ with mean $\langle y \rangle = \nu = 50$. What is the
-      **standard deviation** $\sigma_y = \sqrt{\text{Var}(y)}$ of $y$?
+    prompt_markdown: If $y = \sum_{k=1}^{50} x_k^2$ is the sum of squares of $\nu
+      = 50$ independent standard normal variables $x_k \sim \mathcal{N}(0, 1)$, its
+      distribution is $\chi^2_\nu$ with mean $\langle y \rangle = \nu = 50$. What
+      is the **standard deviation** $\sigma_y = \sqrt{\text{Var}(y)}$ of $y$?
     hint_markdown: Recall $\text{Var}(y) = 2\nu$, so $\sigma_y = \sqrt{2\nu}$.
     correct:
-      value: 10
+      value: 10.0
       tolerance: 0.05
-    rationale_markdown: 'For a chi-squared distribution with $\nu = 50$ degrees of freedom, the variance is $\text{Var}(y)
-      = 2\nu = 100$, so the standard deviation is:
-
+    rationale_markdown: |-
+      For a chi-squared distribution with $\nu = 50$ degrees of freedom, the variance is $\text{Var}(y) = 2\nu = 100$, so the standard deviation is:
       $$\sigma_y = \sqrt{2\nu} = \sqrt{100} = 10$$
-
-      Thus we expect $\chi^2$ to fall roughly within $\nu \pm \sqrt{2\nu} = 50 \pm 10$.'
+      Thus we expect $\chi^2$ to fall roughly within $\nu \pm \sqrt{2\nu} = 50 \pm 10$.
   - id: q13_22_chi2_degrees_of_freedom
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_chi_squared_testing
-    prompt_markdown: When you divide a 3D unit cube $[0, 1)^3$ into $N = 100$ equal-volume bins and bin $P = 1000$ independent
-      random triplets, why do you evaluate the chi-squared tail probability $Q(\chi^2 | \nu)$ at $\nu = N - 1 = 99$ degrees
+    prompt_markdown: When you divide a 3D unit cube $[0, 1)^3$ into $N = 100$ equal-volume
+      bins and bin $P = 1000$ independent random triplets, why do you evaluate the
+      chi-squared tail probability $Q(\chi^2 | \nu)$ at $\nu = N - 1 = 99$ degrees
       of freedom rather than $N = 100$?
-    hint_markdown: What constraint ('sum rule') links the observed bin counts $N_1, N_2, \dots, N_N$?
+    hint_markdown: What constraint ('sum rule') links the observed bin counts $N_1,
+      N_2, \dots, N_N$?
     options:
     - id: a
-      text: 'Because of the sum rule $\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count in the final
-        bin is completely determined.'
-      text_markdown: 'Because of the sum rule $\sum_{i=1}^N N_i = P$: once the counts in $N - 1$ bins are known, the count
-        in the final bin is completely determined.'
+      text: Because the first bin $i = 1$ always contains the seed $I_0$ and must
+        be discarded.
+      text_markdown: Because the first bin $i = 1$ always contains the seed $I_0$
+        and must be discarded.
     - id: b
-      text: Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded.
-      text_markdown: Because the first bin $i = 1$ always contains the seed $I_0$ and must be discarded.
+      text: 'Because of the sum rule $\sum_{i=1}^N N_i = P$: once the counts in $N
+        - 1$ bins are known, the count in the final bin is completely determined.'
+      text_markdown: 'Because of the sum rule $\sum_{i=1}^N N_i = P$: once the counts
+        in $N - 1$ bins are known, the count in the final bin is completely determined.'
     - id: c
       text: Because $N - 1$ is always a prime number when $N = 100$.
       text_markdown: Because $N - 1$ is always a prime number when $N = 100$.
     - id: d
       text: Because the incomplete gamma function is undefined for even integers.
       text_markdown: Because the incomplete gamma function is undefined for even integers.
-    correct: a
-    rationale_markdown: 'The total number of samples $P$ is fixed, enforcing the linear constraint ("sum rule"):
-
+    correct: b
+    rationale_markdown: |-
+      The total number of samples $P$ is fixed, enforcing the linear constraint ("sum rule"):
       $$\sum_{i=1}^N N_i = P = \sum_{i=1}^N n_i$$
-
-      This removes one independent fluctuation mode, leaving $\nu = N - 1$ degrees of freedom.'
+      This removes one independent fluctuation mode, leaving $\nu = N - 1$ degrees of freedom.
   - id: q13_23_chi2_calculation
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_chi_squared_testing
-    prompt_markdown: You test a PRNG by drawing $P = 400$ numbers into $N = 4$ equal bins on $[0, 1)$, so the expected count
-      in each bin is $n_i = 100$. If the observed integer counts in the 4 bins are $N_1 = 90$, $N_2 = 110$, $N_3 = 105$, and
-      $N_4 = 95$, what is the exact value of Pearson's $\chi^2$ statistic?
+    prompt_markdown: You test a PRNG by drawing $P = 400$ numbers into $N = 4$ equal
+      bins on $[0, 1)$, so the expected count in each bin is $n_i = 100$. If the observed
+      integer counts in the 4 bins are $N_1 = 90$, $N_2 = 110$, $N_3 = 105$, and $N_4
+      = 95$, what is the exact value of Pearson's $\chi^2$ statistic?
     hint_markdown: Compute $\sum_{i=1}^4 (N_i - 100)^2 / 100$.
     correct:
       value: 2.5
       tolerance: 0.01
-    rationale_markdown: 'Using $\chi^2 = \sum_{i=1}^4 \frac{(N_i - n_i)^2}{n_i}$ with $n_i = 100$:
-
+    rationale_markdown: |-
+      Using $\chi^2 = \sum_{i=1}^4 \frac{(N_i - n_i)^2}{n_i}$ with $n_i = 100$:
       $$\chi^2 = \frac{(-10)^2 + (10)^2 + (5)^2 + (-5)^2}{100} = \frac{100 + 100 + 25 + 25}{100} = \frac{250}{100} = 2.50$$
-
-      which is right near the expected mean $\nu = N - 1 = 3$!'
+      which is right near the expected mean $\nu = N - 1 = 3$!
   - id: q13_24_chi2_high_q_rejection
     type: problem
     question_type: single_select
@@ -811,46 +918,60 @@ worksheet:
     taught_by:
     - sec_chi_squared_testing
     - concept_chi_squared_lab
-    prompt_markdown: 'Suppose a student tests a candidate random number generator across $N = 101$ bins ($\nu = 100$) and
-      obtains $\chi^2 = 42.0$, corresponding to a tail probability $Q(\chi^2 | 100) = 0.9999998$ ($> 99\%$). The student concludes:
-      *"Since $\chi^2$ measures error from the ideal uniform expectation, my generator is extra-uniform and passes with flying
-      colors!"* Why is the student''s conclusion **wrong**?'
-    hint_markdown: Check the bottom row ($>99\%$) of the Numerical Recipes interpretation table of the reference notes, or
-      select the Quasi-Random sequence in the interactive Chi-Squared lab.
+    prompt_markdown: 'Suppose a student tests a candidate random number generator
+      across $N = 101$ bins ($\nu = 100$) and obtains $\chi^2 = 42.0$, corresponding
+      to a tail probability $Q(\chi^2 | 100) = 0.9999998$ ($> 99\%$). The student
+      concludes: *"Since $\chi^2$ measures error from the ideal uniform expectation,
+      my generator is extra-uniform and passes with flying colors!"* Why is the student''s
+      conclusion **wrong**?'
+    hint_markdown: Check the bottom row ($>99\%$) of the Numerical Recipes interpretation
+      table of the reference notes, or select the Quasi-Random sequence in the interactive
+      Chi-Squared lab.
     options:
     - id: a
-      text: '$Q > 99\%$ means $\chi^2$ is impossibly small ($\chi^2 \ll \nu$): genuine independent random numbers must fluctuate
-        by $\sim \pm\sqrt{n_i}$ per bin, so $Q > 99\%$ rejects the generator as artificially flat or negatively correlated
-        (e.g., quasi-random).'
-      text_markdown: '$Q > 99\%$ means $\chi^2$ is impossibly small ($\chi^2 \ll \nu$): genuine independent random numbers
-        must fluctuate by $\sim \pm\sqrt{n_i}$ per bin, so $Q > 99\%$ rejects the generator as artificially flat or negatively
-        correlated (e.g., quasi-random).'
+      text: A value of $\chi^2 = 42.0$ is much larger than the expected mean $\nu
+        = 100$.
+      text_markdown: A value of $\chi^2 = 42.0$ is much larger than the expected mean
+        $\nu = 100$.
     - id: b
-      text: $Q$ represents the probability of failure, so $Q$ must always be less than $0.001$ for a good generator.
-      text_markdown: $Q$ represents the probability of failure, so $Q$ must always be less than $0.001$ for a good generator.
+      text: $Q$ represents the probability of failure, so $Q$ must always be less
+        than $0.001$ for a good generator.
+      text_markdown: $Q$ represents the probability of failure, so $Q$ must always
+        be less than $0.001$ for a good generator.
     - id: c
-      text: A value of $\chi^2 = 42.0$ is much larger than the expected mean $\nu = 100$.
-      text_markdown: A value of $\chi^2 = 42.0$ is much larger than the expected mean $\nu = 100$.
+      text: '$Q > 99\%$ means $\chi^2$ is impossibly small ($\chi^2 \ll \nu$): genuine
+        independent random numbers must fluctuate by $\sim \pm\sqrt{n_i}$ per bin,
+        so $Q > 99\%$ rejects the generator as artificially flat or negatively correlated
+        (e.g., quasi-random).'
+      text_markdown: '$Q > 99\%$ means $\chi^2$ is impossibly small ($\chi^2 \ll \nu$):
+        genuine independent random numbers must fluctuate by $\sim \pm\sqrt{n_i}$
+        per bin, so $Q > 99\%$ rejects the generator as artificially flat or negatively
+        correlated (e.g., quasi-random).'
     - id: d
-      text: The chi-squared statistic can never be smaller than $\nu = 100$ for any sequence of numbers.
-      text_markdown: The chi-squared statistic can never be smaller than $\nu = 100$ for any sequence of numbers.
-    correct: a
-    rationale_markdown: $Q(\chi^2|\nu) = \text{Prob}(y > \chi^2)$. When $Q > 99\%$, there is less than a $1\%$ chance that
-      genuinely independent uniform draws would ever land so close to the flat expected line $n_i$. Such an unnaturally low
-      $\chi^2$ indicates strong negative serial correlations (like a quasi-random generator or cycling an LCG through its
-      exact full period) and must be **rejected**.
+      text: The chi-squared statistic can never be smaller than $\nu = 100$ for any
+        sequence of numbers.
+      text_markdown: The chi-squared statistic can never be smaller than $\nu = 100$
+        for any sequence of numbers.
+    correct: c
+    rationale_markdown: $Q(\chi^2|\nu) = \text{Prob}(y > \chi^2)$. When $Q > 99\%$,
+      there is less than a $1\%$ chance that genuinely independent uniform draws would
+      ever land so close to the flat expected line $n_i$. Such an unnaturally low
+      $\chi^2$ indicates strong negative serial correlations (like a quasi-random
+      generator or cycling an LCG through its exact full period) and must be **rejected**.
   - id: q13_25_chi2_interpretation_table
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_chi_squared_testing
-    prompt_markdown: According to the Numerical Recipes $\chi^2$ probability interpretation table presented in lecture, which
-      range of tail probabilities $Q(\chi^2 | N - 1)$ is classified as an unambiguous **"pass"**?
-    hint_markdown: Look at the green center row of the probability table of the reference notes.
+    prompt_markdown: According to the Numerical Recipes $\chi^2$ probability interpretation
+      table presented in lecture, which range of tail probabilities $Q(\chi^2 | N
+      - 1)$ is classified as an unambiguous **"pass"**?
+    hint_markdown: Look at the green center row of the probability table of the reference
+      notes.
     options:
     - id: a
-      text: $10\% \le Q \le 90\%$ ($0.10 \le Q \le 0.90$)
-      text_markdown: $10\% \le Q \le 90\%$ ($0.10 \le Q \le 0.90$)
+      text: $1\% \le Q \le 5\%$ ($0.01 \le Q \le 0.05$)
+      text_markdown: $1\% \le Q \le 5\%$ ($0.01 \le Q \le 0.05$)
     - id: b
       text: $Q < 1\%$ ($Q < 0.01$)
       text_markdown: $Q < 1\%$ ($Q < 0.01$)
@@ -858,289 +979,323 @@ worksheet:
       text: $Q > 99\%$ ($Q > 0.99$)
       text_markdown: $Q > 99\%$ ($Q > 0.99$)
     - id: d
-      text: $1\% \le Q \le 5\%$ ($0.01 \le Q \le 0.05$)
-      text_markdown: $1\% \le Q \le 5\%$ ($0.01 \le Q \le 0.05$)
-    correct: a
-    rationale_markdown: 'In the lecture''s table:
-
+      text: $10\% \le Q \le 90\%$ ($0.10 \le Q \le 0.90$)
+      text_markdown: $10\% \le Q \le 90\%$ ($0.10 \le Q \le 0.90$)
+    correct: d
+    rationale_markdown: |-
+      In the lecture's table:
       - $<1\%$ and $>99\%$: **reject**
-
       - $1\text{–}5\%$ and $95\text{–}99\%$: **suspect**
-
       - $5\text{–}10\%$ and $90\text{–}95\%$: **almost suspect**
-
-      - **$10\text{–}90\%$**: **pass**'
+      - **$10\text{–}90\%$**: **pass**
   - id: q13_26_chi2_zero_expected_bin
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_chi_squared_testing
-    prompt_markdown: When computing $\chi^2 = \sum_i (N_i - n_i)^2 / n_i$ for a non-uniform distribution where some bin $k$
-      has theoretical expected count $n_k = 0$, how should that bin be handled?
-    hint_markdown: Check the two bullet rules of the reference notes regarding $n_i = 0$.
+    prompt_markdown: When computing $\chi^2 = \sum_i (N_i - n_i)^2 / n_i$ for a non-uniform
+      distribution where some bin $k$ has theoretical expected count $n_k = 0$, how
+      should that bin be handled?
+    hint_markdown: Check the two bullet rules of the reference notes regarding $n_i
+      = 0$.
     options:
     - id: a
-      text: If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum; if $n_k = 0$ and observed $N_k \ne 0$, the statistic
-        correctly diverges to $\chi^2 = \infty$ (immediate rejection).
-      text_markdown: If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum; if $n_k = 0$ and observed $N_k \ne 0$,
-        the statistic correctly diverges to $\chi^2 = \infty$ (immediate rejection).
+      text: If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum; if $n_k
+        = 0$ and observed $N_k \ne 0$, the statistic correctly diverges to $\chi^2
+        = \infty$ (immediate rejection).
+      text_markdown: If $n_k = 0$ and observed $N_k = 0$, omit the term from the sum;
+        if $n_k = 0$ and observed $N_k \ne 0$, the statistic correctly diverges to
+        $\chi^2 = \infty$ (immediate rejection).
     - id: b
-      text: Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically passes.
-      text_markdown: Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically passes.
+      text: Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically
+        passes.
+      text_markdown: Always replace $n_k = 0$ with $n_k = 100$ so the generator automatically
+        passes.
     - id: c
-      text: Set $\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k = 500$ samples landed in the forbidden bin.
-      text_markdown: Set $\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k = 500$ samples landed in the forbidden
-        bin.
+      text: Set $\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k = 500$ samples
+        landed in the forbidden bin.
+      text_markdown: Set $\chi^2 = 0$ whenever any bin has $n_k = 0$, even if $N_k
+        = 500$ samples landed in the forbidden bin.
     - id: d
       text: Subtract $N_k$ from the degrees of freedom $\nu$.
       text_markdown: Subtract $N_k$ from the degrees of freedom $\nu$.
     correct: a
-    rationale_markdown: If a bin has zero theoretical probability ($n_k = 0$) and zero samples land in it ($N_k = 0$), the
-      $0/0$ term contributes nothing and is omitted. However, if $n_k = 0$ and $N_k > 0$, the generator produced events in
-      a strictly impossible region, so $(N_k - 0)^2 / 0 = \infty$, immediately rejecting the null hypothesis.
+    rationale_markdown: If a bin has zero theoretical probability ($n_k = 0$) and
+      zero samples land in it ($N_k = 0$), the $0/0$ term contributes nothing and
+      is omitted. However, if $n_k = 0$ and $N_k > 0$, the generator produced events
+      in a strictly impossible region, so $(N_k - 0)^2 / 0 = \infty$, immediately
+      rejecting the null hypothesis.
   - id: q13_27_hw_expected_fluctuation
     type: problem
     question_type: numeric
     difficulty: easy
     taught_by: sec_chi_squared_testing
-    prompt_markdown: In the lecture's homework example, you divide a cube into $N = 100$ equal bins and sample $P = 1000$
-      triplets. The expected count per bin is $n = P/N = 10$. What is the expected standard deviation $\sigma_n = (P/N)^{1/2}$
+    prompt_markdown: In the lecture's homework example, you divide a cube into $N
+      = 100$ equal bins and sample $P = 1000$ triplets. The expected count per bin
+      is $n = P/N = 10$. What is the expected standard deviation $\sigma_n = (P/N)^{1/2}$
       of the count in a single bin? (Enter to 2 decimal places.)
     hint_markdown: Compute $\sqrt{10}$.
     correct:
       value: 3.16
       tolerance: 0.05
-    rationale_markdown: 'With $n = P / N = 1000 / 100 = 10$ expected triplets per bin, the typical single-bin fluctuation
-      is:
-
-      $$\sigma_n = \sqrt{\frac{P}{N}} = \sqrt{10} \approx 3.162$$'
+    rationale_markdown: |-
+      With $n = P / N = 1000 / 100 = 10$ expected triplets per bin, the typical single-bin fluctuation is:
+      $$\sigma_n = \sqrt{\frac{P}{N}} = \sqrt{10} \approx 3.162$$
   - id: q13_28_multiple_generators_practice
     type: problem
     question_type: multi_select
     difficulty: medium
     taught_by: sec_chi_squared_testing
-    prompt_markdown: 'Why does the lecture recommend **rerunning careful Monte Carlo simulations with several different PRNG
-      algorithms** (e.g., comparing a 64-bit LCG against a Lagged Fibonacci generator in SPRNG)? Select **all** true statements:'
+    prompt_markdown: 'Why does the lecture recommend **rerunning careful Monte Carlo
+      simulations with several different PRNG algorithms** (e.g., comparing a 64-bit
+      LCG against a Lagged Fibonacci generator in SPRNG)? Select **all** true statements:'
     hint_markdown: 'Recall ''Recommendation: For careful work use several generators!''.'
     options:
     - id: a
-      text: Passing standard empirical statistical tests is necessary but not sufficient; a specific physical MC algorithm
-        may still resonate with subtle higher-order correlations of a particular generator.
-      text_markdown: Passing standard empirical statistical tests is necessary but not sufficient; a specific physical MC
-        algorithm may still resonate with subtle higher-order correlations of a particular generator.
+      text: Passing standard empirical statistical tests is necessary but not sufficient;
+        a specific physical MC algorithm may still resonate with subtle higher-order
+        correlations of a particular generator.
+      text_markdown: Passing standard empirical statistical tests is necessary but
+        not sufficient; a specific physical MC algorithm may still resonate with subtle
+        higher-order correlations of a particular generator.
     - id: b
-      text: The computational effort of running with multiple valid generators is not wasted, because their independent results
-        can be combined to lower the final statistical error bars.
-      text_markdown: The computational effort of running with multiple valid generators is not wasted, because their independent
-        results can be combined to lower the final statistical error bars.
+      text: The computational effort of running with multiple valid generators is
+        not wasted, because their independent results can be combined to lower the
+        final statistical error bars.
+      text_markdown: The computational effort of running with multiple valid generators
+        is not wasted, because their independent results can be combined to lower
+        the final statistical error bars.
     - id: c
-      text: In modular libraries like SPRNG, switching to an entirely different generator family requires only relinking or
-        changing a single initialization flag.
-      text_markdown: In modular libraries like SPRNG, switching to an entirely different generator family requires only relinking
-        or changing a single initialization flag.
+      text: In modular libraries like SPRNG, switching to an entirely different generator
+        family requires only relinking or changing a single initialization flag.
+      text_markdown: In modular libraries like SPRNG, switching to an entirely different
+        generator family requires only relinking or changing a single initialization
+        flag.
     - id: d
-      text: Averaging two simulations that both use the exact same broken 8-bit LCG with the exact same seed reduces systematic
-        bias to zero.
-      text_markdown: Averaging two simulations that both use the exact same broken 8-bit LCG with the exact same seed reduces
-        systematic bias to zero.
+      text: Averaging two simulations that both use the exact same broken 8-bit LCG
+        with the exact same seed reduces systematic bias to zero.
+      text_markdown: Averaging two simulations that both use the exact same broken
+        8-bit LCG with the exact same seed reduces systematic bias to zero.
     correct:
     - a
     - b
     - c
-    rationale_markdown: (1) passing standard statistical tests is *necessary but not sufficient* because a specific Markov
-      chain move set can couple to a generator's hidden correlations; (2) if the different generators agree within statistical
-      uncertainty, the runs can be combined to shrink error bars (no wasted CPU time!); and (3) libraries like SPRNG allow
-      switching generators simply by relinking.
+    rationale_markdown: (1) passing standard statistical tests is *necessary but not
+      sufficient* because a specific Markov chain move set can couple to a generator's
+      hidden correlations; (2) if the different generators agree within statistical
+      uncertainty, the runs can be combined to shrink error bars (no wasted CPU time!);
+      and (3) libraries like SPRNG allow switching generators simply by relinking.
   - id: sec_parallel_prng_and_sprng
     type: markdown_section
     title: 4. Parallel Monte Carlo & Parallel PRNG Strategies (SPRNG)
-    body_markdown: "Monte Carlo looks *\"embarrassingly parallel\"* at first glance, motivating two simple workflow patterns:\n\
-      - **Cloning:** Running the **same physical parameters** across $P$ processors with **different random number streams**,\
-      \ then averaging the independent trajectories to shrink error bars by $1/\\sqrt{P}$.\n - *Fatal Bug Alert:* If you accidentally\
-      \ initialize all $P$ clones with the **exact same random seed**, every processor executes the exact same trajectory—yielding\
-      \ **zero statistical error reduction** and wasting $(P-1)/P$ of the supercomputer!\n- **Scanning:** Running **different\
-      \ physical parameters** (e.g., different temperatures $T_p$ or densities $\\rho_p$) on each processor.\n - *Subtle Bug\
-      \ Alert:* If every processor uses the **same random number stream** while scanning neighbouring parameter points, the\
-      \ points on your phase diagram will have **artificially correlated fluctuations** (staying in phase!).\n\n### Four Parallel\
-      \ PRNG Decomposition Strategies\nHow do we equip $P$ processors (or dynamically forked particle-splitting processes)\
-      \ with **uncorrelated**, high-quality random streams without a communication bottleneck?\n\n1. **Central Dealer / Master-Worker\
-      \ (Avoid!):** Having Processor $0$ generate all random numbers and send them to workers creates a severe communication\
-      \ bottleneck and makes execution non-deterministic if message arrival order varies.\n2. **Cycle Division (Leapfrog or\
-      \ Partition):** Splits a single generator's cycle of length $L$ among $P$ processors:\n - **Leapfrogging:** Processor\
-      \ $p \\in \\{0, \\dots, P-1\\}$ takes every $P$-th number: $I_{p},\\, I_{p+P},\\, I_{p+2P}, \\dots$. For an LCG $I_{n+1}\
-      \ = (a I_n + c)\\bmod m$, stepping by $P$ is itself an LCG with effective multiplier $A = a^P \\bmod m$:\n $$I_{n+P}\
-      \ = \\left(a^P I_n + c\\frac{a^P - 1}{a - 1}\\right) \\bmod m$$\n - **Cycle Partitioning (Block Jump-Ahead):** Processor\
-      \ $p$ starts at offset $p \\lfloor L / P \\rfloor$ along the cycle.\n - *Caution:* Cycle division can amplify **long-range\
-      \ inter-stream correlations** in LCGs and runs the risk of stream overlap if $L/P$ is exhausted!\n3. **Cycle Parameterization:**\
-      \ When a generator's $2^M$ state space naturally decomposes into many **disjoint closed cycles** (such as a Lagged Fibonacci\
-      \ Generator), assign each parallel stream a **different disjoint cycle** by varying its initial seed table.\n4. **Iteration\
-      \ Parameterization:** Assign each stream a **different recurrence function $T^{(p)}$** (for example, giving each processor\
-      \ a distinct prime additive constant $c_p$ in a 48-bit/64-bit LCG, or a distinct multiplier $a_p$ in a prime-modulus\
-      \ LCG).\n\n### The SPRNG Library (Scalable Parallel Random Number Generators)\nDeveloped at NCSA, **SPRNG** provides\
-      \ a unified C/C++/Fortran API for parallel PRNG streams:\n- `init_sprng(streamnum, nstreams, seed, param)`: Initializes\
-      \ independent stream `streamnum` out of `nstreams` from a common global `seed` and generator parameter `param`.\n- `sprng(stream)`\
-      \ / `isprng(stream)`: Returns the next uniform double in $[0, 1)$ or random integer from `stream`.\n- `make_sprng_seed`:\
-      \ Generates a synchronized new seed across MPI processes.\n- `spawn_sprng(stream, nspawned, &newstreams)`: Dynamically\
-      \ forks `nspawned` guaranteed-independent child streams from an existing stream (essential for branching/particle-splitting\
-      \ Monte Carlo where particles fork new processes on the fly without global synchronization!).\n- `pack_sprng` / `unpack_sprng`:\
-      \ Serializes stream state into a byte buffer for checkpoint/restart or MPI migration."
+    body_markdown: |-
+      Monte Carlo looks *"embarrassingly parallel"* at first glance, motivating two simple workflow patterns:
+      - **Cloning:** Running the **same physical parameters** across $P$ processors with **different random number streams**, then averaging the independent trajectories to shrink error bars by $1/\sqrt{P}$.
+       - *Fatal Bug Alert:* If you accidentally initialize all $P$ clones with the **exact same random seed**, every processor executes the exact same trajectory—yielding **zero statistical error reduction** and wasting $(P-1)/P$ of the supercomputer!
+      - **Scanning:** Running **different physical parameters** (e.g., different temperatures $T_p$ or densities $\rho_p$) on each processor.
+       - *Subtle Bug Alert:* If every processor uses the **same random number stream** while scanning neighbouring parameter points, the points on your phase diagram will have **artificially correlated fluctuations** (staying in phase!).
+
+      ### Four Parallel PRNG Decomposition Strategies
+      How do we equip $P$ processors (or dynamically forked particle-splitting processes) with **uncorrelated**, high-quality random streams without a communication bottleneck?
+
+      1. **Central Dealer / Master-Worker (Avoid!):** Having Processor $0$ generate all random numbers and send them to workers creates a severe communication bottleneck and makes execution non-deterministic if message arrival order varies.
+      2. **Cycle Division (Leapfrog or Partition):** Splits a single generator's cycle of length $L$ among $P$ processors:
+       - **Leapfrogging:** Processor $p \in \{0, \dots, P-1\}$ takes every $P$-th number: $I_{p},\, I_{p+P},\, I_{p+2P}, \dots$. For an LCG $I_{n+1} = (a I_n + c)\bmod m$, stepping by $P$ is itself an LCG with effective multiplier $A = a^P \bmod m$:
+       $$I_{n+P} = \left(a^P I_n + c\frac{a^P - 1}{a - 1}\right) \bmod m$$
+       - **Cycle Partitioning (Block Jump-Ahead):** Processor $p$ starts at offset $p \lfloor L / P \rfloor$ along the cycle.
+       - *Caution:* Cycle division can amplify **long-range inter-stream correlations** in LCGs and runs the risk of stream overlap if $L/P$ is exhausted!
+      3. **Cycle Parameterization:** When a generator's $2^M$ state space naturally decomposes into many **disjoint closed cycles** (such as a Lagged Fibonacci Generator), assign each parallel stream a **different disjoint cycle** by varying its initial seed table.
+      4. **Iteration Parameterization:** Assign each stream a **different recurrence function $T^{(p)}$** (for example, giving each processor a distinct prime additive constant $c_p$ in a 48-bit/64-bit LCG, or a distinct multiplier $a_p$ in a prime-modulus LCG).
+
+      ### The SPRNG Library (Scalable Parallel Random Number Generators)
+      Developed at NCSA, **SPRNG** provides a unified C/C++/Fortran API for parallel PRNG streams:
+      - `init_sprng(streamnum, nstreams, seed, param)`: Initializes independent stream `streamnum` out of `nstreams` from a common global `seed` and generator parameter `param`.
+      - `sprng(stream)` / `isprng(stream)`: Returns the next uniform double in $[0, 1)$ or random integer from `stream`.
+      - `make_sprng_seed`: Generates a synchronized new seed across MPI processes.
+      - `spawn_sprng(stream, nspawned, &newstreams)`: Dynamically forks `nspawned` guaranteed-independent child streams from an existing stream (essential for branching/particle-splitting Monte Carlo where particles fork new processes on the fly without global synchronization!).
+      - `pack_sprng` / `unpack_sprng`: Serializes stream state into a byte buffer for checkpoint/restart or MPI migration.
   - id: q13_29_cloning_vs_scanning
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: In the terminology of parallel Monte Carlo simulations, what is the distinction between **Cloning** and
-      **Scanning**?
-    hint_markdown: Check the two definitions under 'Two methods for easy parallel MC'.
+    prompt_markdown: In the terminology of parallel Monte Carlo simulations, what
+      is the distinction between **Cloning** and **Scanning**?
+    hint_markdown: Check the two definitions under 'Two methods for easy parallel
+      MC'.
     options:
     - id: a
-      text: Cloning runs the same physical system parameters on multiple processors with different random number streams to
-        reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature) on each
-        processor.
-      text_markdown: Cloning runs the same physical system parameters on multiple processors with different random number
-        streams to reduce statistical error, whereas Scanning runs different physical parameters (e.g., density or temperature)
-        on each processor.
+      text: Cloning copies the exact same random seed to every processor to produce
+        identical outputs, whereas Scanning uses a central processor to deal random
+        numbers one by one.
+      text_markdown: Cloning copies the exact same random seed to every processor
+        to produce identical outputs, whereas Scanning uses a central processor to
+        deal random numbers one by one.
     - id: b
-      text: Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning uses
-        a central processor to deal random numbers one by one.
-      text_markdown: Cloning copies the exact same random seed to every processor to produce identical outputs, whereas Scanning
-        uses a central processor to deal random numbers one by one.
+      text: Cloning runs the same physical system parameters on multiple processors
+        with different random number streams to reduce statistical error, whereas
+        Scanning runs different physical parameters (e.g., density or temperature)
+        on each processor.
+      text_markdown: Cloning runs the same physical system parameters on multiple
+        processors with different random number streams to reduce statistical error,
+        whereas Scanning runs different physical parameters (e.g., density or temperature)
+        on each processor.
     - id: c
-      text: Cloning is only possible on shared-memory GPUs, whereas Scanning requires a Geiger counter.
-      text_markdown: Cloning is only possible on shared-memory GPUs, whereas Scanning requires a Geiger counter.
+      text: Cloning is only possible on shared-memory GPUs, whereas Scanning requires
+        a Geiger counter.
+      text_markdown: Cloning is only possible on shared-memory GPUs, whereas Scanning
+        requires a Geiger counter.
     - id: d
-      text: Cloning partitions space-time domains, whereas Scanning forks new child particles.
-      text_markdown: Cloning partitions space-time domains, whereas Scanning forks new child particles.
-    correct: a
-    rationale_markdown: 'In parallel MC:
-
-      - **Cloning:** Multiple independent replicas of the *same* serial simulation run with *different* random number streams
-      to gather $P$ times as many samples in a fixed wall-clock time.
-
-      - **Scanning:** Each processor simulates a *different* physical parameter value (e.g., scanning across temperatures
-      or densities).'
+      text: Cloning partitions space-time domains, whereas Scanning forks new child
+        particles.
+      text_markdown: Cloning partitions space-time domains, whereas Scanning forks
+        new child particles.
+    correct: b
+    rationale_markdown: |-
+      In parallel MC:
+      - **Cloning:** Multiple independent replicas of the *same* serial simulation run with *different* random number streams to gather $P$ times as many samples in a fixed wall-clock time.
+      - **Scanning:** Each processor simulates a *different* physical parameter value (e.g., scanning across temperatures or densities).
   - id: q13_30_identical_seed_disaster
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: A researcher runs a "cloned" Monte Carlo simulation across $P = 64$ MPI ranks to measure the average
-      energy of a liquid. A single rank running for 1 hour achieves a statistical error bar of $\sigma_1 = 0.080\text{ eV}$
-      (so an ideal independent 64-rank run would reduce the error bar by $\sqrt{64} = 8$ to $0.010\text{ eV}$). However, the
-      researcher accidentally initializes every rank with the **exact same seed** `seed = 12345` and `streamnum = 0`. What
-      is the true statistical error bar (in $\text{eV}$) of the 64-rank average?
-    hint_markdown: If all 64 ranks generate the exact same trajectory $E^{(1)}(t) = E^{(2)}(t) = \dots = E^{(64)}(t)$, does
-      averaging 64 identical numbers reduce the variance?
+    prompt_markdown: A researcher runs a "cloned" Monte Carlo simulation across $P
+      = 64$ MPI ranks to measure the average energy of a liquid. A single rank running
+      for 1 hour achieves a statistical error bar of $\sigma_1 = 0.080\text{ eV}$
+      (so an ideal independent 64-rank run would reduce the error bar by $\sqrt{64}
+      = 8$ to $0.010\text{ eV}$). However, the researcher accidentally initializes
+      every rank with the **exact same seed** `seed = 12345` and `streamnum = 0`.
+      What is the true statistical error bar (in $\text{eV}$) of the 64-rank average?
+    hint_markdown: If all 64 ranks generate the exact same trajectory $E^{(1)}(t)
+      = E^{(2)}(t) = \dots = E^{(64)}(t)$, does averaging 64 identical numbers reduce
+      the variance?
     correct:
       value: 0.08
       tolerance: 0.001
-    rationale_markdown: Because PRNGs are 100% deterministic, giving all $64$ processors the exact same seed and stream index
-      causes all $64$ processors to compute the **exact same numbers**. The average of $64$ identical copies of a random variable
-      $X$ is just $X$ itself, so the true statistical error remains $\sigma = \sigma_1 = 0.080\text{ eV}$ (while an unsuspecting
-      script computing variance across the 64 identical ranks would falsely report an error bar of $0.000\text{ eV}$!).
+    rationale_markdown: Because PRNGs are 100% deterministic, giving all $64$ processors
+      the exact same seed and stream index causes all $64$ processors to compute the
+      **exact same numbers**. The average of $64$ identical copies of a random variable
+      $X$ is just $X$ itself, so the true statistical error remains $\sigma = \sigma_1
+      = 0.080\text{ eV}$ (while an unsuspecting script computing variance across the
+      64 identical ranks would falsely report an error bar of $0.000\text{ eV}$!).
   - id: q13_31_scanning_in_phase_bug
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: What goes wrong in a parallel **Scanning** simulation (where Processor $p$ simulates temperature $T_p$)
-      if every processor uses the **exact same random number stream** and the trajectories stay "in phase"?
-    hint_markdown: Recall 'Unlikely to lead to problems unless they stay in phase' and consider whether the points on your
-      $E(T)$ curve will be statistically independent.
+    prompt_markdown: What goes wrong in a parallel **Scanning** simulation (where
+      Processor $p$ simulates temperature $T_p$) if every processor uses the **exact
+      same random number stream** and the trajectories stay "in phase"?
+    hint_markdown: Recall 'Unlikely to lead to problems unless they stay in phase'
+      and consider whether the points on your $E(T)$ curve will be statistically independent.
     options:
     - id: a
-      text: The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated noise
-        across the curve), invalidating independent-point curve fitting and error estimates.
-      text_markdown: The stochastic fluctuations at different temperatures $T_p$ become correlated with one another (correlated
-        noise across the curve), invalidating independent-point curve fitting and error estimates.
-    - id: b
-      text: Note that correlated sampling can sometimes be used deliberately for small differences, but if you treat the scanned
-        points as independent measurements in a fit or phase diagram while their random walks stay in phase, their errors
-        are strongly correlated!
-      text_markdown: Note that correlated sampling can sometimes be used deliberately for small differences, but if you treat
-        the scanned points as independent measurements in a fit or phase diagram while their random walks stay in phase, their
-        errors are strongly correlated!
-    - id: c
       text: The cycle length of each processor is reduced by a factor of $2^{32}$.
-      text_markdown: The cycle length of each processor is reduced by a factor of $2^{32}$.
+      text_markdown: The cycle length of each processor is reduced by a factor of
+        $2^{32}$.
+    - id: b
+      text: Note that correlated sampling can sometimes be used deliberately for small
+        differences, but if you treat the scanned points as independent measurements
+        in a fit or phase diagram while their random walks stay in phase, their errors
+        are strongly correlated!
+      text_markdown: Note that correlated sampling can sometimes be used deliberately
+        for small differences, but if you treat the scanned points as independent
+        measurements in a fit or phase diagram while their random walks stay in phase,
+        their errors are strongly correlated!
+    - id: c
+      text: The stochastic fluctuations at different temperatures $T_p$ become correlated
+        with one another (correlated noise across the curve), invalidating independent-point
+        curve fitting and error estimates.
+      text_markdown: The stochastic fluctuations at different temperatures $T_p$ become
+        correlated with one another (correlated noise across the curve), invalidating
+        independent-point curve fitting and error estimates.
     - id: d
       text: The compiler refuses to compile MPI programs when two ranks share a seed.
-      text_markdown: The compiler refuses to compile MPI programs when two ranks share a seed.
-    correct: a
-    rationale_markdown: If scanned parameter runs stay in phase using the identical random number sequence, they experience
-      the same random kicks at the same steps. While correlated sampling can be exploited deliberately when taking differences,
-      treating in-phase scanned points as *statistically independent* data points underestimates collective curve-fitting
-      uncertainty and can create fake smooth features.
+      text_markdown: The compiler refuses to compile MPI programs when two ranks share
+        a seed.
+    correct: c
+    rationale_markdown: If scanned parameter runs stay in phase using the identical
+      random number sequence, they experience the same random kicks at the same steps.
+      While correlated sampling can be exploited deliberately when taking differences,
+      treating in-phase scanned points as *statistically independent* data points
+      underestimates collective curve-fitting uncertainty and can create fake smooth
+      features.
   - id: q13_32_leapfrog_multiplier
     type: problem
     question_type: numeric
     difficulty: hard
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: Suppose you parallelize our toy generator $\text{LCG}(a=5, c=1, m=16)$ across $P = 2$ processors using
-      the **Leapfrog** (Cycle Division) method, so Processor $0$ takes $I_0, I_2, I_4, \dots$ and Processor $1$ takes $I_1,
-      I_3, I_5, \dots$. Since stepping twice in $\text{LCG}(a, c, m)$ obeys $I_{n+2} = (A I_n + C) \bmod 16$ with effective
-      multiplier $A = a^2 \bmod 16$, what is the effective multiplier $A$ for each processor's leapfrogged stream?
+    prompt_markdown: Suppose you parallelize our toy generator $\text{LCG}(a=5, c=1,
+      m=16)$ across $P = 2$ processors using the **Leapfrog** (Cycle Division) method,
+      so Processor $0$ takes $I_0, I_2, I_4, \dots$ and Processor $1$ takes $I_1,
+      I_3, I_5, \dots$. Since stepping twice in $\text{LCG}(a, c, m)$ obeys $I_{n+2}
+      = (A I_n + C) \bmod 16$ with effective multiplier $A = a^2 \bmod 16$, what is
+      the effective multiplier $A$ for each processor's leapfrogged stream?
     hint_markdown: Compute $A = 5^2 \bmod 16 = 25 \bmod 16$.
     correct:
-      value: 9
+      value: 9.0
       tolerance: 0.01
-    rationale_markdown: 'Advancing two steps at a time multiplies by $a$ twice:
-
+    rationale_markdown: |-
+      Advancing two steps at a time multiplies by $a$ twice:
       $$I_{n+2} = a(a I_n + c) + c = a^2 I_n + c(a + 1) \pmod{16}$$
-
       Thus the effective leapfrog multiplier is:
-
       $$A = a^2 \bmod 16 = 25 \bmod 16 = 9$$
-
-      (and the effective additive increment is $C = 1(5 + 1) \bmod 16 = 6$).'
+      (and the effective additive increment is $C = 1(5 + 1) \bmod 16 = 6$).
   - id: q13_33_parallel_methods_taxonomy
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: 'Match the three parallel RNG construction strategies of the reference notes—**Cycle Division**, **Cycle
-      Parameterization**, and **Iteration Parameterization**—to their correct mathematical definitions:'
+    prompt_markdown: 'Match the three parallel RNG construction strategies of the
+      reference notes—**Cycle Division**, **Cycle Parameterization**, and **Iteration
+      Parameterization**—to their correct mathematical definitions:'
     hint_markdown: Review the diagram and definitions.
     options:
     - id: a
-      text: Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns each
-        stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a different
-        recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream.
-      text_markdown: Cycle Division splits a single cycle via leapfrogging or block partitioning; Cycle Parameterization assigns
-        each stream to a different disjoint cycle of the same state-transition graph; Iteration Parameterization assigns a
-        different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream.
+      text: Cycle Division uses Geiger counters; Cycle Parameterization uses Halton
+        sequences; Iteration Parameterization uses $\chi^2$ tables.
+      text_markdown: Cycle Division uses Geiger counters; Cycle Parameterization uses
+        Halton sequences; Iteration Parameterization uses $\chi^2$ tables.
     - id: b
-      text: Cycle Division varies the multiplier $a$; Cycle Parameterization uses a single cycle with leapfrog step $P$; Iteration
-        Parameterization divides the modulus $m$ by the processor rank.
-      text_markdown: Cycle Division varies the multiplier $a$; Cycle Parameterization uses a single cycle with leapfrog step
-        $P$; Iteration Parameterization divides the modulus $m$ by the processor rank.
+      text: Cycle Division varies the multiplier $a$; Cycle Parameterization uses
+        a single cycle with leapfrog step $P$; Iteration Parameterization divides
+        the modulus $m$ by the processor rank.
+      text_markdown: Cycle Division varies the multiplier $a$; Cycle Parameterization
+        uses a single cycle with leapfrog step $P$; Iteration Parameterization divides
+        the modulus $m$ by the processor rank.
     - id: c
-      text: All three names refer to initializing every processor with the identical seed $S_0 = 0$.
-      text_markdown: All three names refer to initializing every processor with the identical seed $S_0 = 0$.
+      text: All three names refer to initializing every processor with the identical
+        seed $S_0 = 0$.
+      text_markdown: All three names refer to initializing every processor with the
+        identical seed $S_0 = 0$.
     - id: d
-      text: Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization
-        uses $\chi^2$ tables.
-      text_markdown: Cycle Division uses Geiger counters; Cycle Parameterization uses Halton sequences; Iteration Parameterization
-        uses $\chi^2$ tables.
-    correct: a
-    rationale_markdown: 'The three strategies are: 1. **Cycle Division:** Leapfrog or Partition of a single cycle (prone to
-      long-range correlation problems in LCGs).
-
-      2. **Cycle Parameterization:** When a PRNG state space partitions into many disjoint cycles, assign a different cycle
-      to each stream.
-
-      3. **Iteration Parameterization:** Assign a different iteration function $T^{(p)}$ (such as distinct prime addends or
-      multipliers) to each stream.'
+      text: Cycle Division splits a single cycle via leapfrogging or block partitioning;
+        Cycle Parameterization assigns each stream to a different disjoint cycle of
+        the same state-transition graph; Iteration Parameterization assigns a different
+        recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to each stream.
+      text_markdown: Cycle Division splits a single cycle via leapfrogging or block
+        partitioning; Cycle Parameterization assigns each stream to a different disjoint
+        cycle of the same state-transition graph; Iteration Parameterization assigns
+        a different recurrence function $T^{(p)}$ (e.g., different $a$ or $c$) to
+        each stream.
+    correct: d
+    rationale_markdown: |-
+      The three strategies are: 1. **Cycle Division:** Leapfrog or Partition of a single cycle (prone to long-range correlation problems in LCGs).
+      2. **Cycle Parameterization:** When a PRNG state space partitions into many disjoint cycles, assign a different cycle to each stream.
+      3. **Iteration Parameterization:** Assign a different iteration function $T^{(p)}$ (such as distinct prime addends or multipliers) to each stream.
   - id: q13_34_sprng_spawn
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: In a branching Monte Carlo simulation (such as neutron transport or Diffusion Quantum Monte Carlo with
-      **particle splitting**, where a particle dynamically forks off new child processes at unpredictable times), which SPRNG
-      function creates new independent random number streams from an existing stream **without** requiring global communication
-      across all processors?
-    hint_markdown: Look at the list of SPRNG functions and the 'Particle splitting' example.
+    prompt_markdown: In a branching Monte Carlo simulation (such as neutron transport
+      or Diffusion Quantum Monte Carlo with **particle splitting**, where a particle
+      dynamically forks off new child processes at unpredictable times), which SPRNG
+      function creates new independent random number streams from an existing stream
+      **without** requiring global communication across all processors?
+    hint_markdown: Look at the list of SPRNG functions and the 'Particle splitting'
+      example.
     options:
     - id: a
       text: '`spawn_sprng(int *stream, int nspawned, int ***newstreams)`'
@@ -1155,115 +1310,133 @@ worksheet:
       text: '`unpack_sprng(char *buffer)`'
       text_markdown: '`unpack_sprng(char *buffer)`'
     correct: a
-    rationale_markdown: '`spawn_sprng` dynamically forks `nspawned` new, statistically independent streams from a local `stream`
-      pointer without needing global synchronization with other processors—solving the particle-splitting problem highlighted.'
+    rationale_markdown: '`spawn_sprng` dynamically forks `nspawned` new, statistically
+      independent streams from a local `stream` pointer without needing global synchronization
+      with other processors—solving the particle-splitting problem highlighted.'
   - id: q13_35_sprng_init_args
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: When initializing parallel streams in SPRNG via `init_sprng(int streamnum, int nstreams, int seed, int
-      param)`, how should `streamnum` and `seed` be set across $P$ MPI processes to obtain $P$ reproducible, independent streams
+    prompt_markdown: When initializing parallel streams in SPRNG via `init_sprng(int
+      streamnum, int nstreams, int seed, int param)`, how should `streamnum` and `seed`
+      be set across $P$ MPI processes to obtain $P$ reproducible, independent streams
       from a single global run seed?
-    hint_markdown: Each MPI rank needs its own unique stream index `streamnum`, while sharing the common global `seed`.
+    hint_markdown: Each MPI rank needs its own unique stream index `streamnum`, while
+      sharing the common global `seed`.
     options:
     - id: a
-      text: Pass the unique MPI rank $p \in \{0, 1, \dots, P-1\}$ as `streamnum`, total ranks $P$ as `nstreams`, and the same
-        shared global `seed` on all ranks.
-      text_markdown: Pass the unique MPI rank $p \in \{0, 1, \dots, P-1\}$ as `streamnum`, total ranks $P$ as `nstreams`,
-        and the same shared global `seed` on all ranks.
+      text: Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks
+        generate identical sequences.
+      text_markdown: Pass `streamnum = 0` and the same `seed` on every MPI rank so
+        all ranks generate identical sequences.
     - id: b
-      text: Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences.
-      text_markdown: Pass `streamnum = 0` and the same `seed` on every MPI rank so all ranks generate identical sequences.
+      text: Pass the unique MPI rank $p \in \{0, 1, \dots, P-1\}$ as `streamnum`,
+        total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks.
+      text_markdown: Pass the unique MPI rank $p \in \{0, 1, \dots, P-1\}$ as `streamnum`,
+        total ranks $P$ as `nstreams`, and the same shared global `seed` on all ranks.
     - id: c
       text: Pass `nstreams = 0` and `param = -1` on every rank.
       text_markdown: Pass `nstreams = 0` and `param = -1` on every rank.
     - id: d
       text: Call `free_sprng` before calling `init_sprng`.
       text_markdown: Call `free_sprng` before calling `init_sprng`.
-    correct: a
-    rationale_markdown: In SPRNG, `streamnum` identifies which of the `nstreams` disjoint parallel streams belongs to the
-      calling processor (typically its MPI rank $0, \dots, P-1$), while the shared global `seed` ensures the entire parallel
-      run can be deterministically reproduced.
+    correct: b
+    rationale_markdown: In SPRNG, `streamnum` identifies which of the `nstreams` disjoint
+      parallel streams belongs to the calling processor (typically its MPI rank $0,
+      \dots, P-1$), while the shared global `seed` ensures the entire parallel run
+      can be deterministically reproduced.
   - id: q13_36_parallel_feynman_exhaustion
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: highlights evaluating thousands of Feynman diagram integrals in parallel, each to an accuracy of $\epsilon
-      = 10^{-6}$. Why is **cycle length exhaustion** a primary hazard in this calculation?
-    hint_markdown: How many Monte Carlo samples $N$ are required to reach a relative statistical error $\epsilon \sim N^{-1/2}
-      = 10^{-6}$ for just ONE integral?
+    prompt_markdown: Statistical evaluation highlights testing thousands of Feynman
+      diagram integrals in parallel, each to an accuracy of $\epsilon = 10^{-6}$.
+      Why is **cycle length exhaustion** a primary hazard in this calculation?
+    hint_markdown: How many Monte Carlo samples $N$ are required to reach a relative
+      statistical error $\epsilon \sim N^{-1/2} = 10^{-6}$ for just ONE integral?
     options:
     - id: a
-      text: Reaching $\epsilon \sim N^{-1/2} = 10^{-6}$ requires $N \sim 10^{12}$ samples per integral, so evaluating thousands
-        of multi-dimensional integrals consumes $10^{15}\text{–}10^{16}$ random numbers—completely exhausting 32-bit and even
-        48-bit (`drand48`) generators!
-      text_markdown: Reaching $\epsilon \sim N^{-1/2} = 10^{-6}$ requires $N \sim 10^{12}$ samples per integral, so evaluating
-        thousands of multi-dimensional integrals consumes $10^{15}\text{–}10^{16}$ random numbers—completely exhausting 32-bit
-        and even 48-bit (`drand48`) generators!
-    - id: b
-      text: Reaching $\epsilon = 10^{-6}$ requires only $N = 6$ random numbers, which underflows a 64-bit register.
-      text_markdown: Reaching $\epsilon = 10^{-6}$ requires only $N = 6$ random numbers, which underflows a 64-bit register.
-    - id: c
       text: Feynman diagrams can only be integrated using physical Geiger counters.
-      text_markdown: Feynman diagrams can only be integrated using physical Geiger counters.
+      text_markdown: Feynman diagrams can only be integrated using physical Geiger
+        counters.
+    - id: b
+      text: Reaching $\epsilon = 10^{-6}$ requires only $N = 6$ random numbers, which
+        underflows a 64-bit register.
+      text_markdown: Reaching $\epsilon = 10^{-6}$ requires only $N = 6$ random numbers,
+        which underflows a 64-bit register.
+    - id: c
+      text: Reaching $\epsilon \sim N^{-1/2} = 10^{-6}$ requires $N \sim 10^{12}$
+        samples per integral, so evaluating thousands of multi-dimensional integrals
+        consumes $10^{15}\text{–}10^{16}$ random numbers—completely exhausting 32-bit
+        and even 48-bit (`drand48`) generators!
+      text_markdown: Reaching $\epsilon \sim N^{-1/2} = 10^{-6}$ requires $N \sim
+        10^{12}$ samples per integral, so evaluating thousands of multi-dimensional
+        integrals consumes $10^{15}\text{–}10^{16}$ random numbers—completely exhausting
+        32-bit and even 48-bit (`drand48`) generators!
     - id: d
       text: Cycle exhaustion only occurs when $N < 16$.
       text_markdown: Cycle exhaustion only occurs when $N < 16$.
-    correct: a
-    rationale_markdown: Because Monte Carlo error scales as $N^{-1/2}$, achieving $10^{-6}$ accuracy requires $N \sim (10^6)^2
-      = 10^{12}$ evaluations per diagram! Across thousands of diagrams (each requiring multiple random coordinates per sample),
-      the total demand easily exceeds $2^{48} \approx 2.8 \times 10^{14}$, exhausting 32-bit and 48-bit generators.
+    correct: c
+    rationale_markdown: Because Monte Carlo error scales as $N^{-1/2}$, achieving
+      $10^{-6}$ accuracy requires $N \sim (10^6)^2 = 10^{12}$ evaluations per diagram!
+      Across thousands of diagrams (each requiring multiple random coordinates per
+      sample), the total demand easily exceeds $2^{48} \approx 2.8 \times 10^{14}$,
+      exhausting 32-bit and 48-bit generators.
   - id: q13_37_spacetime_partitioning_hazard
     type: problem
     question_type: single_select
     difficulty: medium
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: In a **space-time domain-decomposed** parallel Monte Carlo simulation (where each spatial subdomain is
-      assigned to a different processor with its own PRNG stream), why are inter-stream correlations between neighboring processors
+    prompt_markdown: In a **space-time domain-decomposed** parallel Monte Carlo simulation
+      (where each spatial subdomain is assigned to a different processor with its
+      own PRNG stream), why are inter-stream correlations between neighboring processors
       particularly dangerous?
-    hint_markdown: What happens at the boundary interface between adjacent spatial subdomains?
+    hint_markdown: What happens at the boundary interface between adjacent spatial
+      subdomains?
     options:
     - id: a
-      text: Atoms or spins across the boundary between neighboring processors interact directly at the same time step; if
-        their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor interfaces.
-      text_markdown: Atoms or spins across the boundary between neighboring processors interact directly at the same time
-        step; if their local PRNG streams are correlated, artificial synchronized forces or phase boundaries appear at processor
-        interfaces.
+      text: Each processor only calls its PRNG once at $t = 0$.
+      text_markdown: Each processor only calls its PRNG once at $t = 0$.
     - id: b
       text: Domain decomposition never uses random numbers inside the subdomains.
       text_markdown: Domain decomposition never uses random numbers inside the subdomains.
     - id: c
       text: Correlated streams cause the spatial box length $L$ to shrink to zero.
-      text_markdown: Correlated streams cause the spatial box length $L$ to shrink to zero.
+      text_markdown: Correlated streams cause the spatial box length $L$ to shrink
+        to zero.
     - id: d
-      text: Each processor only calls its PRNG once at $t = 0$.
-      text_markdown: Each processor only calls its PRNG once at $t = 0$.
-    correct: a
-    rationale_markdown: In spatial domain decomposition, degrees of freedom in neighboring processors interact directly across
-      domain boundaries at every step. Any cross-correlation between Stream $p$ and Stream $p+1$ translates directly into
-      a physical spatial correlation artifact along the subdomain boundaries.
+      text: Atoms or spins across the boundary between neighboring processors interact
+        directly at the same time step; if their local PRNG streams are correlated,
+        artificial synchronized forces or phase boundaries appear at processor interfaces.
+      text_markdown: Atoms or spins across the boundary between neighboring processors
+        interact directly at the same time step; if their local PRNG streams are correlated,
+        artificial synchronized forces or phase boundaries appear at processor interfaces.
+    correct: d
+    rationale_markdown: In spatial domain decomposition, degrees of freedom in neighboring
+      processors interact directly across domain boundaries at every step. Any cross-correlation
+      between Stream $p$ and Stream $p+1$ translates directly into a physical spatial
+      correlation artifact along the subdomain boundaries.
   - id: q13_38_lcg_mean_exact_cycle
     type: problem
     question_type: numeric
     difficulty: medium
     taught_by: sec_lcg_marsaglia_and_lfg
-    prompt_markdown: For our full-period generator $\text{LCG}(5, 1, 16, 0)$, the 16 generated integers over one complete
-      cycle are $\{0, 1, 2, \dots, 15\}$, mapped to $R_n = I_n / 16 \in [0, 1)$. What is the exact discrete cycle average
-      $\langle R \rangle_{\text{cycle}} = \frac{1}{16}\sum_{n=0}^{15} \frac{I_n}{16}$? (Enter as a decimal to 4 decimal places.)
-    hint_markdown: Use $\sum_{k=0}^{15} k = \frac{15 \times 16}{2} = 120$, then divide by $16 \times 16 = 256$.
+    prompt_markdown: For our full-period generator $\text{LCG}(5, 1, 16, 0)$, the
+      16 generated integers over one complete cycle are $\{0, 1, 2, \dots, 15\}$,
+      mapped to $R_n = I_n / 16 \in [0, 1)$. What is the exact discrete cycle average
+      $\langle R \rangle_{\text{cycle}} = \frac{1}{16}\sum_{n=0}^{15} \frac{I_n}{16}$?
+      (Enter as a decimal to 4 decimal places.)
+    hint_markdown: Apply the appropriate definition or scaling relation to compute
+      the ratio.
     correct:
       value: 0.46875
       tolerance: 0.001
-    rationale_markdown: 'Over one complete cycle of length $m = 16$, every integer $k \in \{0, 1, \dots, 15\}$ occurs exactly
-      once:
-
-      $$\langle R \rangle_{\text{cycle}} = \frac{1}{16}\sum_{k=0}^{15} \frac{k}{16} = \frac{15 \times 16 / 2}{256} = \frac{15}{32}
-      = 0.46875$$
-
-      Note that this differs from $1/2 = 0.5000$ by $-1/(2m) = -1/32$ because the mapping $I_n / m$ includes $0$ and excludes
-      $1$ (shifting by $+1/(2m)$ centers the bins at $(I_n + 0.5)/m$, giving an exact mean of $0.5$).'
+    rationale_markdown: |-
+      Over one complete cycle of length $m = 16$, every integer $k \in \{0, 1, \dots, 15\}$ occurs exactly once:
+      $$\langle R \rangle_{\text{cycle}} = \frac{1}{16}\sum_{k=0}^{15} \frac{k}{16} = \frac{15 \times 16 / 2}{256} = \frac{15}{32} = 0.46875$$
+      Note that this differs from $1/2 = 0.5000$ by $-1/(2m) = -1/32$ because the mapping $I_n / m$ includes $0$ and excludes $1$ (shifting by $+1/(2m)$ centers the bins at $(I_n + 0.5)/m$, giving an exact mean of $0.5$).
   - id: q13_39_chi2_cycle_exhaustion_trap
     type: problem
     question_type: numeric
@@ -1271,37 +1444,38 @@ worksheet:
     taught_by:
     - sec_lcg_marsaglia_and_lfg
     - sec_chi_squared_testing
-    prompt_markdown: Suppose you take the full-period generator $\text{LCG}(5, 1, 16, 0)$ (period $m = 16$), draw $P = 1600$
-      numbers (exactly $100$ full cycles!), and bin them into $N = 16$ equal bins on $[0, 1)$. Because every integer $0, 1,
-      \dots, 15$ occurs **exactly** $100$ times across $100$ full periods, every bin receives $N_i = 100$ counts (matching
-      the expected count $n_i = 100$ with zero error!). What value of $\chi^2$ do you obtain, and what is the tail probability
+    prompt_markdown: Suppose you take the full-period generator $\text{LCG}(5, 1,
+      16, 0)$ (period $m = 16$), draw $P = 1600$ numbers (exactly $100$ full cycles!),
+      and bin them into $N = 16$ equal bins on $[0, 1)$. Because every integer $0,
+      1, \dots, 15$ occurs **exactly** $100$ times across $100$ full periods, every
+      bin receives $N_i = 100$ counts (matching the expected count $n_i = 100$ with
+      zero error!). What value of $\chi^2$ do you obtain, and what is the tail probability
       $Q(\chi^2 | 15)$? Enter the value of $Q(\chi^2 | 15)$.
-    hint_markdown: When $N_i = n_i$ for every bin, $\chi^2 = 0$. What is $\text{Prob}(y > 0)$ for a continuous positive random
-      variable $y \sim \chi^2_{15}$?
+    hint_markdown: When $N_i = n_i$ for every bin, $\chi^2 = 0$. What is $\text{Prob}(y
+      > 0)$ for a continuous positive random variable $y \sim \chi^2_{15}$?
     correct:
       value: 1.0
       tolerance: 0.001
-    rationale_markdown: 'Because the sample size $P = 1600$ is an exact integer multiple of the generator period $m = 16$,
-      every bin receives $N_i = 100 = n_i$ counts, yielding:
-
+    rationale_markdown: |-
+      Because the sample size $P = 1600$ is an exact integer multiple of the generator period $m = 16$, every bin receives $N_i = 100 = n_i$ counts, yielding:
       $$\chi^2 = \sum_{i=1}^{16} \frac{(100 - 100)^2}{100} = 0 \implies Q(0 | 15) = \text{Prob}(y > 0) = 1.000 \ (100\%)$$
-
-      Our two-sided $\chi^2$ test immediately **rejects** this generator ($Q > 99\%$), catching the fact that we exhausted
-      and wrapped around the generator''s period!'
+      Our two-sided $\chi^2$ test immediately **rejects** this generator ($Q > 99\%$), catching the fact that we exhausted and wrapped around the generator's period!
   - id: q13_40_sprng_checkpoint_functions
     type: problem
     question_type: single_select
     difficulty: easy
     taught_by: sec_parallel_prng_and_sprng
-    prompt_markdown: When running a multi-day parallel Monte Carlo simulation on a supercomputer with a 24-hour wall-clock
-      queue limit, you must save the exact internal state of every processor's PRNG stream to disk so the restart job continues
-      seamlessly without repeating or skipping random numbers. Which pair of SPRNG functions serializes and restores a stream's
-      state?
+    prompt_markdown: When running a multi-day parallel Monte Carlo simulation on a
+      supercomputer with a 24-hour wall-clock queue limit, you must save the exact
+      internal state of every processor's PRNG stream to disk so the restart job continues
+      seamlessly without repeating or skipping random numbers. Which pair of SPRNG
+      functions serializes and restores a stream's state?
     hint_markdown: Look at the SPRNG function list of the reference notes.
     options:
     - id: a
       text: '`pack_sprng(int *stream, char **buffer)` and `unpack_sprng(char *buffer)`'
-      text_markdown: '`pack_sprng(int *stream, char **buffer)` and `unpack_sprng(char *buffer)`'
+      text_markdown: '`pack_sprng(int *stream, char **buffer)` and `unpack_sprng(char
+        *buffer)`'
     - id: b
       text: '`make_sprng_seed` and `free_sprng(int *stream)`'
       text_markdown: '`make_sprng_seed` and `free_sprng(int *stream)`'
@@ -1312,6 +1486,7 @@ worksheet:
       text: '`print_sprng(int *stream)` and `spawn_sprng(...)`'
       text_markdown: '`print_sprng(int *stream)` and `spawn_sprng(...)`'
     correct: a
-    rationale_markdown: '`pack_sprng` serializes the complete internal state of `stream` (including the full ring buffer for
-      Lagged Fibonacci generators) into a portable character array `buffer` for checkpointing or MPI message passing, and
-      `unpack_sprng` reconstructs the live stream pointer upon restart.'
+    rationale_markdown: '`pack_sprng` serializes the complete internal state of `stream`
+      (including the full ring buffer for Lagged Fibonacci generators) into a portable
+      character array `buffer` for checkpointing or MPI message passing, and `unpack_sprng`
+      reconstructs the live stream pointer upon restart.'
