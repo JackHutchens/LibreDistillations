@@ -19,4 +19,4 @@ for i, y in enumerate(yamls, 1):
     print(f"{i:02d} | {res['id']:<46} | {res['questions']:>2} | {res['concept_cells']:>8} | {res['markdown_sections']:>7} | {status}")
 
 print("-" * 80)
-print(f"   | {'TOTALS ACROSS COMPLETE MSE 485 COURSE':<46} | {total_q:>2} | {total_concepts:>8} | {total_md:>7} | 24/24 OK")
+print(f"   | {'TOTALS ACROSS COMPLETE ATOMIC SCALE SIMULATIONS COURSE':<46} | {total_q:>2} | {total_concepts:>8} | {total_md:>7} | 24/24 OK")

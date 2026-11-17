@@ -660,8 +660,8 @@ sections:
     \ short, reducing $N_{\\text{eff}} = N_{\\text{eq}}/\\kappa$ and inflating the **statistical error** $\\sigma_{\\bar{A}}\
     \ \\propto N_{\\text{eq}}^{-1/2}$.\n- **Rule of thumb:** Choose $k_1$ to be at least **$5$ to $10$ times the relaxation/correlation\
     \ time** ($k_1 \\gtrsim 5\\tau_{\\text{eq}}$) where the trace visually and statistically flattens around a stationary\
-    \ mean, while ensuring $N_{\\text{eq}} \\gg 20\\kappa$.\n\n### Four Classic Slippery Traps in Simulation Analysis\n of\
-    \ Lecture 02 (*\"Statistical thinking is slippery: be careful\"*), Prof. Trinkle highlights four misconceptions that trap\
+    \ mean, while ensuring $N_{\\text{eq}} \\gg 20\\kappa$.\n\n### Four Classic Slippery Traps in Simulation Analysis\n \
+    \ Under the guiding principle *\"Statistical thinking is slippery: be careful\"*, consider four critical misconceptions that trap\
     \ almost every beginner:\n1. **\"Shouldn't the energy settle down to a constant in equilibrium?\"**\n - **NO!** In any\
     \ canonical ($NVT$) or grand-canonical ensemble (and for kinetic/potential energy separately in $NVE$), microscopic observables\
     \ **fluctuate forever** with standard deviation $\\sigma_A \\propto 1/\\sqrt{N_{\\text{atoms}}}$. It is only the *overall\
@@ -796,8 +796,8 @@ sections:
   difficulty: easy
   taught_by: sec_equilibration_warmup
   prompt_markdown: 'Suppose a student says: *''My simulation post-processing pipeline involves a complex non-linear curve
-    fit and three coordinate transformations, so it is too complicated to compute error bars.''* What is Prof. Trinkle''s
-    direct prescription of Lecture 02?'
+    fit and three coordinate transformations, so it is too complicated to compute error bars.''* What is the standard, foolproof
+    prescription to obtain rigorous uncertainties?'
   hint_markdown: 'Read the fourth bullet: ''NO! NEVER! Run your whole code...'''
   options:
   - id: a

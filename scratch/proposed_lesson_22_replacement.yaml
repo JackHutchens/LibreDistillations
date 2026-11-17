@@ -1,6 +1,6 @@
 worksheet:
   id: lesson_22_ising_model_and_spin_kinetics
-  title: "MSE 485 · Lesson 22: The Ising Model — Exact Solutions, Phase Transitions, Spin Kinetics & Cluster Monte Carlo"
+  title: "Atomic Scale Simulations · Lesson 22: The Ising Model — Exact Solutions, Phase Transitions, Spin Kinetics & Cluster Monte Carlo"
   estimated_minutes: 120
   learning_objectives:
     - "Formulate the Ising Hamiltonian, prove discrete Z_2 spin-inversion symmetry, and derive exact isomorphisms to lattice gases (liquid-gas coexistence) and binary alloys (order-disorder transitions)."

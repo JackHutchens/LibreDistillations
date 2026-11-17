@@ -1,4 +1,4 @@
-"""Turbo-Cram Unified Multi-Course Management CLI.
+"""Interactive Scientific Worksheet Framework — Unified Multi-Course Management CLI.
 
 Commands:
   python tools/cram.py list
@@ -33,6 +33,7 @@ from nbformat.v4 import new_notebook, new_code_cell, new_output
 import yaml
 
 from engine import Worksheet, apply_default_style
+from engine.code_runner import SealedTestBundle, ast_preflight_check
 from engine.figures import render_static_figure
 from engine.worksheet import (
     normalize_controls_spec,
@@ -309,6 +310,64 @@ def validate_and_compile_worksheet(
     if strict_count and not (35 <= q_count <= 50):
         errors.append(f"Question count {q_count} is outside required [35, 50] range")
 
+    # Optional V2 companion bank validation (`v2_banks/<stem>.v2.json`)
+    v2_bank_data: dict[str, Any] = dict(getattr(ws, "v2_bank", None) or {})
+    v2_code_exercises: list[dict[str, Any]] = list(v2_bank_data.get("code_exercises") or [])
+    if v2_bank_data:
+        for cid, probes in (v2_bank_data.get("diagnostic_probe_pools") or {}).items():
+            if not isinstance(probes, list) or not probes:
+                warnings.append(f"V2 diagnostic_probe_pools[{cid!r}] is empty")
+                continue
+            for pr in probes:
+                if not pr.get("id") or not pr.get("prompt_markdown") or pr.get("correct") is None:
+                    errors.append(f"V2 probe in {cid!r} missing id, prompt_markdown, or correct")
+
+        for cid, cspec in (v2_bank_data.get("remedial_clusters") or {}).items():
+            if not isinstance(cspec, Mapping):
+                errors.append(f"V2 remedial_cluster {cid!r} must be a mapping")
+                continue
+            if not cspec.get("cluster_id") or not cspec.get("refutation_markdown"):
+                errors.append(f"V2 remedial_cluster {cid!r} missing cluster_id or refutation_markdown")
+            vis_spec = cspec.get("poe_visualizer_spec") or {}
+            rfn = vis_spec.get("render_function")
+            if rfn and (ws.concept_module is None or not hasattr(ws.concept_module, str(rfn))):
+                errors.append(
+                    f"V2 remedial_cluster {cid!r} references missing render_function {rfn!r}"
+                )
+            grad_items = cspec.get("graduated_mastery_items") or []
+            if not grad_items:
+                errors.append(f"V2 remedial_cluster {cid!r} has no graduated_mastery_items")
+
+        seen_ex_ids: set[str] = set()
+        for ex in v2_code_exercises:
+            ex_id = str(ex.get("exercise_id", ""))
+            fn_name = str(ex.get("function_name", ""))
+            starter = str(ex.get("starter_code", ""))
+            bundle_raw = ex.get("sealed_test_bundle")
+            if not ex_id or not fn_name or not starter:
+                errors.append(f"V2 code_exercise {ex_id!r} missing exercise_id, function_name, or starter_code")
+                continue
+            if ex_id in seen_ex_ids:
+                errors.append(f"Duplicate V2 code_exercise id: {ex_id!r}")
+            seen_ex_ids.add(ex_id)
+            pf = ast_preflight_check(starter, entry_function=fn_name)
+            if not pf.passed:
+                errors.append(
+                    f"V2 code_exercise {ex_id!r} starter_code failed AST preflight: "
+                    + "; ".join(v.pedagogical_message for v in pf.violations)
+                )
+            if not isinstance(bundle_raw, Mapping):
+                errors.append(f"V2 code_exercise {ex_id!r} missing sealed_test_bundle")
+            else:
+                try:
+                    sb = SealedTestBundle.from_dict(dict(bundle_raw))
+                    if sb.entry_function != fn_name:
+                        errors.append(
+                            f"V2 code_exercise {ex_id!r} entry_function mismatch: {sb.entry_function!r} != {fn_name!r}"
+                        )
+                except Exception as exc:
+                    errors.append(f"V2 code_exercise {ex_id!r} invalid sealed_test_bundle: {exc}")
+
     if write_ipynb and not errors:
         nb = new_notebook()
         nb.metadata = {
@@ -438,6 +497,42 @@ def validate_and_compile_worksheet(
             cells.append(cell)
             exec_counter += 1
 
+        # Append V2 native coding exercise cell pairs cleanly BEFORE ws.show_record()
+        for ex in v2_code_exercises:
+            ex_id = str(ex["exercise_id"])
+            fn_name = str(ex["function_name"])
+            starter = str(ex["starter_code"]).rstrip()
+            ex_title = normalize_angstrom(str(ex.get("title") or ex_id))
+            ex_diff = str(ex.get("difficulty", "medium"))
+            ex_prompt = normalize_angstrom(
+                str(ex.get("prompt_markdown") or ex.get("pedagogical_objective") or "")
+            )
+            ex_sig = str(ex.get("signature") or f"def {fn_name}(...):")
+            ex_outs = [
+                _md_output(
+                    f"### 💻 Coding Exercise `{ex_id}` — {ex_title} (`{ex_diff}`)\n\n"
+                    f"{ex_prompt}\n\n"
+                    f"**Required Function Signature:** `{ex_sig}`\n"
+                )
+            ]
+            c_ex_prompt = new_code_cell(
+                source=f"ws.render_code_exercise('{ex_id}')",
+                execution_count=exec_counter,
+                outputs=ex_outs,
+            )
+            c_ex_prompt["id"] = _cell_id(f"{ws.id}:code_prompt:{ex_id}")
+            cells.append(c_ex_prompt)
+            exec_counter += 1
+
+            work_src = f"{starter}\n\n# Uncomment or run after implementing `{fn_name}`:\nws.check_code('{ex_id}', {fn_name})\n"
+            c_ex_work = new_code_cell(
+                source=work_src,
+                execution_count=None,
+                outputs=[],
+            )
+            c_ex_work["id"] = _cell_id(f"{ws.id}:code_work:{ex_id}")
+            cells.append(c_ex_work)
+
         c_rec = new_code_cell(source="ws.show_record()", execution_count=None, outputs=[])
         c_rec["id"] = _cell_id(f"{ws.id}:show_record")
         cells.append(c_rec)
@@ -452,13 +547,22 @@ def validate_and_compile_worksheet(
         with open(target_path, "w", encoding="utf-8") as fh:
             nbformat.write(nb, fh)
 
-        # Emit companion .json specification for zero-dependency / fast WASM in-browser loading
+        # Emit companion .json specification ONLY if missing or out-of-sync (preserving clean git status)
         json_target = yaml_path.with_suffix(".json")
         try:
             with open(yaml_path, "r", encoding="utf-8") as yfh:
                 raw_spec = yaml.safe_load(yfh)
-            with open(json_target, "w", encoding="utf-8") as jfh:
-                json.dump(raw_spec, jfh, indent=2)
+            need_write = True
+            if json_target.is_file():
+                try:
+                    with open(json_target, "r", encoding="utf-8") as rfh:
+                        if json.load(rfh) == raw_spec:
+                            need_write = False
+                except Exception:
+                    need_write = True
+            if need_write:
+                with open(json_target, "w", encoding="utf-8") as jfh:
+                    json.dump(raw_spec, jfh, indent=2)
         except Exception as exc:
             warnings.append(f"Failed to emit companion JSON for {yaml_path.name}: {exc}")
 
@@ -467,6 +571,7 @@ def validate_and_compile_worksheet(
         "questions": q_count,
         "concepts": len(concept_cells),
         "markdown_sections": len(markdown_sections),
+        "v2_code_exercises": len(v2_code_exercises),
         "errors": errors,
         "warnings": warnings,
     }
@@ -499,6 +604,7 @@ def cmd_verify_or_build(args: argparse.Namespace, is_build: bool) -> None:
     total_qs = 0
     total_concepts = 0
     total_md = 0
+    total_code_ex = 0
     total_worksheets = 0
     all_ok = True
 
@@ -516,8 +622,8 @@ def cmd_verify_or_build(args: argparse.Namespace, is_build: bool) -> None:
         meta = load_course_manifest(cid)
         c_name = meta.get("course", {}).get("name", cid)
         print(f"\n=== {action_name} Course: {c_name} ({cid}) ===")
-        print(f"{'Worksheet ID':<46} | {'Qs':>3} | {'Concepts':>8} | {'MD Secs':>7} | Status")
-        print("-" * 86)
+        print(f"{'Worksheet ID':<46} | {'Qs':>3} | {'Concepts':>8} | {'MD Secs':>7} | {'CodeEx':>6} | Status")
+        print("-" * 95)
 
         for y_path in yamls:
             target_nb = nb_dir / f"{y_path.stem}.ipynb"
@@ -530,20 +636,21 @@ def cmd_verify_or_build(args: argparse.Namespace, is_build: bool) -> None:
             total_qs += res["questions"]
             total_concepts += res["concepts"]
             total_md += res["markdown_sections"]
+            total_code_ex += int(res.get("v2_code_exercises", 0))
             total_worksheets += 1
 
             status = "OK" if not res["errors"] else f"FAIL ({len(res['errors'])} errs)"
             if res["errors"]:
                 all_ok = False
-            print(f"{res['id']:<46} | {res['questions']:>3} | {res['concepts']:>8} | {res['markdown_sections']:>7} | {status}")
+            print(f"{res['id']:<46} | {res['questions']:>3} | {res['concepts']:>8} | {res['markdown_sections']:>7} | {res.get('v2_code_exercises', 0):>6} | {status}")
             for err in res["errors"]:
                 print(f"  [ERROR] {err}")
             for w in res["warnings"]:
                 print(f"  [WARN] {w}")
 
-    print("-" * 86)
+    print("-" * 95)
     summary_label = "ALL WORKSHEETS PASSED" if all_ok else "ERRORS DETECTED"
-    print(f"TOTALS: {total_worksheets} worksheets, {total_qs} questions, {total_concepts} concepts, {total_md} sections | {summary_label}")
+    print(f"TOTALS: {total_worksheets} worksheets, {total_qs} questions, {total_concepts} concepts, {total_md} sections, {total_code_ex} code_exercises | {summary_label}")
     if not all_ok:
         sys.exit(1)
 
@@ -598,7 +705,7 @@ def cmd_ingest(args: argparse.Namespace) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Turbo-Cram Unified Multi-Course Management CLI")
+    parser = argparse.ArgumentParser(description="Interactive Scientific Worksheet Framework — Unified Multi-Course Management CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # list

@@ -1044,8 +1044,7 @@ sections:
     *outside* the $1\sigma$ error bar!).
 
     - **Within $\pm 2\sigma_{\bar{A}}$:** Approximately **$95.4\%$** of the time, the true answer lies within $\pm 2\sigma_{\bar{A}}$
-    (so a $2\sigma$ discrepancy occurs naturally by pure statistical chance about **$1$ time in $20$** — or as Prof. Trinkle
-    notes of Lecture 02, when comparing two noisy datasets $A$ and $B$, a $\sim 2$-error-bar difference happens in roughly
+    (so a $2\sigma$ discrepancy occurs naturally by pure statistical chance about **$1$ time in $20$**; when comparing two noisy datasets $A$ and $B$, a $\sim 2$-error-bar difference happens in roughly
     $1$ out of $10$ comparisons!).
 
     - **Within $\pm 3\sigma_{\bar{A}}$:** Approximately **$99.7\%$** of the time, the true answer lies within $\pm 3\sigma_{\bar{A}}$.
@@ -1154,8 +1153,8 @@ sections:
   question_type: single_select
   difficulty: medium
   taught_by: sec_confidence_and_synthesis
-  prompt_markdown: 'of Lecture 02 (*''Statistical thinking is slippery: be careful''*), Prof. Trinkle warns: *''If things
-    agree too well, something is wrong!''* Suppose a student runs 20 supposedly independent Monte Carlo runs of a noisy liquid
+  prompt_markdown: 'In statistical analysis of computer simulations (*''Statistical thinking is slippery: be careful''*), practitioners often observe: *''If things
+    agree too well, something is wrong!''* Suppose an investigator runs 20 supposedly independent Monte Carlo runs of a noisy liquid
     and finds that all 20 sample means agree with the literature reference value to within $0.05\,\sigma_{\bar{A}}$. What
     is the most likely diagnosis?'
   hint_markdown: In 20 truly independent Gaussian draws, about $1/3$ should fall outside $\pm 1\sigma_{\bar{A}}$, and only

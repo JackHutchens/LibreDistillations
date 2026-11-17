@@ -1,6 +1,7 @@
 """Core Worksheet runtime, interactive widget builders, and grading engine."""
 
 from __future__ import annotations
+import copy
 import hashlib
 import importlib.util
 import json
@@ -8,7 +9,7 @@ from pathlib import Path
 import random
 import re
 import sys
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping, Optional
 
 # Ensure repository root is on sys.path
 _repo_root = Path(__file__).resolve().parent.parent
@@ -25,6 +26,18 @@ from IPython.display import display, Markdown, HTML
 import ipywidgets as widgets
 
 from .figures import render_static_figure
+from .tok_runtime import (
+    AutomatonState,
+    AutomatonStepOutcome,
+    LearnerKVEvolutionEngine,
+    PrerequisiteEdgeSpec,
+    ToKRemediationWidget,
+    TreeOfKnowledgeAutomaton,
+)
+from .code_runner import (
+    SuiteExecutionReport,
+    execute_student_submission,
+)
 
 
 class _SmartInt(int):
@@ -234,6 +247,8 @@ class Worksheet:
         spec: dict[str, Any],
         yaml_path: Path,
         concept_module: Any = None,
+        course_v2_meta: Optional[dict[str, Any]] = None,
+        v2_bank: Optional[dict[str, Any]] = None,
     ) -> None:
         # Unwrap top-level `worksheet:` key if present
         root = spec.get("worksheet", spec) if isinstance(spec, Mapping) else spec
@@ -267,7 +282,215 @@ class Worksheet:
         self.session_id = session_hash
         self._records_dir = self.base_dir / ".worksheet_records"
         self._record_file = self._records_dir / f"{self.id}_record.json"
+        self.code_records: dict[str, dict[str, Any]] = {}
         self.records: dict[str, dict[str, Any]] = self._load_records()
+
+        # V2 companion bank & Learner KV / Tree-of-Knowledge initialization
+        self.course_v2_meta: dict[str, Any] = (
+            dict(course_v2_meta)
+            if course_v2_meta is not None
+            else self._discover_json_companion("course_fragility_and_kvs.json")
+        )
+        self.v2_bank: dict[str, Any] = (
+            dict(v2_bank)
+            if v2_bank is not None
+            else self._discover_json_companion(f"{yaml_path.stem}.v2.json")
+        )
+        self.code_exercise_list: list[dict[str, Any]] = list(
+            self.v2_bank.get("code_exercises") or []
+        )
+        self.code_exercises: dict[str, dict[str, Any]] = {
+            str(ex["exercise_id"]): dict(ex)
+            for ex in self.code_exercise_list
+            if isinstance(ex, Mapping) and "exercise_id" in ex
+        }
+        self._active_remediation_widgets: dict[str, ToKRemediationWidget] = {}
+        self._item_automatons: dict[str, TreeOfKnowledgeAutomaton] = {}
+        self.kv_engine: LearnerKVEvolutionEngine = self._init_v2_kv_engine()
+        self._v2_curriculum_spec: dict[str, Any] = self._build_merged_v2_curriculum_spec()
+
+    def _discover_json_companion(self, filename: str) -> dict[str, Any]:
+        candidates = [
+            self.yaml_path.parent.parent / "v2_banks" / filename,
+            self.yaml_path.parent / "v2_banks" / filename,
+        ]
+        for cpath in candidates:
+            if cpath.is_file():
+                try:
+                    with open(cpath, "r", encoding="utf-8") as fh:
+                        data = json.load(fh)
+                        if isinstance(data, dict):
+                            return data
+                except Exception:
+                    return {}
+        return {}
+
+    def _default_primary_concept_for_section(self, sec: Mapping[str, Any]) -> str:
+        tb = sec.get("taught_by")
+        if isinstance(tb, list) and tb:
+            first_tb = str(tb[0])
+        elif isinstance(tb, str) and tb:
+            first_tb = tb
+        else:
+            first_tb = "general"
+        if "::" in first_tb:
+            return first_tb
+        return f"{self.id}::{first_tb}"
+
+    def _init_v2_kv_engine(self) -> LearnerKVEvolutionEngine:
+        ckv_ids = [f"CKV-{k}" for k in range(8)]
+        concept_ids: list[str] = list(ckv_ids)
+
+        for cid in self.v2_bank.get("ckv_vector_space") or []:
+            s_cid = str(cid)
+            if s_cid not in concept_ids:
+                concept_ids.append(s_cid)
+
+        lesson_summaries = self.course_v2_meta.get("lesson_summaries") or {}
+        l_sum = lesson_summaries.get(self.id) or {}
+        for cid in l_sum.get("micro_concept_ids") or []:
+            if str(cid) not in concept_ids:
+                concept_ids.append(str(cid))
+
+        for sec in self.sections:
+            if sec.get("type") in ("markdown_section", "concept_cell", "markdown", "concept", "intro"):
+                full_cid = f"{self.id}::{sec['id']}"
+                if full_cid not in concept_ids:
+                    concept_ids.append(full_cid)
+
+        edges: list[PrerequisiteEdgeSpec] = []
+        seen_edges: set[tuple[str, str]] = set()
+        raw_edge_lists = [
+            self.course_v2_meta.get("ckv_macro_prerequisite_edges") or [],
+            self.course_v2_meta.get("prerequisite_edges") or [],
+            self.v2_bank.get("concept_prerequisite_edges") or [],
+        ]
+        for edge_list in raw_edge_lists:
+            for e in edge_list:
+                if not isinstance(e, Mapping):
+                    continue
+                src = str(e.get("source_concept_id", ""))
+                dst = str(e.get("target_concept_id", ""))
+                if not src or not dst or (src, dst) in seen_edges:
+                    continue
+                seen_edges.add((src, dst))
+                edges.append(
+                    PrerequisiteEdgeSpec(
+                        source_concept_id=src,
+                        target_concept_id=dst,
+                        weight=float(e.get("weight", 1.0)),
+                        is_weak_bridge=bool(e.get("is_weak_bridge", False)),
+                    )
+                )
+
+        return LearnerKVEvolutionEngine(
+            concept_ids=concept_ids,
+            prerequisite_edges=edges,
+            session_id=self.session_id,
+        )
+
+    def _expand_concept_aliases(self, mapping_obj: Mapping[str, Any]) -> dict[str, Any]:
+        """Support `<lesson_stem>::<sec>`, `LXX::<sec>`, and bare `<sec>` keys seamlessly."""
+        out: dict[str, Any] = {}
+        m_num = re.match(r"^lesson_(\d+)", self.id)
+        short_prefix = f"L{int(m_num.group(1)):02d}" if m_num else ""
+        for raw_key, val in mapping_obj.items():
+            k = str(raw_key)
+            out[k] = copy.deepcopy(val)
+            if "::" in k:
+                prefix, suffix = k.split("::", 1)
+                full_k = f"{self.id}::{suffix}"
+                out.setdefault(full_k, copy.deepcopy(val))
+                if short_prefix:
+                    out.setdefault(f"{short_prefix}::{suffix}", copy.deepcopy(val))
+            else:
+                out.setdefault(f"{self.id}::{k}", copy.deepcopy(val))
+                if short_prefix:
+                    out.setdefault(f"{short_prefix}::{k}", copy.deepcopy(val))
+        return out
+
+    def _build_merged_v2_curriculum_spec(self) -> dict[str, Any]:
+        prob_diags = self.v2_bank.get("problem_diagnostics") or {}
+        merged_sections: list[dict[str, Any]] = []
+        for sec in self.sections:
+            sec_copy = copy.deepcopy(dict(sec))
+            if sec_copy.get("type") == "problem":
+                pid = str(sec_copy["id"])
+                sec_copy.setdefault(
+                    "primary_concept_id", self._default_primary_concept_for_section(sec_copy)
+                )
+                diag = prob_diags.get(pid)
+                if isinstance(diag, Mapping):
+                    for dk, dv in diag.items():
+                        sec_copy[str(dk)] = copy.deepcopy(dv)
+            merged_sections.append(sec_copy)
+
+        for ex_id, ex in self.code_exercises.items():
+            routing = (
+                ex.get("code_gap_routing")
+                or (ex.get("v2_code_exercise_spec") or {}).get("code_gap_routing")
+                or {}
+            )
+            merged_sections.append(
+                {
+                    "id": ex_id,
+                    "type": "problem",
+                    "question_type": "code_exercise",
+                    "difficulty": str(ex.get("difficulty", "medium")),
+                    "taught_by": str(ex.get("primary_concept_id", f"{self.id}::code")),
+                    "primary_concept_id": str(ex.get("primary_concept_id", f"{self.id}::code")),
+                    "prompt_markdown": str(ex.get("prompt_markdown", ex.get("title", ex_id))),
+                    "ckv_loadings": dict(ex.get("ckv_loadings") or {}),
+                    "code_exercise_spec": {
+                        "function_name": str(ex.get("function_name", "")),
+                        "signature": str(ex.get("signature", "")),
+                        "starter_code": str(ex.get("starter_code", "")),
+                        "hidden_suite_ref": str(
+                            (ex.get("sealed_test_bundle") or {}).get("suite_id", ex_id)
+                        ),
+                        "code_gap_routing": copy.deepcopy(dict(routing)),
+                    },
+                }
+            )
+
+        probes = self._expand_concept_aliases(self.v2_bank.get("diagnostic_probe_pools") or {})
+        clusters = self._expand_concept_aliases(self.v2_bank.get("remedial_clusters") or {})
+        for cid, cspec in clusters.items():
+            if isinstance(cspec, dict):
+                cspec["target_concept_id"] = cid
+
+        return {
+            "worksheet": {
+                "id": self.id,
+                "title": self.title,
+                "estimated_minutes": self.estimated_minutes,
+                "learning_objectives": list(self.learning_objectives),
+                "sections": merged_sections,
+                "diagnostic_probe_pools": probes,
+                "remedial_clusters": clusters,
+            }
+        }
+
+    def get_item_automaton(self, item_id: str) -> Optional[TreeOfKnowledgeAutomaton]:
+        """Return or initialize a dedicated pushdown automaton for `item_id` sharing `self.kv_engine`."""
+        if not self.v2_bank and not (
+            self._v2_curriculum_spec["worksheet"]["diagnostic_probe_pools"]
+            or self._v2_curriculum_spec["worksheet"]["remedial_clusters"]
+        ):
+            return None
+        if item_id not in self._item_automatons:
+            lesson_summaries = self.course_v2_meta.get("lesson_summaries") or {}
+            l_sum = lesson_summaries.get(self.id) or {}
+            d_trig = 2 if int(l_sum.get("max_d_trigger", 1)) >= 2 else 1
+            auto = TreeOfKnowledgeAutomaton(
+                curriculum_spec=self._v2_curriculum_spec,
+                kv_engine=self.kv_engine,
+                max_recursion_depth=d_trig,
+            )
+            if item_id in auto.root_problems:
+                auto.select_root_question(item_id)
+            self._item_automatons[item_id] = auto
+        return self._item_automatons[item_id]
 
     @classmethod
     def load(cls, yaml_path: str | Path) -> "Worksheet":
@@ -364,6 +587,8 @@ class Worksheet:
             try:
                 with open(self._record_file, "r", encoding="utf-8") as fh:
                     data = json.load(fh)
+                    if isinstance(data.get("code_exercises"), Mapping):
+                        self.code_records = dict(data["code_exercises"])
                     return dict(data.get("answers", {}))
             except Exception:
                 return {}
@@ -372,12 +597,14 @@ class Worksheet:
     def _save_records(self) -> None:
         try:
             self._records_dir.mkdir(parents=True, exist_ok=True)
-            payload = {
+            payload: dict[str, Any] = {
                 "worksheet_id": self.id,
                 "title": self.title,
                 "session_id": self.session_id,
                 "answers": self.records,
             }
+            if getattr(self, "code_records", None):
+                payload["code_exercises"] = self.code_records
             with open(self._record_file, "w", encoding="utf-8") as fh:
                 json.dump(payload, fh, indent=2)
         except Exception:
@@ -599,6 +826,84 @@ class Worksheet:
             )
 
         feedback_out = widgets.Output()
+        remediation_out = widgets.Output()
+        primary_cid = self._default_primary_concept_for_section(sec)
+
+        def _handle_v2_remediation_step(
+            raw_submission: Any,
+            is_correct_v1: bool,
+            on_mastered_ui_lock: Callable[[], None],
+        ) -> None:
+            if is_correct_v1:
+                remediation_out.clear_output(wait=True)
+                try:
+                    self.kv_engine.update_on_observation(
+                        concept_id=primary_cid,
+                        is_correct=True,
+                        cri_score=3.5,
+                        propagate_laplacian=True,
+                    )
+                    self.kv_engine.append_telemetry_event(
+                        event_type="V1_PROBLEM_MASTERED",
+                        item_id=pid,
+                        automaton_state=AutomatonState.MASTERED_COMPLETED.value,
+                        latency_sec=10.0,
+                        cri=3.5,
+                        hints_used=(),
+                        payload={"tries": self.records.get(pid, {}).get("tries", 1)},
+                    )
+                except Exception:
+                    pass
+                return
+
+            auto = self.get_item_automaton(pid)
+            if auto is None:
+                return
+
+            try:
+                if auto.state not in (
+                    AutomatonState.S0_ROOT_ANCHOR,
+                    AutomatonState.S0_REFRESHED_ANCHOR_RETURN,
+                ):
+                    auto.select_root_question(pid)
+                sub_val = (
+                    next(iter(raw_submission))
+                    if (qtype == "single_select" and isinstance(raw_submission, set) and len(raw_submission) == 1)
+                    else (sorted(raw_submission) if isinstance(raw_submission, set) else raw_submission)
+                )
+                outcome = auto.submit_response(sub_val, cri_score=3.0)
+            except Exception:
+                return
+
+            def _on_tok_resolved(res_outcome: AutomatonStepOutcome) -> None:
+                if res_outcome.current_state == AutomatonState.MASTERED_COMPLETED:
+                    rec_now = self.records.get(pid, {"tries": 1, "completed": False, "credit": 0.0})
+                    rec_now["completed"] = True
+                    rec_now["credit"] = max(float(rec_now.get("credit", 0.0)), float(auto.completed_roots.get(pid, 0.75)))
+                    self.records[pid] = rec_now
+                    self._save_records()
+                    on_mastered_ui_lock()
+
+            with remediation_out:
+                remediation_out.clear_output(wait=True)
+                if outcome.slip_nudge_emitted:
+                    display(Markdown(f"> **Slip Check:** {normalize_angstrom(outcome.message)}"))
+                elif auto.state in (
+                    AutomatonState.S1_DIAGNOSTIC_PROBE,
+                    AutomatonState.S2_REMEDIAL_CLUSTER,
+                    AutomatonState.S0_REFRESHED_ANCHOR_RETURN,
+                    AutomatonState.S3_DIAGNOSTIC_ESCALATION_DEFERRED,
+                ):
+                    tok_w = ToKRemediationWidget(
+                        automaton=auto,
+                        concept_module=self.concept_module,
+                        format_html_fn=_format_latex_and_math,
+                        wrap_controls_fn=wrap_controls_dict,
+                        on_root_resolved=_on_tok_resolved,
+                        initial_outcome=outcome,
+                    )
+                    self._active_remediation_widgets[pid] = tok_w
+                    display(tok_w.container)
 
         if qtype in ("single_select", "multi_select"):
             options = sec.get("options", [])
@@ -655,6 +960,11 @@ class Worksheet:
                 layout=widgets.Layout(margin="8px 0 4px 0", width="150px"),
             )
 
+            def _lock_choice_ui() -> None:
+                for cb in checkboxes.values():
+                    cb.disabled = True
+                submit_btn.disabled = True
+
             def _on_submit_choice(_btn: Any) -> None:
                 chosen = {oid for oid, cb in checkboxes.items() if cb.value}
                 if not chosen:
@@ -673,9 +983,7 @@ class Worksheet:
                     credit = 1.0 if tries == 1 else max(0.5, 1.0 - 0.25 * (tries - 1))
                     rec["completed"] = True
                     rec["credit"] = round(credit, 2)
-                    for cb in checkboxes.values():
-                        cb.disabled = True
-                    submit_btn.disabled = True
+                    _lock_choice_ui()
                 self.records[pid] = rec
                 self._save_records()
 
@@ -694,6 +1002,7 @@ class Worksheet:
                                 f"**✗ Not quite (attempt {rec['tries']})** — review the hint or concept section above and try again."
                             )
                         )
+                _handle_v2_remediation_step(chosen, is_correct, _lock_choice_ui)
 
             submit_btn.on_click(_on_submit_choice)
             display(widgets.VBox([*rows, submit_btn]))
@@ -731,6 +1040,10 @@ class Worksheet:
                 layout=widgets.Layout(width="150px", margin="4px 0"),
             )
 
+            def _lock_numeric_ui() -> None:
+                num_input.disabled = True
+                submit_btn.disabled = True
+
             def _on_submit_numeric(_btn: Any) -> None:
                 val = float(num_input.value)
                 rec = self.records.get(pid, {"tries": 0, "completed": False, "credit": 0.0})
@@ -743,8 +1056,7 @@ class Worksheet:
                     credit = 1.0 if tries == 1 else max(0.5, 1.0 - 0.25 * (tries - 1))
                     rec["completed"] = True
                     rec["credit"] = round(credit, 2)
-                    num_input.disabled = True
-                    submit_btn.disabled = True
+                    _lock_numeric_ui()
                 self.records[pid] = rec
                 self._save_records()
 
@@ -763,6 +1075,7 @@ class Worksheet:
                                 f"**✗ Not quite (attempt {rec['tries']})** — check your units, rounding, or formula and try again (tolerance $\\pm {tol:g}$)."
                             )
                         )
+                _handle_v2_remediation_step(val, is_correct, _lock_numeric_ui)
 
             submit_btn.on_click(_on_submit_numeric)
             display(widgets.HBox([num_input, *unit_widgets, submit_btn], layout=widgets.Layout(align_items="center")))
@@ -776,9 +1089,146 @@ class Worksheet:
             )
         else:
             display(feedback_out)
+            display(remediation_out)
+
+    def render_code_exercise(self, exercise_id: str) -> None:
+        """Render the prompt, signature, and public test suite manifest for a V2 coding exercise."""
+        if exercise_id not in self.code_exercises:
+            raise KeyError(f"Coding exercise {exercise_id!r} not found in worksheet {self.id!r}")
+        ex = self.code_exercises[exercise_id]
+        title = str(ex.get("title") or exercise_id)
+        diff = str(ex.get("difficulty", "medium"))
+        sig = str(ex.get("signature") or f"def {ex.get('function_name', 'solution')}(...):")
+        prompt = normalize_angstrom(str(ex.get("prompt_markdown") or ex.get("pedagogical_objective") or ""))
+        pub_tests = ex.get("public_test_names") or [
+            m.get("public_test_name", m.get("test_id", ""))
+            for m in ((ex.get("sealed_test_bundle") or {}).get("public_manifest") or [])
+        ]
+
+        md_lines = [
+            f"### 💻 Coding Exercise `{exercise_id}` — {title} (`{diff}`)",
+            "",
+            prompt,
+            "",
+            f"**Required Function Signature:** `{sig}`",
+        ]
+        if pub_tests:
+            md_lines.append("")
+            md_lines.append("**Verification Suite (3-Tier Physical Invariants):**")
+            for tname in pub_tests:
+                md_lines.append(f"- {normalize_angstrom(str(tname))}")
+
+        display(Markdown("\n".join(md_lines)))
+
+    def check_code(
+        self,
+        exercise_id: str,
+        student_fn_or_source: Any,
+        cri_score: float = 3.0,
+    ) -> SuiteExecutionReport:
+        """
+        Execute `student_fn_or_source` (live callable or Python source string) against
+        the exercise's sealed 3-tier test bundle, update Learner KV state & telemetry,
+        and mount Tree-of-Knowledge remediation on conceptual physics gaps.
+        """
+        if exercise_id not in self.code_exercises:
+            raise KeyError(f"Coding exercise {exercise_id!r} not found in worksheet {self.id!r}")
+        ex = self.code_exercises[exercise_id]
+        bundle = ex["sealed_test_bundle"]
+
+        crec = self.code_records.get(
+            exercise_id, {"tries": 0, "completed": False, "credit": 0.0}
+        )
+        attempt_idx = int(crec.get("tries", 0))
+        report = execute_student_submission(
+            bundle=bundle,
+            student_fn_or_source=student_fn_or_source,
+            session_id=self.session_id,
+            attempt_index=attempt_idx,
+        )
+
+        crec["tries"] = attempt_idx + 1
+        crec["passed_count"] = report.passed_count
+        crec["total_count"] = report.total_count
+        crec["t2_rng_seed_hex"] = report.t2_rng_seed_hex
+        if report.all_passed:
+            tries = crec["tries"]
+            credit = 1.0 if tries == 1 else max(0.5, 1.0 - 0.15 * (tries - 1))
+            crec["completed"] = True
+            crec["credit"] = round(credit, 2)
+        self.code_records[exercise_id] = crec
+        self._save_records()
+
+        primary_cid = str(ex.get("primary_concept_id") or f"{self.id}::code")
+        coactivated = list((ex.get("ckv_loadings") or {}).keys())
+        self.kv_engine.update_on_observation(
+            concept_id=primary_cid,
+            is_correct=report.all_passed,
+            cri_score=float(cri_score),
+            coactivated_concepts=coactivated,
+            propagate_laplacian=True,
+        )
+        self.kv_engine.append_telemetry_event(
+            event_type="CODE_EXERCISE_SUBMISSION",
+            item_id=exercise_id,
+            automaton_state=(
+                AutomatonState.MASTERED_COMPLETED.value
+                if report.all_passed
+                else AutomatonState.S0_ROOT_ANCHOR.value
+            ),
+            latency_sec=15.0,
+            cri=float(cri_score),
+            hints_used=(),
+            payload={
+                "passed_count": report.passed_count,
+                "total_count": report.total_count,
+                "all_passed": report.all_passed,
+                "t2_rng_seed_hex": report.t2_rng_seed_hex,
+                "report_sha256": report.report_sha256,
+                "triggered_conceptual_gap_tags": list(report.triggered_conceptual_gap_tags),
+            },
+        )
+
+        display(Markdown(f"```text\n{report.format_student_card()}\n```"))
+
+        if not report.all_passed and report.triggered_conceptual_gap_tags:
+            first_gap = report.triggered_conceptual_gap_tags[0]
+            first_diag = next(
+                (tr.failure_diagnostic for tr in report.test_reports if not tr.passed),
+                "Hidden invariant check failed.",
+            )
+            auto = self.get_item_automaton(exercise_id)
+            if auto is not None and exercise_id in auto.root_problems:
+                try:
+                    auto.select_root_question(exercise_id)
+                    outcome = auto.submit_response(
+                        {
+                            "passed": False,
+                            "conceptual_gap_tag": first_gap,
+                            "failure_diagnostic": first_diag,
+                        },
+                        cri_score=float(cri_score),
+                    )
+                    if auto.state in (
+                        AutomatonState.S1_DIAGNOSTIC_PROBE,
+                        AutomatonState.S2_REMEDIAL_CLUSTER,
+                    ):
+                        tok_w = ToKRemediationWidget(
+                            automaton=auto,
+                            concept_module=self.concept_module,
+                            format_html_fn=_format_latex_and_math,
+                            wrap_controls_fn=wrap_controls_dict,
+                            initial_outcome=outcome,
+                        )
+                        self._active_remediation_widgets[exercise_id] = tok_w
+                        display(tok_w.container)
+                except Exception:
+                    pass
+
+        return report
 
     def show_record(self) -> None:
-        """Render a summary table of problem completion and earned credit."""
+        """Render a summary table of problem completion, coding exercises, and CKV mastery."""
         total_q = len(self._problem_number)
         completed_q = sum(1 for r in self.records.values() if r.get("completed"))
         total_credit = sum(float(r.get("credit", 0.0)) for r in self.records.values() if r.get("completed"))
@@ -796,25 +1246,67 @@ class Worksheet:
             "",
             f"- **Completed Problems:** {completed_q} / {total_q} ({(100.0 * completed_q / max(1, total_q)):.1f}%)",
             f"- **Recorded Credit:** {total_credit:.2f} / {total_q:.2f}",
-            "",
-            "| Difficulty Tier | Completed | Total | Completion Rate |",
-            "| :--- | :---: | :---: | :---: |",
         ]
+
+        if self.code_exercises:
+            tot_c = len(self.code_exercises)
+            done_c = sum(1 for r in self.code_records.values() if r.get("completed"))
+            cred_c = sum(float(r.get("credit", 0.0)) for r in self.code_records.values() if r.get("completed"))
+            lines.append(
+                f"- **Completed Coding Exercises:** {done_c} / {tot_c} (credit {cred_c:.2f} / {tot_c:.2f})"
+            )
+
+        lines.extend(
+            [
+                "",
+                "| Difficulty Tier | Completed | Total | Completion Rate |",
+                "| :--- | :---: | :---: | :---: |",
+            ]
+        )
         for tier in ("easy", "medium", "hard"):
             done, tot = by_diff.get(tier, [0, 0])
             pct = 100.0 * done / max(1, tot)
             lines.append(f"| **{tier.capitalize()}** | {done} | {tot} | {pct:.0f}% |")
 
+        ckv_keys = [f"CKV-{k}" for k in range(8) if f"CKV-{k}" in self.kv_engine.state.theta]
+        if ckv_keys:
+            lines.extend(
+                [
+                    "",
+                    "#### Course Knowledge Vector (`CKV-0..7`) Mastery Snapshot",
+                    "",
+                    "| CKV | Mastery $\\theta_k$ | Uncertainty $\\sigma_k$ | Stability $S_k$ (h) |",
+                    "| :--- | :---: | :---: | :---: |",
+                ]
+            )
+            for ck in ckv_keys:
+                th = self.kv_engine.state.theta[ck]
+                sg = self.kv_engine.state.sigma[ck]
+                st_h = self.kv_engine.state.stability_hours[ck]
+                lines.append(f"| `{ck}` | {th:.3f} | {sg:.3f} | {st_h:.1f} |")
+
         display(Markdown("\n".join(lines)))
 
     def finalize(self) -> None:
-        """Finalize and save the student's session receipt."""
+        """Finalize and save the student's session receipt + V2 SHA-256 telemetry sidecar."""
         self._save_records()
         total_q = len(self._problem_number)
         completed_q = sum(1 for r in self.records.values() if r.get("completed"))
         total_credit = sum(float(r.get("credit", 0.0)) for r in self.records.values() if r.get("completed"))
 
+        ckv_snapshot = {
+            f"CKV-{k}": round(self.kv_engine.state.theta.get(f"CKV-{k}", 0.5), 4)
+            for k in range(8)
+        }
+        v2_receipt = self.kv_engine.finalize_session_receipt(
+            worksheet_id=self.id,
+            completed_problems=completed_q,
+            total_problems=total_q,
+            recorded_credit=round(total_credit, 2),
+        )
+
         receipt_path = self._records_dir / f"{self.id}_finalized.json"
+        v2_sidecar_path = self._records_dir / f"{self.id}_v2_telemetry_receipt.json"
         try:
             with open(receipt_path, "w", encoding="utf-8") as fh:
                 json.dump(
@@ -825,10 +1317,18 @@ class Worksheet:
                         "completed_problems": completed_q,
                         "total_problems": total_q,
                         "recorded_credit": round(total_credit, 2),
+                        "v2_code_exercises_completed": sum(
+                            1 for r in self.code_records.values() if r.get("completed")
+                        ),
+                        "v2_code_exercises_total": len(self.code_exercises),
+                        "v2_ckv_mastery": ckv_snapshot,
+                        "v2_telemetry_head_sha256": v2_receipt.get("event_chain_head_sha256", ""),
                     },
                     fh,
                     indent=2,
                 )
+            with open(v2_sidecar_path, "w", encoding="utf-8") as vfh:
+                json.dump(v2_receipt, vfh, indent=2)
         except Exception:
             pass
 

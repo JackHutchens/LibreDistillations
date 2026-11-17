@@ -1,6 +1,6 @@
 # Interactive Scientific Worksheet Framework
 
-A modular, zero-configuration framework for developing and distributing interactive computational science worksheets. The platform compiles declarative curriculum specifications and interactive visualization scripts into standalone, pre-rendered Jupyter notebooks featuring live parameter exploration, instantaneous assessment, and mathematical typesetting.
+A modular, zero-configuration framework for developing and distributing interactive computational science worksheets. The platform compiles declarative curriculum specifications, dynamic visualization scripts, adaptive prerequisite remediation banks, and scientific coding suites into standalone, pre-rendered Jupyter notebooks featuring live parameter exploration, instantaneous diagnostic assessment, embedded code verification, and mathematical typesetting across local desktop Jupyter and browser WebAssembly (JupyterLite).
 
 ---
 
@@ -8,17 +8,23 @@ A modular, zero-configuration framework for developing and distributing interact
 
 Traditional STEM lecture distribution relies heavily on passive consumption of slides and static textbook problems. This framework is engineered around core principles of cognitive engagement and computational inquiry:
 
-### 1. Active Recall and Formative Assessment
-Each lesson is structured around 35 to 50 targeted conceptual, analytical, and quantitative problems. Rather than functioning solely as summative evaluations, problems provide immediate feedback upon submission. Correctness assessments are accompanied by detailed rationales explaining underlying physical principles, derivations, and common conceptual pitfalls. Optional hints provide tiered scaffolding without prematurely disclosing solutions.
+### 1. Active Recall, Confidence Calibration, and Formative Assessment
+Each lesson is structured around 35 to 50 targeted conceptual, analytical, and quantitative problems paired with optional confidence-based marking. Rather than functioning solely as summative evaluations, problems provide immediate diagnostic feedback upon submission. Correctness assessments are accompanied by detailed rationales explaining underlying physical principles, derivations, and common conceptual pitfalls, while multi-tier hints provide progressive scaffolding without prematurely disclosing solutions.
 
-### 2. Live Parameter Exploration
-Static figures are replaced with dynamic visualizers constructed using Matplotlib and `ipywidgets`. Learners manipulate continuous and discrete system parameters (e.g., thermodynamic temperatures, interatomic potential cutoffs, boundary conditions, or lattice coupling constants) and observe physical responses in real time. This bridges analytical theory and computational modeling by allowing immediate empirical validation of theoretical limits.
+### 2. Live Parameter Exploration and Predict-Observe-Explain Gating
+Static figures are replaced with dynamic visualizers constructed using Matplotlib and `ipywidgets`. Learners manipulate continuous and discrete system parameters (e.g., thermodynamic temperatures, interatomic potential cutoffs, boundary conditions, or lattice coupling constants) and observe physical responses in real time. During targeted remediation, Predict-Observe-Explain (POE) exploration gating prompts learners to commit to a physical prediction and explore multiple parameter regimes before revealing synthesis takeaways.
 
-### 3. Precision Mathematical Typography
+### 3. Adaptive Conceptual Remediation and Learner Agency
+When a submission reveals a specific conceptual or analytical gap, an inline prerequisite remediation automaton administers a lightweight diagnostic probe and, when needed, opens a focused conceptual remediation cluster containing refutation explanations, backward-faded worked derivations, POE-gated visualizers, and graduated mastery checks. Continuous learner mastery, uncertainty, and memory stability states evolve across prerequisite graphs and course knowledge vectors. Throughout deep remediation, learners retain explicit agency via optional **"Continue Down the Rabbit Hole"** multi-step prerequisite exploration (guarded against cycles and bounded in depth) alongside a trigger-gated **"Return to Worksheet"** control that unwinds cleanly to an isomorphically refreshed root problem while logging deferred concepts for spaced review.
+
+### 4. Embedded Scientific Python Coding Verification
+Each module integrates pure-function scientific Python and NumPy programming exercises graded directly inside the notebook via `ws.check_code()`. An AST-guarded execution runner with loop-tick protection evaluates student implementations across a 3-tier verification suite—interface and unit contracts, randomized physical-invariant oracles, and sealed reference vectors—providing diagnostic feedback without exposing reference solutions in either local CPython (JupyterLab) or browser WebAssembly (Pyodide / JupyterLite).
+
+### 5. Precision Mathematical Typography
 All prompts, options, and explanatory cards natively support MathJax LaTeX rendering with robust physical unit formatting (including Unicode symbols such as the Angstrom). Math environments are isolated during markdown processing to prevent syntax corruption.
 
-### 4. Persistent Local State
-Student progress is saved locally in machine-readable JSON records. State persists across kernel restarts and browser refreshes, allowing learners to track completion percentages and review historical submissions via dedicated inspection routines.
+### 6. Persistent Local State and Mastery Tracking
+Student progress, spaced-review urgency, and course knowledge vector mastery states are saved locally in machine-readable JSON records with integrity digests. State persists across kernel restarts and browser refreshes, allowing learners to track completion percentages, inspect cross-module mastery profiles, and review historical submissions via dedicated inspection routines.
 
 ---
 
@@ -32,14 +38,17 @@ The repository enforces strict separation between curriculum definitions, visual
 ├── engine/                       # Universal worksheet execution runtime
 │   ├── __init__.py               # Public package API
 │   ├── worksheet.py              # Dynamic loader, widget builder, and grading engine
+│   ├── tok_runtime.py            # Adaptive prerequisite remediation automaton & learner mastery engine
+│   ├── code_runner.py            # AST-guarded 3-tier scientific code verification engine (CPython & WASM)
 │   ├── plot_style.py             # Visual styling, palettes, and graph rendering
 │   └── figures.py                # Static and shared diagram rendering
 │
 ├── courses/                      # Multi-course curriculum root
 │   └── <course_id>/              # Isolated course module (e.g., "Atomic Scale Simulations")
 │       ├── course.yaml           # Course metadata, title, and module registry
-│       ├── worksheets/           # Declarative YAML curriculum specifications
+│       ├── worksheets/           # Declarative YAML and JSON curriculum specifications
 │       ├── concepts/             # Python visualization functions for interactive cells
+│       ├── v2_banks/             # Prerequisite graph (course_fragility_and_kvs.json) & lesson_*.v2.json banks
 │       └── notebooks/            # Pre-compiled, standalone Jupyter notebooks
 │
 ├── tools/                        # Administrative CLI tools
@@ -61,9 +70,11 @@ flowchart TD
     subgraph Authoring["Curriculum Authoring Layer"]
         YAML["Worksheet Specifications<br/>(courses/&lt;course_id&gt;/worksheets/*.yaml)"]
         Concepts["Visualizer Implementations<br/>(courses/&lt;course_id&gt;/concepts/*.py)"]
+        Banks["Remediation and Coding Banks<br/>(courses/&lt;course_id&gt;/v2_banks/*.json)"]
         CLI["Compiler and Validator CLI<br/>(tools/cram.py)"]
         YAML --> CLI
         Concepts --> CLI
+        Banks --> CLI
     end
 
     subgraph Distribution["Distribution Layer"]
@@ -72,10 +83,10 @@ flowchart TD
     end
 
     subgraph Runtime["Runtime Engine (engine/)"]
-        Discovery["Cell 0: Ancestor Directory Discovery"]
-        Loader["Worksheet.load()<br/>Dynamic YAML and Module Linker"]
-        Widgets["Interactive Widgets and MathJax Renderer"]
-        Grader["Grading and Evaluation Core"]
+        Discovery["Cell 0: Ancestor Directory and WASM Discovery"]
+        Loader["Worksheet.load()<br/>Curriculum, Visualizer, and Bank Linker"]
+        Widgets["Interactive Widgets, POE Gates, and MathJax Renderer"]
+        Grader["Adaptive Remediation (tok_runtime) and 3-Tier Code Runner"]
         Records["Local Persistence (.worksheet_records/)"]
 
         Notebooks --> Discovery
@@ -176,18 +187,21 @@ For learners who do not have a local Python environment configured, the entire c
 ## Learner Workflow
 
 1. Navigate to `courses/<course_id>/notebooks/` (e.g., `courses/Atomic Scale Simulations/notebooks/`).
-2. Open any `.ipynb` file.
-3. **Execute Cell 1**: Initializes the session, configures uniform visual styling, displays module metadata, and lists target learning objectives.
+2. Open any `.ipynb` file in local JupyterLab or in browser-based JupyterLite.
+3. **Execute Cell 1**: Initializes the session, configures uniform visual styling, restores any saved mastery state, displays module metadata, and lists target learning objectives.
 4. **Interact with Concept Cells**: Adjust control sliders and dropdown menus to explore physical behavior before attempting corresponding questions.
-5. **Submit Answers**:
-   - For single-select and multi-select questions, select option checkboxes.
-   - For quantitative questions, enter numerical values.
-   - Click **Submit Answer** to evaluate. An immediate response card displays whether the answer was correct, along with an analytical derivation and physical explanation.
-   - Use the **Show hint** toggle if conceptual assistance is required.
-6. **Conclude Session**:
+5. **Submit Answers and Engage Adaptive Remediation**:
+   - For single-select and multi-select questions, select option choices; for quantitative questions, enter numerical values; optionally record your response confidence.
+   - Click **Submit Answer** to evaluate. An immediate response card displays analytical derivations, physical explanations, and tiered hints (**Show hint**).
+   - When a tractable prerequisite gap is detected, complete the inline **Diagnostic Probe** and, if needed, the **Conceptual Remediation Cluster** (featuring refutation guidance, faded worked steps, Predict-Observe-Explain visualizer exploration gating, and graduated mastery checks).
+   - If deeper upstream gaps arise during remediation, choose **"Continue Down the Rabbit Hole"** for optional multi-depth prerequisite exploration, or click the trigger-gated **"Return to Worksheet"** button at any point after activation to unwind cleanly to a refreshed root problem while logging deferred topics for spaced review.
+6. **Complete Embedded Coding Exercises**:
+   - Implement the scientific Python / NumPy function in each coding cell and execute the paired `ws.check_code(exercise_id, fn)` verification cell.
+   - Review immediate 3-tier feedback across contract/unit checks, randomized physical-invariant tests, and sealed reference vectors (with automatic prerequisite remediation routing when conceptual simulation bugs are detected).
+7. **Conclude Session**:
    - Execute the final cells:
-     - `ws.show_record()`: Displays a summary table of attempted questions and overall score.
-     - `ws.finalize()`: Encrypts and writes completion state to `.worksheet_records/`.
+     - `ws.show_record()`: Displays a summary table of attempted questions, coding exercises, and mastery across course knowledge vectors.
+     - `ws.finalize()`: Seals and writes completion state and integrity receipts to `.worksheet_records/`.
 
 ---
 
@@ -237,7 +251,7 @@ python tools/cram.py ingest <new_course_id>
 
 ## Reference Course Implementation
 
-This repository contains a reference implementation: **Atomic Scale Simulations**. It consists of 24 interactive modules, comprising 983 calibrated problems and 89 dynamic visualizers:
+This repository contains a complete reference implementation: **Atomic Scale Simulations**. It consists of **24 interactive modules**, comprising **983 calibrated problems**, **89 dynamic visualizers**, **210 adaptive concept remediation clusters** (with **391 diagnostic probes**) organized across **8 course knowledge vectors**, and **72 embedded scientific Python coding exercises** backed by **360 unit tests**:
 
 | Module Sequence | Curricular Scope | Key Dynamic Visualizers |
 | :--- | :--- | :--- |
